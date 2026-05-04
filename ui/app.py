@@ -18,6 +18,10 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scan_runner  # noqa: E402
+import api_key  # noqa: E402
+
+# Ensure stored key is in env before anything launches a subprocess
+api_key.hydrate_env()
 
 ROOT = Path(__file__).resolve().parent.parent
 TRACKER = ROOT / "job_tracker_data.json"
@@ -148,6 +152,10 @@ PAGES = [
     "⚙️ Admin",
 ]
 
+# API key manager — always on top of sidebar
+api_key.render_sidebar()
+st.sidebar.markdown("---")
+
 page = st.sidebar.radio("Navigate", PAGES)
 
 # Active-runs badge in sidebar
@@ -236,9 +244,17 @@ if page == "🏠 Dashboard":
 
     # Quick actions
     st.subheader("⚡ Quick actions")
+    key_ok = api_key.is_key_valid()
+    if not key_ok:
+        st.warning(
+            "⚠️ Anthropic API key missing or invalid — LLM-backed pipeline actions are disabled. "
+            "Set it in the sidebar.",
+            icon="🔑",
+        )
     qa1, qa2, qa3 = st.columns(3)
     with qa1:
         if st.button("🎯 Run full pipeline", use_container_width=True, type="primary",
+                     disabled=not key_ok,
                      help="Scrape → Score → Promote preview (one-shot agent)"):
             rec = scan_runner.start_run(
                 "pipeline_full",
@@ -250,6 +266,7 @@ if page == "🏠 Dashboard":
             st.rerun()
     with qa2:
         if st.button("🏛️ Fast pipeline (ATS-only)", use_container_width=True,
+                     disabled=not key_ok,
                      help="Direct Workday/Greenhouse scan + score + promote preview (~10 min)"):
             rec = scan_runner.start_run(
                 "pipeline_ats",
@@ -439,10 +456,24 @@ elif page == "🎯 Pipeline":
             cmd.append("--score-dry-run")
 
         st.code(" ".join(cmd), language="bash")
+
+        # Gate: LLM-backed stages (score / promote-that-needs-scored) require a valid key.
+        # Pure scrape (skip_score=True) does NOT require a key.
+        needs_llm = not skip_score or not skip_promote
+        key_ok_here = api_key.is_key_valid()
+        can_run = not pipeline_running and (key_ok_here or not needs_llm)
+
+        if needs_llm and not key_ok_here:
+            st.warning(
+                "⚠️ This pipeline run will call the Anthropic API. Set a valid key in the sidebar first, "
+                "or tick **Skip score** and **Skip promote** to run scrape-only (no API needed).",
+                icon="🔑",
+            )
+
         run_col, spacer = st.columns([1, 4])
         with run_col:
             if st.button("▶️ Launch pipeline", type="primary", use_container_width=True,
-                         disabled=bool(pipeline_running)):
+                         disabled=not can_run):
                 rec = scan_runner.start_run("pipeline", cmd)
                 st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
                 st.rerun()
@@ -560,7 +591,10 @@ elif page == "🎯 Pipeline":
                 conc = c1.number_input("Concurrency", 1, 16, 6, key="score_conc")
                 lim = c2.number_input("Limit (0=all)", 0, 5000, 0, key="score_lim")
                 dry = c3.checkbox("Dry run", key="score_dry")
-                if st.button("🤖 Run scorer", key="score_btn"):
+                _key_ok_score = api_key.is_key_valid() or dry
+                if not _key_ok_score:
+                    st.caption("🔑 API key required (or tick Dry run for rule-stage only).")
+                if st.button("🤖 Run scorer", key="score_btn", disabled=not _key_ok_score):
                     cmd3 = [sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
                             "--scan", pick, "--concurrency", str(conc)]
                     if lim:
@@ -814,7 +848,10 @@ elif page == "📋 Jobs Kanban":
                 st.write(job.get("fit_notes", ""))
                 st.write("**Next action:** " + (job.get("next_action") or ""))
                 # One-click tailor
-                if st.button(f"✏️ Tailor resume + cover for {sel_id}", key=f"tailor_{sel_id}"):
+                _tailor_ok = api_key.is_key_valid()
+                if st.button(f"✏️ Tailor resume + cover for {sel_id}", key=f"tailor_{sel_id}",
+                             disabled=not _tailor_ok,
+                             help="Requires a valid Anthropic API key" if not _tailor_ok else None):
                     cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
                            "--job-id", sel_id]
                     rec = scan_runner.start_run(f"tailor_{sel_id}", cmd)
@@ -1008,7 +1045,11 @@ elif page == "⚙️ Admin":
                 pick = st.selectbox("Role", jobs_df["id"].tolist())
             with c2:
                 dry = st.checkbox("Dry run (no API)", value=False)
-            if st.button("✏️ Tailor resume + cover", type="primary"):
+            _ad_tailor_ok = api_key.is_key_valid() or dry
+            if not _ad_tailor_ok:
+                st.caption("🔑 API key required (or tick Dry run).")
+            if st.button("✏️ Tailor resume + cover", type="primary",
+                         disabled=not _ad_tailor_ok):
                 cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
                        "--job-id", pick]
                 if dry:
