@@ -5,6 +5,8 @@ Run:
 
 Multi-page app reading the canonical JSON/MD artifacts at the project root.
 Edits to tracker/CRM are written back safely with a .bak backup.
+Long-running agents (scraper, scorer) run as detached background processes
+via ui/scan_runner.py so the UI stays responsive.
 """
 from __future__ import annotations
 import json
@@ -16,19 +18,23 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import scan_runner  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 TRACKER = ROOT / "job_tracker_data.json"
 CRM = ROOT / "recruiter_crm.json"
 OUT_DIR = ROOT / "automation" / "outputs"
+RUNS_DIR = OUT_DIR / "runs"
 
 
 # ----------------------------- helpers ------------------------------------
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def load_tracker():
     return json.loads(TRACKER.read_text(encoding="utf-8"))
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=30)
 def load_crm():
     if CRM.exists():
         return json.loads(CRM.read_text(encoding="utf-8"))
@@ -36,7 +42,7 @@ def load_crm():
 
 
 def save_tracker(d: dict):
-    stamp = date.today().strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     bak = TRACKER.with_suffix(f".bak.{stamp}.json")
     if TRACKER.exists():
         bak.write_text(TRACKER.read_text(encoding="utf-8"), encoding="utf-8")
@@ -45,7 +51,7 @@ def save_tracker(d: dict):
 
 
 def save_crm(d: dict):
-    stamp = date.today().strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     bak = CRM.with_suffix(f".bak.{stamp}.json")
     if CRM.exists():
         bak.write_text(CRM.read_text(encoding="utf-8"), encoding="utf-8")
@@ -62,6 +68,29 @@ def parse_date(s):
         return None
 
 
+def fmt_dt(s: str | None) -> str:
+    if not s:
+        return "—"
+    try:
+        return datetime.fromisoformat(s).strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        return s
+
+
+def human_elapsed(started_iso: str, end_iso: str | None = None) -> str:
+    try:
+        start = datetime.fromisoformat(started_iso)
+    except Exception:
+        return "—"
+    end = datetime.fromisoformat(end_iso) if end_iso else datetime.now()
+    secs = int((end - start).total_seconds())
+    if secs < 60:
+        return f"{secs}s"
+    if secs < 3600:
+        return f"{secs // 60}m {secs % 60}s"
+    return f"{secs // 3600}h {(secs % 3600) // 60}m"
+
+
 # ----------------------------- page config --------------------------------
 st.set_page_config(
     page_title="Saber's Job Search",
@@ -72,6 +101,7 @@ st.set_page_config(
 
 PAGES = [
     "🏠 Dashboard",
+    "🛰️ Scans",
     "📋 Jobs Kanban",
     "🔍 Scored Scan",
     "🤝 Recruiter CRM",
@@ -81,8 +111,21 @@ PAGES = [
 ]
 
 page = st.sidebar.radio("Navigate", PAGES)
+
+# Active-runs badge in sidebar
+active = scan_runner.active_runs()
+if active:
+    st.sidebar.markdown("### 🟢 Active runs")
+    for r in active:
+        st.sidebar.caption(
+            f"**{r['label']}** · "
+            f"{human_elapsed(r['started_at'])} · pid {r['pid']}"
+        )
+else:
+    st.sidebar.caption("No background runs")
+
 st.sidebar.markdown("---")
-st.sidebar.caption("Project root:")
+st.sidebar.caption("Project root")
 st.sidebar.code(str(ROOT), language="text")
 
 tr = load_tracker()
@@ -101,6 +144,16 @@ if page == "🏠 Dashboard":
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
     targets = meta.get("weekly_kpi_targets", {})
+
+    # Live run banner
+    if active:
+        for r in active:
+            st.info(
+                f"🛰️ **{r['label']}** running — started {fmt_dt(r['started_at'])} · "
+                f"elapsed {human_elapsed(r['started_at'])} · pid {r['pid']}. "
+                f"See Scans page for live logs.",
+                icon="⚡",
+            )
 
     # KPIs
     c1, c2, c3, c4, c5 = st.columns(5)
@@ -132,35 +185,75 @@ if page == "🏠 Dashboard":
 
     st.markdown("---")
 
+    # Quick actions
+    st.subheader("⚡ Quick actions")
+    qa1, qa2, qa3, qa4 = st.columns(4)
+    with qa1:
+        if st.button("🛰️ Run full scan", use_container_width=True, type="primary"):
+            rec = scan_runner.start_run(
+                "full_scan",
+                [sys.executable, str(ROOT / "automation" / "jd_scraper.py"), "--expansion"],
+            )
+            st.success(f"Started run `{rec.run_id}` (pid {rec.pid}). Go to 🛰️ Scans to monitor.")
+            st.rerun()
+    with qa2:
+        if st.button("🔗 LinkedIn-only scan", use_container_width=True):
+            rec = scan_runner.start_run(
+                "linkedin_scan",
+                [sys.executable, str(ROOT / "automation" / "jd_scraper.py"), "--linkedin-only"],
+            )
+            st.success(f"Started `{rec.run_id}`")
+            st.rerun()
+    with qa3:
+        if st.button("🏛️ Direct ATS scan", use_container_width=True):
+            rec = scan_runner.start_run(
+                "ats_scan",
+                [sys.executable, str(ROOT / "automation" / "jd_scraper.py"), "--workday-only"],
+            )
+            st.success(f"Started `{rec.run_id}`")
+            st.rerun()
+    with qa4:
+        if st.button("📊 Weekly report", use_container_width=True):
+            rec = scan_runner.start_run(
+                "weekly_report",
+                [sys.executable, str(ROOT / "automation" / "weekly_report.py")],
+            )
+            st.success(f"Started `{rec.run_id}`")
+            st.rerun()
+
+    st.markdown("---")
+
     # Funnel
-    st.subheader("Pipeline by status")
+    st.subheader("📈 Pipeline by status")
     status_counts = jobs_df["status"].value_counts() if "status" in jobs_df.columns else pd.Series()
     status_order = meta.get("status_enum", list(status_counts.index))
     fd = pd.DataFrame(
         [{"status": s, "count": int(status_counts.get(s, 0))} for s in status_order]
     )
-    c1, c2 = st.columns([2, 1])
-    with c1:
+    d1, d2 = st.columns([2, 1])
+    with d1:
         st.bar_chart(fd.set_index("status"))
-    with c2:
+    with d2:
         st.dataframe(fd, hide_index=True, use_container_width=True)
 
     st.markdown("---")
 
     # Apply-this-week queue
-    st.subheader("Apply this week (from tracker kanban)")
+    st.subheader("🎯 Apply this week")
     apply_ids = meta.get("kanban_targets_week1", {}).get("apply_this_week", [])
     apply_rows = jobs_df[jobs_df["id"].isin(apply_ids)] if "id" in jobs_df.columns else pd.DataFrame()
     if not apply_rows.empty:
         cols = [c for c in ["id", "company", "title", "tier", "fit_score", "osfi_hook", "url"] if c in apply_rows.columns]
         st.dataframe(apply_rows[cols], hide_index=True, use_container_width=True,
                      column_config={"url": st.column_config.LinkColumn()})
+    else:
+        st.caption("No roles flagged for this week. Set `meta.kanban_targets_week1.apply_this_week` in tracker.")
 
     # Latest scan summary
     latest_scored = sorted(OUT_DIR.glob("scan_*_scored.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     if latest_scored:
         st.markdown("---")
-        st.subheader(f"Latest fit-scored scan: `{latest_scored[0].name}`")
+        st.subheader(f"🔎 Latest fit-scored scan: `{latest_scored[0].name}`")
         try:
             sc = json.loads(latest_scored[0].read_text(encoding="utf-8"))
             results = sc.get("results", [])
@@ -175,6 +268,181 @@ if page == "🏠 Dashboard":
                        f"Stage-2 scored: {sc.get('stage2_scored')}")
         except Exception as e:
             st.warning(f"Could not read scored file: {e}")
+
+
+# ============================================================================
+# 🛰️ SCANS
+# ============================================================================
+elif page == "🛰️ Scans":
+    st.title("🛰️ Scans")
+    st.caption(
+        "Run the scraper in the background. Logs persist to "
+        "`automation/outputs/runs/` so you can close and reopen the UI safely."
+    )
+
+    # ---------- Launcher ----------
+    st.subheader("Launch a scan")
+    mode_tab, opts_tab = st.tabs(["Mode", "Advanced options"])
+    with mode_tab:
+        modes = {
+            "🛰️ Full scan (LinkedIn + Workday + Greenhouse + Lever)":
+                {"label": "full_scan", "args": []},
+            "🏛️ Direct ATS only (Workday APIs — fast, no throttling)":
+                {"label": "ats_scan", "args": ["--workday-only"]},
+            "🔗 LinkedIn-only (skip ATS portals)":
+                {"label": "linkedin_scan", "args": ["--linkedin-only"]},
+            "➕ Expansion companies only (fintechs, regulators, insurers)":
+                {"label": "expansion_scan", "args": ["--expansion-only"]},
+        }
+        choice = st.radio("Scan mode", list(modes.keys()), label_visibility="collapsed")
+        base = modes[choice]
+
+    with opts_tab:
+        c1, c2 = st.columns(2)
+        with c1:
+            sector_filter = st.text_input(
+                "Limit to sector (substring match, optional)", "",
+                placeholder="e.g. Pension Funds")
+            company_filter = st.text_input(
+                "Limit to single company (exact name, optional)", "",
+                placeholder="e.g. Scotiabank")
+        with c2:
+            include_expansion = st.checkbox(
+                "Include expansion companies (full scan only)", value=True,
+                help="Adds fintechs, insurers, regulators beyond the core 77 targets.")
+
+        expected_min = {
+            "full_scan": "20-40 min" + (" (with expansion)" if include_expansion else ""),
+            "ats_scan": "3-6 min",
+            "linkedin_scan": "15-25 min",
+            "expansion_scan": "5-10 min",
+        }
+        est = expected_min.get(base["label"], "?")
+        st.info(f"⏱️ Estimated runtime: **{est}**")
+
+    # Assemble command
+    cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py")] + base["args"]
+    if base["label"] == "full_scan" and include_expansion:
+        cmd.append("--expansion")
+    if sector_filter.strip():
+        cmd += ["--sector", sector_filter.strip()]
+    if company_filter.strip():
+        cmd += ["--company", company_filter.strip()]
+
+    launch_col, preview_col = st.columns([1, 3])
+    with launch_col:
+        if st.button("▶️ Launch scan", type="primary", use_container_width=True):
+            rec = scan_runner.start_run(base["label"], cmd)
+            st.success(f"Started `{rec.run_id}` (pid {rec.pid})")
+            st.rerun()
+    with preview_col:
+        st.code(" ".join(cmd), language="bash")
+
+    st.markdown("---")
+
+    # ---------- Active runs (live tail) ----------
+    active_now = scan_runner.active_runs()
+    st.subheader(f"🟢 Active runs ({len(active_now)})")
+    if not active_now:
+        st.caption("No scans currently running.")
+    for r in active_now:
+        with st.container(border=True):
+            c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
+            c1.markdown(f"**{r['label']}**  \n`{r['run_id']}`")
+            c2.markdown(f"Started: {fmt_dt(r['started_at'])}")
+            c3.markdown(f"Elapsed: **{human_elapsed(r['started_at'])}**  ·  pid {r['pid']}")
+            with c4:
+                if st.button("⏹ Stop", key=f"stop_{r['run_id']}"):
+                    if scan_runner.stop_run(r["run_id"]):
+                        st.warning("Stop signal sent.")
+                        st.rerun()
+            with st.expander("📜 Live log tail (last 20 KB)", expanded=True):
+                st.code(scan_runner.tail_log(r["log_path"]) or "(no output yet)", language="text")
+            st.caption(f"Log file: `{r['log_path']}`")
+
+    if active_now:
+        auto = st.checkbox("🔄 Auto-refresh every 5s", value=True, key="scans_autorefresh")
+        if auto:
+            import time as _t
+            _t.sleep(5)
+            st.rerun()
+
+    st.markdown("---")
+
+    # ---------- History ----------
+    st.subheader("📚 Scan history")
+    runs = scan_runner.list_runs(limit=50)
+    if not runs:
+        st.caption("No runs recorded yet.")
+    else:
+        hist_rows = []
+        for r in runs:
+            hist_rows.append({
+                "run_id": r["run_id"],
+                "label": r["label"],
+                "state": r.get("state", "?"),
+                "started": fmt_dt(r.get("started_at")),
+                "finished": fmt_dt(r.get("finished_at")),
+                "duration": human_elapsed(r.get("started_at"), r.get("finished_at")),
+                "pid": r.get("pid"),
+            })
+        hist_df = pd.DataFrame(hist_rows)
+        st.dataframe(
+            hist_df, hide_index=True, use_container_width=True, height=320,
+            column_config={
+                "state": st.column_config.TextColumn(width="small"),
+                "pid": st.column_config.NumberColumn(width="small"),
+            },
+        )
+
+        # Inspect one
+        pick = st.selectbox("Inspect a run", [r["run_id"] for r in runs])
+        sel = next((r for r in runs if r["run_id"] == pick), None)
+        if sel:
+            with st.container(border=True):
+                mc1, mc2, mc3 = st.columns(3)
+                mc1.markdown(f"**Label:** {sel['label']}")
+                mc1.markdown(f"**State:** `{sel.get('state')}`")
+                mc2.markdown(f"**Started:** {fmt_dt(sel.get('started_at'))}")
+                mc2.markdown(f"**Finished:** {fmt_dt(sel.get('finished_at'))}")
+                mc3.markdown(f"**Duration:** {human_elapsed(sel.get('started_at'), sel.get('finished_at'))}")
+                mc3.markdown(f"**PID:** {sel.get('pid')}")
+                st.caption("Command:")
+                st.code(" ".join(sel.get("cmd", [])), language="bash")
+                st.caption("Log output:")
+                st.code(scan_runner.tail_log(sel["log_path"], max_bytes=100_000), language="text")
+
+    st.markdown("---")
+
+    # ---------- Scan output files ----------
+    st.subheader("📦 Scan output files")
+    scan_files = sorted(OUT_DIR.glob("scan_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not scan_files:
+        st.caption("No scan files in `automation/outputs/`.")
+    else:
+        rows = []
+        for p in scan_files[:20]:
+            try:
+                d = json.loads(p.read_text(encoding="utf-8"))
+                if "results" in d:
+                    count = len(d["results"])
+                    kind = "raw"
+                elif "stage2_scored" in d:
+                    count = d.get("stage2_scored", "?")
+                    kind = "scored"
+                else:
+                    count = "?"
+                    kind = "?"
+            except Exception:
+                count, kind = "?", "?"
+            rows.append({
+                "file": p.name,
+                "kind": kind,
+                "count": count,
+                "size_kb": round(p.stat().st_size / 1024, 1),
+                "modified": datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d %H:%M"),
+            })
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 
 # ============================================================================
@@ -294,7 +562,8 @@ elif page == "🔍 Scored Scan":
     st.title("🔍 Fit-Scored Scan Results")
     scored_files = sorted(OUT_DIR.glob("*_scored.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     if not scored_files:
-        st.warning("No scored scan found. Run `python automation/fit_scorer.py` first.")
+        st.warning("No scored scan found. Run the fit scorer from the Admin page or:")
+        st.code("python automation/fit_scorer.py", language="bash")
         st.stop()
 
     which = st.selectbox("Scored file", [p.name for p in scored_files])
@@ -342,17 +611,32 @@ elif page == "🔍 Scored Scan":
 
     st.markdown("---")
     st.subheader("Promote selected to tracker")
-    st.caption("Run `python automation/auto_promote.py --commit` from the terminal to promote. "
-               "Or adjust & preview:")
-    min_promote_score = st.slider("Min score for promote", 1, 10, 7, key="promote_min")
-    include_watch = st.checkbox("Include verdict=watch")
-    if st.button("Preview promote (dry-run)"):
-        cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
-               "--scan", which, "--min-score", str(min_promote_score)]
-        if include_watch:
-            cmd.append("--include-watch")
-        result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
-        st.code(result.stdout + "\n" + result.stderr)
+    st.caption("Preview or commit promotion from scored scan → tracker.")
+    p1, p2, p3 = st.columns([1, 1, 2])
+    with p1:
+        min_promote_score = st.slider("Min score for promote", 1, 10, 7, key="promote_min")
+    with p2:
+        include_watch = st.checkbox("Include verdict=watch")
+    with p3:
+        st.caption("Dry-run = preview only. Commit = write tracker.")
+        pc1, pc2 = st.columns(2)
+        with pc1:
+            if st.button("👀 Preview (dry-run)"):
+                cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
+                       "--scan", which, "--min-score", str(min_promote_score)]
+                if include_watch:
+                    cmd.append("--include-watch")
+                result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+                st.code(result.stdout + "\n" + result.stderr)
+        with pc2:
+            if st.button("🚀 Commit", type="primary"):
+                cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
+                       "--scan", which, "--min-score", str(min_promote_score), "--commit"]
+                if include_watch:
+                    cmd.append("--include-watch")
+                result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+                st.code(result.stdout + "\n" + result.stderr)
+                st.cache_data.clear()
 
 
 # ============================================================================
@@ -446,8 +730,14 @@ elif page == "📝 Content & Memory":
         p = ROOT / "Saber_Ayatollahi_Master_Repository.md"
         st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
     with t4:
-        memdir = Path.home() / ".claude" / "projects" / "C--Users-ayatollS-Downloads-deep-research-report" / "memory"
-        if memdir.exists():
+        # Probe likely memory locations in order of preference
+        candidates = [
+            Path.home() / ".claude" / "projects" / "C--Dev-ApplyAgent" / "memory",
+            Path.home() / ".claude" / "projects" / "C--Users-ayatollS-Downloads-deep-research-report" / "memory",
+        ]
+        memdir = next((c for c in candidates if c.exists()), None)
+        if memdir:
+            st.caption(f"Source: `{memdir}`")
             for f in sorted(memdir.glob("*.md")):
                 with st.expander(f.name):
                     st.markdown(f.read_text(encoding="utf-8"))
@@ -460,64 +750,119 @@ elif page == "📝 Content & Memory":
 # ============================================================================
 elif page == "⚙️ Admin":
     st.title("⚙️ Admin — run agents")
-    st.caption("Run the backend agents from the UI. All run as subprocesses; output streams to the box below.")
+    st.caption(
+        "Scrapers and scorers run in the background (see 🛰️ Scans). "
+        "Fast agents (promote, weekly report, tailor) run inline."
+    )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Scraper")
-        expansion = st.checkbox("Include expansion companies", value=True)
-        if st.button("🔎 Run jd_scraper.py"):
-            cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py")]
-            if expansion:
-                cmd.append("--expansion")
-            st.info("Running (may take 20-40 min)...")
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
-            st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
-    with col2:
-        st.subheader("Fit scorer")
+    section = st.radio(
+        "Agent",
+        ["🔎 Scraper (→ Scans)", "🤖 Fit scorer", "🚀 Auto-promote", "📊 Weekly report", "✏️ JD tailor"],
+        horizontal=True,
+    )
+
+    if section == "🔎 Scraper (→ Scans)":
+        st.info("Use the dedicated 🛰️ Scans page for scraping — it has full mode/filter controls, "
+                "live log tailing, and run history.")
+        if st.button("Go to Scans"):
+            st.session_state.update({"_goto": "🛰️ Scans"})
+            st.rerun()
+
+    elif section == "🤖 Fit scorer":
+        st.subheader("Fit scorer — score a raw scan with LLM")
         scan_files = sorted(OUT_DIR.glob("scan_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-        if scan_files:
-            which = st.selectbox("Scan to score", [p.name for p in scan_files if "_scored" not in p.name])
-            if st.button("🤖 Run fit_scorer.py"):
+        scan_files = [p for p in scan_files if "_scored" not in p.name]
+        if not scan_files:
+            st.warning("No raw scan files found. Run a scan first.")
+        else:
+            c1, c2, c3 = st.columns([3, 1, 1])
+            with c1:
+                which = st.selectbox("Scan to score", [p.name for p in scan_files])
+            with c2:
+                concurrency = st.number_input("Concurrency", min_value=1, max_value=16, value=6)
+            with c3:
+                limit = st.number_input("Limit (0=all)", min_value=0, max_value=10000, value=0)
+            dry = st.checkbox("Dry run (rule-stage only, no API calls)")
+            if st.button("🤖 Run fit_scorer.py", type="primary"):
                 cmd = [sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
-                       "--scan", which, "--concurrency", "6"]
+                       "--scan", which, "--concurrency", str(concurrency)]
+                if limit:
+                    cmd += ["--limit", str(limit)]
+                if dry:
+                    cmd.append("--dry-run")
+                rec = scan_runner.start_run("fit_scorer", cmd)
+                st.success(f"Started `{rec.run_id}` — monitor in 🛰️ Scans.")
+
+    elif section == "🚀 Auto-promote":
+        st.subheader("Auto-promote — scored scan → tracker")
+        scored_files = sorted(OUT_DIR.glob("*_scored.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if not scored_files:
+            st.warning("No scored scan files.")
+        else:
+            which = st.selectbox("Scored file", [p.name for p in scored_files], key="prom_scan")
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                min_s = st.slider("Min fit score", 1, 10, 7)
+            with c2:
+                inc_watch = st.checkbox("Include verdict=watch")
+            with c3:
+                commit = st.checkbox("COMMIT (write tracker)", help="Unchecked = dry-run preview only")
+            if st.button("🚀 Run auto_promote.py", type="primary"):
+                cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
+                       "--scan", which, "--min-score", str(min_s)]
+                if inc_watch:
+                    cmd.append("--include-watch")
+                if commit:
+                    cmd.append("--commit")
                 res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
                 st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
+                if commit:
+                    st.cache_data.clear()
 
-    st.markdown("---")
-    col3, col4 = st.columns(2)
-    with col3:
-        st.subheader("Auto-promote")
-        min_s = st.slider("Min fit score", 1, 10, 7)
-        commit = st.checkbox("COMMIT (write tracker)")
-        if st.button("🚀 Run auto_promote.py"):
-            cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
-                   "--min-score", str(min_s)]
-            if commit:
-                cmd.append("--commit")
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
-            st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
-    with col4:
-        st.subheader("Weekly report")
-        if st.button("📊 Generate weekly report"):
+    elif section == "📊 Weekly report":
+        st.subheader("Weekly report — KPIs, stale roles, next actions")
+        if st.button("📊 Generate weekly report", type="primary"):
             cmd = [sys.executable, str(ROOT / "automation" / "weekly_report.py")]
             res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
             st.code((res.stdout or "") + "\n" + (res.stderr or "")[-2000:])
+        reports = sorted(OUT_DIR.glob("weekly_report_*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if reports:
+            st.caption("Recent reports:")
+            which = st.selectbox("Preview", [p.name for p in reports])
+            with st.expander("Contents", expanded=True):
+                st.markdown((OUT_DIR / which).read_text(encoding="utf-8"))
+
+    elif section == "✏️ JD tailor":
+        st.subheader("JD tailor — per-role resume + cover letter")
+        if jobs_df.empty:
+            st.warning("Tracker empty.")
+        else:
+            c1, c2 = st.columns([3, 1])
+            with c1:
+                pick = st.selectbox("Role", jobs_df["id"].tolist())
+            with c2:
+                dry = st.checkbox("Dry run (no API)", value=False)
+            if st.button("✏️ Tailor resume + cover", type="primary"):
+                cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
+                       "--job-id", pick]
+                if dry:
+                    cmd.append("--dry-run")
+                res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+                st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
+                latest = sorted(OUT_DIR.glob(f"*_{pick.replace('-','_')}*.md"),
+                               key=lambda p: p.stat().st_mtime, reverse=True)
+                if latest:
+                    with st.expander(f"Output: {latest[0].name}", expanded=True):
+                        st.markdown(latest[0].read_text(encoding="utf-8"))
 
     st.markdown("---")
-    st.subheader("JD tailor (single role)")
-    if not jobs_df.empty:
-        pick = st.selectbox("Role", jobs_df["id"].tolist())
-        dry = st.checkbox("Dry run (no API call)", value=False)
-        if st.button("✏️ Tailor resume + cover"):
-            cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
-                   "--job-id", pick]
-            if dry:
-                cmd.append("--dry-run")
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
-            st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
-            latest = sorted(OUT_DIR.glob(f"*_{pick.replace('-','_')}*.md"),
-                           key=lambda p: p.stat().st_mtime, reverse=True)
-            if latest:
-                with st.expander(f"Output: {latest[0].name}"):
-                    st.markdown(latest[0].read_text(encoding="utf-8"))
+    st.subheader("📁 Outputs directory")
+    out_files = sorted(OUT_DIR.glob("*"), key=lambda p: p.stat().st_mtime, reverse=True)
+    out_files = [p for p in out_files if p.is_file()][:30]
+    if out_files:
+        rows = [{
+            "file": p.name,
+            "size_kb": round(p.stat().st_size / 1024, 1),
+            "modified": datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d %H:%M"),
+        } for p in out_files]
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=320)
