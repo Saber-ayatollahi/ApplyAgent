@@ -156,6 +156,81 @@ def _render_md(top: list[dict], total: int, delta_file: str,
     return "\n".join(lines)
 
 
+def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
+    """Add top-K actionable roles to the tracker as Found/Watch entries.
+    Returns the list of new tracker IDs added (or []).
+    Idempotent: skips URLs already in the tracker."""
+    tracker_path = ROOT / "job_tracker_data.json"
+    if not tracker_path.exists():
+        return []
+    tr = json.loads(tracker_path.read_text(encoding="utf-8"))
+    existing_urls = {j.get("url") for j in tr.get("jobs", []) if j.get("url")}
+    added_ids: list[str] = []
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+    stamp = datetime.now().strftime("%Y%m%d")
+    for r in top_actionable[:max_add]:
+        f = r.get("fit") or {}
+        url = r.get("link")
+        if not url or url in existing_urls:
+            continue
+        verdict = f.get("fit_verdict")
+        if verdict not in ("apply_now", "tailor_and_apply"):
+            continue
+        new_id = f"brief-{stamp}-{len(added_ids) + 1:02d}"
+        while new_id in {j["id"] for j in tr["jobs"]}:
+            new_id = new_id + "a"
+        tr["jobs"].append({
+            "id": new_id,
+            "company": r.get("company", ""),
+            "title": r.get("title", ""),
+            "sector": r.get("sector", ""),
+            "url": url,
+            "source": r.get("source", ""),
+            "tier": f.get("tier", 3),
+            "fit_score": verdict,
+            "fit_score_numeric": f.get("fit_score", 0),
+            "fit_notes": f.get("summary", ""),
+            "osfi_hook": f.get("osfi_hook", ""),
+            "status": "Found" if verdict == "apply_now" else "Watch",
+            "urgency": "High" if verdict == "apply_now" else "Medium",
+            "date_found": today_iso,
+            "posted_date": r.get("posted_date"),
+            "next_action": (f.get("top_3_reasons") or [""])[0][:160],
+            "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
+            "outreach_log": [],
+        })
+        added_ids.append(new_id)
+        existing_urls.add(url)
+    if added_ids:
+        # Backup, then write
+        import shutil
+        bak = tracker_path.with_suffix(f".bak.auto_brief_{stamp}.json")
+        shutil.copy2(tracker_path, bak)
+        tracker_path.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+    return added_ids
+
+
+def _spawn_tailors(job_ids: list[str]) -> None:
+    """Fire-and-forget tailor subprocess per job_id. Logs land in outputs/."""
+    if not job_ids:
+        return
+    import subprocess
+    tailor_py = ROOT / "automation" / "jd_tailor.py"
+    for jid in job_ids:
+        log_path = OUT_DIR / f"tailor_{jid}_stdout.log"
+        cmd = [sys.executable, str(tailor_py), "--job-id", jid]
+        try:
+            subprocess.Popen(
+                cmd,
+                stdout=open(log_path, "wb"),
+                stderr=subprocess.STDOUT,
+                cwd=str(ROOT),
+            )
+            print(f"  [brief->tailor] spawned for {jid}", file=sys.stderr)
+        except Exception as e:
+            print(f"  [brief->tailor] failed for {jid}: {e}", file=sys.stderr)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                   formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -164,6 +239,12 @@ def main() -> int:
     ap.add_argument("--concurrency", type=int, default=4)
     ap.add_argument("--no-score", action="store_true",
                     help="Don't call the LLM; just rank stage-1 triage by score")
+    ap.add_argument("--auto-add", type=int, default=0, metavar="K",
+                    help="After ranking, auto-add the top K actionable roles to the "
+                         "tracker. 0 = disabled (default).")
+    ap.add_argument("--auto-tailor", action="store_true",
+                    help="After auto-add, spawn jd_tailor for each added role. "
+                         "Only effective with --auto-add > 0.")
     args = ap.parse_args()
 
     delta_path = (OUT_DIR / args.delta) if args.delta else _latest_delta()
@@ -209,6 +290,23 @@ def main() -> int:
 
     print(f"[morning_brief] actionable={len(actionable)}, top-{len(top)} selected. "
           f"Wrote {out_json.name} + {out_md.name}", file=sys.stderr)
+
+    # Optional: auto-add top-K to tracker
+    if args.auto_add > 0 and actionable:
+        added = _auto_add_to_tracker(actionable, args.auto_add)
+        if added:
+            print(f"[morning_brief] Auto-added {len(added)} role(s) to tracker: "
+                  f"{', '.join(added)}", file=sys.stderr)
+            payload["auto_added_ids"] = added
+            out_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            if args.auto_tailor:
+                _spawn_tailors(added)
+                print(f"[morning_brief] Spawned {len(added)} tailor subprocess(es).",
+                      file=sys.stderr)
+        else:
+            print(f"[morning_brief] Auto-add: nothing to add (duplicates or none "
+                  f"actionable).", file=sys.stderr)
+
     return 0
 
 

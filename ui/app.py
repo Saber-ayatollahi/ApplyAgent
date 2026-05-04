@@ -19,6 +19,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scan_runner  # noqa: E402
 import api_key  # noqa: E402
+import gmail_ui  # noqa: E402
 
 # Ensure stored key is in env before anything launches a subprocess
 api_key.hydrate_env()
@@ -259,6 +260,42 @@ def human_elapsed(started_iso: str | None, end_iso: str | None = None) -> str:
     return f"{secs // 3600}h {(secs % 3600) // 60}m"
 
 
+def freshness_badge(posted_date: str | None, found_at: str | None) -> str:
+    """Return a short badge combining posted/found freshness.
+    Emoji indicates 'how hot is this role right now':
+      🔥  posted in last 48h
+      🟢  posted in last 7d
+      🟡  posted 8-21d ago
+      ⚪  >21d or unknown
+    """
+    label_post = ""
+    label_found = ""
+    now = date.today()
+    if posted_date:
+        try:
+            d = datetime.fromisoformat(str(posted_date).replace("Z", "")).date()
+            days = (now - d).days
+            if days <= 2:
+                label_post = f"🔥 posted {days}d ago"
+            elif days <= 7:
+                label_post = f"🟢 posted {days}d ago"
+            elif days <= 21:
+                label_post = f"🟡 posted {days}d ago"
+            else:
+                label_post = f"⚪ posted {days}d ago"
+        except Exception:
+            pass
+    if found_at:
+        try:
+            d = datetime.fromisoformat(str(found_at)).date()
+            days = (now - d).days
+            label_found = "found today" if days == 0 else f"found {days}d ago"
+        except Exception:
+            pass
+    parts = [p for p in (label_post, label_found) if p]
+    return " · ".join(parts) if parts else "—"
+
+
 def load_morning_brief() -> dict | None:
     """Read the most recent brief_YYYYMMDD.json. Returns None if missing."""
     files = sorted(OUT_DIR.glob("brief_*.json"),
@@ -437,6 +474,7 @@ PAGES = [
 
 # API key manager — always on top of sidebar
 api_key.render_sidebar()
+gmail_ui.render_sidebar()
 st.sidebar.markdown("---")
 
 page = st.sidebar.radio("Navigate", PAGES)
@@ -589,6 +627,9 @@ if page == "🏠 Dashboard":
                         f"OSFI hook: {f.get('osfi_hook', 'None')} · "
                         f"Source: {r.get('source', '')}"
                     )
+                    cols[0].caption(
+                        freshness_badge(r.get("posted_date"), r.get("found_at"))
+                    )
                     cols[0].markdown(f"**{f.get('summary', '')}**")
                     reasons = f.get("top_3_reasons") or []
                     if reasons:
@@ -634,6 +675,49 @@ if page == "🏠 Dashboard":
                                 st.rerun()
                             else:
                                 st.warning("Already in tracker.")
+        st.markdown("---")
+
+    # ---------- Inbox signals widget (Gmail) ----------
+    if gmail_ui.is_connected():
+        # Cache for 2 min so page reruns don't hammer IMAP
+        @st.cache_data(ttl=120)
+        def _load_inbox(days: int):
+            sys.path.insert(0, str(ROOT / "automation"))
+            import gmail_reader as gr
+            msgs = gr.fetch_inbox_signals(days=days, limit=50)
+            return [
+                {"uid": m.uid, "date": m.date, "kind": m.kind,
+                 "sender": m.sender or m.sender_email,
+                 "sender_email": m.sender_email,
+                 "subject": m.subject, "snippet": m.snippet}
+                for m in msgs
+            ]
+        try:
+            inbox = _load_inbox(14)
+        except Exception as e:
+            inbox = []
+            st.caption(f"Gmail load failed: {e}")
+        alerts = [x for x in inbox if x["kind"] == "alert"]
+        recruiters = [x for x in inbox if x["kind"] == "recruiter"]
+        st.subheader(f"📬 Inbox signals (14d)")
+        ic1, ic2, ic3 = st.columns(3)
+        ic1.metric("Recruiter/ATS mail", len(recruiters))
+        ic2.metric("Job alerts", len(alerts))
+        ic3.metric("Total", len(inbox))
+        with st.expander("👀 Recent recruiter mail (likely status changes)",
+                         expanded=bool(recruiters)):
+            if not recruiters:
+                st.caption("Nothing from recruiters in the last 14d.")
+            else:
+                rec_rows = [{
+                    "date": r["date"],
+                    "from": r["sender"],
+                    "subject": r["subject"][:80],
+                    "snippet": r["snippet"][:140],
+                } for r in recruiters[:30]]
+                st.dataframe(pd.DataFrame(rec_rows), hide_index=True,
+                              use_container_width=True)
+                st.caption("Tip: open Kanban → update role status to match what you see here.")
         st.markdown("---")
 
     # ---------- Follow-up nudge widget ----------
@@ -1264,6 +1348,8 @@ elif page == "🎯 Pipeline":
                     "summary": f.get("summary", ""),
                     "gaps": ", ".join(f.get("skill_gaps") or []),
                     "source": r.get("source", ""),
+                    "posted": r.get("posted_date", ""),
+                    "found": r.get("found_at", ""),
                     "url": r.get("link", ""),
                 })
             df = pd.DataFrame(rows).sort_values(["fit", "tier"], ascending=[False, True])
@@ -1480,12 +1566,27 @@ elif page == "📋 Jobs Kanban":
         if matches:
             return "📄 ready"
         return ""
+
+    # Load url_history once and enrich rows with posted/found
+    _url_hist_path = OUT_DIR / "url_history.json"
+    try:
+        _url_hist = json.loads(_url_hist_path.read_text(encoding="utf-8")) if _url_hist_path.exists() else {}
+    except Exception:
+        _url_hist = {}
+
+    def _freshness(url: str) -> str:
+        entry = _url_hist.get(url or "") or {}
+        return freshness_badge(None, entry.get("found_at"))
+
     if "id" in view.columns:
         view = view.assign(draft=view["id"].apply(_has_draft))
+    if "url" in view.columns:
+        view = view.assign(freshness=view["url"].apply(_freshness))
 
-    cols = [c for c in ["id", "draft", "company", "title", "sector", "tier", "status",
-                        "fit_score", "fit_score_numeric", "osfi_hook", "urgency",
-                        "date_found", "date_applied", "url"] if c in view.columns]
+    cols = [c for c in ["id", "draft", "freshness", "company", "title", "sector",
+                        "tier", "status", "fit_score", "fit_score_numeric",
+                        "osfi_hook", "urgency", "date_found", "date_applied", "url"]
+            if c in view.columns]
     st.dataframe(
         view[cols].sort_values(["tier", "fit_score_numeric"], ascending=[True, False])
         if "fit_score_numeric" in cols else view[cols],

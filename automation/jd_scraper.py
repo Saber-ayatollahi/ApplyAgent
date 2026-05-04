@@ -32,7 +32,7 @@ import json
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -289,6 +289,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
         link_el = card.select_one("a.base-card__full-link") or card.select_one("a")
         co_el = card.select_one("h4, .base-search-card__subtitle")
         loc_el = card.select_one(".job-search-card__location")
+        time_el = card.select_one("time")
         if not (title_el and link_el):
             return False
         title = title_el.get_text(strip=True)
@@ -303,6 +304,8 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
         if source_phase == "company_only" and not _is_finance_title(title):
             return False
         loc = loc_el.get_text(strip=True) if loc_el else "Toronto"
+        # Posted date — LinkedIn wraps it in <time datetime="2026-05-01">
+        posted = time_el.get("datetime") if time_el else None
         seen_links.add(link)
         all_jobs.append({
             "title": title,
@@ -311,6 +314,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
             "location": loc,
             "keyword_hit": kw_label,
             "source": "linkedin" if source_phase == "keyword" else "linkedin_co",
+            "posted_date": posted,
         })
         return True
 
@@ -393,11 +397,14 @@ def fetch_greenhouse_jobs(token: str) -> list[dict]:
                 continue
             if not keyword_match(title):
                 continue
+            # Greenhouse exposes updated_at (iso) and first_published (iso)
+            posted = j.get("first_published") or j.get("updated_at")
             jobs.append({
                 "title": title,
                 "link": j.get("absolute_url", ""),
                 "location": loc,
                 "source": f"greenhouse:{token}",
+                "posted_date": posted,
             })
         return jobs
     except Exception as e:
@@ -424,11 +431,20 @@ def fetch_lever_jobs(slug: str) -> list[dict]:
                 continue
             if not keyword_match(title):
                 continue
+            # Lever exposes createdAt as epoch-millis
+            posted = None
+            created_at = j.get("createdAt")
+            if isinstance(created_at, (int, float)) and created_at > 0:
+                try:
+                    posted = datetime.utcfromtimestamp(created_at / 1000).date().isoformat()
+                except Exception:
+                    posted = None
             jobs.append({
                 "title": title,
                 "link": j.get("hostedUrl", ""),
                 "location": loc,
                 "source": f"lever:{slug}",
+                "posted_date": posted,
             })
         return jobs
     except Exception as e:
@@ -498,7 +514,7 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                             "title": title,
                             "link": f"https://{host}{path}",
                             "location": p.get("locationsText", ""),
-                            "posted_on": p.get("postedOn", ""),
+                            "posted_date": p.get("postedOn", ""),
                             "keyword_hit": kw,
                             "source": f"workday:{tenant_key}",
                         })
@@ -544,6 +560,7 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
             for it in items:
                 title_m = re.search(r"<title><!\[CDATA\[(.*?)\]\]></title>", it, re.S)
                 link_m = re.search(r"<link>([^<]+)</link>", it)
+                pub_m = re.search(r"<pubDate>([^<]+)</pubDate>", it)
                 if not title_m or not link_m:
                     continue
                 full_title = title_m.group(1).strip()
@@ -564,6 +581,14 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
                         "canada - remote" in loc_lower or
                         loc_lower.strip() in ("canada", "ca")):
                     continue
+                posted = None
+                if pub_m:
+                    # RFC822: "Sat, 03 May 2026 12:00:00 GMT" -> ISO
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        posted = parsedate_to_datetime(pub_m.group(1)).date().isoformat()
+                    except Exception:
+                        posted = pub_m.group(1)
                 seen_links.add(link)
                 out.append({
                     "title": title,
@@ -571,6 +596,7 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
                     "location": location,
                     "keyword_hit": kw,
                     "source": f"successfactors:{base.replace('https://', '')}",
+                    "posted_date": posted,
                 })
             time.sleep(0.5)
         except Exception as e:
@@ -583,6 +609,51 @@ def load_tracker_urls() -> set[str]:
     """Load existing tracker URLs so we dedupe."""
     data = json.loads(TRACKER.read_text(encoding="utf-8"))
     return {j.get("url", "") for j in data.get("jobs", []) if j.get("url")}
+
+
+# ---------------------------------------------------------------------------
+# url_history.json — persistent registry of "when did we first see this URL".
+# Lets us stamp `found_at` on every row without relying on the scraper order.
+# File shape: { "<url>": {"found_at": "YYYY-MM-DD", "first_source": "workday:bmo"}}
+# ---------------------------------------------------------------------------
+URL_HISTORY = OUT_DIR / "url_history.json"
+
+
+def load_url_history() -> dict:
+    if not URL_HISTORY.exists():
+        return {}
+    try:
+        return json.loads(URL_HISTORY.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_url_history(hist: dict):
+    URL_HISTORY.parent.mkdir(parents=True, exist_ok=True)
+    URL_HISTORY.write_text(json.dumps(hist, indent=2), encoding="utf-8")
+
+
+def stamp_found_at(results: list[dict], today_iso: str | None = None) -> dict:
+    """Mutate each row to add `found_at` from history (or today if new).
+    Returns the updated history dict (caller should persist)."""
+    today_iso = today_iso or date.today().isoformat()
+    hist = load_url_history()
+    for r in results:
+        url = r.get("link", "")
+        if not url:
+            continue
+        entry = hist.get(url)
+        if entry is None:
+            hist[url] = {
+                "found_at": today_iso,
+                "first_source": r.get("source", ""),
+            }
+            r["found_at"] = today_iso
+            r["newly_seen"] = True
+        else:
+            r["found_at"] = entry.get("found_at", today_iso)
+            r["newly_seen"] = False
+    return hist
 
 
 def _is_negative(title: str) -> bool:
@@ -814,6 +885,13 @@ def main() -> int:
         f"(-{dedupe_stats['dropped_url']} dup URL, -{dedupe_stats['dropped_near']} near-dup)",
         file=sys.stderr,
     )
+
+    # Stamp found_at on every row (from history, or today if URL is new).
+    hist = stamp_found_at(results)
+    save_url_history(hist)
+    newly_seen = sum(1 for r in results if r.get("newly_seen"))
+    print(f"[scan] Freshness: {newly_seen} newly-seen URL(s), "
+          f"{len(results) - newly_seen} previously seen.", file=sys.stderr)
 
     stamp = datetime.now().strftime("%Y%m%d")
     json_path = OUT_DIR / f"scan_{stamp}.json"

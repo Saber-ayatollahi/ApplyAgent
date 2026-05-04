@@ -71,9 +71,9 @@ if ($LASTEXITCODE -ne 0) {
     Log "scan_delta failed with exit code $LASTEXITCODE — continuing to brief anyway."
 }
 
-# Stage 3 — brief
-Log "[3/3] Generating morning brief..."
-& $python "automation\morning_brief.py" --top 5 2>&1 | Tee-Object -FilePath $log -Append
+# Stage 3 — brief (auto-add top 3 + auto-tailor drafts)
+Log "[3/3] Generating morning brief (auto-add + auto-tailor top 3)..."
+& $python "automation\morning_brief.py" --top 5 --auto-add 3 --auto-tailor 2>&1 | Tee-Object -FilePath $log -Append
 if ($LASTEXITCODE -ne 0) {
     Log "morning_brief failed with exit code $LASTEXITCODE"
     exit 1

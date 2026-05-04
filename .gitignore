@@ -62,6 +62,11 @@ recruiter_crm.bak*.json
 .env
 *.key
 secrets.json
+# Gmail / OAuth artifacts (if any adapter writes them in-repo — shouldn't,
+# but defense-in-depth):
+credentials.json
+token.json
+automation/credentials/
 
 # ============================================================================
 # But DO keep a placeholder so outputs/ exists after clone
