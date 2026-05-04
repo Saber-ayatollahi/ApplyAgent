@@ -89,18 +89,29 @@ def load_tracker_entry(job_id: str) -> Optional[dict]:
 
 
 def fetch_jd_from_url(url: str) -> str:
+    """Fetch + clean JD. Delegates to fit_scorer.fetch_jd so the tailor sees the
+    same boilerplate-stripped, section-aware text the scorer already cached.
+    Falls back to a minimal in-place implementation if that module isn't
+    importable (e.g. tailor invoked standalone in a stripped-down env)."""
     if not HAVE_SCRAPING:
         raise RuntimeError("requests + beautifulsoup4 required for --jd-url. pip install requests beautifulsoup4")
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; Saber-JD-Tailor/1.0)"}
-    r = requests.get(url, headers=headers, timeout=30)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
-    # Strip script / style
-    for tag in soup(["script", "style", "nav", "footer", "header"]):
-        tag.decompose()
-    text = re.sub(r"\n{3,}", "\n\n", soup.get_text("\n"))
-    # cap to something sensible
-    return text[:40000]
+    try:
+        # Reuse the scorer's cleaner so cover letters get the same high-signal text
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from fit_scorer import fetch_jd as _scorer_fetch_jd  # type: ignore
+        # Tailor wants more context than the scorer (6K) — use a larger window
+        return _scorer_fetch_jd(url, max_chars=15000)
+    except Exception as e:
+        # Fallback: minimal cleaner
+        print(f"  [tailor] falling back to local JD fetch ({e})", file=sys.stderr)
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; Saber-JD-Tailor/1.0)"}
+        r = requests.get(url, headers=headers, timeout=30)
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tag in soup(["script", "style", "nav", "footer", "header"]):
+            tag.decompose()
+        text = re.sub(r"\n{3,}", "\n\n", soup.get_text("\n"))
+        return text[:40000]
 
 
 def build_system_prompt() -> str:

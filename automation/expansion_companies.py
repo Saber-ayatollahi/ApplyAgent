@@ -84,7 +84,7 @@ EXPANSION_TARGETS = [
     {"name": "SAS Canada", "sector": "Analytics & Risk Vendors", "linkedin_slug": "sas", "workday": None},
     {"name": "Wolters Kluwer", "sector": "Analytics & Risk Vendors", "linkedin_slug": "wolters-kluwer", "workday": None},
     {"name": "Nasdaq", "sector": "Analytics & Risk Vendors", "linkedin_slug": "nasdaq", "workday": None},
-    {"name": "Moody's Corporation", "sector": "Analytics & Risk Vendors", "linkedin_slug": "moodys-corporation", "workday": None},
+    {"name": "Moody's Corporation", "sector": "Analytics & Risk Vendors", "linkedin_slug": "moodys-corporation", "workday": None, "successfactors": "https://careers.moodys.com"},
     {"name": "Qontigo", "sector": "Analytics & Risk Vendors", "linkedin_slug": "qontigo", "workday": None},
     {"name": "Quantifi", "sector": "Analytics & Risk Vendors", "linkedin_slug": "quantifi", "workday": None},
     {"name": "ION Group", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ion-group", "workday": None},
@@ -92,11 +92,11 @@ EXPANSION_TARGETS = [
 
     # ───── Regulators & Crown corps ─────
     {"name": "OSFI", "sector": "Regulators & Crown", "linkedin_slug": "office-of-the-superintendent-of-financial-institutions", "workday": None},
-    {"name": "Bank of Canada", "sector": "Regulators & Crown", "linkedin_slug": "bank-of-canada", "workday": None},
+    {"name": "Bank of Canada", "sector": "Regulators & Crown", "linkedin_slug": "bank-of-canada", "workday": None, "successfactors": "https://careers.bankofcanada.ca"},
     {"name": "CDIC", "sector": "Regulators & Crown", "linkedin_slug": "canada-deposit-insurance-corporation", "workday": None},
     {"name": "FSRA Ontario", "sector": "Regulators & Crown", "linkedin_slug": "financial-services-regulatory-authority-of-ontario-fsra-", "workday": None},
     {"name": "Ontario Securities Commission", "sector": "Regulators & Crown", "linkedin_slug": "ontario-securities-commission", "workday": None},
-    {"name": "CMHC", "sector": "Regulators & Crown", "linkedin_slug": "cmhc-schl", "workday": None},
+    {"name": "CMHC", "sector": "Regulators & Crown", "linkedin_slug": "cmhc-schl", "workday": None, "successfactors": "https://careers.cmhc-schl.gc.ca"},
     {"name": "EDC", "sector": "Regulators & Crown", "linkedin_slug": "export-development-canada", "workday": None},
     {"name": "BDC", "sector": "Regulators & Crown", "linkedin_slug": "bdc", "workday": None},
     {"name": "CIRO", "sector": "Regulators & Crown", "linkedin_slug": "canadian-investment-regulatory-organization", "workday": None},

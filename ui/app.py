@@ -133,11 +133,15 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
 
     with target.container(border=True):
         st.markdown(f"### {title}")
-        c1, c2, c3, c4 = st.columns(4)
+        cost = prog.get("cost") or {}
+        c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("Progress", f"{cur}/{total}", f"{frac*100:.0f}%")
         c2.metric("Elapsed", _fmt_eta(prog.get("elapsed_sec")))
         c3.metric("ETA", _fmt_eta(prog.get("eta_sec")))
         c4.metric("Cache hits", prog.get("cache_hits", 0))
+        c5.metric("Est. cost (USD)",
+                  f"${cost.get('estimated_cost_usd', 0):.3f}" if cost else "—",
+                  f"{cost.get('llm_calls', 0)} calls" if cost else None)
         st.progress(frac, text=f"Scored {cur} of {total} candidates · scan=`{prog.get('scan')}`")
 
         # Verdict breakdown so far
@@ -169,6 +173,27 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
                 })
             st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True,
                          height=min(40 + 36 * len(rows), 300))
+
+        # Per-model cost breakdown
+        per_model = (cost or {}).get("per_model") or {}
+        if per_model:
+            with st.expander(f"💰 Token/cost breakdown ({cost.get('llm_calls', 0)} LLM calls, "
+                             f"${cost.get('estimated_cost_usd', 0):.4f} est)"):
+                rows = []
+                for model, m in per_model.items():
+                    rows.append({
+                        "model": model,
+                        "calls": m.get("calls", 0),
+                        "input_tokens": m.get("in_tokens", 0),
+                        "output_tokens": m.get("out_tokens", 0),
+                        "est_cost_usd": round(m.get("cost_usd", 0), 4),
+                    })
+                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+                st.caption(
+                    f"Cache reads: {cost.get('cache_read_tokens', 0):,} tokens · "
+                    f"Cache writes: {cost.get('cache_create_tokens', 0):,} tokens. "
+                    f"Pricing from Anthropic public rates — invoice is authoritative."
+                )
 
         status_caption = {
             "running": f"🟡 Running · updated {prog.get('updated_at', '—')}",

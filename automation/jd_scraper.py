@@ -492,6 +492,72 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
     return jobs
 
 
+# ---------------------------------------------------------------------------
+# SuccessFactors RSS adapter
+# ---------------------------------------------------------------------------
+# Many Canadian government / regulator / vendor career portals run on SAP
+# SuccessFactors. These expose a standard RSS endpoint at /services/rss/job/
+# that returns up to ~20 items per keyword query (no auth required).
+#
+# Usage in TARGETS: {"successfactors": "https://careers.bankofcanada.ca"}
+# ---------------------------------------------------------------------------
+_SF_KEYWORDS = ["risk", "model", "capital", "treasury", "liquidity", "analytics",
+                "quantitative", "valuation", "actuarial", "derivatives",
+                "balance sheet", "market risk"]
+
+
+def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
+    """Query a SuccessFactors career portal's RSS feed for multiple keywords
+    and return Toronto-located roles. `sf_base` must be a host like
+    'https://careers.bankofcanada.ca' (no trailing slash)."""
+    base = sf_base.rstrip("/")
+    seen_links: set[str] = set()
+    out: list[dict] = []
+    for kw in _SF_KEYWORDS:
+        url = f"{base}/services/rss/job/?locale=en_US&keywords=({requests.utils.quote(kw)})"
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20)
+            if r.status_code != 200:
+                continue
+            items = re.findall(r"<item>(.*?)</item>", r.text, re.S)
+            for it in items:
+                title_m = re.search(r"<title><!\[CDATA\[(.*?)\]\]></title>", it, re.S)
+                link_m = re.search(r"<link>([^<]+)</link>", it)
+                if not title_m or not link_m:
+                    continue
+                full_title = title_m.group(1).strip()
+                link = link_m.group(1).strip().split("?")[0]
+                if link in seen_links:
+                    continue
+                # Split "Job Title (Location)" — the location is the last parenthetical
+                paren = re.search(r"\(([^()]+)\)\s*$", full_title)
+                location = paren.group(1) if paren else ""
+                title = re.sub(r"\s*\(([^()]+)\)\s*$", "", full_title).strip()
+                loc_lower = location.lower()
+                # Toronto / Canada remote only. Ottawa-specific BoC roles are NOT
+                # Saber's geography; we skip them here.
+                if not ("toronto" in loc_lower or
+                        "ontario or" in loc_lower or  # hybrid flags
+                        "or toronto" in loc_lower or
+                        "remote - canada" in loc_lower or
+                        "canada - remote" in loc_lower or
+                        loc_lower.strip() in ("canada", "ca")):
+                    continue
+                seen_links.add(link)
+                out.append({
+                    "title": title,
+                    "link": link,
+                    "location": location,
+                    "keyword_hit": kw,
+                    "source": f"successfactors:{base.replace('https://', '')}",
+                })
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"  [sf:{base}] error on '{kw}': {e}", file=sys.stderr)
+            continue
+    return out
+
+
 def load_tracker_urls() -> set[str]:
     """Load existing tracker URLs so we dedupe."""
     data = json.loads(TRACKER.read_text(encoding="utf-8"))
@@ -627,6 +693,18 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             lv_count = len(found) - lv_before
             if lv_count: sources_used.append(f"lever:{lv_count}")
 
+        # 3b. SuccessFactors RSS (BoC, CMHC, Moody's Corp, etc.)
+        sf_count = 0
+        if c.get("successfactors") and not linkedin_only:
+            sf_before = len(found)
+            for j in fetch_successfactors_jobs(c["successfactors"]):
+                if j["link"] in seen or _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+            sf_count = len(found) - sf_before
+            if sf_count: sources_used.append(f"sf:{sf_count}")
+
         # 4. LinkedIn (breadth; paginated, multi-keyword + company-only fallback).
         li_count = 0
         if not workday_only and not skip_linkedin:
@@ -649,10 +727,12 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             "workday": wd_count,
             "greenhouse": gh_count,
             "lever": lv_count,
+            "successfactors": sf_count,
             "linkedin": li_count,
             "has_workday_config": bool(c.get("workday")),
             "has_greenhouse_config": bool(c.get("greenhouse")),
             "has_lever_config": bool(c.get("lever")),
+            "has_successfactors_config": bool(c.get("successfactors")),
         })
         print(f"  -> {added} new candidate(s) [{', '.join(sources_used) or 'none'}]",
               file=sys.stderr)

@@ -163,6 +163,46 @@ def progress_end(state: str = "finished"):
         _progress_state["finished_at"] = datetime.utcnow().isoformat() + "Z"
         _write_progress()
 
+
+# ---------------------------------------------------------------------------
+# Cost telemetry — captures token usage per successful LLM call and sums into
+# the progress JSON so the UI can show live $ spend.
+# ---------------------------------------------------------------------------
+_cost_state = {
+    "llm_calls": 0,
+    "cache_hits": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_create_tokens": 0,
+    "cache_read_tokens": 0,
+    "estimated_cost_usd": 0.0,
+    "per_model": {},  # model -> {"calls": n, "in_tokens": n, "out_tokens": n, "cost_usd": f}
+}
+
+
+def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0,
+               cache_create: int = 0, cache_read: int = 0, cache_hit: bool = False):
+    with _progress_lock:
+        if cache_hit:
+            _cost_state["cache_hits"] += 1
+        else:
+            _cost_state["llm_calls"] += 1
+            _cost_state["input_tokens"] += in_tokens
+            _cost_state["output_tokens"] += out_tokens
+            _cost_state["cache_create_tokens"] += cache_create
+            _cost_state["cache_read_tokens"] += cache_read
+            cost = _estimate_cost_usd(model or "?", in_tokens, out_tokens)
+            _cost_state["estimated_cost_usd"] += cost
+            m = _cost_state["per_model"].setdefault(
+                model or "?", {"calls": 0, "in_tokens": 0, "out_tokens": 0, "cost_usd": 0.0})
+            m["calls"] += 1
+            m["in_tokens"] += in_tokens
+            m["out_tokens"] += out_tokens
+            m["cost_usd"] += cost
+        # Mirror to progress state so the UI sees it
+        _progress_state["cost"] = dict(_cost_state)
+        _write_progress()
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -558,14 +598,65 @@ def _cache_path_fit(url: str) -> Path:
     return FIT_CACHE / f"{_url_hash(url)}.json"
 
 
+# Per-1M-token prices (USD) for each supported model. Source: Anthropic pricing
+# (Oct 2025). Used ONLY for the cost-telemetry display — not authoritative for
+# billing; trust your Anthropic invoice for that.
+_MODEL_PRICES = {
+    "claude-haiku-4-5-20251001": {"input": 1.0,  "output": 5.0},
+    "claude-haiku-4-5":          {"input": 1.0,  "output": 5.0},
+    "claude-sonnet-4-6":         {"input": 3.0,  "output": 15.0},
+    "claude-opus-4-7":           {"input": 15.0, "output": 75.0},
+}
+
+
+def _estimate_cost_usd(model: str, in_tokens: int, out_tokens: int) -> float:
+    p = _MODEL_PRICES.get(model) or _MODEL_PRICES.get(model.split("-2025")[0])
+    if not p:
+        return 0.0
+    return (in_tokens * p["input"] + out_tokens * p["output"]) / 1_000_000
+
+
+def _is_fatal_error(err_str: str) -> bool:
+    """Errors that mean 'don't bother retrying anything' — billing or auth failures."""
+    em = err_str.lower()
+    return any(phrase in em for phrase in (
+        "credit balance", "billing", "insufficient", "invalid_api_key",
+        "authentication", "permission_denied",
+    ))
+
+
+def _is_transient_error(err_str: str) -> bool:
+    """Errors worth retrying: rate limits, server errors, transient network blips."""
+    em = err_str.lower()
+    return any(phrase in em for phrase in (
+        "rate_limit", "429", "overloaded_error", "529",
+        "internal_server_error", "500", "502", "503", "504",
+        "timeout", "timed out", "connection", "read error",
+    ))
+
+
 def score_with_llm(client, role: dict, jd_text: str) -> dict:
-    """Call Claude with role+JD. Cache by URL hash."""
+    """Call Claude with role+JD, cached by URL hash. Returns parsed dict.
+
+    Retry policy per model:
+      - Transient errors (429, 5xx, timeouts): retry up to 3 times w/ exponential backoff (1s, 3s, 9s)
+      - Fatal errors (billing/auth): set global abort event; stop pending jobs
+      - Parse errors: 1 retry on same model, then fall through to fallback model
+    Cost telemetry is accumulated into _cost_state on each successful call.
+    """
     cache = _cache_path_fit(role["link"])
     if cache.exists():
         try:
-            return json.loads(cache.read_text(encoding="utf-8"))
+            cached = json.loads(cache.read_text(encoding="utf-8"))
+            _cost_tick(cache_hit=True)
+            return cached
         except Exception:
             pass
+
+    if _abort_event.is_set():
+        return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["aborted"],
+                "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+                "summary": "Aborted due to fatal earlier error."}
 
     user = (
         f"# ROLE\n"
@@ -582,50 +673,77 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         f"{SCHEMA}\n"
     )
 
+    MAX_RETRIES = 3
+    BACKOFF_BASE = 1.0  # seconds
+
     for model in (MODEL, FALLBACK_MODEL):
-        try:
-            resp = client.messages.create(
-                model=model,
-                max_tokens=400,
-                system=[{"type": "text", "text": SYSTEM_PROMPT,
-                         "cache_control": {"type": "ephemeral"}}],
-                messages=[{"role": "user", "content": user}],
-            )
-            text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
-            # Extract first {...} block
-            m = re.search(r"\{.*\}", text, flags=re.S)
-            if not m:
-                continue
-            parsed = json.loads(m.group(0))
-            # Defensive: coerce fields
-            parsed.setdefault("fit_score", 1)
-            parsed.setdefault("fit_verdict", "skip")
-            parsed.setdefault("top_3_reasons", [])
-            parsed.setdefault("skill_gaps", [])
-            parsed.setdefault("osfi_hook", "None")
-            parsed.setdefault("tier", 4)
-            parsed.setdefault("summary", "")
-            cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
-            return parsed
-        except Exception as e:
-            err_str = str(e)
-            print(f"  [score_llm] {model} failed: {e}", file=sys.stderr)
-            # Detect fatal billing / auth errors — no point retrying other jobs
-            if any(phrase in err_str.lower() for phrase in (
-                "credit balance", "billing", "invalid_api_key",
-                "authentication", "permission_denied",
-            )):
-                if not _abort_event.is_set():
-                    _abort_reason.append(err_str[:300])
-                    _abort_event.set()
-                    print(
-                        f"\n[fit_scorer] ⛔ FATAL API ERROR — aborting all remaining jobs.\n"
-                        f"  Reason: {err_str[:200]}\n",
-                        file=sys.stderr,
-                    )
-            continue
-    return {"fit_score": 0, "fit_verdict": "skip", "top_3_reasons": ["LLM_failure"],
-            "skill_gaps": [], "osfi_hook": "None", "tier": 4, "summary": "LLM scoring failed."}
+        for attempt in range(MAX_RETRIES):
+            if _abort_event.is_set():
+                break
+            try:
+                resp = client.messages.create(
+                    model=model,
+                    max_tokens=400,
+                    system=[{"type": "text", "text": SYSTEM_PROMPT,
+                             "cache_control": {"type": "ephemeral"}}],
+                    messages=[{"role": "user", "content": user}],
+                )
+                # Token telemetry
+                try:
+                    usage = resp.usage
+                    in_t = getattr(usage, "input_tokens", 0) or 0
+                    out_t = getattr(usage, "output_tokens", 0) or 0
+                    cache_create = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                    cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+                    _cost_tick(model=model, in_tokens=in_t, out_tokens=out_t,
+                               cache_create=cache_create, cache_read=cache_read)
+                except Exception:
+                    pass
+
+                text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
+                m = re.search(r"\{.*\}", text, flags=re.S)
+                if not m:
+                    # Parse miss — try next attempt
+                    continue
+                parsed = json.loads(m.group(0))
+                parsed.setdefault("fit_score", 1)
+                parsed.setdefault("fit_verdict", "skip")
+                parsed.setdefault("top_3_reasons", [])
+                parsed.setdefault("skill_gaps", [])
+                parsed.setdefault("osfi_hook", "None")
+                parsed.setdefault("tier", 4)
+                parsed.setdefault("summary", "")
+                cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
+                return parsed
+            except Exception as e:
+                err_str = str(e)
+                if _is_fatal_error(err_str):
+                    if not _abort_event.is_set():
+                        _abort_reason.append(err_str[:300])
+                        _abort_event.set()
+                        print(
+                            f"\n[fit_scorer] FATAL API ERROR — aborting all remaining jobs.\n"
+                            f"  Reason: {err_str[:200]}\n",
+                            file=sys.stderr,
+                        )
+                    return {"fit_score": 0, "fit_verdict": "error",
+                            "top_3_reasons": ["fatal_api"], "skill_gaps": [],
+                            "osfi_hook": "None", "tier": 4,
+                            "summary": f"Fatal: {err_str[:120]}"}
+                if _is_transient_error(err_str) and attempt < MAX_RETRIES - 1:
+                    backoff = BACKOFF_BASE * (3 ** attempt)
+                    print(f"  [score_llm] {model} attempt {attempt+1}/{MAX_RETRIES} "
+                          f"transient error, retrying in {backoff:.1f}s: {err_str[:120]}",
+                          file=sys.stderr)
+                    time.sleep(backoff)
+                    continue
+                # Non-transient, non-fatal — fall through to next model
+                print(f"  [score_llm] {model} failed (attempt {attempt+1}): {err_str[:200]}",
+                      file=sys.stderr)
+                break
+    return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["LLM_failure"],
+            "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+            "summary": "LLM scoring failed after all retries."}
 
 
 # ---------------------------------------------------------------------------
