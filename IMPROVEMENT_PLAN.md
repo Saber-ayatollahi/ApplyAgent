@@ -56,7 +56,7 @@ Everything after "Promote" is manual. The goal of this plan is to progressively 
 
 ---
 
-### 1.2 Nightly Scorer + 72-Hour Urgency Alerts
+### 1.2 Nightly Scorer + 72-Hour Urgency Alerts ✅ SHIPPED 2026-05-04
 
 **Why:** Applications submitted within 72 hours of posting have significantly higher callback rates. The current weekly scrape means a Monday posting might not hit the tracker until Friday — well past the sweet spot.
 
@@ -81,7 +81,12 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 - Commits results back to repo
 - Pull changes when you open the app
 
-**Status:** ⬜ Not started
+**Status:** ✅ Shipped 2026-05-04. Sharper than the plan:
+- `automation/scan_delta.py` diffs today's scan vs. yesterday's (not just re-scoring stale data)
+- `automation/morning_brief.py` scores only the delta (~20-50 roles/day) → $0.01-0.05/day
+- Dashboard "🌅 Today's fresh matches" widget shows top 5 ranked, with Open JD + Add-to-tracker quick actions
+- Pipeline page has a "🌅 Nightly refresh" one-click button
+- `automation/nightly_refresh.ps1` + `install_schedule.ps1` install as Windows scheduled task at 6:30 AM daily
 
 ---
 
@@ -106,7 +111,7 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 
 ---
 
-### 2.2 Auto-Tailor on Tier 1 Promote
+### 2.2 Auto-Tailor on Tier 1 Promote ✅ SHIPPED 2026-05-04
 
 **Why:** `jd_tailor.py` only runs when you explicitly trigger it. But `auto_promote.py` already knows which jobs just got added as Tier 1. The documents should be ready before you even look at the job.
 
@@ -117,11 +122,11 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 
 **Cost note:** `jd_tailor.py` uses Opus/Sonnet — only runs on Tier 1 jobs (typically 5-15% of promoted roles) so cost stays manageable.
 
-**Status:** ⬜ Not started
+**Status:** ✅ Shipped 2026-05-04. `auto_promote.py --auto-tailor` spawns one tailor subprocess per new Tier-1 role after commit; outputs land in `automation/outputs/` as `*_prompt.md`. Kanban shows a "📄 ready" column when a draft exists. UI exposes this as a checkbox on the Promote tab.
 
 ---
 
-### 2.3 Follow-Up Cadence Agent
+### 2.3 Follow-Up Cadence Agent ✅ SHIPPED 2026-05-04 (in-UI variant)
 
 **Why:** Your tracker already has `followup_schedule.next_due` on every applied job. Nothing acts on it. The "10 outreach messages/week" KPI is aspirational rather than automatic.
 
@@ -134,11 +139,13 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 
 **UI change:** New "📬 Follow-ups" tab showing today's queue with approve/edit/skip per message.
 
-**Status:** ⬜ Not started
+**Status:** ✅ Shipped in-UI variant 2026-05-04. Dashboard widget shows overdue / due-today / due-this-week / no-schedule buckets with one-click log-and-advance or skip-and-push-+7d. Cadence defaults to [3, 10, 21] days after `date_applied`. Outreach-log appended on each follow-up.
+
+A scheduled pre-draft variant (generates all follow-up messages overnight, shows a review queue each morning) could be added if needed, but the in-UI queue already makes the 10-outreach KPI trackable.
 
 ---
 
-### 2.4 Warm Intro Mapper
+### 2.4 Warm Intro Mapper 🟡 PARTIAL
 
 **Why:** Your Master Repository notes that 70% of Director-level hiring in Toronto finance is referral-driven. Every high-scoring job should be cross-referenced against your CRM and alumni contacts before you apply cold.
 
@@ -148,7 +155,9 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 - Auto-draft the warm intro outreach using the templates in your CRM
 - Track whether intro was sent and response received
 
-**Status:** ⬜ Not started
+**Status:** 🟡 Partial. The outreach digest on the CRM page groups contacts by staleness and drafts template-substituted nudges — this covers the "drive 10 outreaches/week KPI" side.
+
+Still missing: the *per-Tier-1-job* cross-reference. When a new role lands at Company X, the UI should show "⚡ 2 CRM contacts at X — send warm intro before applying cold." Next iteration.
 
 ---
 
@@ -248,13 +257,13 @@ schtasks /create /tn "ApplyAgent Morning Score" `
 
 | # | Item | Impact | Effort | Status |
 |---|---|---|---|---|
-| 1 | Gmail integration | 🔴 High | Medium | ⬜ Blocked (need old code) |
-| 2 | Nightly scorer + urgency alerts | 🔴 High | Low | ⬜ Ready to build |
+| 1 | Gmail integration (via IMAP app-password) | 🔴 High | Medium | ⬜ Next up |
+| 2 | Nightly scorer + urgency alerts | 🔴 High | Low | ✅ Shipped 2026-05-04 |
 | 3 | Gmail → tracker status sync | 🔴 High | Low | ⬜ Blocked on Gmail |
-| 4 | Auto-tailor on Tier 1 promote | 🟡 Medium | Low | ⬜ Ready to build |
-| 5 | Follow-up cadence agent | 🟡 Medium | Medium | ⬜ Ready to build |
-| 6 | Warm intro mapper | 🟡 Medium | Medium | ⬜ Ready to build |
-| 7 | Interview prep auto-trigger | 🟡 Medium | Medium | ⬜ Blocked on Gmail |
+| 4 | Auto-tailor on Tier 1 promote | 🟡 Medium | Low | ✅ Shipped 2026-05-04 |
+| 5 | Follow-up cadence agent | 🟡 Medium | Medium | ✅ In-UI variant shipped |
+| 6 | Warm intro mapper (per-job) | 🟡 Medium | Medium | 🟡 Partial — CRM digest done |
+| 7 | Interview prep auto-trigger | 🟡 Medium | Medium | ⬜ Defer to Week 3-4 |
 | 8 | Competitive intelligence | 🟢 Low | High | ⬜ Future |
 | 9 | Scoring feedback loop | 🟢 Low | High | ⬜ Future (needs data) |
 

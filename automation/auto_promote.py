@@ -134,6 +134,10 @@ def main() -> int:
                     help="Include verdict=watch roles")
     ap.add_argument("--expire-stale", action="store_true",
                     help="Mark tracker entries with auto-* IDs as Expired if not in scan")
+    ap.add_argument("--auto-tailor", action="store_true",
+                    help="After commit, spawn jd_tailor.py for each new Tier-1 role "
+                         "(outputs land in outputs/ as <company>_<role>_<date>_prompt.md). "
+                         "Ignored in dry-run.")
     args = ap.parse_args()
 
     scored_path = OUT_DIR / args.scan
@@ -243,6 +247,32 @@ def main() -> int:
         TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
         print(f"[auto_promote] COMMIT: added {added}, upgraded {updated}, expired {expired}")
         print(f"[auto_promote] Tracker backed up to {bak.name}")
+
+        # Auto-tailor hook — spawn one jd_tailor process per new Tier-1 role.
+        # We fire-and-forget: the caller sees outputs appear in automation/outputs/
+        # and gets a "draft ready" badge in the UI when the file exists.
+        if args.auto_tailor:
+            import subprocess
+            tier1 = [e for e in new_entries if e.get("tier") == 1]
+            if not tier1:
+                print(f"[auto_promote] No new Tier-1 roles to auto-tailor.")
+            else:
+                print(f"[auto_promote] Auto-tailoring {len(tier1)} Tier-1 role(s)...")
+                tailor_py = Path(__file__).parent / "jd_tailor.py"
+                for e in tier1:
+                    cmd = [sys.executable, str(tailor_py), "--job-id", e["id"]]
+                    try:
+                        # Detach so we don't block — tailor can take ~60s per role
+                        subprocess.Popen(
+                            cmd,
+                            stdout=open(OUT_DIR / f"tailor_{e['id']}_stdout.log", "wb"),
+                            stderr=subprocess.STDOUT,
+                            cwd=str(Path(__file__).parent.parent),
+                        )
+                        print(f"  [tailor] spawned for {e['id']} ({e['company']})")
+                    except Exception as ex:
+                        print(f"  [tailor] failed to spawn for {e['id']}: {ex}",
+                              file=sys.stderr)
     else:
         print(f"[auto_promote] DRY-RUN: would add {added}, upgrade {updated}, expire {expired}")
         print(f"[auto_promote] Re-run with --commit to apply.")

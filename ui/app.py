@@ -259,6 +259,18 @@ def human_elapsed(started_iso: str | None, end_iso: str | None = None) -> str:
     return f"{secs // 3600}h {(secs % 3600) // 60}m"
 
 
+def load_morning_brief() -> dict | None:
+    """Read the most recent brief_YYYYMMDD.json. Returns None if missing."""
+    files = sorted(OUT_DIR.glob("brief_*.json"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        return None
+    try:
+        return json.loads(files[0].read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
 def load_scorer_progress() -> dict | None:
     """Read outputs/fit_scorer_progress.json if present. Returns None if missing."""
     p = OUT_DIR / "fit_scorer_progress.json"
@@ -528,6 +540,101 @@ if page == "🏠 Dashboard":
     c5.metric("Stale (>21d)", len(stale), delta_color="inverse")
 
     st.markdown("---")
+
+    # ---------- Morning brief widget — today's 2-3 fresh matches ----------
+    brief = load_morning_brief()
+    if brief:
+        brief_date_raw = brief.get("brief_date", "")
+        try:
+            brief_date_parsed = datetime.strptime(brief_date_raw, "%Y%m%d").date()
+        except ValueError:
+            brief_date_parsed = None
+        top = brief.get("top") or []
+        is_stale = brief_date_parsed and (date.today() - brief_date_parsed).days >= 2
+        staleness = "" if not brief_date_parsed else (
+            f" · {(date.today() - brief_date_parsed).days}d old"
+            if is_stale else " · today"
+        )
+        st.subheader(f"🌅 Today's fresh matches{staleness}")
+        if is_stale:
+            st.caption(
+                f"⚠ Latest brief is from `{brief_date_raw}`. "
+                "Run the nightly scrape + morning brief to refresh. "
+                "See bottom of Pipeline → Run for a one-click button."
+            )
+        if not top:
+            st.info(
+                f"No fresh matches in today's delta "
+                f"(triaged {brief.get('triaged', '?')}, scored {brief.get('scored', '?')}, "
+                f"0 actionable)."
+            )
+        else:
+            st.caption(
+                f"Ranked from **{brief.get('total_new', 0)} jobs new since yesterday**. "
+                f"Apply to the top 1-2 today; the pipeline queue is already saturated."
+            )
+            for i, r in enumerate(top, 1):
+                f = r.get("fit") or {}
+                verdict = f.get("fit_verdict", "?")
+                badge = "🟢" if verdict == "apply_now" else "🟡"
+                with st.container(border=True):
+                    cols = st.columns([6, 1])
+                    cols[0].markdown(
+                        f"### {badge} {i}. [{f.get('fit_score', '?')}/10 · "
+                        f"Tier {f.get('tier', '?')}] {r.get('company', '')} — "
+                        f"{r.get('title', '')}"
+                    )
+                    cols[0].caption(
+                        f"Sector: {r.get('sector', '')} · "
+                        f"OSFI hook: {f.get('osfi_hook', 'None')} · "
+                        f"Source: {r.get('source', '')}"
+                    )
+                    cols[0].markdown(f"**{f.get('summary', '')}**")
+                    reasons = f.get("top_3_reasons") or []
+                    if reasons:
+                        with cols[0].expander("Why it fits"):
+                            for reason in reasons:
+                                st.markdown(f"- {reason}")
+                            gaps = f.get("skill_gaps") or []
+                            if gaps:
+                                st.markdown("**Gaps:** " + "; ".join(gaps))
+                    with cols[1]:
+                        st.link_button("🔗 Open JD", r.get("link", ""),
+                                       use_container_width=True)
+                        # Quick-add to tracker button
+                        if st.button("➕ Add to tracker", key=f"brief_add_{i}",
+                                     use_container_width=True):
+                            # Generate a tracker id
+                            from uuid import uuid4
+                            new_id = f"brief-{datetime.now().strftime('%Y%m%d')}-{str(uuid4())[:6]}"
+                            new_entry = {
+                                "id": new_id,
+                                "company": r.get("company", ""),
+                                "title": r.get("title", ""),
+                                "sector": r.get("sector", ""),
+                                "url": r.get("link", ""),
+                                "source": r.get("source", ""),
+                                "tier": f.get("tier", 3),
+                                "fit_score": verdict,
+                                "fit_score_numeric": f.get("fit_score", 0),
+                                "fit_notes": f.get("summary", ""),
+                                "osfi_hook": f.get("osfi_hook", ""),
+                                "status": "Found" if verdict == "apply_now" else "Watch",
+                                "urgency": "High" if verdict == "apply_now" else "Medium",
+                                "date_found": date.today().isoformat(),
+                                "next_action": f.get("top_3_reasons", [""])[0][:160] if f.get("top_3_reasons") else "",
+                                "followup_schedule": {"next_due": None,
+                                                       "cadence_days": [3, 10, 21]},
+                            }
+                            # Avoid duplicates
+                            if not any(j.get("url") == r.get("link") for j in tr["jobs"]):
+                                tr["jobs"].append(new_entry)
+                                save_tracker(tr)
+                                st.success(f"Added {new_id} to tracker.")
+                                st.rerun()
+                            else:
+                                st.warning("Already in tracker.")
+        st.markdown("---")
 
     # ---------- Follow-up nudge widget ----------
     fb = followup_buckets(jobs)
@@ -908,12 +1015,38 @@ elif page == "🎯 Pipeline":
                 icon="🔑",
             )
 
-        run_col, spacer = st.columns([1, 4])
+        run_col, brief_col, spacer = st.columns([1, 1, 3])
         with run_col:
             if st.button("▶️ Launch pipeline", type="primary", use_container_width=True,
                          disabled=not can_run):
                 rec = scan_runner.start_run("pipeline", cmd)
                 st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
+                st.rerun()
+        with brief_col:
+            # One-click: scrape + delta + morning brief.
+            # Much cheaper than the full pipeline — scores only what's new.
+            brief_key_ok = api_key.is_key_valid()
+            if st.button("🌅 Nightly refresh", use_container_width=True,
+                         disabled=(not brief_key_ok) or bool(pipeline_running),
+                         help="Scrape + find new roles since last scan + score only "
+                              "those + emit top-3 brief. Cheap (~$0.03) and fast (~25 min)."):
+                # Platform-aware: use the PS1 on Windows, chained bash elsewhere
+                if sys.platform == "win32":
+                    ps = ROOT / "automation" / "nightly_refresh.ps1"
+                    nightly_cmd_list = [
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(ps),
+                    ]
+                else:
+                    chained = (
+                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion && "
+                        f"{sys.executable} {ROOT / 'automation' / 'scan_delta.py'} && "
+                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5"
+                    )
+                    nightly_cmd_list = ["bash", "-c", chained]
+                rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
+                st.success(f"Nightly refresh started (`{rec.run_id}`). "
+                           f"Dashboard will show fresh matches when done.")
                 st.rerun()
 
         # Scorer progress bar (visible whenever fit_scorer is running,
@@ -1196,13 +1329,20 @@ elif page == "🎯 Pipeline":
         else:
             which = st.selectbox("Scored file to promote", [p.name for p in scored_files],
                                  key="promote_file")
-            c1, c2, c3 = st.columns(3)
+            c1, c2, c3, c4 = st.columns(4)
             with c1:
                 min_s = st.slider("Min fit score", 1, 10, 7, key="promote_min")
             with c2:
                 inc_watch = st.checkbox("Include verdict=watch", key="promote_watch")
             with c3:
                 expire = st.checkbox("Expire stale tracker URLs", key="promote_expire")
+            with c4:
+                auto_tailor = st.checkbox("🎯 Auto-tailor Tier-1 docs",
+                                           key="promote_autotailor",
+                                           help="After commit, generate resume+cover "
+                                                "letter drafts for every new Tier-1 "
+                                                "role (requires API key; "
+                                                "~$0.10-0.30 per Tier-1 role)")
 
             preview_col, commit_col = st.columns(2)
             with preview_col:
@@ -1216,18 +1356,26 @@ elif page == "🎯 Pipeline":
                     res = subprocess.run(cmd4, capture_output=True, text=True, cwd=str(ROOT))
                     st.code(res.stdout + "\n" + (res.stderr or ""), language="text")
             with commit_col:
+                _at_ok = (not auto_tailor) or api_key.is_key_valid()
+                if not _at_ok:
+                    st.caption("🔑 API key required when auto-tailor is on.")
                 if st.button("🚀 Commit to tracker", type="primary", use_container_width=True,
-                             key="prom_commit"):
+                             key="prom_commit", disabled=not _at_ok):
                     cmd4 = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
                             "--scan", which, "--min-score", str(min_s), "--commit"]
                     if inc_watch:
                         cmd4.append("--include-watch")
                     if expire:
                         cmd4.append("--expire-stale")
+                    if auto_tailor:
+                        cmd4.append("--auto-tailor")
                     res = subprocess.run(cmd4, capture_output=True, text=True, cwd=str(ROOT))
                     st.code(res.stdout + "\n" + (res.stderr or ""), language="text")
                     st.cache_data.clear()
-                    st.success("Tracker updated. Check 📋 Jobs Kanban.")
+                    msg = "Tracker updated. Check 📋 Jobs Kanban."
+                    if auto_tailor:
+                        msg += " Tailor drafts will land in automation/outputs/ over the next ~2 min."
+                    st.success(msg)
 
     # ================== TAB: History ==================
     with tabs[5]:
@@ -1324,7 +1472,18 @@ elif page == "📋 Jobs Kanban":
 
     st.caption(f"Showing {len(view)} of {len(jobs_df)} roles")
 
-    cols = [c for c in ["id", "company", "title", "sector", "tier", "status",
+    # Enrich view with a "draft" indicator based on whether a tailor output exists
+    def _has_draft(job_id: str) -> str:
+        # jd_tailor outputs are <Company>_<Role>_<date>_prompt.md — match by job_id in the filename.
+        slug = job_id.replace("-", "_")
+        matches = list(OUT_DIR.glob(f"*{slug}*_prompt.md"))
+        if matches:
+            return "📄 ready"
+        return ""
+    if "id" in view.columns:
+        view = view.assign(draft=view["id"].apply(_has_draft))
+
+    cols = [c for c in ["id", "draft", "company", "title", "sector", "tier", "status",
                         "fit_score", "fit_score_numeric", "osfi_hook", "urgency",
                         "date_found", "date_applied", "url"] if c in view.columns]
     st.dataframe(
@@ -1605,6 +1764,39 @@ elif page == "⚙️ Admin":
     st.title("⚙️ Admin")
     st.caption("The 🎯 Pipeline page is the main entry point. This page is for running individual "
                "agents directly, or browsing raw outputs.")
+
+    # ---------- Nightly schedule ----------
+    st.subheader("🌙 Nightly schedule")
+    st.caption(
+        "Install a Windows scheduled task that runs scrape + delta + brief at 6:30 AM "
+        "daily. You wake up to fresh matches on the Dashboard."
+    )
+    sch_col1, sch_col2 = st.columns(2)
+    with sch_col1:
+        st.code(
+            "# One-time install (from PowerShell, not as admin):\n"
+            f"cd {ROOT}\n"
+            "powershell -ExecutionPolicy Bypass -File automation\\install_schedule.ps1",
+            language="powershell",
+        )
+    with sch_col2:
+        st.code(
+            "# Check status / run now / uninstall:\n"
+            "schtasks /query /tn ApplyAgent_NightlyRefresh /v /fo LIST\n"
+            "schtasks /run   /tn ApplyAgent_NightlyRefresh\n"
+            "schtasks /delete /tn ApplyAgent_NightlyRefresh /f",
+            language="powershell",
+        )
+    if st.button("🌅 Run nightly refresh now (background)", use_container_width=False):
+        ps = ROOT / "automation" / "nightly_refresh.ps1"
+        rec = scan_runner.start_run(
+            "nightly_refresh",
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps)],
+        )
+        st.success(f"Nightly refresh launched (`{rec.run_id}`). Dashboard will show "
+                   f"fresh matches when it finishes (~25 min).")
+
+    st.markdown("---")
 
     st.subheader("📁 Outputs directory")
     out_files = sorted(OUT_DIR.glob("*"), key=lambda p: p.stat().st_mtime, reverse=True)
