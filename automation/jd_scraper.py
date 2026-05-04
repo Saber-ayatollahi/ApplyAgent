@@ -231,25 +231,85 @@ def _brand_aliases(name: str) -> list[str]:
     return list(set(a for a in aliases if len(a) >= 3))
 
 
+def _is_finance_title(title: str) -> bool:
+    """Lightweight title filter for the company-only LinkedIn fallback.
+    Must have at least one finance/risk/actuarial keyword AND not be a negative term.
+    Deliberately a bit broader than fit_scorer stage-1 so we don't prefilter too much here;
+    stage-1 will triage further downstream."""
+    tl = (title or "").lower()
+    if any(n in tl for n in NEGATIVE_TERMS):
+        return False
+    loose_keywords = (
+        "risk", "alm", "irrbb", "model", "treasury", "liquidity", "capital",
+        "balance sheet", "fixed income", "derivat", "valuation", "quant",
+        "actuar", "portfolio", "ifrs", "osfi", "basel", "credit", "market risk",
+        "analytics", "analytique", "stress", "scenario", "hedge",
+        "finance", "financial", "forecast", "economic", "economist",
+        "investment", "wealth", "pension", "reserving", "pricing",
+        "regulator", "compliance", "audit", "governance",
+        "director", "vp", "vice president", "managing director",
+        "principal", "head of", "chief", "avp",
+    )
+    return any(k in tl for k in loose_keywords)
+
+
 def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: int = 3) -> list[dict]:
     """
-    Query LinkedIn's public guest-search API per keyword phrase, paginated (start=0/25/50).
-    Returns deduped {title, link, company, location, keyword_hit} filtered to roles whose
-    company subtitle plausibly matches the target brand.
+    Query LinkedIn's public guest-search API.
+
+    Two-phase strategy:
+      1. Keyword+company queries (8 keywords × 3 pages) — narrow, high-signal
+      2. Company-name-only query (2 pages) — catches roles where keyword doesn't
+         appear in the title/card text (e.g., "Associate Director" at RBC, or
+         regulators/global-AMs with few Toronto listings matching our keyword list)
+
+    The company-only phase applies a loose finance-title filter before accepting
+    the result, so we don't flood stage-1 with every Java Dev at Goldman.
     """
     aliases = company.get("brand_aliases") or _brand_aliases(company["name"])
     seen_links: set[str] = set()
     all_jobs: list[dict] = []
     rate_limited = False
-    for kw in LINKEDIN_QUERY_PHRASES[:max_queries]:
-        if rate_limited:
-            break
-        for page in range(pages_per_query):
+
+    def _emit_card(card, kw_label: str, source_phase: str) -> bool:
+        """Parse one LinkedIn card. Returns True if we added a row."""
+        title_el = card.select_one("h3")
+        link_el = card.select_one("a.base-card__full-link") or card.select_one("a")
+        co_el = card.select_one("h4, .base-search-card__subtitle")
+        loc_el = card.select_one(".job-search-card__location")
+        if not (title_el and link_el):
+            return False
+        title = title_el.get_text(strip=True)
+        link = (link_el.get("href") or "").split("?")[0]
+        if not link or link in seen_links:
+            return False
+        co = (co_el.get_text(strip=True) if co_el else company["name"]).lower()
+        if not any(a in co for a in aliases):
+            return False
+        # In the company-only phase, require a finance/risk signal in the title
+        # to keep the volume manageable
+        if source_phase == "company_only" and not _is_finance_title(title):
+            return False
+        loc = loc_el.get_text(strip=True) if loc_el else "Toronto"
+        seen_links.add(link)
+        all_jobs.append({
+            "title": title,
+            "link": link,
+            "company_reported": co_el.get_text(strip=True) if co_el else company["name"],
+            "location": loc,
+            "keyword_hit": kw_label,
+            "source": "linkedin" if source_phase == "keyword" else "linkedin_co",
+        })
+        return True
+
+    def _run_query(keywords_str: str, pages: int, kw_label: str, phase: str) -> bool:
+        """Returns True if rate-limited, to break outer loop."""
+        nonlocal rate_limited
+        for page in range(pages):
             start = page * 25
-            query = f"{kw} {company['name']}"
             url = (
                 "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
-                f"keywords={requests.utils.quote(query)}"
+                f"keywords={requests.utils.quote(keywords_str)}"
                 "&location=Toronto%2C+Ontario%2C+Canada"
                 f"&start={start}"
             )
@@ -259,47 +319,36 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: in
                     print(f"  [linkedin] 429 rate-limited — backing off 15s", file=sys.stderr)
                     time.sleep(15)
                     rate_limited = True
-                    break
+                    return True
                 if r.status_code != 200:
-                    break
+                    return False
                 soup = BeautifulSoup(r.text, "html.parser")
                 cards = soup.select("li")
                 if not cards:
-                    break
-                added_this_page = 0
-                for card in cards:
-                    title_el = card.select_one("h3")
-                    link_el = card.select_one("a.base-card__full-link") or card.select_one("a")
-                    co_el = card.select_one("h4, .base-search-card__subtitle")
-                    loc_el = card.select_one(".job-search-card__location")
-                    if not (title_el and link_el):
-                        continue
-                    title = title_el.get_text(strip=True)
-                    link = (link_el.get("href") or "").split("?")[0]
-                    if not link or link in seen_links:
-                        continue
-                    co = (co_el.get_text(strip=True) if co_el else company["name"]).lower()
-                    # Fuzzy company match — any alias substring hits
-                    if not any(a in co for a in aliases):
-                        continue
-                    loc = loc_el.get_text(strip=True) if loc_el else "Toronto"
-                    seen_links.add(link)
-                    all_jobs.append({
-                        "title": title,
-                        "link": link,
-                        "company_reported": co_el.get_text(strip=True) if co_el else company["name"],
-                        "location": loc,
-                        "keyword_hit": kw,
-                        "source": "linkedin",
-                    })
-                    added_this_page += 1
-                if added_this_page == 0:
-                    break  # pagination exhausted or nothing new
+                    return False
+                added = sum(1 for card in cards if _emit_card(card, kw_label, phase))
+                if added == 0:
+                    return False
                 time.sleep(0.5)
             except Exception as e:
-                print(f"  [linkedin] error on '{kw}' page {page} for {company['name']}: {e}", file=sys.stderr)
-                break
+                print(f"  [linkedin] error on '{keywords_str}' page {page} for {company['name']}: {e}",
+                      file=sys.stderr)
+                return False
+        return False
+
+    # Phase 1: keyword + company name
+    for kw in LINKEDIN_QUERY_PHRASES[:max_queries]:
+        if rate_limited:
+            break
+        if _run_query(f"{kw} {company['name']}", pages_per_query, kw, "keyword"):
+            break
         time.sleep(0.5)
+
+    # Phase 2: company-only query (catches titles with no keyword hit)
+    if not rate_limited:
+        _run_query(company["name"], pages=2, kw_label="company_only", phase="company_only")
+        time.sleep(0.5)
+
     return all_jobs
 
 
@@ -454,42 +503,134 @@ def _is_negative(title: str) -> bool:
     return any(n in tl for n in NEGATIVE_TERMS)
 
 
+# ---------------------------------------------------------------------------
+# Dedup — collapse cross-source duplicates (Workday + LinkedIn posting the same role)
+# ---------------------------------------------------------------------------
+# Source preference when collapsing dupes. Workday JDs are richer + more stable.
+_SOURCE_PRIORITY = {"workday": 3, "greenhouse": 2, "lever": 2, "linkedin": 1}
+
+
+def _source_rank(src: str) -> int:
+    if not src:
+        return 0
+    return _SOURCE_PRIORITY.get(src.split(":", 1)[0], 0)
+
+
+def _normalize_title(title: str) -> str:
+    """Canonical form for near-dup detection. Strips hints that don't change the job:
+    hybrid/remote tags, trailing job IDs, Toronto location qualifiers, punctuation."""
+    t = (title or "").lower()
+    # Remove trailing job IDs like "(4451)" or "(7557)"
+    t = re.sub(r"\s*\(\s*\d{3,6}\s*\)\s*$", "", t)
+    # Remove work-mode tags
+    t = re.sub(r"\s*\((hybrid|remote|on[- ]?site|contract|temporary|permanent|full[- ]?time|part[- ]?time|\d+\s*month\s*contract)\)\s*",
+               " ", t)
+    # Strip location suffixes
+    t = re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
+    # Collapse punctuation/whitespace
+    t = re.sub(r"[,/\-–—_]+", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def dedupe(jobs: list[dict]) -> tuple[list[dict], dict]:
+    """Collapse dupes in two passes:
+      (a) exact URL match — keep first occurrence
+      (b) (company_lower, normalized_title) match — keep highest-source-rank entry
+    Returns (deduped_list, stats_dict).
+    """
+    stats = {"input": len(jobs), "dropped_url": 0, "dropped_near": 0}
+    by_url: dict[str, dict] = {}
+    for j in jobs:
+        link = j.get("link") or ""
+        if not link:
+            # Keep URL-less rows; they can't dedupe
+            continue
+        if link in by_url:
+            stats["dropped_url"] += 1
+            # Prefer the higher-rank source if we already have one
+            if _source_rank(j.get("source", "")) > _source_rank(by_url[link].get("source", "")):
+                by_url[link] = j
+        else:
+            by_url[link] = j
+    deduped_url = list(by_url.values()) + [j for j in jobs if not j.get("link")]
+
+    # Near-dup: same (company_lower, normalized_title) across different URLs.
+    by_ct: dict[tuple, dict] = {}
+    for j in deduped_url:
+        key = (
+            (j.get("company") or "").lower().strip(),
+            _normalize_title(j.get("title", "")),
+        )
+        if not key[0] or not key[1]:
+            by_ct[(id(j), "")] = j  # can't dedupe; keep unique
+            continue
+        if key in by_ct:
+            stats["dropped_near"] += 1
+            # Prefer higher-rank source
+            if _source_rank(j.get("source", "")) > _source_rank(by_ct[key].get("source", "")):
+                by_ct[key] = j
+        else:
+            by_ct[key] = j
+
+    out = list(by_ct.values())
+    stats["output"] = len(out)
+    return out, stats
+
+
 def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
-         skip_linkedin: bool = False) -> list[dict]:
-    """Run the scan. `companies` is a list of dicts with name/sector/workday/greenhouse/lever keys."""
+         skip_linkedin: bool = False) -> tuple[list[dict], dict]:
+    """Run the scan. Returns (candidates, diagnostics) where diagnostics lists
+    companies that returned 0 candidates (for UI surfacing)."""
     companies = list(companies)
     seen = load_tracker_urls()
     found: list[dict] = []
+    per_company: list[dict] = []  # diagnostics: how many results per company per source
     for i, c in enumerate(companies, 1):
         print(f"[scan {i}/{len(companies)}] {c['name']} (sector: {c.get('sector', '—')})", file=sys.stderr)
         before = len(found)
+        sources_used = []
 
         # 1. Workday tenant (highest-signal when available)
+        wd_count = 0
         if c.get("workday") and not linkedin_only:
+            wd_before = len(found)
             for j in fetch_workday_jobs(c["workday"]):
                 if j["link"] in seen or _is_negative(j["title"]):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
+            wd_count = len(found) - wd_before
+            if wd_count: sources_used.append(f"workday:{wd_count}")
 
         # 2. Greenhouse
+        gh_count = 0
         if c.get("greenhouse") and not linkedin_only:
+            gh_before = len(found)
             for j in fetch_greenhouse_jobs(c["greenhouse"]):
                 if j["link"] in seen or _is_negative(j["title"]):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
+            gh_count = len(found) - gh_before
+            if gh_count: sources_used.append(f"greenhouse:{gh_count}")
 
         # 3. Lever
+        lv_count = 0
         if c.get("lever") and not linkedin_only:
+            lv_before = len(found)
             for j in fetch_lever_jobs(c["lever"]):
                 if j["link"] in seen or _is_negative(j["title"]):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
+            lv_count = len(found) - lv_before
+            if lv_count: sources_used.append(f"lever:{lv_count}")
 
-        # 4. LinkedIn (breadth; paginated, multi-keyword).
+        # 4. LinkedIn (breadth; paginated, multi-keyword + company-only fallback).
+        li_count = 0
         if not workday_only and not skip_linkedin:
+            li_before = len(found)
             for j in fetch_linkedin_jobs(c):
                 if j["link"] in seen:
                     continue
@@ -497,11 +638,30 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
+            li_count = len(found) - li_before
+            if li_count: sources_used.append(f"linkedin:{li_count}")
 
         added = len(found) - before
-        print(f"  -> {added} new candidate(s)", file=sys.stderr)
+        per_company.append({
+            "name": c["name"],
+            "sector": c.get("sector", ""),
+            "total": added,
+            "workday": wd_count,
+            "greenhouse": gh_count,
+            "lever": lv_count,
+            "linkedin": li_count,
+            "has_workday_config": bool(c.get("workday")),
+            "has_greenhouse_config": bool(c.get("greenhouse")),
+            "has_lever_config": bool(c.get("lever")),
+        })
+        print(f"  -> {added} new candidate(s) [{', '.join(sources_used) or 'none'}]",
+              file=sys.stderr)
         time.sleep(0.75)
-    return found
+    diagnostics = {
+        "per_company": per_company,
+        "zero_result_companies": [c["name"] for c in per_company if c["total"] == 0],
+    }
+    return found, diagnostics
 
 
 def main() -> int:
@@ -541,7 +701,17 @@ def main() -> int:
             print(f"ERROR: no companies matched sector {args.sector!r}", file=sys.stderr)
             return 1
 
-    results = scan(targets, linkedin_only=args.linkedin_only, workday_only=args.workday_only)
+    raw, diagnostics = scan(targets, linkedin_only=args.linkedin_only,
+                             workday_only=args.workday_only)
+
+    # Cross-source dedup: collapse same URL + same (company, normalized title).
+    # Done post-scan so we can dedupe across companies too (rare but possible on LinkedIn).
+    results, dedupe_stats = dedupe(raw)
+    print(
+        f"[scan] Dedup: {dedupe_stats['input']} raw -> {dedupe_stats['output']} unique "
+        f"(-{dedupe_stats['dropped_url']} dup URL, -{dedupe_stats['dropped_near']} near-dup)",
+        file=sys.stderr,
+    )
 
     stamp = datetime.now().strftime("%Y%m%d")
     json_path = OUT_DIR / f"scan_{stamp}.json"
@@ -559,13 +729,23 @@ def main() -> int:
                 "scan_date": stamp,
                 "companies_scanned": len(targets),
                 "total_new_candidates": len(results),
+                "dedup_stats": dedupe_stats,
                 "by_sector": sector_counts,
+                "diagnostics": diagnostics,
                 "results": results,
             },
             indent=2,
         ),
         encoding="utf-8",
     )
+    if diagnostics.get("zero_result_companies"):
+        print(
+            f"[scan] WARN: {len(diagnostics['zero_result_companies'])} companies returned 0 results "
+            f"(may need Workday config or LinkedIn fixes):",
+            file=sys.stderr,
+        )
+        for n in diagnostics["zero_result_companies"][:20]:
+            print(f"    - {n}", file=sys.stderr)
 
     md_lines = [
         f"# Scan {stamp}",

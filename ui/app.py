@@ -439,59 +439,108 @@ elif page == "🎯 Pipeline":
     # Build stage summaries from latest pipeline status + filesystem
     stages_info = (pipe or {}).get("stages", {})
 
-    # Scrape summary
+    # ---------- Funnel data collection ----------
     scan_f = latest_scan()
-    scrape_summary = ""
+    scored_f = latest_scored()
+
+    scrape_count = None
+    scrape_raw = None
+    dedup_dropped_url = dedup_dropped_near = None
+    zero_companies: list[str] = []
+    per_company_diag: list[dict] = []
     if scan_f:
         try:
             d = json.loads(scan_f.read_text(encoding="utf-8"))
-            scrape_summary = f"{len(d.get('results', []))} candidates · `{scan_f.name}`"
-        except Exception:
-            scrape_summary = f"`{scan_f.name}`"
-
-    # Score summary
-    scored_f = latest_scored()
-    score_summary = ""
-    if scored_f:
-        try:
-            d = json.loads(scored_f.read_text(encoding="utf-8"))
-            score_summary = f"{d.get('stage2_scored', '?')} scored · `{scored_f.name}`"
-        except Exception:
-            score_summary = f"`{scored_f.name}`"
-
-    # Triage (user review) — uses scored file
-    triage_summary = ""
-    if scored_f:
-        try:
-            d = json.loads(scored_f.read_text(encoding="utf-8"))
-            v = {}
-            for r in d.get("results", []):
-                fv = (r.get("fit") or {}).get("fit_verdict", "?")
-                v[fv] = v.get(fv, 0) + 1
-            apply_n = v.get("apply_now", 0) + v.get("tailor_and_apply", 0)
-            triage_summary = f"{apply_n} actionable (apply/tailor)"
+            scrape_count = len(d.get("results", []))
+            dedup = d.get("dedup_stats") or {}
+            scrape_raw = dedup.get("input", scrape_count)
+            dedup_dropped_url = dedup.get("dropped_url", 0)
+            dedup_dropped_near = dedup.get("dropped_near", 0)
+            diag = d.get("diagnostics") or {}
+            zero_companies = diag.get("zero_result_companies") or []
+            per_company_diag = diag.get("per_company") or []
         except Exception:
             pass
 
-    # Promote summary — count tracker Found/Watch
-    promote_summary = ""
-    if jobs:
-        found = sum(1 for j in jobs if j.get("status") in ("Found", "Watch"))
-        applied = sum(1 for j in jobs if parse_date(j.get("date_applied")))
-        promote_summary = f"{found} in tracker queue · {applied} applied"
+    score_input = score_pass = score_count = None
+    verdict_counts: dict = {}
+    if scored_f:
+        try:
+            d = json.loads(scored_f.read_text(encoding="utf-8"))
+            score_input = d.get("total_input")
+            score_pass = d.get("stage1_passed")
+            score_count = d.get("stage2_scored")
+            for r in d.get("results", []):
+                fv = (r.get("fit") or {}).get("fit_verdict", "?")
+                verdict_counts[fv] = verdict_counts.get(fv, 0) + 1
+        except Exception:
+            pass
 
-    # Tailor summary — count tailored outputs
-    tailor_summary = ""
-    tailored = sorted(OUT_DIR.glob("*_prompt.md"), key=lambda p: p.stat().st_mtime, reverse=True)
-    if tailored:
-        tailor_summary = f"{len(tailored)} tailored docs"
+    apply_n = verdict_counts.get("apply_now", 0)
+    tailor_n = verdict_counts.get("tailor_and_apply", 0)
+    actionable_n = apply_n + tailor_n
 
-    s1, s2, s3, s4, s5 = st.columns(5)
-    _stage_card(s1, "🛰️", "1. Scrape", stages_info.get("scrape"), scrape_summary)
-    _stage_card(s2, "🤖", "2. Score", stages_info.get("score"), score_summary)
-    _stage_card(s3, "👁", "3. Triage", None, triage_summary)
-    _stage_card(s4, "🚀", "4. Promote", stages_info.get("promote"), promote_summary)
-    _stage_card(s5, "✏️", "5. Tailor", None, tailor_summary)
+    tracker_found = sum(1 for j in jobs if j.get("status") in ("Found", "Watch"))
+    tracker_applied = sum(1 for j in jobs if parse_date(j.get("date_applied")))
+    tailored_docs = len(list(OUT_DIR.glob("*_prompt.md")))
+
+    # ---------- Funnel visualization ----------
+    # Row 1: stage cards with counts
+    # Row 2: transition captions between cards
+    st.markdown("#### Pipeline funnel")
+    cols = st.columns([3, 1, 3, 1, 3, 1, 3, 1, 3])
+
+    def _big_number(col, emoji, label, value, sub=""):
+        col.markdown(f"<div style='text-align:center'>"
+                     f"<div style='font-size:1.6em'>{emoji}</div>"
+                     f"<div style='font-size:2em; font-weight:600'>{value if value is not None else '—'}</div>"
+                     f"<div style='font-size:0.85em; opacity:0.8'>{label}</div>"
+                     f"<div style='font-size:0.75em; opacity:0.6'>{sub}</div>"
+                     f"</div>",
+                     unsafe_allow_html=True)
+
+    def _arrow(col, label=""):
+        col.markdown(f"<div style='text-align:center; padding-top:18px'>"
+                     f"<div style='font-size:1.8em; opacity:0.4'>→</div>"
+                     f"<div style='font-size:0.75em; opacity:0.7'>{label}</div>"
+                     f"</div>",
+                     unsafe_allow_html=True)
+
+    _big_number(cols[0], "🛰️", "Scraped", scrape_raw if scrape_raw else scrape_count,
+                sub=f"across {len(per_company_diag)} cos" if per_company_diag else "")
+    _arrow(cols[1], f"-{(dedup_dropped_url or 0) + (dedup_dropped_near or 0)} dupe"
+                    if dedup_dropped_url is not None else "")
+    _big_number(cols[2], "✂️", "Unique", scrape_count,
+                sub=f"-{dedup_dropped_url} URL, -{dedup_dropped_near} near"
+                    if dedup_dropped_url is not None else "")
+    _arrow(cols[3], f"-{(score_input or scrape_count or 0) - (score_pass or 0)} off-profile"
+                    if score_input and score_pass else "")
+    _big_number(cols[4], "🎯", "Triaged", score_pass,
+                sub=f"stage-1 pass" if score_pass else "")
+    _arrow(cols[5], f"-{(score_pass or 0) - (score_count or 0)} err"
+                    if score_pass is not None and score_count is not None and score_pass != score_count else "")
+    _big_number(cols[6], "🤖", "Scored", score_count,
+                sub=f"apply_now:{apply_n} tailor:{tailor_n}" if score_count else "")
+    _arrow(cols[7], f"-{(actionable_n or 0) - tracker_found} pending" if actionable_n else "")
+    _big_number(cols[8], "📋", "Tracker",
+                tracker_found if tracker_found else "—",
+                sub=f"{tracker_applied} applied · {tailored_docs} tailored")
+
+    if pipeline_running:
+        st.info(
+            f"⏱️ Pipeline running — elapsed {human_elapsed(pipe['started_at'])}",
+            icon="🎯",
+        )
+    if zero_companies:
+        with st.expander(f"⚠️ {len(zero_companies)} companies returned 0 candidates — click to inspect"):
+            st.caption(
+                "These targets produced no candidates. Common causes: "
+                "LinkedIn guest search doesn't surface their Toronto listings (Goldman, Deutsche, PIMCO), "
+                "regulator careers pages aren't on Workday (OSFI, OSC, FSRA), "
+                "or LinkedIn rate-limited the scan. "
+                "Config fix: add a Workday/Greenhouse tenant, or rely on manual adds."
+            )
+            st.code("\n".join(f"  • {n}" for n in zero_companies), language="text")
 
     if pipeline_running:
         st.info(
@@ -613,12 +662,18 @@ elif page == "🎯 Pipeline":
         if scan_f:
             try:
                 d = json.loads(scan_f.read_text(encoding="utf-8"))
-                ccol1, ccol2, ccol3 = st.columns(3)
-                ccol1.metric("Candidates", len(d.get("results", [])))
-                ccol2.metric("Sectors", len(d.get("by_sector", {})))
-                ccol3.metric("Companies", d.get("companies_scanned", "—"))
+                ds = d.get("dedup_stats") or {}
+                ccol1, ccol2, ccol3, ccol4 = st.columns(4)
+                ccol1.metric("Raw", ds.get("input", "—"))
+                ccol2.metric("After dedup", len(d.get("results", [])),
+                             delta=-(ds.get("dropped_url", 0) + ds.get("dropped_near", 0))
+                             if ds else None)
+                ccol3.metric("Sectors", len(d.get("by_sector", {})))
+                ccol4.metric("Companies", d.get("companies_scanned", "—"))
                 st.caption(f"File: `{scan_f.name}` · modified "
-                           f"{datetime.fromtimestamp(scan_f.stat().st_mtime).strftime('%Y-%m-%d %H:%M')}")
+                           f"{datetime.fromtimestamp(scan_f.stat().st_mtime).strftime('%Y-%m-%d %H:%M')}"
+                           + (f" · dedup removed {ds.get('dropped_url',0)} dup URLs + "
+                              f"{ds.get('dropped_near',0)} near-dups" if ds else ""))
 
                 # By-sector breakdown
                 sb = d.get("by_sector", {})
@@ -626,6 +681,22 @@ elif page == "🎯 Pipeline":
                     sb_df = pd.DataFrame(sorted(sb.items(), key=lambda x: -x[1]),
                                          columns=["sector", "candidates"])
                     st.bar_chart(sb_df.set_index("sector"))
+
+                # Per-company diagnostics
+                diag = d.get("diagnostics") or {}
+                pc = diag.get("per_company") or []
+                if pc:
+                    pc_df = pd.DataFrame(pc)
+                    pc_df = pc_df.sort_values("total", ascending=False)
+                    with st.expander(f"🔍 Per-company breakdown ({len(pc_df)} targets)"):
+                        st.caption(
+                            "Filter: rows with `total=0` are companies that returned nothing. "
+                            "Check `has_workday_config` — if False, company relies on LinkedIn only."
+                        )
+                        show_zero = st.checkbox("Show only 0-result companies", value=False,
+                                                 key="scrape_zero_only")
+                        view = pc_df[pc_df["total"] == 0] if show_zero else pc_df
+                        st.dataframe(view, hide_index=True, use_container_width=True, height=400)
 
                 # Sample listings
                 st.markdown("**Recent candidates** (first 50)")

@@ -173,72 +173,214 @@ HEADERS = {
 # Stage 1 — rule-based triage.
 # ---------------------------------------------------------------------------
 NEG_TITLE_TERMS = [
-    "intern", "co-op", "coop", "student", "graduate program",
+    # Junior / student roles
+    "intern", "internship", "co-op", "coop", "student", "graduate program",
+    "analyst program", "associate program", "leadership program",
+    "fall 2026", "spring 2026", "summer 2026", "winter 2026",
+    "fall 2027", "spring 2027", "summer 2027",
+    "new grad", "new graduate", "rotational program",
+    # Retail / consumer-facing banking
     "retail branch", "teller", "branch manager", "customer service",
-    "sales representative", "account executive", "marketing",
-    "social media", "content writer", "cleaning", "janitor", "facilities",
-    "receptionist", "administrative assistant", "mobile mortgage",
+    "personal banker", "personal banking associate", "mobile mortgage",
+    "financial advisor", "financial planner", "wealth advisor",
+    "investment advisor", "investment advisor i", "advisor trainee",
+    "insurance advisor", "sun life financial advisor",
+    # Sales / BD / marketing
+    "sales representative", "account executive", "business development representative",
+    "marketing", "social media", "content writer", "communications",
+    "public relations",
+    # Facilities / admin / ops
+    "cleaning", "security guard", "janitor", "facilities",
+    "receptionist", "administrative assistant", "executive assistant",
+    # Wrong engineering disciplines
     "scientist, chemistry", "mechanical engineer", "electrical engineer",
-    "web developer", "front end", "frontend", "ui/ux", "ux designer",
-    "software developer (junior)", "sdet", "qa analyst",
+    "civil engineer", "materials engineer", "chemical engineer",
+    # Pure software roles (Saber is finance-quant, not dev)
+    "web developer", "front end developer", "frontend developer",
+    "full stack developer", "full-stack developer", "full stack engineer",
+    "backend developer", "ui/ux", "ux designer", "ui designer",
+    "mobile developer", "android developer", "ios developer",
+    "software developer (junior)", "junior developer",
+    "sdet", "qa analyst", "qa engineer", "qa automation",
+    "quality engineer", "automation tester", "test engineer",
+    "java developer", ".net developer", "python developer",
+    "devops engineer", "site reliability", "platform engineer",
+    "application support", "production support",
+    # Legal / audit-only / generic
+    "senior counsel", "junior counsel", "legal counsel",
+    "registered supervisor",
 ]
-POS_TITLE_TERMS = [
+
+
+# Weighted positive signals. score ≥ 3 passes stage 1.
+# Matched longest-first; each distinct phrase contributes its weight once.
+STRONG_POS = [  # +3 each — unambiguous lane hits
     "alm", "asset liability", "asset-liability",
     "irrbb", "interest rate risk",
     "model validation", "model risk", "model vetting", "model governance",
-    "treasury", "balance sheet", "ftp", "funds transfer", "funding",
+    "model oversight", "model development",
+    "treasury risk", "balance sheet",
+    "funds transfer pricing", "fund transfer pricing", "ftp",
     "ldi", "liability driven", "liability-driven",
-    "fixed income", "derivatives", "rates ", "rates,", "rates -",
-    "liquidity risk", "market risk", "credit risk model",
-    "risk analytics", "quantitative risk", "risk modelling", "risk modeling",
-    "enterprise risk", "valuation", "portfolio risk",
-    "aladdin", "ifrs 17", "ifrs17", "ifrs 9", "ifrs9",
-    "actuarial", "reserve", "capital model", "stress test",
-    "financial risk", "investment risk", "financial modeling", "financial modelling",
-    "osfi", "basel", "b-12", "e-23", "lar", "lcr", "nsfr",
+    "fixed income", "liquidity risk", "market risk",
+    "credit risk model", "credit risk analytics",
+    "ifrs 17", "ifrs17", "ifrs 9", "ifrs9",
+    "capital model", "stress test", "stress testing",
+    "enterprise risk", "aladdin", "bloomberg risk",
+    "actuarial", "actuary",
+    "stochastic", "monte carlo",
+    "e-23", "b-12", "basel",
+    "regulatory capital", "economic capital", "capital adequacy",
+    "counterparty credit", "cva", "xva",
     "risk officer", "chief risk", "head of risk",
     "risk director", "risk vp",
+    "derivatives pricing", "derivatives valuation",
+    "scenario generation", "scenario analysis",
 ]
-LEVEL_TERMS = [
+
+MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage 1
+    "quantitative", "valuation",
+    "portfolio risk", "risk analytics", "portfolio analytics",
+    "total portfolio", "investment finance",
+    "risk modeling", "risk modelling",
+    "financial modeling", "financial modelling",
+    "financial risk", "investment risk",
+    "treasury", "capital risk", "capital governance",
+    "liquidity reporting", "capital reporting",
+    "regulatory reporting", "financial reporting",
+    "credit risk", "operational risk",
+    "risk governance", "risk management",
+    "model governance", "ai governance", "model risk governance",
+    "reserving", "pricing actuary",
+    "forecasting model", "forecasting models",
+    "derivatives", "securitization", "structured credit",
+    "hedge accounting", "hedging",
+    "osfi", "lcr", "nsfr", "lar",
+    "insurance investment", "insurance solutions",
+    # Resolution/recovery planning (OSFI reg)
+    "resolution planning", "recovery and resolution", "erm",
+    # French equivalents for QC postings
+    "validation des modèles", "gestion de l'actif", "gestion des risques",
+    "risque de crédit", "risque de marché", "analytique", "modélisation",
+]
+
+WEAK_POS = [  # +1 each — noisy tokens, require combos
+    "risk", "capital", "liquidity",
+    "quant", "analytics", "modeling", "modelling",
+    "model", "reporting",
+]
+
+LEVEL_TERMS = [  # +1 each — target seniority
     "director", "senior director", "vp", "vice president", "avp",
     "head of", "principal", "managing director", "associate director",
     "senior vice", "senior manager", "sr manager", "sr. manager",
-    "senior consultant", "chief",
+    "senior consultant", "chief", "lead",
+    "manager", "senior",
 ]
+
+DIR_LEVEL_TERMS = (  # for tier classification
+    "director", "vp", "vice president", "head of",
+    "principal", "managing director", "associate director",
+    "chief", "avp",
+)
+MGR_LEVEL_TERMS = (
+    "senior manager", "sr manager", "sr. manager",
+)
+
+STAGE1_THRESHOLD = 2  # lowered from 3 — see stage1_pass() for combo rules
+
+
+def _distinct_hits(title_lower: str, phrases: list[str]) -> list[str]:
+    """Return phrases found in title_lower, longest-first, with substring
+    suppression (so "risk analytics" matching blocks the shorter "risk" hit)."""
+    hits: list[str] = []
+    taken_spans: list[tuple[int, int]] = []
+    for p in sorted(phrases, key=len, reverse=True):
+        idx = title_lower.find(p)
+        if idx < 0:
+            continue
+        end = idx + len(p)
+        # Skip if overlaps an already-taken span
+        if any(start < end and idx < e for start, e in taken_spans):
+            continue
+        hits.append(p)
+        taken_spans.append((idx, end))
+    return hits
 
 
 def rule_triage(title: str) -> dict:
-    """Return {stage1_pass: bool, rough_tier: int, rule_reasons: [..]}."""
-    t = title.lower()
+    """Weighted stage-1 triage. Passes if total score >= STAGE1_THRESHOLD.
+
+    Returns {stage1_pass, rough_tier, score, rule_reasons, hits_breakdown}.
+    """
+    t = (title or "").lower()
+    # Hard-fail on negative term
+    for n in NEG_TITLE_TERMS:
+        if n in t:
+            return {"stage1_pass": False, "rough_tier": 5, "score": 0,
+                    "rule_reasons": [f"neg:{n}"], "hits_breakdown": {}}
+
+    strong = _distinct_hits(t, STRONG_POS)
+    # Medium and weak are matched against the remaining (post-strong) title
+    # to avoid double-counting "risk" inside "liquidity risk", etc.
+    remaining = t
+    for s in strong:
+        remaining = remaining.replace(s, " ")
+    medium = _distinct_hits(remaining, MEDIUM_POS)
+    for m in medium:
+        remaining = remaining.replace(m, " ")
+    weak = _distinct_hits(remaining, WEAK_POS)
+    level = _distinct_hits(t, LEVEL_TERMS)
+
+    score = 3 * len(strong) + 2 * len(medium) + 1 * len(weak) + 1 * min(len(level), 2)
+    breakdown = {"strong": strong, "medium": medium, "weak": weak, "level": level}
     reasons = []
-    if any(n in t for n in NEG_TITLE_TERMS):
-        return {"stage1_pass": False, "rough_tier": 5, "rule_reasons": ["negative_title_term"]}
-    pos_hits = [p for p in POS_TITLE_TERMS if p in t]
-    level_hits = [l for l in LEVEL_TERMS if l in t]
-    # Must have at least one positive signal OR at least one target-level signal
-    if not pos_hits and not level_hits:
-        return {"stage1_pass": False, "rough_tier": 5,
-                "rule_reasons": ["no_positive_or_level_signal"]}
-    # Rough tiering
-    has_dir = any(l in t for l in ("director", "vp", "vice president", "head of",
-                                    "principal", "managing director", "associate director",
-                                    "chief", "avp"))
-    has_mgr = any(l in t for l in ("senior manager", "sr manager", "sr. manager"))
-    if pos_hits and has_dir:
+    if strong: reasons.append(f"strong={strong[:3]}")
+    if medium: reasons.append(f"medium={medium[:3]}")
+    if weak: reasons.append(f"weak={weak[:3]}")
+    if level: reasons.append(f"level={level[:2]}")
+
+    # Pass rules (OR'd):
+    #   - any STRONG hit                      -> pass (core lane term)
+    #   - any MEDIUM hit                      -> pass (domain-specific)
+    #   - any WEAK hit + level                -> pass ("Senior Manager, Liquidity Management")
+    #   - >=2 WEAK hits                       -> pass ("Capital Risk Analyst")
+    # A pure LEVEL-only match does NOT pass — too noisy. The LLM will still see the
+    # role title and can make the call; but we don't want to LLM-score every "VP, Strategy".
+    pass_reason = None
+    if strong:
+        pass_reason = "strong_hit"
+    elif medium:
+        pass_reason = "medium_hit"
+    elif weak and level:
+        pass_reason = "weak+level"
+    elif len(weak) >= 2:
+        pass_reason = "multi_weak"
+
+    if not pass_reason:
+        return {"stage1_pass": False, "rough_tier": 5, "score": score,
+                "rule_reasons": reasons or ["insufficient_signal"],
+                "hits_breakdown": breakdown}
+    reasons.append(f"pass:{pass_reason}")
+
+    # Tier classification
+    has_dir = any(l in t for l in DIR_LEVEL_TERMS)
+    has_mgr = any(l in t for l in MGR_LEVEL_TERMS)
+    if strong and has_dir:
         rough = 1
-    elif pos_hits and has_mgr:
+    elif strong and has_mgr:
         rough = 2
-    elif pos_hits:
+    elif strong:
         rough = 3
-    elif has_dir:
-        rough = 3  # vague Director title — JD may still be on-profile
+    elif has_dir and (medium or weak):
+        rough = 3  # Director of something-adjacent; LLM can judge
+    elif medium:
+        rough = 3
     else:
         rough = 4
-    if pos_hits:
-        reasons.append(f"positive_hits={pos_hits[:3]}")
-    if level_hits:
-        reasons.append(f"level_hits={level_hits[:2]}")
-    return {"stage1_pass": True, "rough_tier": rough, "rule_reasons": reasons}
+
+    return {"stage1_pass": True, "rough_tier": rough, "score": score,
+            "rule_reasons": reasons, "hits_breakdown": breakdown}
 
 
 # ---------------------------------------------------------------------------
@@ -248,24 +390,125 @@ def _url_hash(url: str) -> str:
     return hashlib.sha1(url.encode("utf-8")).hexdigest()[:16]
 
 
-def fetch_jd(url: str, max_chars: int = 20000) -> str:
-    """Fetch & strip the JD text. Cached."""
+# Boilerplate regexes — applied AFTER HTML stripping, before we send to the LLM.
+# Order matters: we strip the biggest noise first (paragraphs), then single lines.
+_BOILERPLATE_PATTERNS = [
+    # EEO / diversity statements — common phrasings
+    re.compile(r"(?is)(?:is\s+)?(?:an\s+)?equal opportunity employer[^\n]*?\n.*?"
+               r"(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)(?:we are\s+)?committed to (?:fostering|building|creating|providing)\s+"
+               r"(?:a\s+)?(?:diverse|inclusive|welcoming).*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)qualified applicants will receive consideration.*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)accommodation(?:s)? (?:is|are) available.*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)persons with disabilities.*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)aoda[^\n]*\n.*?(?=\n\s*\n|\Z)"),
+    # Cookie / privacy notices
+    re.compile(r"(?is)this (?:website|site) uses cookies.*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)by clicking\s+[\"']?accept[\"']?.*?(?=\n\s*\n|\Z)"),
+    re.compile(r"(?is)privacy (?:policy|notice|statement)[^\n]*\n.*?(?=\n\s*\n|\Z)"),
+    # Marketing fluff
+    re.compile(r"(?is)follow us on[^\n]*\n?"),
+    re.compile(r"(?im)^\s*(?:share|apply|save|print|email)\s+(?:this|to)?\s*(?:job|link|posting|role|offer)?\s*$\n?"),
+    re.compile(r"(?im)^\s*(?:apply now|save job|back to results|return to search|job details|full job description|share this role)\s*$\n?"),
+    # Careers-page nav leftovers
+    re.compile(r"(?is)job (?:alerts|search|openings|category|function|family)[^\n]*\n"),
+]
+
+# Section-header hints — lines starting with these get +score during section scoring
+_KEEP_SECTION_HINTS = (
+    "responsibilities", "key responsibilities", "what you'll do", "what you will do",
+    "your role", "in this role", "the role", "duties",
+    "qualifications", "requirements", "what you'll bring", "what you bring",
+    "must have", "must-have", "experience required", "skills",
+    "about the team", "about the role", "position summary", "job summary",
+    "we're looking for", "we are looking for", "ideal candidate",
+    # French
+    "responsabilités", "exigences", "profil recherché", "qualifications requises",
+)
+
+
+def _clean_jd(raw_text: str) -> str:
+    """Strip boilerplate and repeated legal text from a JD. Keeps the high-signal
+    sections (responsibilities, qualifications, summary) intact."""
+    if not raw_text:
+        return ""
+    t = raw_text
+    for pat in _BOILERPLATE_PATTERNS:
+        t = pat.sub("", t)
+    # Collapse repeated whitespace
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    t = re.sub(r"[ \t]+", " ", t)
+    # Drop lines that are just punctuation / single words / pure noise
+    lines = []
+    for ln in t.split("\n"):
+        s = ln.strip()
+        if not s:
+            lines.append("")
+            continue
+        # Drop pure-nav lines (all caps, <4 words)
+        if s.isupper() and len(s.split()) <= 4 and len(s) < 50:
+            continue
+        # Drop "Apply" / "Save Job" buttons leaked as text
+        if s.lower() in ("apply", "apply now", "save", "save job", "print",
+                         "share", "back to results", "return to search",
+                         "job details", "full job description"):
+            continue
+        lines.append(ln)
+    t = "\n".join(lines)
+    t = re.sub(r"\n{3,}", "\n\n", t).strip()
+    return t
+
+
+def _extract_sections(cleaned: str, max_chars: int) -> str:
+    """If we can identify responsibilities/qualifications sections, prefer those.
+    Fall back to a head-of-document truncation otherwise."""
+    if not cleaned or len(cleaned) <= max_chars:
+        return cleaned
+    lower = cleaned.lower()
+    # Find the earliest section header hit
+    earliest = len(cleaned)
+    for hint in _KEEP_SECTION_HINTS:
+        idx = lower.find(hint)
+        if 0 <= idx < earliest:
+            earliest = idx
+    if earliest < len(cleaned) and earliest < max_chars * 2:
+        # We found a section start — grab from there
+        return cleaned[earliest:earliest + max_chars]
+    # Fall back to head of document
+    return cleaned[:max_chars]
+
+
+def fetch_jd(url: str, max_chars: int = 8000) -> str:
+    """Fetch, strip HTML, clean boilerplate, prefer responsibilities section.
+
+    Caching: we cache the CLEANED text (not raw HTML), so a cache bump is needed
+    when the cleaner logic changes. Use a versioned cache filename."""
     JD_CACHE.mkdir(parents=True, exist_ok=True)
-    cache_path = JD_CACHE / f"{_url_hash(url)}.txt"
+    # Cache filename versioned — bump when cleaner changes
+    cache_path = JD_CACHE / f"{_url_hash(url)}.v2.txt"
+    legacy_cache = JD_CACHE / f"{_url_hash(url)}.txt"
     if cache_path.exists():
-        return cache_path.read_text(encoding="utf-8")[:max_chars]
+        return _extract_sections(cache_path.read_text(encoding="utf-8"), max_chars)
     try:
         r = requests.get(url, headers=HEADERS, timeout=25)
         if r.status_code != 200:
             return ""
         soup = BeautifulSoup(r.text, "html.parser")
-        for tag in soup(["script", "style", "nav", "footer", "header", "button", "form"]):
+        for tag in soup(["script", "style", "nav", "footer", "header", "button", "form",
+                         "aside", "iframe", "noscript"]):
             tag.decompose()
-        text = re.sub(r"\n{3,}", "\n\n", soup.get_text("\n"))
-        text = re.sub(r"[ \t]+", " ", text)
-        text = text.strip()[:max_chars]
-        cache_path.write_text(text, encoding="utf-8")
-        return text
+        # Prefer <main> / <article> content if present (most ATS pages have it)
+        main = soup.select_one("main, article, .job-description, #job-description, "
+                               "[class*='JobDescription'], [class*='job-details']")
+        body = main if main else soup
+        raw_text = body.get_text("\n")
+        cleaned = _clean_jd(raw_text)
+        # Legacy cache cleanup
+        if legacy_cache.exists():
+            try: legacy_cache.unlink()
+            except Exception: pass
+        cache_path.write_text(cleaned, encoding="utf-8")
+        return _extract_sections(cleaned, max_chars)
     except Exception as e:
         print(f"  [fetch_jd] err {url}: {e}", file=sys.stderr)
         return ""
@@ -333,7 +576,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         f"URL: {role['link']}\n"
         f"Source: {role.get('source', '')}\n"
         f"\n# JOB DESCRIPTION (may be partial)\n"
-        f"{jd_text[:3000] if jd_text else '(JD not available — score from title/company only.)'}\n"
+        f"{jd_text[:6000] if jd_text else '(JD not available — score from title/company only.)'}\n"
         f"\n# YOUR OUTPUT\n"
         f"Return ONLY valid JSON, no prose, matching this schema:\n"
         f"{SCHEMA}\n"
