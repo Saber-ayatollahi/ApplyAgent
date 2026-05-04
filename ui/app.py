@@ -96,6 +96,89 @@ def human_elapsed(started_iso: str | None, end_iso: str | None = None) -> str:
     return f"{secs // 3600}h {(secs % 3600) // 60}m"
 
 
+def load_scorer_progress() -> dict | None:
+    """Read outputs/fit_scorer_progress.json if present. Returns None if missing."""
+    p = OUT_DIR / "fit_scorer_progress.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _fmt_eta(secs: float | None) -> str:
+    if not secs or secs <= 0:
+        return "—"
+    secs = int(secs)
+    if secs < 60:
+        return f"{secs}s"
+    if secs < 3600:
+        return f"{secs // 60}m {secs % 60}s"
+    return f"{secs // 3600}h {(secs % 3600) // 60}m"
+
+
+def render_scorer_progress(container=None, title: str = "🤖 Scoring in progress"):
+    """Render a live progress bar + ETA + recent candidates table for the fit scorer."""
+    prog = load_scorer_progress()
+    if not prog:
+        return False
+    state = prog.get("state", "idle")
+    if state == "idle":
+        return False
+    target = container or st
+    cur = prog.get("current", 0)
+    total = prog.get("total", 0) or 1
+    frac = min(1.0, cur / total)
+
+    with target.container(border=True):
+        st.markdown(f"### {title}")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Progress", f"{cur}/{total}", f"{frac*100:.0f}%")
+        c2.metric("Elapsed", _fmt_eta(prog.get("elapsed_sec")))
+        c3.metric("ETA", _fmt_eta(prog.get("eta_sec")))
+        c4.metric("Cache hits", prog.get("cache_hits", 0))
+        st.progress(frac, text=f"Scored {cur} of {total} candidates · scan=`{prog.get('scan')}`")
+
+        # Verdict breakdown so far
+        vc = prog.get("verdict_counts") or {}
+        if vc:
+            apply_n = vc.get("apply_now", 0)
+            tailor_n = vc.get("tailor_and_apply", 0)
+            watch_n = vc.get("watch", 0)
+            skip_n = vc.get("skip", 0)
+            err_n = vc.get("error", 0) + prog.get("errors", 0)
+            bc1, bc2, bc3, bc4, bc5 = st.columns(5)
+            bc1.metric("apply_now", apply_n)
+            bc2.metric("tailor_and_apply", tailor_n)
+            bc3.metric("watch", watch_n)
+            bc4.metric("skip", skip_n)
+            bc5.metric("errors", err_n, delta_color="inverse")
+
+        recent = prog.get("recent") or []
+        if recent:
+            st.caption("**Most recent candidates** (newest last)")
+            rows = []
+            for r in recent:
+                rows.append({
+                    "company": r.get("company", ""),
+                    "title": r.get("title", ""),
+                    "verdict": r.get("verdict", ""),
+                    "score": r.get("score", ""),
+                    "cache": "💾" if r.get("from_cache") else "🌐",
+                })
+            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True,
+                         height=min(40 + 36 * len(rows), 300))
+
+        status_caption = {
+            "running": f"🟡 Running · updated {prog.get('updated_at', '—')}",
+            "finished": f"🟢 Finished at {prog.get('finished_at', '—')}",
+            "failed": f"🔴 Failed at {prog.get('finished_at', '—')}",
+        }.get(state, f"State: {state}")
+        st.caption(status_caption)
+    return state == "running"
+
+
 def latest_pipeline_status() -> dict | None:
     if not PIPELINE_DIR.exists():
         return None
@@ -205,7 +288,23 @@ if page == "🏠 Dashboard":
             f"Jump to 🎯 Pipeline to watch stages.",
             icon="⚡",
         )
-    elif pipe and pipe.get("state") == "finished":
+
+    # Scorer progress banner (shown whether pipeline or standalone)
+    _sp = load_scorer_progress()
+    if _sp and _sp.get("state") == "running":
+        cur = _sp.get("current", 0); tot = _sp.get("total", 0) or 1
+        frac = min(1.0, cur / tot)
+        st.progress(
+            frac,
+            text=(
+                f"🤖 Scoring {cur}/{tot} candidates · "
+                f"elapsed {_fmt_eta(_sp.get('elapsed_sec'))} · "
+                f"ETA {_fmt_eta(_sp.get('eta_sec'))} · "
+                f"apply_now={(_sp.get('verdict_counts') or {}).get('apply_now', 0)}"
+            ),
+        )
+
+    if not pipeline_running and pipe and pipe.get("state") == "finished":
         st.success(
             f"✅ Last pipeline `{pipe['pipeline_id']}` finished {fmt_dt(pipe.get('finished_at'))}. "
             f"Review in 🎯 Pipeline.",
@@ -478,6 +577,10 @@ elif page == "🎯 Pipeline":
                 st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
                 st.rerun()
 
+        # Scorer progress bar (visible whenever fit_scorer is running,
+        # whether invoked directly or as part of a pipeline)
+        scorer_running = render_scorer_progress()
+
         # Live log if pipeline just launched (runner log)
         if pipeline_running or active_runs:
             st.markdown("### 📜 Live log")
@@ -496,6 +599,12 @@ elif page == "🎯 Pipeline":
                     import time as _t
                     _t.sleep(5)
                     st.rerun()
+        elif scorer_running:
+            # Scorer running standalone (not pipeline) — still auto-refresh
+            if st.checkbox("🔄 Auto-refresh every 3s", value=True, key="score_auto_pipe"):
+                import time as _t
+                _t.sleep(3)
+                st.rerun()
 
     # ================== TAB: Scrape ==================
     with tabs[1]:
@@ -553,6 +662,14 @@ elif page == "🎯 Pipeline":
             "Each candidate is rated 1–10 against Saber's Master Repository. "
             "Verdicts: apply_now / tailor_and_apply / watch / skip."
         )
+
+        # Live progress if scorer is running
+        scorer_running_here = render_scorer_progress()
+        if scorer_running_here:
+            if st.checkbox("🔄 Auto-refresh every 3s", value=True, key="score_auto_tab"):
+                import time as _t
+                _t.sleep(3)
+                st.rerun()
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)

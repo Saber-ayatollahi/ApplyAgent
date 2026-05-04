@@ -36,6 +36,9 @@ automation/outputs/SCAN_*.md
 automation/outputs/promote_report_*.md
 automation/outputs/weekly_report_*.md
 automation/outputs/fit_scorer_stderr.log
+automation/outputs/fit_scorer_progress.json
+automation/outputs/runs/
+automation/outputs/pipelines/
 
 # Caches — regenerated on demand
 automation/outputs/jd_cache/

@@ -41,9 +41,11 @@ import os
 import re
 import sys
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
 from typing import Optional
 
 try:
@@ -63,9 +65,98 @@ OUT_DIR = ROOT / "automation" / "outputs"
 JD_CACHE = OUT_DIR / "jd_cache"
 FIT_CACHE = OUT_DIR / "fit_cache"
 MASTER_REPO = ROOT / "Saber_Ayatollahi_Master_Repository.md"
+PROGRESS_PATH = OUT_DIR / "fit_scorer_progress.json"
 
 MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-sonnet-4-6")
 FALLBACK_MODEL = "claude-haiku-4-5-20251001"
+
+
+# ---------------------------------------------------------------------------
+# Live progress — writes outputs/fit_scorer_progress.json after each candidate
+# so the Streamlit UI can show a progress bar, ETA, and the last-N results.
+# ---------------------------------------------------------------------------
+_progress_lock = Lock()
+_progress_state: dict = {
+    "state": "idle",
+    "scan": None,
+    "total": 0,
+    "current": 0,
+    "cache_hits": 0,
+    "errors": 0,
+    "started_at": None,
+    "updated_at": None,
+    "elapsed_sec": 0.0,
+    "eta_sec": None,
+    "verdict_counts": {},
+    "recent": deque(maxlen=8),  # last-N scored candidates
+}
+
+
+def _write_progress():
+    try:
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        serializable = dict(_progress_state)
+        serializable["recent"] = list(_progress_state["recent"])
+        PROGRESS_PATH.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
+    except Exception:
+        pass  # progress is best-effort; don't break scoring on IO hiccup
+
+
+def progress_begin(scan_name: str, total: int):
+    with _progress_lock:
+        _progress_state.update({
+            "state": "running",
+            "scan": scan_name,
+            "total": total,
+            "current": 0,
+            "cache_hits": 0,
+            "errors": 0,
+            "started_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "elapsed_sec": 0.0,
+            "eta_sec": None,
+            "verdict_counts": {},
+            "recent": deque(maxlen=8),
+        })
+        _write_progress()
+
+
+def progress_tick(candidate: dict, from_cache: bool, error: bool, t0: float):
+    with _progress_lock:
+        _progress_state["current"] += 1
+        if from_cache:
+            _progress_state["cache_hits"] += 1
+        if error:
+            _progress_state["errors"] += 1
+        cur = _progress_state["current"]
+        total = _progress_state["total"] or 1
+        elapsed = time.time() - t0
+        _progress_state["elapsed_sec"] = round(elapsed, 1)
+        remaining = total - cur
+        rate = cur / elapsed if elapsed > 0 else 0
+        _progress_state["eta_sec"] = round(remaining / rate, 1) if rate > 0 else None
+        _progress_state["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        f = candidate.get("fit") or {}
+        verdict = f.get("fit_verdict", "?")
+        _progress_state["verdict_counts"][verdict] = (
+            _progress_state["verdict_counts"].get(verdict, 0) + 1
+        )
+        _progress_state["recent"].append({
+            "company": candidate.get("company", ""),
+            "title": (candidate.get("title") or "")[:80],
+            "score": f.get("fit_score"),
+            "verdict": verdict,
+            "from_cache": from_cache,
+            "error": error,
+        })
+        _write_progress()
+
+
+def progress_end(state: str = "finished"):
+    with _progress_lock:
+        _progress_state["state"] = state
+        _progress_state["finished_at"] = datetime.utcnow().isoformat() + "Z"
+        _write_progress()
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -350,23 +441,37 @@ def main() -> int:
 
     client = anthropic.Anthropic()
     t0 = time.time()
+    progress_begin(args.scan, len(triaged))
 
     def score_one(r):
-        jd = fetch_jd(r["link"])
-        r["_jd_len"] = len(jd)
-        r["fit"] = score_with_llm(client, r, jd)
-        return r
+        # Detect cache hit BEFORE calling (so the UI can show cache-hit rate).
+        from_cache = _cache_path_fit(r["link"]).exists()
+        error = False
+        try:
+            jd = fetch_jd(r["link"])
+            r["_jd_len"] = len(jd)
+            r["fit"] = score_with_llm(client, r, jd)
+        except Exception as e:
+            error = True
+            r["fit"] = {"fit_score": 0, "fit_verdict": "error",
+                        "summary": f"scoring error: {e}"[:200]}
+        return r, from_cache, error
 
     scored = []
-    # Cache hits are instant; real LLM calls parallelize.
-    with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
-        futures = [ex.submit(score_one, r) for r in triaged]
-        for i, fut in enumerate(as_completed(futures), 1):
-            r = fut.result()
-            scored.append(r)
-            if i % 25 == 0 or i == len(futures):
-                print(f"  [fit_scorer] scored {i}/{len(futures)} "
-                      f"({(time.time() - t0) / 60:.1f} min)", file=sys.stderr)
+    try:
+        with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
+            futures = [ex.submit(score_one, r) for r in triaged]
+            for i, fut in enumerate(as_completed(futures), 1):
+                r, from_cache, error = fut.result()
+                scored.append(r)
+                progress_tick(r, from_cache, error, t0)
+                if i % 10 == 0 or i == len(futures):
+                    print(f"  [fit_scorer] scored {i}/{len(futures)} "
+                          f"({(time.time() - t0) / 60:.1f} min)", file=sys.stderr)
+        progress_end("finished")
+    except Exception:
+        progress_end("failed")
+        raise
 
     # Sort by (fit_score desc, tier asc)
     scored.sort(key=lambda r: (-r["fit"].get("fit_score", 0), r["fit"].get("tier", 4)))
