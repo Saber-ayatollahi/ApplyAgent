@@ -97,40 +97,122 @@ def mask(key: str) -> str:
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
+# Failure categories — the UI distinguishes these so the user knows what to fix.
+CATEGORY_OK = "ok"
+CATEGORY_EMPTY = "empty"
+CATEGORY_NO_SDK = "no_sdk"
+CATEGORY_AUTH = "auth"          # invalid key / permission_denied
+CATEGORY_CREDIT = "credit"      # valid key, but billing exhausted
+CATEGORY_RATE = "rate_limit"    # 429
+CATEGORY_NETWORK = "network"    # connection / timeout
+CATEGORY_OTHER = "other"
+
+
 @dataclass
 class ValidationResult:
     ok: bool
     message: str
     checked_at: str
+    category: str = CATEGORY_OTHER
     model_count: int = 0
+    preflight_ok: bool = False   # True only if we confirmed credits/billing work
 
 
-def validate(key: str) -> ValidationResult:
-    """Cheap GET /v1/models with the key. No token spend."""
+def _classify(err_msg: str) -> str:
+    em = err_msg.lower()
+    if "credit balance" in em or "billing" in em or "insufficient" in em:
+        return CATEGORY_CREDIT
+    if ("invalid_api_key" in em or "authentication" in em
+            or "permission_denied" in em or "401" in em or "403" in em):
+        return CATEGORY_AUTH
+    if "rate_limit" in em or "429" in em:
+        return CATEGORY_RATE
+    if ("connection" in em or "timeout" in em or "timed out" in em
+            or "getaddrinfo" in em or "networkerror" in em):
+        return CATEGORY_NETWORK
+    return CATEGORY_OTHER
+
+
+def validate(key: str, preflight: bool = True) -> ValidationResult:
+    """Validate the Anthropic API key.
+
+    Two-step:
+      1. Cheap GET /v1/models — confirms the key is well-formed and authenticated.
+      2. (preflight=True) A 1-token messages.create call — confirms billing/credits
+         are actually available. This is what catches 'credit balance too low'
+         before the scorer burns 40 min producing 482 skip-verdicts.
+
+    Total cost: ~1 input token + 1 output token per preflight. Essentially free.
+    """
+    now = lambda: datetime.now().isoformat(timespec="seconds")
+
     if not key or not key.strip():
-        return ValidationResult(False, "Empty key", datetime.now().isoformat(timespec="seconds"))
+        return ValidationResult(False, "Empty key", now(), category=CATEGORY_EMPTY)
+
     try:
         import anthropic  # type: ignore
     except ImportError:
         return ValidationResult(False, "anthropic package not installed",
-                                 datetime.now().isoformat(timespec="seconds"))
+                                 now(), category=CATEGORY_NO_SDK)
+
+    key = key.strip()
+    client = anthropic.Anthropic(api_key=key)
+
+    # ── Step 1: auth check ────────────────────────────────────────────────
     try:
-        client = anthropic.Anthropic(api_key=key.strip())
-        # models.list() returns a SyncPage; iterate to force the call
         page = client.models.list(limit=5)
         models = list(page.data) if hasattr(page, "data") else list(page)
+        model_count = len(models)
+    except Exception as e:
+        msg = str(e)
+        cat = _classify(msg)
+        if len(msg) > 200:
+            msg = msg[:200] + "…"
+        return ValidationResult(False, f"Auth failed: {msg}", now(), category=cat)
+
+    if not preflight:
         return ValidationResult(
-            True,
-            f"Valid — {len(models)} models visible",
-            datetime.now().isoformat(timespec="seconds"),
-            model_count=len(models),
+            True, f"Key authenticated — {model_count} models visible (preflight skipped)",
+            now(), category=CATEGORY_OK, model_count=model_count, preflight_ok=False,
+        )
+
+    # ── Step 2: credit preflight — tiny messages.create ───────────────────
+    try:
+        client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1,
+            messages=[{"role": "user", "content": "hi"}],
         )
     except Exception as e:
         msg = str(e)
-        # Trim verbose API error JSON
+        cat = _classify(msg)
+        if cat == CATEGORY_CREDIT:
+            return ValidationResult(
+                False,
+                "Key authenticated but credits exhausted — top up at console.anthropic.com/settings/billing",
+                now(), category=CATEGORY_CREDIT, model_count=model_count,
+            )
+        if cat == CATEGORY_RATE:
+            # Rate-limited preflight isn't a blocker; treat as "probably OK"
+            return ValidationResult(
+                True,
+                f"Authenticated; preflight hit rate limit (usually OK) — {model_count} models",
+                now(), category=CATEGORY_RATE, model_count=model_count, preflight_ok=False,
+            )
+        if cat == CATEGORY_AUTH:
+            return ValidationResult(
+                False, f"Authenticated for models.list but messages blocked: {msg[:180]}",
+                now(), category=CATEGORY_AUTH, model_count=model_count,
+            )
         if len(msg) > 200:
             msg = msg[:200] + "…"
-        return ValidationResult(False, msg, datetime.now().isoformat(timespec="seconds"))
+        return ValidationResult(False, f"Preflight failed: {msg}",
+                                 now(), category=cat, model_count=model_count)
+
+    return ValidationResult(
+        True, f"Valid & credits OK — {model_count} models, billing works",
+        now(), category=CATEGORY_OK, model_count=model_count, preflight_ok=True,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -147,11 +229,19 @@ def render_sidebar():
         validation = validate(key)
         st.session_state["_anth_validation"] = validation
 
-    # Header badge
+    # Header badge — category-aware
     if not key:
         st.sidebar.error("🔑 API key not set", icon="⚠️")
+    elif validation and validation.ok and validation.category == CATEGORY_OK:
+        st.sidebar.success(f"🔑 Key valid · credits OK · {mask(key)}", icon="✅")
+    elif validation and validation.category == CATEGORY_CREDIT:
+        st.sidebar.error(f"💳 CREDITS EXHAUSTED · {mask(key)}", icon="🛑")
+    elif validation and validation.category == CATEGORY_AUTH:
+        st.sidebar.error(f"🔑 Key rejected · {mask(key)}", icon="❌")
+    elif validation and validation.category == CATEGORY_NETWORK:
+        st.sidebar.warning(f"🔑 Network issue · {mask(key)}", icon="🌐")
     elif validation and validation.ok:
-        st.sidebar.success(f"🔑 Key valid · {mask(key)}", icon="✅")
+        st.sidebar.info(f"🔑 Authenticated (preflight skipped) · {mask(key)}", icon="ℹ️")
     elif validation and not validation.ok:
         st.sidebar.error(f"🔑 Key invalid · {mask(key)}", icon="❌")
     else:
@@ -196,10 +286,44 @@ def render_sidebar():
                 st.rerun()
 
         if validation:
-            if validation.ok:
-                st.caption(f"✅ Checked {validation.checked_at} — {validation.message}")
+            cat = validation.category
+            stamp = validation.checked_at
+            if cat == CATEGORY_OK:
+                st.success(f"✅ {validation.message}\n\nChecked {stamp}")
+            elif cat == CATEGORY_CREDIT:
+                st.error(
+                    f"💳 **Credits exhausted** — the key authenticates but your "
+                    f"Anthropic account has no billing credit. The scorer would run "
+                    f"through every candidate producing empty 'skip' verdicts.\n\n"
+                    f"**Fix:** top up at "
+                    f"[console.anthropic.com/settings/billing]"
+                    f"(https://console.anthropic.com/settings/billing), "
+                    f"then hit 🔄 Re-validate.\n\n"
+                    f"Checked {stamp}"
+                )
+            elif cat == CATEGORY_AUTH:
+                st.error(
+                    f"❌ **Key rejected by the API.** Usually means the key was "
+                    f"revoked, mistyped, or belongs to a deleted workspace.\n\n"
+                    f"**Fix:** generate a new key at "
+                    f"[console.anthropic.com/settings/keys]"
+                    f"(https://console.anthropic.com/settings/keys) and paste it above.\n\n"
+                    f"Checked {stamp} — {validation.message}"
+                )
+            elif cat == CATEGORY_NETWORK:
+                st.warning(
+                    f"🌐 **Network error** reaching the API. Check connectivity or "
+                    f"VPN/proxy settings, then 🔄 Re-validate.\n\n"
+                    f"Checked {stamp} — {validation.message}"
+                )
+            elif cat == CATEGORY_RATE:
+                st.info(
+                    f"⏱ **Rate-limited** during preflight. The key is probably fine; "
+                    f"wait a moment and 🔄 Re-validate.\n\n"
+                    f"Checked {stamp}"
+                )
             else:
-                st.caption(f"❌ Checked {validation.checked_at} — {validation.message}")
+                st.warning(f"❓ {validation.message}\n\nChecked {stamp}")
 
         cfg = _read_config()
         if cfg.get("saved_at"):
@@ -207,6 +331,10 @@ def render_sidebar():
 
 
 def is_key_valid() -> bool:
-    """Caller-facing helper: is there a key AND did validation succeed?"""
+    """Caller-facing helper: is the key authenticated AND did the credit preflight pass?
+
+    Scorer / tailor / pipeline buttons depend on this. Returning False when credits are
+    exhausted is what prevents the 482-skip-verdicts silent-failure scenario.
+    """
     v: ValidationResult | None = st.session_state.get("_anth_validation")
-    return bool(v and v.ok)
+    return bool(v and v.ok and v.preflight_ok)
