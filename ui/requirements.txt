@@ -1,0 +1,6 @@
+streamlit>=1.30
+pandas>=2.0
+requests>=2.30
+beautifulsoup4>=4.12
+anthropic>=0.40
+python-dateutil>=2.8

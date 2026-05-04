@@ -1,0 +1,276 @@
+{
+  "meta": {
+    "owner": "Saber Ayatollahi",
+    "version": "1.0",
+    "purpose": "Toronto finance recruiter + warm-intro + alumni CRM. Track every touchpoint. Referral-driven hiring is ~70% of Director+ movement in Toronto finance — this is not optional infrastructure.",
+    "last_updated": "2026-05-03",
+    "status_enum": [
+      "Not_Contacted",
+      "Outreach_Sent",
+      "Conversation_Scheduled",
+      "Active_Rep",
+      "On_Hold",
+      "Past_Rep",
+      "Do_Not_Contact"
+    ],
+    "relationship_type_enum": [
+      "recruiter_retained_exec",
+      "recruiter_contingent",
+      "internal_recruiter",
+      "hiring_manager_direct",
+      "alumni_moodys",
+      "alumni_ey",
+      "alumni_ortec",
+      "alumni_western",
+      "cfa_society_toronto",
+      "referral_source"
+    ],
+    "weekly_target": {
+      "new_outreach": 10,
+      "active_conversations": 4,
+      "coffee_chats_scheduled": 3
+    }
+  },
+  "recruiters": [
+    {
+      "id": "odgers-001",
+      "firm": "Odgers Berndtson",
+      "firm_type": "recruiter_retained_exec",
+      "location": "Toronto",
+      "url": "https://www.odgersberndtson.com/en-ca/contact/toronto",
+      "coverage": "C-suite and senior Director/VP finance roles at Big 6, pensions, asset managers. Works retained mandates — won't return cold emails unless you're a known-good fit.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Approach via LinkedIn with a specific story angle — ALM/IRRBB Director at Big 6. Don't cold-email generically. Prioritize partners who list financial services or risk management.",
+      "last_touchpoint": null,
+      "next_action": "Identify 2 Odgers Toronto FS partners on LinkedIn; send personalized InMail Week 1 (mention OSFI E-23 tailwind + specific Director ALM search context)."
+    },
+    {
+      "id": "kornferry-001",
+      "firm": "Korn Ferry",
+      "firm_type": "recruiter_retained_exec",
+      "location": "Toronto",
+      "url": "https://www.kornferry.com/about-us/offices/toronto",
+      "coverage": "Similar retained exec search profile. Strong with banks and institutional asset managers.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Similar approach as Odgers. Find FS-focused partners via LinkedIn.",
+      "last_touchpoint": null,
+      "next_action": "Week 1 — LinkedIn InMail to 2 FS partners."
+    },
+    {
+      "id": "heidrick-001",
+      "firm": "Heidrick & Struggles",
+      "firm_type": "recruiter_retained_exec",
+      "location": "Toronto",
+      "url": "https://www.heidrick.com/en/offices/toronto",
+      "coverage": "Retained exec search; strong with Big 6 and global asset managers.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Third retained firm to approach. Lower priority than Odgers / Korn Ferry for Director-level (tend to work more at VP+/C-suite).",
+      "last_touchpoint": null,
+      "next_action": "Week 2 — identify FS-focused consultant."
+    },
+    {
+      "id": "mp-001",
+      "firm": "Michael Page — Finance & Accounting",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://www.michaelpage.ca/",
+      "coverage": "Contingent recruiting; strong pipeline of Director/Senior Manager roles at Big 6, AMs, insurers. High-volume; less retained but broader reach.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Contingent = multi-shop; will push your profile to multiple clients. Best first recruiter to register with — fast ramp.",
+      "last_touchpoint": null,
+      "next_action": "Week 1 — call intake line, 30-min profile conversation, share CV + 2 target role categories."
+    },
+    {
+      "id": "rhexec-001",
+      "firm": "Robert Half Executive Search",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://www.roberthalf.ca/en/executive-search",
+      "coverage": "Contingent; CFA-charterholder-heavy books. Mix of Finance roles at Big 6 and mid-market.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Similar to Michael Page — register and stay in contact.",
+      "last_touchpoint": null,
+      "next_action": "Week 1 — call intake, register."
+    },
+    {
+      "id": "aston-001",
+      "firm": "Aston Carter / Allegis Group",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://www.astoncarter.com/",
+      "coverage": "Contingent Finance/Risk roles, contract-to-hire common. Good volume at Senior Manager / Manager level — may be slightly junior for Saber's target.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Lower priority — more junior bent, but useful for keeping funnel wide. Don't over-invest.",
+      "last_touchpoint": null,
+      "next_action": "Week 2 — send CV + short note."
+    },
+    {
+      "id": "mandrake-001",
+      "firm": "Mandrake",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://www.mandrake.ca/",
+      "coverage": "Toronto-focused financial services headhunting boutique. Strong Big 6 + pension-fund book.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Local boutique = tight relationship quality. Deborah Dumaresq and Ed Pitoniak era profile. Register early.",
+      "last_touchpoint": null,
+      "next_action": "Week 1 — short intro email + CV."
+    },
+    {
+      "id": "stonewood-001",
+      "firm": "Stonewood Group",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://www.stonewoodgroup.com/",
+      "coverage": "Retained + contingent boutique — financial services + analytics focus. Good pension fund and asset manager coverage.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Local firm, often gets the mandate before Odgers/Korn Ferry.",
+      "last_touchpoint": null,
+      "next_action": "Week 2 — short intro email + CV."
+    },
+    {
+      "id": "argentus-001",
+      "firm": "Argentus Supply Chain / Talent",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto",
+      "url": "https://argentus.com/",
+      "coverage": "Less financial-services-specific but strong Toronto recruiting network. Second-tier priority.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "Low",
+      "notes": "Deprioritize unless FS lane surfaces.",
+      "last_touchpoint": null,
+      "next_action": "Skip for now."
+    },
+    {
+      "id": "jrex-001",
+      "firm": "J Ross Executive Search",
+      "firm_type": "recruiter_retained_exec",
+      "location": "Toronto",
+      "url": "https://www.jrossexecutivesearch.com/",
+      "coverage": "Retained boutique with a CFA-heavy portfolio. Active in Canadian buy-side and risk.",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Ask around CFA Toronto Society — they have a reputation.",
+      "last_touchpoint": null,
+      "next_action": "Week 1 — LinkedIn connect + intro."
+    },
+    {
+      "id": "smithhanley-001",
+      "firm": "Smith Hanley Associates",
+      "firm_type": "recruiter_contingent",
+      "location": "Toronto / US",
+      "url": "https://www.smithhanley.com/",
+      "coverage": "Quant / analytics / data science recruiting. Relevant for vendor-platform secondary lane (Bloomberg, BlackRock, S&P, MSCI).",
+      "contacts": [],
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Strong for quant/data roles in US/Canada.",
+      "last_touchpoint": null,
+      "next_action": "Week 2 — short intro + CV."
+    }
+  ],
+  "alumni_warm_intros": [
+    {
+      "id": "moodys-alum-queue",
+      "name": "TO-FILL — Moody's Analytics alumni at Scotia / BMO / RBC / CIBC",
+      "relationship_type": "alumni_moodys",
+      "company_targeted": "Scotia, BMO, RBC, CIBC, TD",
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Query LinkedIn: 'Moody's Analytics' alumni currently at each Big 6. Expect 10-30 matches total. Prioritize anyone in Treasury, ALM, Model Risk, or Global Risk Management roles.",
+      "next_action": "Week 1 — pull list, send 5-10 personalized messages. Message template: 'Hi [name], I saw we overlapped at Moody's Analytics. I'm exploring the Canadian bank ALM / model risk space ahead of OSFI's E-23 and B-12 deadlines — would you be open to a 20-min coffee? I'd value your perspective on [their company]'s team.'"
+    },
+    {
+      "id": "moodys-alum-vendor-queue",
+      "name": "TO-FILL — Moody's Analytics alumni at BlackRock / Bloomberg / MSCI / S&P",
+      "relationship_type": "alumni_moodys",
+      "company_targeted": "BlackRock (Aladdin), Bloomberg, MSCI, S&P Global, FactSet, SS&C Algorithmics",
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Moody's → vendor-competitor alumni are a dense, actionable network. SS&C Algorithmics in particular should have 50+ ex-Moody's staff.",
+      "next_action": "Week 1-2 — pull list, send 10 personalized outreach messages."
+    },
+    {
+      "id": "ortec-alum-queue",
+      "name": "TO-FILL — Ortec Finance alumni at HOOPP / OTPP / OMERS / IMCO / Mercer / WTW",
+      "relationship_type": "alumni_ortec",
+      "company_targeted": "HOOPP, OTPP, OMERS, IMCO, Mercer, WTW, Aon",
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "Ortec served pension funds directly — some have moved client-side, some to Mercer/WTW. Small network but every intro is high-quality.",
+      "next_action": "Week 3 (pension sweep week) — identify 5-8 Ortec alumni, reach out."
+    },
+    {
+      "id": "ey-alum-queue",
+      "name": "TO-FILL — EY FSRM 2021-2022 colleagues",
+      "relationship_type": "alumni_ey",
+      "company_targeted": "EY (boomerang), Deloitte FSI, KPMG FRM, PwC FS, Oliver Wyman",
+      "status": "Not_Contacted",
+      "priority": "High",
+      "notes": "2021-2022 EY FSRM team — senior managers from Saber's period have either stayed at EY (now at Senior Manager/Director level) or moved to Deloitte/KPMG. The EY boomerang is the most natural consulting pathway.",
+      "next_action": "Week 2 — direct reach out to 3 former managers via LinkedIn/email."
+    },
+    {
+      "id": "western-alum-queue",
+      "name": "TO-FILL — Western MSc Finance + Engineering alumni in Toronto finance",
+      "relationship_type": "alumni_western",
+      "company_targeted": "various",
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Full-scholarship MSc cohort — small network, often tight.",
+      "next_action": "Week 2 — look up Western MSc Fin alumni list, send 5 messages."
+    },
+    {
+      "id": "cfa-toronto",
+      "name": "CFA Society Toronto — networking events + members directory",
+      "relationship_type": "cfa_society_toronto",
+      "company_targeted": "various",
+      "status": "Not_Contacted",
+      "priority": "Medium",
+      "notes": "Active events calendar. Join 1-2 events per month, actively network. Volunteer committee roles (e.g., Career & Mentorship committee) would give visibility.",
+      "next_action": "Week 1 — confirm CFA Society membership, register for next 2 events."
+    }
+  ],
+  "outreach_log_schema": {
+    "description": "Append entries matching this shape to outreach_log[] as you send messages.",
+    "example_entry": {
+      "date": "2026-05-05",
+      "contact_id": "odgers-001 or a specific person id",
+      "channel": "LinkedIn InMail | email | phone",
+      "message_template_used": "recruiter_initial_linkedin",
+      "message_summary": "Introduced self as Director/VP-level ALM/IRRBB candidate with Moody's background; mentioned OSFI E-23 tailwind; asked for 20-min call.",
+      "response": "received | no_response | declined",
+      "outcome": "coffee_scheduled | passed | silenced"
+    }
+  },
+  "outreach_log": [],
+  "outreach_message_templates": {
+    "recruiter_initial_linkedin": "Hi {{name}}, I'm an ALM/IRRBB practitioner at Moody's Analytics with CFA + dual MSc, currently looking for Director-level moves in Toronto — specifically Big 6 Treasury/ALM, model validation, or a vendor-platform lateral (Aladdin, S&P, MSCI, Bloomberg). OSFI's E-23 and B-12 timelines are driving hiring in my exact lane and I'd value your perspective on where the market is moving. Would you have 20 minutes in the next two weeks?",
+    "moodys_alum_bank": "Hi {{name}}, I noticed we were both at Moody's Analytics. I've been there ~4 years (buy-side Modelling Services) and am starting to look at the Canadian bank Treasury/ALM space ahead of the OSFI E-23 and B-12 deadlines — which is where a lot of my current work sits. How's [their company]? Would you be open to a 20-minute coffee or video call — I'd value your read on the team and the work.",
+    "moodys_alum_vendor": "Hi {{name}}, I noticed we were both at Moody's Analytics — I've been on the buy-side Modelling Services side since 2022. I'm exploring vendor-side moves — specifically Client Solutions / Product roles at {{platform}} — and am curious how you've found the transition. Would you have 20 minutes for a call?",
+    "ortec_alum_pension": "Hi {{name}}, we overlapped at Ortec Finance Canada. I spent ~2.5 years in the ALM/LDI consulting practice before moving to Moody's Analytics in 2022. I'm now exploring Director-level moves into pension-fund ALM teams (HOOPP, OTPP, OMERS, IMCO). Would you have 20 minutes for a call? Your perspective on [their current fund] would be hugely helpful.",
+    "ey_alum_boomerang": "Hi {{name}}, we worked together at EY FSRM in 2021-2022. I've been at Moody's Analytics since then — building out the buy-side ALM / model governance practitioner side. I'm now exploring a return to consulting at the Senior Manager / Director level. Would you have 20 minutes — I'd love your read on the current FSRM practice's hiring posture and where OSFI E-23 is driving the work.",
+    "hiring_manager_cold_linkedin": "Hi {{name}}, I saw {{target_company}} is building out {{target_team}} ahead of {{regulatory_hook}}. I'm a {{level}} ALM / model-governance practitioner at Moody's Analytics with CFA + dual MSc and a direct Ortec LDI / EY IFRS 17 background. I've just applied to your {{role_title}} posting — if it's useful to chat in advance of the process I'd value a 20-min call. Happy to share my CV by reply.",
+    "followup_d3": "Hi {{name}}, following up on my application to the {{role_title}} posting last week. I know these processes take time — wanted to flag my specific experience with {{relevant_hook}} which I thought might be useful context. Happy to answer any questions over a short call.",
+    "followup_d14": "Hi {{name}}, checking in on the {{role_title}} process — I remain very interested. If there's any additional context helpful to the panel on my sign-off authority at Moody's or my Ortec LDI background, happy to share. Thanks again for your consideration.",
+    "post_interview_thankyou": "Hi {{name}}, thank you for the time today — I particularly enjoyed our conversation about {{specific_topic_discussed}}. Please let me know if there's anything else useful I can share; I remain very interested in the {{role_title}} opportunity."
+  }
+}

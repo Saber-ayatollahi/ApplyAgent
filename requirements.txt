@@ -1,0 +1,16 @@
+# Saber's Job Search System — Python dependencies
+# Python 3.9+ required
+
+# Core — scrapers and fetchers
+requests>=2.30
+beautifulsoup4>=4.12
+
+# Scheduling / dates
+python-dateutil>=2.8
+
+# LLM agent
+anthropic>=0.40
+
+# Data frames + UI
+pandas>=2.0
+streamlit>=1.30

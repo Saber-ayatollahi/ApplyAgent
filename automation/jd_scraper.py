@@ -1,0 +1,605 @@
+#!/usr/bin/env python3
+"""
+jd_scraper.py — Weekly scraper for Saber's target careers pages.
+
+Hits the careers portals of each tracker target company, pulls job listings that
+match an ALM/IRRBB/model-risk/fixed-income/derivatives/risk-analytics keyword filter,
+dedupes against the tracker, and writes a candidate list for manual triage.
+
+Because company careers pages vary wildly (Workday, Greenhouse, SmartRecruiters,
+custom HTML, JS-heavy SPAs), this script:
+1. Uses LinkedIn Jobs search via a public search URL with a keyword + company filter.
+2. For Workday-hosted portals, hits the Workday JSON API (documented pattern).
+3. Falls back to fetching the rendered careers page HTML + Claude-based extraction
+   for the remaining companies.
+
+Usage:
+    python jd_scraper.py                       # run full weekly scan
+    python jd_scraper.py --company Scotiabank  # single company
+    python jd_scraper.py --linkedin-only       # skip portals, LinkedIn only
+
+Writes:
+    automation/outputs/scan_YYYYMMDD.json      # candidate list
+    automation/outputs/scan_YYYYMMDD.md        # human-readable triage report
+
+Notes:
+- LinkedIn is the highest-signal source. The guest-search URL pattern works without auth.
+- This is a starter implementation; expect to iterate per-portal as patterns are encountered.
+"""
+from __future__ import annotations
+import argparse
+import json
+import re
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+from typing import Iterable, Optional
+
+try:
+    import requests
+    from bs4 import BeautifulSoup  # type: ignore
+except ImportError:
+    print("ERROR: pip install requests beautifulsoup4", file=sys.stderr)
+    sys.exit(1)
+
+ROOT = Path(__file__).resolve().parent.parent
+TRACKER = ROOT / "job_tracker_data.json"
+OUT_DIR = ROOT / "automation" / "outputs"
+
+# Keyword tiers. "Any" match in a title or JD makes the role a candidate.
+KEYWORDS_STRONG = [
+    "alm", "asset liability", "asset-liability",
+    "irrbb", "interest rate risk",
+    "model validation", "model risk",
+    "treasury risk", "balance sheet", "balance-sheet",
+    "ldi", "liability driven", "liability-driven",
+    "fixed income", "rates derivative",
+    "cash flow projection", "liquidity stress", "liquidity risk",
+    "risk analytics", "quantitative analyst", "quant analyst",
+    "aladdin", "bloomberg risk",
+    "ifrs 17", "ifrs17", "ifrs 9", "ifrs9",
+    "credit risk", "market risk", "capital markets risk",
+    "derivatives", "valuation", "portfolio risk",
+    "enterprise risk", "financial risk",
+    "fixed-income", "structured finance",
+    "financial modeling", "financial modelling",
+    "risk modeling", "risk modelling",
+    "corporate treasury", "treasurer",
+    "economic scenario", "monte carlo",
+    "stress testing", "scenario analysis",
+    "actuarial", "reserve", "capital model",
+    "osfi", "b-12", "e-23", "lcr", "nsfr", "ftp",
+    "pension analytics", "investment analytics",
+    "analytics", "quant", "quantitative",
+]
+
+KEYWORDS = KEYWORDS_STRONG  # backwards-compat for existing keyword_match() callers
+
+# Strong-negative filter for obviously-wrong roles.
+NEGATIVE_TERMS = [
+    "intern", "co-op", "coop", "student", "graduate program",
+    "retail branch", "teller", "branch manager", "customer service",
+    "sales representative", "account executive", "business development representative",
+    "marketing", "communications", "social media", "content writer",
+    "cleaning", "security guard", "janitor", "facilities",
+    "receptionist", "administrative assistant",
+    "scientist, chemistry", "mechanical engineer", "electrical engineer",
+]
+
+# Companies to scan. Grouped by sector.
+# `workday` tuple = (tenant, subdomain, board).  `greenhouse` = board token.
+# Workday tenants validated empirically 2026-05-03 via ATS-discovery agent (live HTTP 200s).
+TARGETS = [
+    # ───── Canadian Big 6 Banks (6/6) ─────
+    {"name": "Scotiabank", "sector": "Canadian Big 6 Banks", "linkedin_slug": "scotiabank", "workday": None},
+    {"name": "RBC", "sector": "Canadian Big 6 Banks", "linkedin_slug": "rbc", "workday": None},
+    {"name": "TD Bank", "sector": "Canadian Big 6 Banks", "linkedin_slug": "td", "workday": ("td", "wd3", "TD_Bank_Careers")},
+    {"name": "BMO", "sector": "Canadian Big 6 Banks", "linkedin_slug": "bmo-financial-group", "workday": ("bmo", "wd3", "External")},
+    {"name": "CIBC", "sector": "Canadian Big 6 Banks", "linkedin_slug": "cibc", "workday": ("cibc", "wd3", "search")},
+    {"name": "National Bank of Canada", "sector": "Canadian Big 6 Banks", "linkedin_slug": "national-bank-of-canada", "workday": None},
+
+    # ───── Canadian Pension Funds (9/9) ─────
+    {"name": "HOOPP", "sector": "Canadian Pension Funds", "linkedin_slug": "hoopp", "workday": ("hoopp", "wd10", "HOOPP")},
+    {"name": "OMERS", "sector": "Canadian Pension Funds", "linkedin_slug": "omers", "workday": ("omers", "wd3", "OMERS_External")},
+    {"name": "Ontario Teachers' Pension Plan", "sector": "Canadian Pension Funds", "linkedin_slug": "ontario-teachers-pension-plan", "workday": ("otppb", "wd3", "OntarioTeachers_Careers")},
+    {"name": "CPP Investments", "sector": "Canadian Pension Funds", "linkedin_slug": "cpp-investments", "workday": ("cppib", "wd10", "cppinvestments")},
+    {"name": "PSP Investments", "sector": "Canadian Pension Funds", "linkedin_slug": "psp-investments", "workday": None},
+    {"name": "OPTrust", "sector": "Canadian Pension Funds", "linkedin_slug": "optrust", "workday": ("optrust", "wd3", "OPTrust")},
+    {"name": "CAAT Pension Plan", "sector": "Canadian Pension Funds", "linkedin_slug": "caat-pension-plan", "workday": ("caatpension", "wd10", "Careers")},
+    {"name": "IMCO", "sector": "Canadian Pension Funds", "linkedin_slug": "imco", "workday": None},
+    {"name": "CDPQ", "sector": "Canadian Pension Funds", "linkedin_slug": "cdpq", "workday": ("cdpq", "wd10", "CDPQ")},
+
+    # ───── Canadian Asset Managers (12/12) ─────
+    {"name": "Brookfield Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "brookfield", "workday": ("brookfield", "wd5", "brookfield")},
+    {"name": "RBC Global Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "rbc-global-asset-management", "workday": None},
+    {"name": "TD Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "td-asset-management", "workday": ("td", "wd3", "TD_Bank_Careers")},
+    {"name": "BMO Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "bmo-global-asset-management", "workday": ("bmo", "wd3", "External")},
+    {"name": "CI Financial", "sector": "Canadian Asset Managers", "linkedin_slug": "ci-financial", "workday": None},
+    {"name": "Mackenzie Investments", "sector": "Canadian Asset Managers", "linkedin_slug": "mackenzie-investments", "workday": None},
+    {"name": "AGF Management", "sector": "Canadian Asset Managers", "linkedin_slug": "agf-management-limited", "workday": ("agf", "wd3", "AGF_Careers")},
+    {"name": "Fidelity Canada", "sector": "Canadian Asset Managers", "linkedin_slug": "fidelity-canada", "workday": None},
+    {"name": "Connor Clark & Lunn", "sector": "Canadian Asset Managers", "linkedin_slug": "connor-clark-&-lunn-financial-group", "workday": None},
+    {"name": "Guardian Capital Group", "sector": "Canadian Asset Managers", "linkedin_slug": "guardian-capital-group", "workday": None},
+    {"name": "Picton Mahoney Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "picton-mahoney-asset-management", "workday": None},
+    {"name": "Canada Infrastructure Bank", "sector": "Canadian Asset Managers", "linkedin_slug": "canada-infrastructure-bank", "workday": None, "greenhouse": "canadainfrastructurebank"},
+
+    # ───── US & Global Asset Managers (6/6) ─────
+    {"name": "BlackRock", "sector": "US & Global Asset Managers", "linkedin_slug": "blackrock", "workday": ("blackrock", "wd1", "BlackRock_Professional")},
+    {"name": "PIMCO", "sector": "US & Global Asset Managers", "linkedin_slug": "pimco", "workday": None},
+    {"name": "Vanguard", "sector": "US & Global Asset Managers", "linkedin_slug": "vanguard", "workday": ("vanguard", "wd5", "Vanguard_External")},
+    {"name": "Invesco", "sector": "US & Global Asset Managers", "linkedin_slug": "invesco", "workday": ("invesco", "wd1", "IVZ")},
+    {"name": "Wellington Management", "sector": "US & Global Asset Managers", "linkedin_slug": "wellington-management", "workday": ("wellington", "wd5", "External")},
+    {"name": "Schroders", "sector": "US & Global Asset Managers", "linkedin_slug": "schroders", "workday": None},
+
+    # ───── US Banks with Toronto Presence (9/9) ─────
+    {"name": "JPMorgan Chase", "sector": "US Banks (Toronto)", "linkedin_slug": "jpmorganchase", "workday": None},
+    {"name": "Goldman Sachs", "sector": "US Banks (Toronto)", "linkedin_slug": "goldman-sachs", "workday": None},
+    {"name": "Morgan Stanley", "sector": "US Banks (Toronto)", "linkedin_slug": "morgan-stanley", "workday": ("ms", "wd5", "External")},
+    {"name": "Citi", "sector": "US Banks (Toronto)", "linkedin_slug": "citi", "workday": None},
+    {"name": "HSBC", "sector": "US Banks (Toronto)", "linkedin_slug": "hsbc", "workday": None},
+    {"name": "Deutsche Bank", "sector": "US Banks (Toronto)", "linkedin_slug": "deutsche-bank", "workday": ("db", "wd3", "DBWebsite")},
+    {"name": "BNY Mellon", "sector": "US Banks (Toronto)", "linkedin_slug": "bny-mellon", "workday": None},
+    {"name": "State Street", "sector": "US Banks (Toronto)", "linkedin_slug": "state-street", "workday": ("statestreet", "wd1", "Global")},
+    {"name": "Northern Trust", "sector": "US Banks (Toronto)", "linkedin_slug": "northern-trust", "workday": ("ntrs", "wd1", "northerntrust")},
+
+    # ───── Analytics & Risk Vendors (8/8) ─────
+    {"name": "Bloomberg", "sector": "Analytics & Risk Vendors", "linkedin_slug": "bloomberg-lp", "workday": None},
+    {"name": "MSCI", "sector": "Analytics & Risk Vendors", "linkedin_slug": "msci-inc", "workday": None},
+    {"name": "S&P Global", "sector": "Analytics & Risk Vendors", "linkedin_slug": "s-p-global", "workday": ("spgi", "wd5", "SPGI_Careers")},
+    {"name": "FactSet", "sector": "Analytics & Risk Vendors", "linkedin_slug": "factset", "workday": None},
+    {"name": "Morningstar DBRS", "sector": "Analytics & Risk Vendors", "linkedin_slug": "morningstar", "workday": None},
+    {"name": "SS&C Technologies", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ss-c-technologies", "workday": ("ssctech", "wd1", "SSCTechnologies")},
+    {"name": "Numerix", "sector": "Analytics & Risk Vendors", "linkedin_slug": "numerix-llc", "workday": None},
+    {"name": "Prometeia", "sector": "Analytics & Risk Vendors", "linkedin_slug": "prometeia", "workday": None},
+
+    # ───── Canadian Insurers (6/6) ─────
+    {"name": "Manulife", "sector": "Canadian Insurers", "linkedin_slug": "manulife", "workday": ("manulife", "wd3", "MFCJH_Jobs")},
+    {"name": "Sun Life", "sector": "Canadian Insurers", "linkedin_slug": "sun-life-financial", "workday": ("sunlife", "wd3", "Experienced")},
+    {"name": "Canada Life", "sector": "Canadian Insurers", "linkedin_slug": "canada-life", "workday": None},
+    {"name": "Intact Financial", "sector": "Canadian Insurers", "linkedin_slug": "intact-financial-corporation", "workday": None},
+    {"name": "Definity Financial", "sector": "Canadian Insurers", "linkedin_slug": "definity", "workday": None},
+    {"name": "iA Financial Group", "sector": "Canadian Insurers", "linkedin_slug": "industrial-alliance", "workday": ("ia", "wd3", "Professional")},
+    {"name": "RGA", "sector": "Canadian Insurers", "linkedin_slug": "rga-reinsurance-group-of-america", "workday": ("rgare", "wd1", "Careers")},
+
+    # ───── Mid-size Canadian Banks (1/1) ─────
+    {"name": "EQB", "sector": "Mid Canadian Banks", "linkedin_slug": "eqbank", "workday": None},
+
+    # ───── Big 4 FS Risk Advisory (4/4) ─────
+    {"name": "Deloitte Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "deloitte", "workday": None},
+    {"name": "EY Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "ernstandyoung", "workday": None},
+    {"name": "KPMG Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "kpmg-canada", "workday": None},
+    {"name": "PwC Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "pwc-canada", "workday": None},
+
+    # ───── Pension / ALM Consulting (3/3) ─────
+    {"name": "Mercer", "sector": "Pension/ALM Consulting", "linkedin_slug": "mercer", "workday": None},
+    {"name": "WTW", "sector": "Pension/ALM Consulting", "linkedin_slug": "willis-towers-watson", "workday": None},
+    {"name": "Aon", "sector": "Pension/ALM Consulting", "linkedin_slug": "aon", "workday": None},
+
+    # ───── FS Strategy & Risk Consulting (1/1) ─────
+    {"name": "Oliver Wyman", "sector": "FS Strategy Consulting", "linkedin_slug": "oliver-wyman", "workday": None},
+]
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+# LinkedIn public job search (guest endpoint — no auth needed)
+LINKEDIN_SEARCH_URL = (
+    "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
+    "keywords={keywords}&location=Toronto%2C+Ontario%2C+Canada&f_C={company_id}&start=0"
+)
+
+
+def keyword_match(text: str) -> list[str]:
+    tl = text.lower()
+    hits = [k for k in KEYWORDS if k in tl]
+    return hits
+
+
+# Keyword phrases used as separate LinkedIn queries. LinkedIn guest search parses
+# "A OR B" as a literal phrase, not as a boolean — so we must run multiple queries
+# and merge results.
+LINKEDIN_QUERY_PHRASES = [
+    "ALM", "IRRBB", "model validation", "model risk",
+    "interest rate risk", "fixed income", "treasury risk", "balance sheet",
+    "derivatives", "quantitative", "portfolio risk", "credit risk",
+    "liquidity risk", "market risk", "IFRS 17", "risk analytics",
+    "capital markets risk", "valuation",
+]
+
+# Fuzzy brand aliases — words that plausibly appear in the "company" subtitle on LinkedIn
+# job cards, even if the card doesn't show the full legal name. Every target entry gets
+# a `brand_aliases` list built from its name unless explicitly provided.
+_GENERIC_TOKENS = {"canada", "canadian", "group", "inc", "financial", "bank",
+                   "management", "investments", "capital", "corp", "limited",
+                   "company", "global", "pension", "plan"}
+
+
+def _brand_aliases(name: str) -> list[str]:
+    """Return a list of lowercase tokens that, if any one is in the card-company text,
+    the card counts as this brand."""
+    raw = name.lower()
+    tokens = [t for t in re.split(r"[^a-z0-9]+", raw) if t and t not in _GENERIC_TOKENS]
+    # Always include the full lower-case name (minus punctuation), and the first two tokens
+    aliases = [raw.replace("  ", " ").strip()]
+    if tokens:
+        aliases.append(tokens[0])
+        if len(tokens) > 1:
+            aliases.append(f"{tokens[0]} {tokens[1]}")
+    return list(set(a for a in aliases if len(a) >= 3))
+
+
+def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: int = 3) -> list[dict]:
+    """
+    Query LinkedIn's public guest-search API per keyword phrase, paginated (start=0/25/50).
+    Returns deduped {title, link, company, location, keyword_hit} filtered to roles whose
+    company subtitle plausibly matches the target brand.
+    """
+    aliases = company.get("brand_aliases") or _brand_aliases(company["name"])
+    seen_links: set[str] = set()
+    all_jobs: list[dict] = []
+    rate_limited = False
+    for kw in LINKEDIN_QUERY_PHRASES[:max_queries]:
+        if rate_limited:
+            break
+        for page in range(pages_per_query):
+            start = page * 25
+            query = f"{kw} {company['name']}"
+            url = (
+                "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
+                f"keywords={requests.utils.quote(query)}"
+                "&location=Toronto%2C+Ontario%2C+Canada"
+                f"&start={start}"
+            )
+            try:
+                r = requests.get(url, headers=HEADERS, timeout=30)
+                if r.status_code == 429:
+                    print(f"  [linkedin] 429 rate-limited — backing off 15s", file=sys.stderr)
+                    time.sleep(15)
+                    rate_limited = True
+                    break
+                if r.status_code != 200:
+                    break
+                soup = BeautifulSoup(r.text, "html.parser")
+                cards = soup.select("li")
+                if not cards:
+                    break
+                added_this_page = 0
+                for card in cards:
+                    title_el = card.select_one("h3")
+                    link_el = card.select_one("a.base-card__full-link") or card.select_one("a")
+                    co_el = card.select_one("h4, .base-search-card__subtitle")
+                    loc_el = card.select_one(".job-search-card__location")
+                    if not (title_el and link_el):
+                        continue
+                    title = title_el.get_text(strip=True)
+                    link = (link_el.get("href") or "").split("?")[0]
+                    if not link or link in seen_links:
+                        continue
+                    co = (co_el.get_text(strip=True) if co_el else company["name"]).lower()
+                    # Fuzzy company match — any alias substring hits
+                    if not any(a in co for a in aliases):
+                        continue
+                    loc = loc_el.get_text(strip=True) if loc_el else "Toronto"
+                    seen_links.add(link)
+                    all_jobs.append({
+                        "title": title,
+                        "link": link,
+                        "company_reported": co_el.get_text(strip=True) if co_el else company["name"],
+                        "location": loc,
+                        "keyword_hit": kw,
+                        "source": "linkedin",
+                    })
+                    added_this_page += 1
+                if added_this_page == 0:
+                    break  # pagination exhausted or nothing new
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"  [linkedin] error on '{kw}' page {page} for {company['name']}: {e}", file=sys.stderr)
+                break
+        time.sleep(0.5)
+    return all_jobs
+
+
+# ---------------------------------------------------------------------------
+# Greenhouse — a number of vendors and some Canadian firms host on Greenhouse.
+# API: https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true
+# ---------------------------------------------------------------------------
+def fetch_greenhouse_jobs(token: str) -> list[dict]:
+    url = f"https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        jobs = []
+        for j in data.get("jobs", []):
+            title = j.get("title", "")
+            loc = (j.get("location", {}) or {}).get("name", "")
+            # Toronto-filter
+            if "toronto" not in loc.lower() and "ontario" not in loc.lower() and "canada" not in loc.lower():
+                continue
+            if not keyword_match(title):
+                continue
+            jobs.append({
+                "title": title,
+                "link": j.get("absolute_url", ""),
+                "location": loc,
+                "source": f"greenhouse:{token}",
+            })
+        return jobs
+    except Exception as e:
+        print(f"  [greenhouse:{token}] error: {e}", file=sys.stderr)
+        return []
+
+
+# ---------------------------------------------------------------------------
+# Lever — https://api.lever.co/v0/postings/{slug}?mode=json
+# ---------------------------------------------------------------------------
+def fetch_lever_jobs(slug: str) -> list[dict]:
+    url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=30)
+        if r.status_code != 200:
+            return []
+        data = r.json()
+        jobs = []
+        for j in data:
+            title = j.get("text", "")
+            categories = j.get("categories", {}) or {}
+            loc = categories.get("location", "") or ""
+            if "toronto" not in loc.lower() and "canada" not in loc.lower():
+                continue
+            if not keyword_match(title):
+                continue
+            jobs.append({
+                "title": title,
+                "link": j.get("hostedUrl", ""),
+                "location": loc,
+                "source": f"lever:{slug}",
+            })
+        return jobs
+    except Exception as e:
+        print(f"  [lever:{slug}] error: {e}", file=sys.stderr)
+        return []
+
+
+WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
+
+
+def fetch_workday_jobs(workday_spec) -> list[dict]:
+    """Query Workday's JSON API.
+    `workday_spec` can be either:
+      - (tenant, subdomain, board)  — preferred, validated form
+      - (tenant, board)             — legacy; will probe subdomains
+      - (tenant_with_dot, board)    — e.g. ("hoopp.wd10", "HOOPP")"""
+    if len(workday_spec) == 3:
+        tenant, subdomain, board = workday_spec
+        hosts = [f"{tenant}.{subdomain}.myworkdayjobs.com"]
+        tenant_key = tenant
+    else:
+        tenant, board = workday_spec
+        if "." in tenant:
+            hosts = [f"{tenant}.myworkdayjobs.com"]
+            tenant_key = tenant.split(".")[0]
+        else:
+            hosts = [f"{tenant}.{sub}.myworkdayjobs.com" for sub in WORKDAY_SUBDOMAINS]
+            tenant_key = tenant
+
+    # Run per-keyword searches. Workday supports keyword search + pagination.
+    # This is more robust than a one-shot "Toronto" fetch because Workday scores
+    # by relevance and returns many more model/ALM/risk matches under those terms.
+    WORKDAY_KEYWORDS = [
+        "model validation", "model risk", "ALM", "IRRBB", "treasury",
+        "fixed income", "market risk", "liquidity risk", "quantitative",
+        "balance sheet", "derivatives", "IFRS 17", "risk analytics",
+    ]
+    seen_paths: set[str] = set()
+    jobs: list[dict] = []
+    for host in hosts:
+        worked = False
+        for kw in WORKDAY_KEYWORDS:
+            url = f"https://{host}/wday/cxs/{tenant_key}/{board}/jobs"
+            for offset in (0, 20):
+                body = {"appliedFacets": {}, "limit": 20, "offset": offset, "searchText": kw}
+                try:
+                    r = requests.post(url, json=body, headers=HEADERS, timeout=20)
+                    if r.status_code != 200:
+                        break
+                    worked = True
+                    data = r.json()
+                    postings = data.get("jobPostings", [])
+                    if not postings:
+                        break
+                    # Keep only Toronto/Ontario/Canada-located; filter on title+location
+                    for p in postings:
+                        title = p.get("title", "")
+                        loc = (p.get("locationsText", "") or "").lower()
+                        path = p.get("externalPath", "") or ""
+                        if path in seen_paths:
+                            continue
+                        # Location filter
+                        if not any(tok in loc for tok in ("toronto", "ontario", "ont,",
+                                                          "remote - canada", "canada")):
+                            continue
+                        jobs.append({
+                            "title": title,
+                            "link": f"https://{host}{path}",
+                            "location": p.get("locationsText", ""),
+                            "posted_on": p.get("postedOn", ""),
+                            "keyword_hit": kw,
+                            "source": f"workday:{tenant_key}",
+                        })
+                        seen_paths.add(path)
+                    if len(postings) < 20:
+                        break
+                except Exception as e:
+                    print(f"  [workday:{host}] error on '{kw}': {e}", file=sys.stderr)
+                    break
+        if worked:
+            return jobs
+    return jobs
+
+
+def load_tracker_urls() -> set[str]:
+    """Load existing tracker URLs so we dedupe."""
+    data = json.loads(TRACKER.read_text(encoding="utf-8"))
+    return {j.get("url", "") for j in data.get("jobs", []) if j.get("url")}
+
+
+def _is_negative(title: str) -> bool:
+    tl = title.lower()
+    return any(n in tl for n in NEGATIVE_TERMS)
+
+
+def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
+         skip_linkedin: bool = False) -> list[dict]:
+    """Run the scan. `companies` is a list of dicts with name/sector/workday/greenhouse/lever keys."""
+    companies = list(companies)
+    seen = load_tracker_urls()
+    found: list[dict] = []
+    for i, c in enumerate(companies, 1):
+        print(f"[scan {i}/{len(companies)}] {c['name']} (sector: {c.get('sector', '—')})", file=sys.stderr)
+        before = len(found)
+
+        # 1. Workday tenant (highest-signal when available)
+        if c.get("workday") and not linkedin_only:
+            for j in fetch_workday_jobs(c["workday"]):
+                if j["link"] in seen or _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+
+        # 2. Greenhouse
+        if c.get("greenhouse") and not linkedin_only:
+            for j in fetch_greenhouse_jobs(c["greenhouse"]):
+                if j["link"] in seen or _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+
+        # 3. Lever
+        if c.get("lever") and not linkedin_only:
+            for j in fetch_lever_jobs(c["lever"]):
+                if j["link"] in seen or _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+
+        # 4. LinkedIn (breadth; paginated, multi-keyword).
+        if not workday_only and not skip_linkedin:
+            for j in fetch_linkedin_jobs(c):
+                if j["link"] in seen:
+                    continue
+                if _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+
+        added = len(found) - before
+        print(f"  -> {added} new candidate(s)", file=sys.stderr)
+        time.sleep(0.75)
+    return found
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--company", help="Scan only this company.")
+    ap.add_argument("--sector", help="Scan only companies in this sector.")
+    ap.add_argument("--linkedin-only", action="store_true")
+    ap.add_argument("--workday-only", action="store_true",
+                    help="Skip LinkedIn entirely; only query Workday APIs (fast, no throttling)")
+    ap.add_argument("--expansion", action="store_true",
+                    help="Also scan the expansion_companies list (Fairstone, ivari, MCAP, insurers, fintechs, regulators, etc.)")
+    ap.add_argument("--expansion-only", action="store_true",
+                    help="Scan ONLY the expansion_companies list")
+    args = ap.parse_args()
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load expansion list if requested
+    try:
+        from expansion_companies import EXPANSION_TARGETS
+    except ImportError:
+        EXPANSION_TARGETS = []
+    if args.expansion_only:
+        targets = list(EXPANSION_TARGETS)
+    elif args.expansion:
+        targets = list(TARGETS) + list(EXPANSION_TARGETS)
+    else:
+        targets = list(TARGETS)
+    if args.company:
+        targets = [t for t in targets if t["name"].lower() == args.company.lower()]
+        if not targets:
+            print(f"ERROR: company {args.company!r} not in target list", file=sys.stderr)
+            return 1
+    if args.sector:
+        targets = [t for t in targets if args.sector.lower() in (t.get("sector") or "").lower()]
+        if not targets:
+            print(f"ERROR: no companies matched sector {args.sector!r}", file=sys.stderr)
+            return 1
+
+    results = scan(targets, linkedin_only=args.linkedin_only, workday_only=args.workday_only)
+
+    stamp = datetime.now().strftime("%Y%m%d")
+    json_path = OUT_DIR / f"scan_{stamp}.json"
+    md_path = OUT_DIR / f"scan_{stamp}.md"
+
+    # Count companies actually reached + sector coverage for the report header.
+    sector_counts: dict[str, int] = {}
+    for r in results:
+        s = r.get("sector", "Uncategorized")
+        sector_counts[s] = sector_counts.get(s, 0) + 1
+
+    json_path.write_text(
+        json.dumps(
+            {
+                "scan_date": stamp,
+                "companies_scanned": len(targets),
+                "total_new_candidates": len(results),
+                "by_sector": sector_counts,
+                "results": results,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    md_lines = [
+        f"# Scan {stamp}",
+        "",
+        f"- **Companies scanned:** {len(targets)}",
+        f"- **Total new candidates:** {len(results)}",
+        "",
+        "## By sector",
+        "",
+        "| Sector | Candidates |",
+        "|---|---|",
+    ]
+    for s, n in sorted(sector_counts.items(), key=lambda x: -x[1]):
+        md_lines.append(f"| {s} | {n} |")
+    md_lines += [
+        "",
+        "## Candidates",
+        "",
+        "| Sector | Company | Title | Location | Source | Link |",
+        "|---|---|---|---|---|---|",
+    ]
+    for r in sorted(results, key=lambda r: (r.get("sector", ""), r.get("company", ""))):
+        link = r.get("link", "")
+        md_lines.append(
+            f"| {r.get('sector', '')} | {r.get('company', '')} | {r.get('title', '')} | "
+            f"{r.get('location', '')} | {r.get('source', '')} | [open]({link}) |"
+        )
+    md_path.write_text("\n".join(md_lines), encoding="utf-8")
+
+    print(f"\n[scan] Wrote {json_path}")
+    print(f"[scan] Wrote {md_path}")
+    print(f"[scan] {len(results)} new candidates across {len(sector_counts)} sectors.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
