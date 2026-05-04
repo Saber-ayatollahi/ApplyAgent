@@ -1,0 +1,15 @@
+{
+  "run_id": "weekly_report_20260504_100722",
+  "label": "weekly_report",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\weekly_report.py"
+  ],
+  "pid": 3388,
+  "started_at": "2026-05-04T10:07:22",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\weekly_report_20260504_100722.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\weekly_report_20260504_100722.json",
+  "state": "finished",
+  "finished_at": "2026-05-04T10:07:34",
+  "returncode": null
+}

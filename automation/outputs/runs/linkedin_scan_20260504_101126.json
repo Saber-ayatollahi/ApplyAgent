@@ -1,0 +1,16 @@
+{
+  "run_id": "linkedin_scan_20260504_101126",
+  "label": "linkedin_scan",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+    "--linkedin-only"
+  ],
+  "pid": 23740,
+  "started_at": "2026-05-04T10:11:26",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\linkedin_scan_20260504_101126.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\linkedin_scan_20260504_101126.json",
+  "state": "finished",
+  "finished_at": "2026-05-04T10:46:55",
+  "returncode": null
+}

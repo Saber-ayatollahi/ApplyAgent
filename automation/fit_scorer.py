@@ -45,8 +45,13 @@ from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from threading import Lock
+from threading import Lock, Event
 from typing import Optional
+
+# Set by score_with_llm when a fatal (billing/auth) API error is detected.
+# All pending jobs short-circuit once this is set.
+_abort_event = Event()
+_abort_reason: list[str] = []  # mutable so threads can write
 
 try:
     import requests
@@ -67,7 +72,7 @@ FIT_CACHE = OUT_DIR / "fit_cache"
 MASTER_REPO = ROOT / "Saber_Ayatollahi_Master_Repository.md"
 PROGRESS_PATH = OUT_DIR / "fit_scorer_progress.json"
 
-MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-sonnet-4-6")
+MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")
 FALLBACK_MODEL = "claude-haiku-4-5-20251001"
 
 
@@ -328,7 +333,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         f"URL: {role['link']}\n"
         f"Source: {role.get('source', '')}\n"
         f"\n# JOB DESCRIPTION (may be partial)\n"
-        f"{jd_text[:12000] if jd_text else '(JD not available — score from title/company only.)'}\n"
+        f"{jd_text[:3000] if jd_text else '(JD not available — score from title/company only.)'}\n"
         f"\n# YOUR OUTPUT\n"
         f"Return ONLY valid JSON, no prose, matching this schema:\n"
         f"{SCHEMA}\n"
@@ -338,7 +343,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         try:
             resp = client.messages.create(
                 model=model,
-                max_tokens=800,
+                max_tokens=400,
                 system=[{"type": "text", "text": SYSTEM_PROMPT,
                          "cache_control": {"type": "ephemeral"}}],
                 messages=[{"role": "user", "content": user}],
@@ -360,7 +365,21 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
             cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
             return parsed
         except Exception as e:
+            err_str = str(e)
             print(f"  [score_llm] {model} failed: {e}", file=sys.stderr)
+            # Detect fatal billing / auth errors — no point retrying other jobs
+            if any(phrase in err_str.lower() for phrase in (
+                "credit balance", "billing", "invalid_api_key",
+                "authentication", "permission_denied",
+            )):
+                if not _abort_event.is_set():
+                    _abort_reason.append(err_str[:300])
+                    _abort_event.set()
+                    print(
+                        f"\n[fit_scorer] ⛔ FATAL API ERROR — aborting all remaining jobs.\n"
+                        f"  Reason: {err_str[:200]}\n",
+                        file=sys.stderr,
+                    )
             continue
     return {"fit_score": 0, "fit_verdict": "skip", "top_3_reasons": ["LLM_failure"],
             "skill_gaps": [], "osfi_hook": "None", "tier": 4, "summary": "LLM scoring failed."}
@@ -444,6 +463,14 @@ def main() -> int:
     progress_begin(args.scan, len(triaged))
 
     def score_one(r):
+        # Short-circuit immediately if a fatal API error was already detected
+        if _abort_event.is_set():
+            r["fit"] = {"fit_score": 0, "fit_verdict": "skip",
+                        "top_3_reasons": ["aborted_fatal_api_error"],
+                        "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+                        "summary": "Skipped — scorer aborted due to API error."}
+            return r, False, True
+
         # Detect cache hit BEFORE calling (so the UI can show cache-hit rate).
         from_cache = _cache_path_fit(r["link"]).exists()
         error = False
@@ -476,14 +503,19 @@ def main() -> int:
     # Sort by (fit_score desc, tier asc)
     scored.sort(key=lambda r: (-r["fit"].get("fit_score", 0), r["fit"].get("tier", 4)))
 
+    api_error = _abort_reason[0] if _abort_reason else None
     out = {
         "scan_date": scan.get("scan_date"),
         "scored_at": datetime.utcnow().isoformat() + "Z",
         "total_input": len(roles),
         "stage1_passed": len(triaged),
         "stage2_scored": len(scored),
+        "api_error": api_error,
         "results": scored,
     }
+    if api_error:
+        print(f"\n[fit_scorer] ⚠️  Run aborted early — results are incomplete.\n"
+              f"  Fix: {api_error[:200]}", file=sys.stderr)
     json_out = OUT_DIR / (Path(args.scan).stem + "_scored.json")
     json_out.write_text(json.dumps(out, indent=2), encoding="utf-8")
 

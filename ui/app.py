@@ -680,14 +680,34 @@ elif page == "🎯 Pipeline":
             sc = json.loads((OUT_DIR / which).read_text(encoding="utf-8"))
             results = sc.get("results", [])
 
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Input", sc.get("total_input", "—"))
-            m2.metric("Stage 1 pass", sc.get("stage1_passed", "—"))
-            m3.metric("Stage 2 scored", sc.get("stage2_scored", "—"))
+            # ── API error / failed-run warning ──────────────────────────────
+            api_err = sc.get("api_error")
             verdicts: dict = {}
             for r in results:
                 v = (r.get("fit") or {}).get("fit_verdict", "?")
                 verdicts[v] = verdicts.get(v, 0) + 1
+            all_skip = verdicts and set(verdicts.keys()) <= {"skip", "error", "?"}
+
+            if api_err:
+                st.error(
+                    f"⛔ **Scorer failed — API error detected.**\n\n"
+                    f"`{api_err[:300]}`\n\n"
+                    f"Fix your API key / credits, then re-score.",
+                    icon="🔑",
+                )
+            elif all_skip and sc.get("stage2_scored", 0) > 10:
+                st.warning(
+                    "⚠️ **All jobs scored as 'skip'** — this usually means the LLM calls "
+                    "failed silently (no API credits, wrong key, or network issue). "
+                    "Check your `ANTHROPIC_API_KEY` and billing, then re-score.",
+                    icon="⚠️",
+                )
+            # ────────────────────────────────────────────────────────────────
+
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Input", sc.get("total_input", "—"))
+            m2.metric("Stage 1 pass", sc.get("stage1_passed", "—"))
+            m3.metric("Stage 2 scored", sc.get("stage2_scored", "—"))
             m4.metric("apply_now", verdicts.get("apply_now", 0))
 
             st.caption(f"Scored at {sc.get('scored_at', '—')}")
@@ -758,9 +778,11 @@ elif page == "🎯 Pipeline":
             with f1:
                 min_fit = st.slider("Min fit score", 1, 10, 7, key="triage_min")
             with f2:
+                _verdict_opts = sorted(df["verdict"].dropna().unique())
+                _verdict_defaults = [v for v in ["apply_now", "tailor_and_apply"] if v in _verdict_opts]
                 verdict_filter = st.multiselect(
-                    "Verdict", sorted(df["verdict"].dropna().unique()),
-                    default=["apply_now", "tailor_and_apply"], key="triage_verdict")
+                    "Verdict", _verdict_opts,
+                    default=_verdict_defaults, key="triage_verdict")
             with f3:
                 sector_filter = st.multiselect(
                     "Sector", sorted(df["sector"].dropna().unique()), key="triage_sector")
