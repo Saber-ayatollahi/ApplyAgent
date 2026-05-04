@@ -110,4 +110,15 @@ EXPANSION_TARGETS = [
     {"name": "Nuvei", "sector": "Fintech", "linkedin_slug": "nuvei", "workday": None},
     {"name": "Neo Financial", "sector": "Fintech", "linkedin_slug": "neo-financial", "workday": None},
     {"name": "Payments Canada", "sector": "Fintech", "linkedin_slug": "payments-canada", "workday": None},
+
+    # ───── US fintech / HF with Toronto presence (Greenhouse-hosted) ─────
+    # Discovered empirically 2026-05-04 via auto-probe of Greenhouse boards.
+    {"name": "Stripe", "sector": "Fintech", "linkedin_slug": "stripe", "workday": None,
+     "greenhouse": "stripe"},
+    {"name": "Affirm", "sector": "Fintech", "linkedin_slug": "affirm", "workday": None,
+     "greenhouse": "affirm"},
+    {"name": "Robinhood", "sector": "Fintech", "linkedin_slug": "robinhood", "workday": None,
+     "greenhouse": "robinhood"},
+    {"name": "Point72", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "point72", "workday": None,
+     "greenhouse": "point72"},
 ]

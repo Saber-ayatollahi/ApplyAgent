@@ -276,6 +276,17 @@ STRONG_POS = [  # +3 each — unambiguous lane hits
     "risk director", "risk vp",
     "derivatives pricing", "derivatives valuation",
     "scenario generation", "scenario analysis",
+    # Rates / fixed-income strong terms (restored)
+    "rates trading", "rates strategy", "rates strategist",
+    "rates structuring", "rates desk", "linear rates", "exotic rates",
+    "swaps trader", "swap desk", "g10 rates",
+    # Structured / capital markets
+    "securitization", "structured credit", "structured finance",
+    "collateralized", "clo ", "abs trader",
+    # OSFI-adjacent emerging
+    "climate risk", "climate financial", "b-15",
+    "crypto treasury", "digital asset", "digital assets",
+    "model risk management", "mrm",
 ]
 
 MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage 1

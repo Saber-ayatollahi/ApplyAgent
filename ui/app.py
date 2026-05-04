@@ -71,6 +71,169 @@ def parse_date(s):
         return None
 
 
+# ---------------------------------------------------------------------------
+# Follow-up nudge logic — reads job_tracker_data.json
+# followup_schedule = {"next_due": "YYYY-MM-DD", "cadence_days": [3, 10, 21]}
+# A role enters the follow-up loop when it gets date_applied. On each follow-up,
+# next_due advances through cadence_days until the last rung, then we stop nudging.
+# ---------------------------------------------------------------------------
+FOLLOWUP_TERMINAL_STATUSES = {
+    "Rejected", "Offer", "Hired", "Withdrawn", "Expired", "Declined",
+}
+
+
+def followup_buckets(jobs: list[dict], today_date: date | None = None) -> dict:
+    """Partition jobs into overdue/due-today/due-this-week/upcoming/idle buckets.
+
+    A job is in the follow-up loop if:
+      - it has date_applied
+      - its status is not terminal (not Rejected/Offer/Hired/Withdrawn/Expired)
+      - it has followup_schedule.next_due set
+
+    Returns:
+      {"overdue": [(days_overdue, job), ...],
+       "due_today": [job, ...],
+       "due_this_week": [(days_until, job), ...],
+       "upcoming": [(days_until, job), ...],
+       "no_schedule": [job, ...]   # applied but no next_due — likely needs first follow-up}
+    """
+    today_date = today_date or date.today()
+    buckets = {
+        "overdue": [],
+        "due_today": [],
+        "due_this_week": [],
+        "upcoming": [],
+        "no_schedule": [],
+    }
+    for j in jobs:
+        if not j.get("date_applied"):
+            continue
+        if j.get("status") in FOLLOWUP_TERMINAL_STATUSES:
+            continue
+        sched = j.get("followup_schedule") or {}
+        next_due = parse_date(sched.get("next_due"))
+        if not next_due:
+            buckets["no_schedule"].append(j)
+            continue
+        delta = (next_due - today_date).days
+        if delta < 0:
+            buckets["overdue"].append((-delta, j))
+        elif delta == 0:
+            buckets["due_today"].append(j)
+        elif delta <= 7:
+            buckets["due_this_week"].append((delta, j))
+        else:
+            buckets["upcoming"].append((delta, j))
+    buckets["overdue"].sort(key=lambda t: -t[0])  # most overdue first
+    buckets["due_this_week"].sort(key=lambda t: t[0])
+    buckets["upcoming"].sort(key=lambda t: t[0])
+    return buckets
+
+
+def advance_followup(job: dict, today_date: date | None = None) -> None:
+    """Advance a job's next_due one cadence step. Mutates the job in place.
+    Called when the user logs a follow-up, so the next nudge lands on the
+    right day. When the cadence is exhausted, clears next_due (no more nudges)."""
+    today_date = today_date or date.today()
+    sched = job.setdefault("followup_schedule", {"cadence_days": [3, 10, 21]})
+    cadence = sched.get("cadence_days") or [3, 10, 21]
+    applied = parse_date(job.get("date_applied"))
+    if not applied:
+        return
+    # Find the next cadence step after today
+    for days in cadence:
+        candidate = applied + timedelta(days=days)
+        if candidate > today_date:
+            sched["next_due"] = candidate.isoformat()
+            return
+    # Cadence exhausted — stop nudging
+    sched["next_due"] = None
+
+
+def seed_followup(job: dict, applied_on: date | None = None) -> None:
+    """Seed followup_schedule.next_due when a role first becomes Applied."""
+    applied_on = applied_on or date.today()
+    sched = job.setdefault("followup_schedule", {"cadence_days": [3, 10, 21]})
+    cadence = sched.get("cadence_days") or [3, 10, 21]
+    if cadence:
+        sched["next_due"] = (applied_on + timedelta(days=cadence[0])).isoformat()
+    job["date_applied"] = applied_on.isoformat()
+
+
+# ---------------------------------------------------------------------------
+# Outreach digest — computes staleness from CRM last_touchpoint
+# ---------------------------------------------------------------------------
+CRM_STALE_DAYS = 14  # past this, contacts get flagged as "nudge-worthy"
+CRM_DEAD_DAYS = 35   # past this, contacts get flagged as "probably cold"
+CRM_TERMINAL_STATUSES = {"Do_Not_Contact", "Past_Rep", "On_Hold"}
+
+
+def outreach_digest(crm: dict, today_date: date | None = None) -> dict:
+    """Score each CRM contact by staleness + priority. Returns:
+      {"never_contacted": [contacts],
+       "active":          [(days_since, contact)],
+       "stale":           [(days_since, contact)],
+       "cold":            [(days_since, contact)],
+       "weekly_sent":     count sent in the last 7 days}
+    """
+    today_date = today_date or date.today()
+    week_ago = today_date - timedelta(days=7)
+    out = {"never_contacted": [], "active": [], "stale": [], "cold": [],
+           "weekly_sent": 0}
+
+    # Combine recruiters + alumni as "contacts" — treat uniformly
+    contacts = []
+    for r in crm.get("recruiters", []):
+        contacts.append({**r, "_kind": "recruiter"})
+    for a in crm.get("alumni_warm_intros", []):
+        contacts.append({**a, "_kind": "alumni"})
+
+    for c in contacts:
+        if c.get("status") in CRM_TERMINAL_STATUSES:
+            continue
+        last = parse_date(c.get("last_touchpoint"))
+        if last is None:
+            out["never_contacted"].append(c)
+            continue
+        if last >= week_ago:
+            out["weekly_sent"] += 1
+        days = (today_date - last).days
+        if days <= CRM_STALE_DAYS:
+            out["active"].append((days, c))
+        elif days <= CRM_DEAD_DAYS:
+            out["stale"].append((days, c))
+        else:
+            out["cold"].append((days, c))
+
+    # Count this-week touchpoints from outreach_log too (structured log)
+    for entry in crm.get("outreach_log") or []:
+        d = parse_date(entry.get("date"))
+        if d and d >= week_ago:
+            out["weekly_sent"] += 1
+
+    # Sort by priority (High > Medium > Low), then days-since desc for stale
+    prio_rank = {"High": 0, "Medium": 1, "Low": 2}
+    out["never_contacted"].sort(key=lambda c: prio_rank.get(c.get("priority"), 3))
+    out["active"].sort(key=lambda t: -t[0])
+    out["stale"].sort(key=lambda t: -t[0])
+    out["cold"].sort(key=lambda t: -t[0])
+    return out
+
+
+def render_template(body: str, contact: dict) -> str:
+    """Substitute {{placeholder}} variables in a CRM outreach template."""
+    out = body
+    subs = {
+        "{{name}}": (contact.get("contacts") or [{}])[0].get("name", "") if contact.get("_kind") == "recruiter" else contact.get("name", ""),
+        "{{firm}}": contact.get("firm", "") or contact.get("company_targeted", ""),
+        "{{coverage}}": contact.get("coverage", "") or contact.get("notes", ""),
+        "{{next_action}}": contact.get("next_action", ""),
+    }
+    for k, v in subs.items():
+        out = out.replace(k, str(v or ""))
+    return out
+
+
 def fmt_dt(s: str | None) -> str:
     if not s:
         return "—"
@@ -363,6 +526,108 @@ if page == "🏠 Dashboard":
     c3.metric("Active interviews", len(in_process))
     c4.metric("Total applied", len(applied_all))
     c5.metric("Stale (>21d)", len(stale), delta_color="inverse")
+
+    st.markdown("---")
+
+    # ---------- Follow-up nudge widget ----------
+    fb = followup_buckets(jobs)
+    overdue_n = len(fb["overdue"])
+    today_n = len(fb["due_today"])
+    week_n = len(fb["due_this_week"])
+    needs_seed_n = len(fb["no_schedule"])
+    total_active = overdue_n + today_n + week_n + needs_seed_n
+
+    if total_active:
+        if overdue_n or today_n:
+            st.error(
+                f"🔔 **Follow-ups needed** — "
+                + (f"**{overdue_n} overdue**" if overdue_n else "")
+                + (f" · {today_n} due today" if today_n else "")
+                + (f" · {week_n} due this week" if week_n else "")
+                + (f" · {needs_seed_n} need a schedule" if needs_seed_n else ""),
+                icon="⚠️",
+            )
+        else:
+            st.info(
+                f"🔔 {week_n} follow-up(s) due this week"
+                + (f" · {needs_seed_n} need a schedule" if needs_seed_n else ""),
+                icon="📅",
+            )
+
+        with st.expander(f"👀 Follow-up queue ({total_active} active)", expanded=bool(overdue_n or today_n)):
+            t_overdue, t_today, t_week, t_noschd = st.tabs([
+                f"🔴 Overdue ({overdue_n})",
+                f"🟡 Due today ({today_n})",
+                f"🟢 This week ({week_n})",
+                f"⚪ No schedule ({needs_seed_n})",
+            ])
+
+            def _render_followup_rows(items, tab, mode):
+                if not items:
+                    tab.caption("Nothing here. 🎉")
+                    return
+                # Build rows
+                rows = []
+                for item in items:
+                    if isinstance(item, tuple):
+                        days, j = item
+                    else:
+                        days, j = 0, item
+                    sched = j.get("followup_schedule") or {}
+                    rows.append({
+                        "id": j["id"],
+                        "company": j.get("company", ""),
+                        "title": j.get("title", "")[:60],
+                        "applied": j.get("date_applied", ""),
+                        "next_due": sched.get("next_due") or "(not set)",
+                        "days": (f"+{days} overdue" if mode == "overdue"
+                                 else f"in {days}d" if mode == "upcoming"
+                                 else "today" if mode == "today"
+                                 else "—"),
+                        "url": j.get("url", ""),
+                    })
+                tab.dataframe(
+                    pd.DataFrame(rows),
+                    hide_index=True, use_container_width=True,
+                    column_config={"url": st.column_config.LinkColumn("open")},
+                )
+                # Action row — log follow-up on N selected
+                pick = tab.selectbox("Log follow-up for", [r["id"] for r in rows],
+                                      key=f"fu_pick_{mode}")
+                msg = tab.text_input("Note (optional, saved to outreach_log)",
+                                      key=f"fu_note_{mode}",
+                                      placeholder="Emailed recruiter re: status")
+                ca, cb = tab.columns(2)
+                if ca.button(f"✅ Log follow-up & advance cadence",
+                             key=f"fu_log_{mode}", use_container_width=True):
+                    for j in tr["jobs"]:
+                        if j["id"] == pick:
+                            j.setdefault("outreach_log", []).append({
+                                "date": date.today().isoformat(),
+                                "type": "followup",
+                                "note": msg or "followup",
+                            })
+                            advance_followup(j)
+                            break
+                    save_tracker(tr)
+                    st.success(f"Logged follow-up on {pick} and advanced next_due.")
+                    st.rerun()
+                if cb.button(f"⏭ Skip this rung (push +7d)",
+                             key=f"fu_skip_{mode}", use_container_width=True):
+                    for j in tr["jobs"]:
+                        if j["id"] == pick:
+                            sched = j.setdefault("followup_schedule", {"cadence_days": [3, 10, 21]})
+                            cur = parse_date(sched.get("next_due")) or date.today()
+                            sched["next_due"] = (cur + timedelta(days=7)).isoformat()
+                            break
+                    save_tracker(tr)
+                    st.success(f"Pushed {pick} +7 days.")
+                    st.rerun()
+
+            _render_followup_rows(fb["overdue"], t_overdue, "overdue")
+            _render_followup_rows(fb["due_today"], t_today, "today")
+            _render_followup_rows(fb["due_this_week"], t_week, "upcoming")
+            _render_followup_rows(fb["no_schedule"], t_noschd, "noschedule")
 
     st.markdown("---")
 
@@ -1110,12 +1375,11 @@ elif page == "📋 Jobs Kanban":
                             if j["id"] == sel_id:
                                 j["status"] = new_status
                                 j["urgency"] = new_urgency
-                                if new_date_applied:
+                                # Seed follow-up schedule on first Applied date
+                                if new_date_applied and not parse_date(j.get("date_applied")):
+                                    seed_followup(j, new_date_applied)
+                                elif new_date_applied:
                                     j["date_applied"] = new_date_applied.isoformat()
-                                    if not parse_date(j.get("date_last_followup")):
-                                        j["followup_schedule"] = {
-                                            "next_due": (new_date_applied + timedelta(days=3)).isoformat(),
-                                            "cadence_days": [3, 10, 21]}
                                 j["notes"] = new_notes
                                 break
                         save_tracker(tr)
@@ -1126,13 +1390,10 @@ elif page == "📋 Jobs Kanban":
                     for j in tr["jobs"]:
                         if j["id"] == sel_id:
                             j["status"] = "Applied"
-                            j["date_applied"] = date.today().isoformat()
-                            j["followup_schedule"] = {
-                                "next_due": (date.today() + timedelta(days=3)).isoformat(),
-                                "cadence_days": [3, 10, 21]}
+                            seed_followup(j, date.today())
                             break
                     save_tracker(tr)
-                    st.success("Marked Applied.")
+                    st.success("Marked Applied; first follow-up in 3 days.")
                     st.rerun()
 
 
@@ -1144,6 +1405,102 @@ elif page == "🤝 Recruiter CRM":
     if not crm:
         st.warning("No recruiter_crm.json found.")
         st.stop()
+
+    # ---------- Weekly outreach digest ----------
+    digest = outreach_digest(crm)
+    weekly_target = (crm.get("meta", {}).get("weekly_target", {}).get("new_outreach")) or 10
+    weekly_sent = digest["weekly_sent"]
+    pct = int(min(100, weekly_sent / weekly_target * 100)) if weekly_target else 0
+
+    dc1, dc2, dc3, dc4, dc5 = st.columns(5)
+    dc1.metric("This week sent", f"{weekly_sent} / {weekly_target}",
+               delta=weekly_sent - weekly_target)
+    dc2.metric("Never contacted", len(digest["never_contacted"]))
+    dc3.metric("Active (≤14d)", len(digest["active"]))
+    dc4.metric("Stale (15–35d)", len(digest["stale"]), delta_color="inverse")
+    dc5.metric("Cold (>35d)", len(digest["cold"]), delta_color="inverse")
+    st.progress(pct / 100.0, text=f"Weekly outreach progress: {weekly_sent}/{weekly_target} "
+                                  f"({pct}%)")
+
+    with st.expander(f"📬 Outreach digest — prioritized nudges "
+                     f"({len(digest['never_contacted']) + len(digest['stale']) + len(digest['cold'])} pending)"):
+        st.caption(
+            "Priority order: 🆕 never-contacted (High priority first) → "
+            "⏰ stale (15–35d, reply-chase) → 🧊 cold (>35d, reactivate or retire). "
+            "Use templates below to draft in-voice nudges."
+        )
+        tn, ts, tc = st.tabs([
+            f"🆕 Never ({len(digest['never_contacted'])})",
+            f"⏰ Stale ({len(digest['stale'])})",
+            f"🧊 Cold ({len(digest['cold'])})",
+        ])
+
+        def _render_digest_rows(items, tab, mode):
+            if not items:
+                tab.caption("Nothing here. 🎉")
+                return
+            rows = []
+            for item in items:
+                if isinstance(item, tuple):
+                    days, c = item
+                else:
+                    days, c = None, item
+                rows.append({
+                    "id": c.get("id"),
+                    "kind": c.get("_kind", "?"),
+                    "firm_or_name": c.get("firm") or c.get("name", ""),
+                    "priority": c.get("priority", ""),
+                    "status": c.get("status", ""),
+                    "last_touch": c.get("last_touchpoint") or "(never)",
+                    "days_since": days if days is not None else "—",
+                    "next_action": (c.get("next_action") or "")[:80],
+                })
+            tab.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+            # Draft a message
+            pick = tab.selectbox("Contact to draft for", [r["id"] for r in rows],
+                                  key=f"dig_pick_{mode}")
+            contact = next(({**c, "_kind": c.get("_kind", "?")} for item in items
+                           for c in ([item[1]] if isinstance(item, tuple) else [item])
+                           if c.get("id") == pick), None)
+            if contact:
+                templates = crm.get("outreach_message_templates", {})
+                tpl_key = tab.selectbox(
+                    "Template",
+                    list(templates.keys()) if templates else ["(none)"],
+                    key=f"dig_tpl_{mode}",
+                )
+                body = templates.get(tpl_key, "")
+                rendered = render_template(body, contact)
+                tab.text_area("Drafted message (edit before sending)", rendered,
+                              height=200, key=f"dig_msg_{mode}")
+                if tab.button(f"📝 Log as sent today",
+                              key=f"dig_log_{mode}", use_container_width=True):
+                    # Update the contact's last_touchpoint + append to structured log
+                    for r in crm.get("recruiters", []):
+                        if r["id"] == pick:
+                            r["last_touchpoint"] = date.today().isoformat()
+                            if r.get("status") == "Not_Contacted":
+                                r["status"] = "Outreach_Sent"
+                    for a in crm.get("alumni_warm_intros", []):
+                        if a["id"] == pick:
+                            a["last_touchpoint"] = date.today().isoformat()
+                            if a.get("status") == "Not_Contacted":
+                                a["status"] = "Outreach_Sent"
+                    crm.setdefault("outreach_log", []).append({
+                        "date": date.today().isoformat(),
+                        "contact_id": pick,
+                        "template": tpl_key,
+                        "channel": "linkedin",
+                    })
+                    save_crm(crm)
+                    st.success(f"Logged outreach to {pick}.")
+                    st.rerun()
+
+        _render_digest_rows(digest["never_contacted"], tn, "never")
+        _render_digest_rows(digest["stale"], ts, "stale")
+        _render_digest_rows(digest["cold"], tc, "cold")
+
+    st.markdown("---")
 
     tab1, tab2, tab3 = st.tabs(["Recruiters", "Alumni warm-intros", "Templates"])
     with tab1:

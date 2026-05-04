@@ -202,11 +202,23 @@ def keyword_match(text: str) -> list[str]:
 # "A OR B" as a literal phrase, not as a boolean — so we must run multiple queries
 # and merge results.
 LINKEDIN_QUERY_PHRASES = [
+    # Core lane
     "ALM", "IRRBB", "model validation", "model risk",
     "interest rate risk", "fixed income", "treasury risk", "balance sheet",
-    "derivatives", "quantitative", "portfolio risk", "credit risk",
-    "liquidity risk", "market risk", "IFRS 17", "risk analytics",
-    "capital markets risk", "valuation",
+    # Derivatives + rates
+    "derivatives", "rates", "swaps", "structured credit",
+    # Quant / analytics
+    "quantitative", "quant developer", "risk analytics",
+    # Risk domains
+    "portfolio risk", "credit risk", "liquidity risk", "market risk",
+    "counterparty risk", "operational risk",
+    # Regulatory / reporting
+    "IFRS 17", "IFRS 9", "capital markets risk", "regulatory capital",
+    "stress testing", "OSFI",
+    # Specialty
+    "valuation", "model governance", "actuarial",
+    # Emerging (OSFI B-15 climate, digital assets)
+    "climate risk", "digital assets",
 ]
 
 # Fuzzy brand aliases — words that plausibly appear in the "company" subtitle on LinkedIn
@@ -253,7 +265,7 @@ def _is_finance_title(title: str) -> bool:
     return any(k in tl for k in loose_keywords)
 
 
-def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: int = 3) -> list[dict]:
+def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: int = 3) -> list[dict]:
     """
     Query LinkedIn's public guest-search API.
 
@@ -303,8 +315,9 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: in
         return True
 
     def _run_query(keywords_str: str, pages: int, kw_label: str, phase: str) -> bool:
-        """Returns True if rate-limited, to break outer loop."""
+        """Returns True if hard-rate-limited (multiple 429s), to break outer loop."""
         nonlocal rate_limited
+        consecutive_429 = 0
         for page in range(pages):
             start = page * 25
             url = (
@@ -316,10 +329,17 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: in
             try:
                 r = requests.get(url, headers=HEADERS, timeout=30)
                 if r.status_code == 429:
-                    print(f"  [linkedin] 429 rate-limited — backing off 15s", file=sys.stderr)
-                    time.sleep(15)
-                    rate_limited = True
-                    return True
+                    consecutive_429 += 1
+                    backoff = 10 * (2 ** (consecutive_429 - 1))  # 10s, 20s, 40s
+                    print(f"  [linkedin] 429 on '{keywords_str[:30]}' page {page} "
+                          f"— backing off {backoff}s (attempt {consecutive_429})",
+                          file=sys.stderr)
+                    time.sleep(backoff)
+                    if consecutive_429 >= 3:
+                        rate_limited = True
+                        return True
+                    continue  # retry the same page
+                consecutive_429 = 0
                 if r.status_code != 200:
                     return False
                 soup = BeautifulSoup(r.text, "html.parser")
@@ -344,9 +364,10 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 8, pages_per_query: in
             break
         time.sleep(0.5)
 
-    # Phase 2: company-only query (catches titles with no keyword hit)
+    # Phase 2: company-only query (catches titles with no keyword hit).
+    # Deeper pagination here since it's a single query — can afford 4 pages.
     if not rate_limited:
-        _run_query(company["name"], pages=2, kw_label="company_only", phase="company_only")
+        _run_query(company["name"], pages=4, kw_label="company_only", phase="company_only")
         time.sleep(0.5)
 
     return all_jobs
@@ -573,7 +594,8 @@ def _is_negative(title: str) -> bool:
 # Dedup — collapse cross-source duplicates (Workday + LinkedIn posting the same role)
 # ---------------------------------------------------------------------------
 # Source preference when collapsing dupes. Workday JDs are richer + more stable.
-_SOURCE_PRIORITY = {"workday": 3, "greenhouse": 2, "lever": 2, "linkedin": 1}
+_SOURCE_PRIORITY = {"workday": 4, "greenhouse": 3, "lever": 3, "successfactors": 3,
+                    "linkedin_co": 2, "linkedin": 1}
 
 
 def _source_rank(src: str) -> int:
