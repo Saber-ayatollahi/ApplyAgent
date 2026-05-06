@@ -77,22 +77,36 @@ KEYWORDS_STRONG = [
 KEYWORDS = KEYWORDS_STRONG  # backwards-compat for existing keyword_match() callers
 
 # Strong-negative filter for obviously-wrong roles.
-NEGATIVE_TERMS = [
-    "intern", "co-op", "coop", "student", "graduate program",
-    "retail branch", "teller", "branch manager", "customer service",
-    "sales representative", "account executive", "business development representative",
-    "marketing", "communications", "social media", "content writer",
-    "cleaning", "security guard", "janitor", "facilities",
-    "receptionist", "administrative assistant",
-    "scientist, chemistry", "mechanical engineer", "electrical engineer",
-]
+#
+# We re-use the richer NEG_TITLE_TERMS list from fit_scorer.py as the source of
+# truth. Scraper used to carry a shorter list, which meant we'd scrape (e.g.)
+# "Senior Software Engineer, Risk Analytics" — pass it through dedup — only for
+# the scorer to drop it at stage-1. That's ~5-10% of the weekly LLM budget
+# burnt on roles we'd already decided were out of scope. Single source fixes
+# that and keeps the two filters in sync going forward.
+#
+# Fall back to a minimal inline list if fit_scorer isn't importable (e.g.,
+# standalone scraper runs on a CI box with no fit_scorer checked out).
+try:
+    from fit_scorer import NEG_TITLE_TERMS as _NEG_FROM_SCORER  # type: ignore
+    NEGATIVE_TERMS = list(_NEG_FROM_SCORER)
+except Exception:
+    NEGATIVE_TERMS = [
+        "intern", "co-op", "coop", "student", "graduate program",
+        "retail branch", "teller", "branch manager", "customer service",
+        "sales representative", "account executive", "business development representative",
+        "marketing", "communications", "social media", "content writer",
+        "cleaning", "security guard", "janitor", "facilities",
+        "receptionist", "administrative assistant",
+        "scientist, chemistry", "mechanical engineer", "electrical engineer",
+    ]
 
 # Companies to scan. Grouped by sector.
 # `workday` tuple = (tenant, subdomain, board).  `greenhouse` = board token.
 # Workday tenants validated empirically 2026-05-03 via ATS-discovery agent (live HTTP 200s).
 TARGETS = [
     # ───── Canadian Big 6 Banks (6/6) ─────
-    {"name": "Scotiabank", "sector": "Canadian Big 6 Banks", "linkedin_slug": "scotiabank", "workday": None},
+    {"name": "Scotiabank", "sector": "Canadian Big 6 Banks", "linkedin_slug": "scotiabank", "workday": None, "successfactors": "https://jobs.scotiabank.com"},
     {"name": "RBC", "sector": "Canadian Big 6 Banks", "linkedin_slug": "rbc", "workday": None},
     {"name": "TD Bank", "sector": "Canadian Big 6 Banks", "linkedin_slug": "td", "workday": ("td", "wd3", "TD_Bank_Careers")},
     {"name": "BMO", "sector": "Canadian Big 6 Banks", "linkedin_slug": "bmo-financial-group", "workday": ("bmo", "wd3", "External")},
@@ -136,7 +150,7 @@ TARGETS = [
     {"name": "JPMorgan Chase", "sector": "US Banks (Toronto)", "linkedin_slug": "jpmorganchase", "workday": None},
     {"name": "Goldman Sachs", "sector": "US Banks (Toronto)", "linkedin_slug": "goldman-sachs", "workday": None},
     {"name": "Morgan Stanley", "sector": "US Banks (Toronto)", "linkedin_slug": "morgan-stanley", "workday": ("ms", "wd5", "External")},
-    {"name": "Citi", "sector": "US Banks (Toronto)", "linkedin_slug": "citi", "workday": None},
+    {"name": "Citi", "sector": "US Banks (Toronto)", "linkedin_slug": "citi", "workday": None, "phenom": "https://jobs.citi.com"},
     {"name": "HSBC", "sector": "US Banks (Toronto)", "linkedin_slug": "hsbc", "workday": None},
     {"name": "Deutsche Bank", "sector": "US Banks (Toronto)", "linkedin_slug": "deutsche-bank", "workday": ("db", "wd3", "DBWebsite")},
     {"name": "BNY Mellon", "sector": "US Banks (Toronto)", "linkedin_slug": "bny-mellon", "workday": None},
@@ -156,7 +170,7 @@ TARGETS = [
     # ───── Canadian Insurers (6/6) ─────
     {"name": "Manulife", "sector": "Canadian Insurers", "linkedin_slug": "manulife", "workday": ("manulife", "wd3", "MFCJH_Jobs")},
     {"name": "Sun Life", "sector": "Canadian Insurers", "linkedin_slug": "sun-life-financial", "workday": ("sunlife", "wd3", "Experienced")},
-    {"name": "Canada Life", "sector": "Canadian Insurers", "linkedin_slug": "canada-life", "workday": None},
+    {"name": "Canada Life", "sector": "Canadian Insurers", "linkedin_slug": "canada-life", "workday": None, "successfactors": "https://jobs.canadalife.com"},
     {"name": "Intact Financial", "sector": "Canadian Insurers", "linkedin_slug": "intact-financial-corporation", "workday": None},
     {"name": "Definity Financial", "sector": "Canadian Insurers", "linkedin_slug": "definity", "workday": None},
     {"name": "iA Financial Group", "sector": "Canadian Insurers", "linkedin_slug": "industrial-alliance", "workday": ("ia", "wd3", "Professional")},
@@ -166,8 +180,8 @@ TARGETS = [
     {"name": "EQB", "sector": "Mid Canadian Banks", "linkedin_slug": "eqbank", "workday": None},
 
     # ───── Big 4 FS Risk Advisory (4/4) ─────
-    {"name": "Deloitte Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "deloitte", "workday": None},
-    {"name": "EY Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "ernstandyoung", "workday": None},
+    {"name": "Deloitte Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "deloitte", "workday": None, "successfactors": "https://careers.deloitte.ca"},
+    {"name": "EY Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "ernstandyoung", "workday": None, "successfactors": "https://careers.ey.com"},
     {"name": "KPMG Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "kpmg-canada", "workday": None},
     {"name": "PwC Canada", "sector": "Big 4 Risk Advisory", "linkedin_slug": "pwc-canada", "workday": None},
 
@@ -265,19 +279,70 @@ def _is_finance_title(title: str) -> bool:
     return any(k in tl for k in loose_keywords)
 
 
+# LinkedIn location filters. Toronto is the default; Mississauga serves GTA-west
+# (Citi, Aviva, Sagen, Canadian Tire Bank). LinkedIn's commute-radius heuristic
+# reaches most GTA roles from Toronto coords, but Mississauga-posted roles often
+# paginate off the first 3 pages because distance dings their rank. The
+# second-location pass is gated on "LinkedIn-only" companies (no Workday/GH/Lever/
+# SF) so we don't 2× traffic for well-covered targets.
+_LINKEDIN_LOC_TORONTO = "Toronto%2C+Ontario%2C+Canada"
+_LINKEDIN_LOC_MISSISSAUGA = "Mississauga%2C+Ontario%2C+Canada"
+
+# Scan-wide kill-switch. Flipped to True inside fetch_linkedin_jobs when any
+# single company trips the 3-consecutive-429 threshold — a strong signal that
+# LinkedIn is throttling OUR IP for the rest of this run. Remaining companies
+# then short-circuit LinkedIn calls (backoff loops waste ~70s/keyword×12kw =
+# ~14min per throttled company if we don't). Reset at the start of scan().
+_linkedin_globally_throttled = False
+
+
+def _linkedin_throttle_reset():
+    global _linkedin_globally_throttled
+    _linkedin_globally_throttled = False
+
+
+def _linkedin_throttle_set():
+    global _linkedin_globally_throttled
+    _linkedin_globally_throttled = True
+
+
+def _company_has_non_linkedin_ats(company: dict) -> bool:
+    """True if this target has any configured non-LinkedIn source (Workday,
+    Greenhouse, Lever, SuccessFactors, or Phenom). When False, LinkedIn is doing
+    all the work for this company and the GTA-west second pass is worth the
+    extra quota."""
+    return bool(
+        company.get("workday")
+        or company.get("greenhouse")
+        or company.get("lever")
+        or company.get("successfactors")
+        or company.get("phenom")
+    )
+
+
 def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: int = 3) -> list[dict]:
     """
     Query LinkedIn's public guest-search API.
 
-    Two-phase strategy:
-      1. Keyword+company queries (8 keywords × 3 pages) — narrow, high-signal
-      2. Company-name-only query (2 pages) — catches roles where keyword doesn't
-         appear in the title/card text (e.g., "Associate Director" at RBC, or
-         regulators/global-AMs with few Toronto listings matching our keyword list)
+    Three-phase strategy:
+      1. Keyword + company, Toronto location (12 keywords × 3 pages) — high-signal
+      2. Company-only, Toronto location (4 pages) — catches titles without a keyword
+         (e.g., "Associate Director" at RBC; global-AMs with sparse Toronto listings)
+      3. Company-only, Mississauga location (2 pages) — ONLY for LinkedIn-only
+         companies (no ATS configured). LinkedIn ranks by distance from the
+         query coords; GTA-west-posted roles (Citi Mississauga NTMR, Aviva etc.)
+         rank poorly at Toronto coords but surface at Mississauga coords.
 
-    The company-only phase applies a loose finance-title filter before accepting
+    The company-only phases apply a loose finance-title filter before accepting
     the result, so we don't flood stage-1 with every Java Dev at Goldman.
     """
+    # Scan-wide throttle short-circuit: if a prior company already hit the
+    # LinkedIn 3-×-429 wall, don't bother making more requests this run.
+    if _linkedin_globally_throttled:
+        print(f"  [linkedin] skipping {company['name']} — scan-wide throttle tripped",
+              file=sys.stderr)
+        return []
+
     aliases = company.get("brand_aliases") or _brand_aliases(company["name"])
     seen_links: set[str] = set()
     all_jobs: list[dict] = []
@@ -299,26 +364,32 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
         co = (co_el.get_text(strip=True) if co_el else company["name"]).lower()
         if not any(a in co for a in aliases):
             return False
-        # In the company-only phase, require a finance/risk signal in the title
+        # In the company-only phases, require a finance/risk signal in the title
         # to keep the volume manageable
-        if source_phase == "company_only" and not _is_finance_title(title):
+        if source_phase in ("company_only", "company_only_gtaw") and not _is_finance_title(title):
             return False
         loc = loc_el.get_text(strip=True) if loc_el else "Toronto"
         # Posted date — LinkedIn wraps it in <time datetime="2026-05-01">
         posted = time_el.get("datetime") if time_el else None
         seen_links.add(link)
+        source = {
+            "keyword": "linkedin",
+            "company_only": "linkedin_co",
+            "company_only_gtaw": "linkedin_co_gtaw",  # GTA-west pass — tag so we can audit
+        }.get(source_phase, "linkedin")
         all_jobs.append({
             "title": title,
             "link": link,
             "company_reported": co_el.get_text(strip=True) if co_el else company["name"],
             "location": loc,
             "keyword_hit": kw_label,
-            "source": "linkedin" if source_phase == "keyword" else "linkedin_co",
+            "source": source,
             "posted_date": posted,
         })
         return True
 
-    def _run_query(keywords_str: str, pages: int, kw_label: str, phase: str) -> bool:
+    def _run_query(keywords_str: str, pages: int, kw_label: str, phase: str,
+                    location: str = _LINKEDIN_LOC_TORONTO) -> bool:
         """Returns True if hard-rate-limited (multiple 429s), to break outer loop."""
         nonlocal rate_limited
         consecutive_429 = 0
@@ -327,7 +398,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
             url = (
                 "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?"
                 f"keywords={requests.utils.quote(keywords_str)}"
-                "&location=Toronto%2C+Ontario%2C+Canada"
+                f"&location={location}"
                 f"&start={start}"
             )
             try:
@@ -341,6 +412,11 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
                     time.sleep(backoff)
                     if consecutive_429 >= 3:
                         rate_limited = True
+                        _linkedin_throttle_set()
+                        print(f"  [linkedin] scan-wide throttle TRIPPED on "
+                              f"'{keywords_str[:30]}' — remaining companies' "
+                              f"LinkedIn calls will be skipped this run",
+                              file=sys.stderr)
                         return True
                     continue  # retry the same page
                 consecutive_429 = 0
@@ -360,7 +436,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
                 return False
         return False
 
-    # Phase 1: keyword + company name
+    # Phase 1: keyword + company name, Toronto coords
     for kw in LINKEDIN_QUERY_PHRASES[:max_queries]:
         if rate_limited:
             break
@@ -368,10 +444,22 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
             break
         time.sleep(0.5)
 
-    # Phase 2: company-only query (catches titles with no keyword hit).
-    # Deeper pagination here since it's a single query — can afford 4 pages.
+    # Phase 2: company-only, Toronto coords (4 pages; catches keyword-less titles)
     if not rate_limited:
         _run_query(company["name"], pages=4, kw_label="company_only", phase="company_only")
+        time.sleep(0.5)
+
+    # Phase 3: company-only, Mississauga coords — ONLY for LinkedIn-only companies.
+    # Small budget (2 pages) since this is a supplementary pass; the finance-title
+    # filter inside _emit_card will keep the signal-to-noise high.
+    if not rate_limited and not _company_has_non_linkedin_ats(company):
+        before_gtaw = len(all_jobs)
+        _run_query(company["name"], pages=2, kw_label="company_only_gtaw",
+                    phase="company_only_gtaw", location=_LINKEDIN_LOC_MISSISSAUGA)
+        gtaw_added = len(all_jobs) - before_gtaw
+        if gtaw_added:
+            print(f"  [linkedin] GTA-west pass: +{gtaw_added} new for {company['name']}",
+                  file=sys.stderr)
         time.sleep(0.5)
 
     return all_jobs
@@ -543,9 +631,41 @@ _SF_KEYWORDS = ["risk", "model", "capital", "treasury", "liquidity", "analytics"
                 "balance sheet", "market risk"]
 
 
+def _is_gta_or_canada_remote(loc_lower: str) -> bool:
+    """Return True if a location string refers to the Greater Toronto Area or
+    Canada-remote. Used by SF + similar adapters that need to filter on RSS
+    location strings like 'Mississauga, ON, CA, L5B 1M3' or 'Toronto, ON, CA'.
+
+    Accepts:
+      - Any GTA city (Toronto proper, Mississauga, Markham, Oakville, etc.)
+      - Explicit Ontario, ON, CA markers (for e.g. "Kitchener, ON, CA")
+      - Remote Canada
+    Rejects Ottawa-only, Montreal, Vancouver, etc. (Saber is Toronto-focused)."""
+    # GTA-wide
+    gta = ("toronto", "mississauga", "markham", "vaughan", "brampton",
+            "oakville", "burlington", "milton", "richmond hill",
+            "pickering", "ajax", "whitby", "oshawa", "north york",
+            "scarborough", "etobicoke", "thornhill", "concord", "woodbridge",
+            "aurora", "newmarket", "stouffville")
+    if any(c in loc_lower for c in gta):
+        return True
+    # Canada-remote variants
+    if "remote - canada" in loc_lower or "canada - remote" in loc_lower:
+        return True
+    if "remote canada" in loc_lower or "remote, canada" in loc_lower:
+        return True
+    if loc_lower.strip() in ("canada", "ca"):
+        return True
+    # Commute-reachable SW Ontario (Saber is Toronto-based but Waterloo/Kitchener
+    # are sometimes flexible with hybrid)
+    if "waterloo" in loc_lower or "kitchener" in loc_lower:
+        return True
+    return False
+
+
 def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
     """Query a SuccessFactors career portal's RSS feed for multiple keywords
-    and return Toronto-located roles. `sf_base` must be a host like
+    and return GTA / Canada-remote roles. `sf_base` must be a host like
     'https://careers.bankofcanada.ca' (no trailing slash)."""
     base = sf_base.rstrip("/")
     seen_links: set[str] = set()
@@ -572,14 +692,7 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
                 location = paren.group(1) if paren else ""
                 title = re.sub(r"\s*\(([^()]+)\)\s*$", "", full_title).strip()
                 loc_lower = location.lower()
-                # Toronto / Canada remote only. Ottawa-specific BoC roles are NOT
-                # Saber's geography; we skip them here.
-                if not ("toronto" in loc_lower or
-                        "ontario or" in loc_lower or  # hybrid flags
-                        "or toronto" in loc_lower or
-                        "remote - canada" in loc_lower or
-                        "canada - remote" in loc_lower or
-                        loc_lower.strip() in ("canada", "ca")):
+                if not _is_gta_or_canada_remote(loc_lower):
                     continue
                 posted = None
                 if pub_m:
@@ -602,6 +715,118 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
         except Exception as e:
             print(f"  [sf:{base}] error on '{kw}': {e}", file=sys.stderr)
             continue
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Phenom ATS adapter (Citi jobs.citi.com, RBC jobs.rbc.com, Walmart, AT&T, etc.)
+# ---------------------------------------------------------------------------
+# Phenom's keyword-driven search is the ONLY reliable way to surface roles —
+# direct /search-jobs/<city>/<country> geography walks hide some postings that
+# are otherwise live at direct URLs (confirmed empirically with the Citi
+# Mississauga VP Non-Trading Market Risk role, which is unreachable via
+# /search-jobs/Canada/287 pagination but IS returned by ?k=market+risk).
+#
+# URL form that works (verified on jobs.citi.com, 2026-05-05):
+#   /search-jobs?k=<keyword>&p=<page>        — pagination uses lowercase `p`
+# The returned HTML page contains 15 job cards under <section id="search-results-list">.
+# Each card wraps an anchor like /job/<city>/<slug>/<tenant_id>/<job_id>.
+#
+# Usage in TARGETS: {"phenom": "https://jobs.citi.com"}
+# ---------------------------------------------------------------------------
+_PHENOM_KEYWORDS = [
+    "market risk", "non-trading", "IRRBB", "interest rate risk",
+    "model validation", "model risk", "ALM",
+    "treasury risk", "balance sheet", "liquidity risk",
+    "capital management", "derivatives",
+]
+
+# Canadian city slugs that appear in Phenom /job/<city>/... paths. This is the
+# cheapest way to filter to Canada-only without parsing each card's metadata.
+# Kept deliberately loose — missing a slug here means we drop a real role.
+#
+# Intentionally EXCLUDED: 'london' (ambiguous with London, UK — Citi's HQ
+# slugs many UK roles as /job/london/...). A Citi role in London, ON would be
+# missed; we accept that rather than the much larger false-positive cost of
+# pulling UK London roles into a Toronto-focused scan.
+_PHENOM_CANADA_CITY_SLUGS = {
+    "toronto", "mississauga", "markham", "vaughan", "brampton", "oakville",
+    "burlington", "milton", "richmond-hill", "pickering", "ajax", "whitby",
+    "oshawa", "north-york", "scarborough", "etobicoke", "thornhill", "concord",
+    "woodbridge", "montreal", "vancouver", "calgary", "edmonton", "ottawa",
+    "quebec", "halifax", "winnipeg", "regina", "saskatoon", "victoria",
+    "waterloo", "kitchener",
+    # Add the word 'canada' for tenants that include the country in the slug
+    "canada",
+}
+
+
+def fetch_phenom_jobs(base_url: str, tenant_name: str = "") -> list[dict]:
+    """Query a Phenom-hosted careers portal (e.g., jobs.citi.com) for multiple
+    keywords and return Canada-located roles. `base_url` must be a host root
+    like 'https://jobs.citi.com' (no trailing slash).
+
+    Filter: /job/<city>/... path slug must be a known Canadian city. This skips
+    Phenom's own card-metadata parsing (which is inconsistent across tenants).
+    """
+    base = base_url.rstrip("/")
+    tenant = tenant_name or base.split("://", 1)[-1].split(".")[1]  # e.g. "citi"
+    seen_paths: set[str] = set()
+    out: list[dict] = []
+
+    # A job's path shape: /job/<city>/<slug>/<tenant_id>/<job_id>
+    path_re = re.compile(r"/job/([a-z\-]+)/([a-z0-9\-]+)/(\d+)/(\d{10,12})")
+
+    # Per-keyword cap. Each keyword visits up to 5 pages (75 roles) — Phenom
+    # tenants with no roles for a keyword return duplicated page-1 contents,
+    # so the dedup loop will short-circuit early.
+    for kw in _PHENOM_KEYWORDS:
+        seen_before = len(seen_paths)
+        for page in range(1, 6):
+            url = (f"{base}/search-jobs?"
+                   f"k={requests.utils.quote(kw)}&p={page}")
+            try:
+                r = requests.get(url, headers=HEADERS, timeout=25)
+                if r.status_code != 200:
+                    break
+                matches = path_re.findall(r.text)
+                if not matches:
+                    break
+                new_on_page = 0
+                for city_slug, role_slug, tenant_id, job_id in matches:
+                    full_path = f"/job/{city_slug}/{role_slug}/{tenant_id}/{job_id}"
+                    if full_path in seen_paths:
+                        continue
+                    if city_slug not in _PHENOM_CANADA_CITY_SLUGS:
+                        seen_paths.add(full_path)  # still mark so we don't re-evaluate
+                        continue
+                    # Extract title from the slug (role_slug uses dashes for spaces)
+                    title = role_slug.replace("-", " ").title()
+                    # Fine-tune a few title-cased corner cases
+                    title = (title.replace(" Vp", " VP").replace(" Svp", " SVP")
+                                  .replace(" Avp", " AVP").replace("Irrbb", "IRRBB")
+                                  .replace("Alm", "ALM").replace("Ifrs", "IFRS")
+                                  .replace("Osfi", "OSFI"))
+                    seen_paths.add(full_path)
+                    out.append({
+                        "title": title,
+                        "link": f"{base}{full_path}",
+                        "location": city_slug.replace("-", " ").title(),
+                        "keyword_hit": kw,
+                        "source": f"phenom:{tenant}",
+                        "posted_date": None,  # Phenom doesn't expose postedOn in list HTML
+                    })
+                    new_on_page += 1
+                if new_on_page == 0:
+                    break  # whole page was duplicates — stop paginating this keyword
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"  [phenom:{tenant}] error on '{kw}' p{page}: {e}",
+                      file=sys.stderr)
+                break
+        added = len(seen_paths) - seen_before
+        # Mild pacing between keywords
+        time.sleep(0.3)
     return out
 
 
@@ -629,8 +854,36 @@ def load_url_history() -> dict:
 
 
 def save_url_history(hist: dict):
+    """Write url_history atomically: write to a tempfile in the same directory,
+    then os.replace() onto the final path. Ensures a mid-write crash (or
+    concurrent scraper instance) never leaves a partial file that would strip
+    out prior found_at timestamps.
+
+    os.replace is atomic on all supported platforms (POSIX rename, Win32
+    MoveFileEx with REPLACE_EXISTING). Must be same-filesystem — guaranteed
+    because tempfile is in the same dir.
+    """
+    import os
+    import tempfile
     URL_HISTORY.parent.mkdir(parents=True, exist_ok=True)
-    URL_HISTORY.write_text(json.dumps(hist, indent=2), encoding="utf-8")
+    # delete=False: we want to close it before renaming (Windows holds locks
+    # on open files). dir=URL_HISTORY.parent: guarantees same filesystem.
+    fd, tmp_path = tempfile.mkstemp(
+        dir=str(URL_HISTORY.parent),
+        prefix=".url_history.",
+        suffix=".tmp",
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(hist, f, indent=2)
+        os.replace(tmp_path, URL_HISTORY)
+    except Exception:
+        # Clean up tempfile on failure — otherwise stale .tmp files accumulate
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def stamp_found_at(results: list[dict], today_iso: str | None = None) -> dict:
@@ -665,8 +918,14 @@ def _is_negative(title: str) -> bool:
 # Dedup — collapse cross-source duplicates (Workday + LinkedIn posting the same role)
 # ---------------------------------------------------------------------------
 # Source preference when collapsing dupes. Workday JDs are richer + more stable.
+# Phenom sits with the other "direct ATS" adapters (greenhouse/lever/SF) because
+# its JD pages are a real server-rendered document, unlike LinkedIn card stubs.
+# Without this entry, Phenom rows (e.g., the Citi Mississauga NTMR role) get
+# rank=0 and lose every near-dup collision with a LinkedIn entry.
 _SOURCE_PRIORITY = {"workday": 4, "greenhouse": 3, "lever": 3, "successfactors": 3,
-                    "linkedin_co": 2, "linkedin": 1}
+                    "phenom": 3,
+                    "linkedin_co": 2, "linkedin_co_gtaw": 2, "linkedin": 1,
+                    "gmail_linkedin_alert": 1}
 
 
 def _source_rank(src: str) -> int:
@@ -741,6 +1000,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
          skip_linkedin: bool = False) -> tuple[list[dict], dict]:
     """Run the scan. Returns (candidates, diagnostics) where diagnostics lists
     companies that returned 0 candidates (for UI surfacing)."""
+    # Reset the scan-wide LinkedIn throttle — even if the previous run
+    # tripped it, we want to retry this run from clean state.
+    _linkedin_throttle_reset()
     companies = list(companies)
     seen = load_tracker_urls()
     found: list[dict] = []
@@ -798,6 +1060,19 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             sf_count = len(found) - sf_before
             if sf_count: sources_used.append(f"sf:{sf_count}")
 
+        # 3c. Phenom (jobs.citi.com, jobs.rbc.com, etc.) — keyword-driven search
+        ph_count = 0
+        if c.get("phenom") and not linkedin_only:
+            ph_before = len(found)
+            tenant_name = c.get("name", "").lower().split()[0]
+            for j in fetch_phenom_jobs(c["phenom"], tenant_name=tenant_name):
+                if j["link"] in seen or _is_negative(j["title"]):
+                    continue
+                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                found.append(j)
+            ph_count = len(found) - ph_before
+            if ph_count: sources_used.append(f"phenom:{ph_count}")
+
         # 4. LinkedIn (breadth; paginated, multi-keyword + company-only fallback).
         li_count = 0
         if not workday_only and not skip_linkedin:
@@ -821,11 +1096,13 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             "greenhouse": gh_count,
             "lever": lv_count,
             "successfactors": sf_count,
+            "phenom": ph_count,
             "linkedin": li_count,
             "has_workday_config": bool(c.get("workday")),
             "has_greenhouse_config": bool(c.get("greenhouse")),
             "has_lever_config": bool(c.get("lever")),
             "has_successfactors_config": bool(c.get("successfactors")),
+            "has_phenom_config": bool(c.get("phenom")),
         })
         print(f"  -> {added} new candidate(s) [{', '.join(sources_used) or 'none'}]",
               file=sys.stderr)
@@ -833,6 +1110,7 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
     diagnostics = {
         "per_company": per_company,
         "zero_result_companies": [c["name"] for c in per_company if c["total"] == 0],
+        "linkedin_throttled": _linkedin_globally_throttled,
     }
     return found, diagnostics
 
@@ -848,6 +1126,13 @@ def main() -> int:
                     help="Also scan the expansion_companies list (Fairstone, ivari, MCAP, insurers, fintechs, regulators, etc.)")
     ap.add_argument("--expansion-only", action="store_true",
                     help="Scan ONLY the expansion_companies list")
+    ap.add_argument("--gmail", action="store_true",
+                    help="Harvest LinkedIn/Indeed job-alert emails from Gmail inbox "
+                         "(last 14 days) and merge them into the scan. Read-only; "
+                         "requires Gmail app password saved in ~/.applyagent/config.json.")
+    ap.add_argument("--gmail-days", type=int, default=14,
+                    help="How many days of Gmail alerts to harvest (default 14). "
+                         "Only used with --gmail.")
     args = ap.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -877,6 +1162,43 @@ def main() -> int:
     raw, diagnostics = scan(targets, linkedin_only=args.linkedin_only,
                              workday_only=args.workday_only)
 
+    # Optional: fold in Gmail-harvested LinkedIn alerts. Dedup below collapses
+    # URL collisions with the web scan, so "seen in both" produces one row.
+    gmail_diag = None
+    if args.gmail:
+        try:
+            from gmail_reader import scrape_from_inbox  # type: ignore
+            gmail_rows = scrape_from_inbox(days=args.gmail_days)
+            # Drop alerts already in tracker + obvious negatives
+            seen_tracker = load_tracker_urls()
+            kept: list[dict] = []
+            for g in gmail_rows:
+                if not g.get("link"):
+                    continue
+                if g["link"] in seen_tracker:
+                    continue
+                if _is_negative(g.get("title", "")):
+                    continue
+                # Attach minimal sector/company plumbing so downstream diagnostics work.
+                # Company comes from the email; we can't sector it confidently here,
+                # so leave sector blank — scoring uses title + JD, not sector.
+                kept.append(g)
+            raw.extend(kept)
+            gmail_diag = {
+                "fetched": len(gmail_rows),
+                "kept": len(kept),
+                "dropped_tracker_dup": sum(
+                    1 for g in gmail_rows
+                    if g.get("link") in seen_tracker
+                ),
+            }
+            print(f"[scan] Gmail: harvested {len(gmail_rows)} alert row(s), "
+                  f"kept {len(kept)} (after tracker + negative-title filter).",
+                  file=sys.stderr)
+        except Exception as e:
+            print(f"[scan] Gmail harvest failed: {e}", file=sys.stderr)
+            gmail_diag = {"error": str(e)[:200]}
+
     # Cross-source dedup: collapse same URL + same (company, normalized title).
     # Done post-scan so we can dedupe across companies too (rare but possible on LinkedIn).
     results, dedupe_stats = dedupe(raw)
@@ -903,6 +1225,8 @@ def main() -> int:
         s = r.get("sector", "Uncategorized")
         sector_counts[s] = sector_counts.get(s, 0) + 1
 
+    if gmail_diag is not None:
+        diagnostics["gmail"] = gmail_diag
     json_path.write_text(
         json.dumps(
             {

@@ -198,8 +198,15 @@ def _classify_sender(sender_email: str) -> str:
     return "other"
 
 
-def fetch_inbox_signals(days: int = 14, limit: int = 100) -> list[InboxMessage]:
-    """Search recent mail for job alerts + recruiter emails. Read-only."""
+def fetch_inbox_signals(days: int = 14, limit: int = 100,
+                         include_body: bool = False) -> list[InboxMessage]:
+    """Search recent mail for job alerts + recruiter emails. Read-only.
+
+    If `include_body=True`, each InboxMessage carries the full decoded body in
+    `.snippet` (truncated only to 200k chars to cap memory). Default keeps the
+    legacy 280-char snippet behavior so existing callers don't pay for body
+    decode they don't need.
+    """
     email_addr, pw = load_credentials()
     if not email_addr or not pw:
         return []
@@ -212,18 +219,36 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100) -> list[InboxMessage]:
     try:
         # Build a multi-sender search. IMAP allows OR, but Gmail's IMAP is
         # friendlier to X-GM-RAW queries. Use from: filter.
-        since = _since_query(days)
         all_senders = ALERT_SENDERS + [f"@{d}" for d in RECRUITER_DOMAINS]
         from_query = " OR ".join(f"from:{s}" for s in all_senders)
         gm_query = f'({from_query}) newer_than:{days}d'
+        uids: list[bytes] = []
         try:
             typ, data = m.uid("search", None, "X-GM-RAW", f'"{gm_query}"')
+            if typ == "OK" and data and data[0]:
+                uids = data[0].split()
         except imaplib.IMAP4.error:
-            # Fallback to SINCE + a single from broad match (less effective)
-            typ, data = m.uid("search", None, f"(SINCE {since})")
-        if typ != "OK" or not data or not data[0]:
+            uids = []
+
+        # Fallback: IMAP OR-chained from: search over the date window. Avoids
+        # the prior behavior of returning every message in the last N days.
+        if not uids:
+            since = _since_query(days)
+            for sender in all_senders:
+                try:
+                    typ, data = m.uid(
+                        "search", None,
+                        f'(SINCE {since} FROM "{sender}")',
+                    )
+                    if typ == "OK" and data and data[0]:
+                        uids.extend(data[0].split())
+                except imaplib.IMAP4.error:
+                    continue
+            # Dedup while preserving order
+            uids = list(dict.fromkeys(uids))
+
+        if not uids:
             return []
-        uids = data[0].split()
         uids = uids[-limit:]  # most recent N
         for uid in reversed(uids):
             try:
@@ -245,7 +270,11 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100) -> list[InboxMessage]:
                 except Exception:
                     iso = ""
                 body = _decode_payload(msg)
-                snippet = re.sub(r"\s+", " ", body).strip()[:280]
+                if include_body:
+                    # Cap at 200k chars — LinkedIn digests rarely exceed ~60k.
+                    payload_text = body[:200_000]
+                else:
+                    payload_text = re.sub(r"\s+", " ", body).strip()[:280]
                 kind = _classify_sender(addr)
                 out.append(InboxMessage(
                     uid=uid.decode() if isinstance(uid, bytes) else str(uid),
@@ -253,7 +282,7 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100) -> list[InboxMessage]:
                     sender=name or addr,
                     sender_email=addr,
                     subject=subject,
-                    snippet=snippet,
+                    snippet=payload_text,
                     kind=kind,
                 ))
             except Exception as e:
@@ -274,52 +303,135 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100) -> list[InboxMessage]:
 # ---------------------------------------------------------------------------
 # Job-alert parsing — extract title/company/URL from LinkedIn/Indeed emails
 # ---------------------------------------------------------------------------
+try:
+    from bs4 import BeautifulSoup  # type: ignore
+    _HAS_BS4 = True
+except ImportError:
+    _HAS_BS4 = False
+
+
+# Strip LinkedIn's tracking wrappers (t.email.linkedin.com redirect + query
+# params) so the canonical jobs/view URL collapses to one per posting.
+_LI_JOB_RE = re.compile(r"https?://[^\s\"'<>]*linkedin\.com/[^\s\"'<>]*jobs/view/(\d+)[^\s\"'<>]*",
+                        re.IGNORECASE)
+
+
+def _canonical_li_job_url(raw_url: str) -> str | None:
+    """Return canonical https://www.linkedin.com/jobs/view/<id> or None if not a
+    job URL. Handles tracking redirects (linkedin.com/comm/jobs/view/...,
+    url?trk=...) by collapsing to the job id."""
+    m = _LI_JOB_RE.search(raw_url or "")
+    if not m:
+        return None
+    return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
+
+
 def parse_linkedin_alert(body: str) -> list[dict]:
-    """LinkedIn alert emails contain job cards with a pattern like:
-       <title> at <company>
-       https://www.linkedin.com/jobs/view/<id>/...
-    Returns list of {company, title, link, source}.
+    """Extract job rows from a LinkedIn alert email body.
+
+    Strategy:
+      1. If the body has HTML, parse anchors. LinkedIn digest emails render
+         each job card as <a href=".../jobs/view/<id>..."> wrapping both the
+         title and (in a following cell) the company — reliable signal.
+      2. Fallback to text parsing if no HTML anchors matched.
+
+    Returns list of {company, title, link, source, sector, location} rows.
+    `link` is always the canonical https://www.linkedin.com/jobs/view/<id>.
+    Duplicate job ids are collapsed, keeping the richest (title,company) pair.
     """
-    rows = []
-    # Find all linkedin job view URLs
-    urls = re.findall(r"https?://[\w./\-]*linkedin\.com/jobs/view/\d+[^\s>\"']*", body)
-    for url in set(urls):
-        link = url.split("?")[0]
-        # Look around the URL for title/company context (simple heuristic: the
-        # paragraph preceding the link in the raw text)
-        idx = body.find(url)
+    rows_by_id: dict[str, dict] = {}
+    if _HAS_BS4 and "<" in body and ">" in body:
+        try:
+            soup = BeautifulSoup(body, "html.parser")
+        except Exception:
+            soup = None
+        if soup is not None:
+            for a in soup.find_all("a", href=True):
+                canon = _canonical_li_job_url(a["href"])
+                if not canon:
+                    continue
+                job_id = canon.rsplit("/", 1)[-1]
+                # Title — usually the anchor's own text, often inside <strong>
+                anchor_text = " ".join(a.get_text(" ", strip=True).split())
+                title = anchor_text[:180] if anchor_text else ""
+                # Company — LinkedIn digests put company as a sibling link/cell
+                # underneath. Walk forward until we find the next short text.
+                company = ""
+                location = ""
+                # Search within the nearest enclosing <table> cell for company/loc
+                cell = a.find_parent(["td", "div"])
+                if cell is not None:
+                    cell_text = cell.get_text("\n", strip=True)
+                    lines = [l.strip() for l in cell_text.split("\n") if l.strip()]
+                    # Title is first non-empty line; company/location follow
+                    if title and lines and lines[0].startswith(title[:40]):
+                        follow = lines[1:]
+                    else:
+                        follow = lines
+                    if follow:
+                        company = follow[0][:120]
+                    if len(follow) > 1:
+                        location = follow[1][:120]
+                existing = rows_by_id.get(job_id)
+                if existing is None or (not existing.get("company") and company):
+                    rows_by_id[job_id] = {
+                        "title": title,
+                        "company": company,
+                        "link": canon,
+                        "location": location,
+                        "source": "gmail_linkedin_alert",
+                        "sector": "",
+                    }
+
+    if rows_by_id:
+        return [r for r in rows_by_id.values() if r.get("title") or r.get("company")]
+
+    # Text fallback — digests sometimes arrive as plain text
+    for match in _LI_JOB_RE.finditer(body):
+        canon = _canonical_li_job_url(match.group(0))
+        if not canon:
+            continue
+        job_id = canon.rsplit("/", 1)[-1]
+        if job_id in rows_by_id:
+            continue
+        # Pull the two text lines preceding the URL as (title, company)
+        idx = match.start()
         context = body[max(0, idx - 400):idx]
-        # Pattern: "<title>\n<company>" in LinkedIn alert templates
         lines = [l.strip() for l in context.split("\n") if l.strip()]
         title = lines[-2] if len(lines) >= 2 else ""
         company = lines[-1] if lines else ""
-        rows.append({
-            "title": title[:120],
-            "company": company[:80],
-            "link": link,
+        rows_by_id[job_id] = {
+            "title": title[:180],
+            "company": company[:120],
+            "link": canon,
             "source": "gmail_linkedin_alert",
             "sector": "",
             "location": "",
-        })
-    return rows
+        }
+    return [r for r in rows_by_id.values() if r.get("title") or r.get("company")]
 
 
 def scrape_from_inbox(days: int = 14) -> list[dict]:
     """Pull LinkedIn alert emails from the last N days and parse them into scan rows.
     Format matches what jd_scraper.scan() emits, so these feed the same dedup +
     triage + scoring pipeline.
+
+    Each returned row carries:
+      - source: "gmail_linkedin_alert"
+      - found_at / posted_date: the email's arrival date (best proxy we have
+        for "when the recruiter surfaced this"). jd_scraper's stamp_found_at
+        will overwrite found_at if the URL was seen earlier.
     """
-    messages = fetch_inbox_signals(days=days, limit=200)
+    messages = fetch_inbox_signals(days=days, limit=200, include_body=True)
     rows: list[dict] = []
-    for m in messages:
-        if m.kind != "alert":
+    for msg in messages:
+        if msg.kind != "alert":
             continue
-        # We only parse LinkedIn alerts for now; others would need per-sender regex
-        if "linkedin.com" in m.sender_email.lower():
-            # Re-fetch full body — fetch_inbox_signals only kept snippet
-            # For simplicity we use the snippet as-is (LinkedIn puts URLs in
-            # a way that the 280-char snippet rarely includes the full list).
-            # The snippet is a proxy; the real one is richer — but the URLs we
-            # care about often appear near the start.
-            rows.extend(parse_linkedin_alert(m.snippet))
+        if "linkedin.com" not in msg.sender_email.lower():
+            continue
+        for row in parse_linkedin_alert(msg.snippet):
+            # Stamp email date so downstream freshness/triage have something
+            # useful even before url_history stamps found_at.
+            row["posted_date"] = msg.date or None
+            rows.append(row)
     return rows

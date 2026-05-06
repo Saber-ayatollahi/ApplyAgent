@@ -132,11 +132,13 @@ def _render_md(top: list[dict], total: int, delta_file: str,
     lines += [f"## Top {len(top)} fresh matches", ""]
     for i, r in enumerate(top, 1):
         f = r.get("fit") or {}
+        variants = f.get("applicable_resume_variants") or []
+        variants_str = " · ".join(variants) if variants else "—"
         lines += [
             f"### {i}. [{f.get('fit_score', '?')}/10 · {f.get('fit_verdict', '?')} · "
             f"Tier {f.get('tier', '?')}] {r.get('company', '')} — {r.get('title', '')}",
             "",
-            f"**OSFI hook:** {f.get('osfi_hook', 'None')}  ",
+            f"**Lead-with resume:** {variants_str}  ·  **OSFI hook:** {f.get('osfi_hook', 'None')}  ",
             f"**Sector:** {r.get('sector', '')}  ·  **Location:** {r.get('location', '')}  ·  "
             f"**Source:** {r.get('source', '')}",
             "",
@@ -179,18 +181,31 @@ def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
         new_id = f"brief-{stamp}-{len(added_ids) + 1:02d}"
         while new_id in {j["id"] for j in tr["jobs"]}:
             new_id = new_id + "a"
+        variants = f.get("applicable_resume_variants") or []
+        # fit_score is a High/Medium/Low CATEGORY in the tracker (so the Kanban
+        # multi-select filter works across entries); the numeric 1-10 value
+        # lives in fit_score_numeric. auto_promote.make_entry does the same
+        # mapping — keeping both writers in sync avoids polluting the category
+        # filter with verdict strings like "apply_now".
+        num_score = int(f.get("fit_score") or 0)
+        fit_category = "High" if num_score >= 8 else ("Medium" if num_score >= 6
+                                                       else "Low")
         tr["jobs"].append({
             "id": new_id,
             "company": r.get("company", ""),
             "title": r.get("title", ""),
             "sector": r.get("sector", ""),
+            "location": r.get("location", ""),
             "url": url,
             "source": r.get("source", ""),
             "tier": f.get("tier", 3),
-            "fit_score": verdict,
-            "fit_score_numeric": f.get("fit_score", 0),
+            "fit_score": fit_category,
+            "fit_score_numeric": num_score,
+            "fit_verdict": verdict,
             "fit_notes": f.get("summary", ""),
             "osfi_hook": f.get("osfi_hook", ""),
+            "resume_variants": variants,
+            "primary_variant": variants[0] if variants else "",
             "status": "Found" if verdict == "apply_now" else "Watch",
             "urgency": "High" if verdict == "apply_now" else "Medium",
             "date_found": today_iso,
@@ -271,6 +286,15 @@ def main() -> int:
     out_json = OUT_DIR / f"brief_{brief_date}.json"
     out_md = OUT_DIR / f"brief_{brief_date}.md"
 
+    # Count scoring errors so UI can tell "API failed" from "quiet day"
+    error_count = sum(1 for r in scored
+                      if (r.get("fit") or {}).get("fit_verdict") == "error")
+    sample_errors = [
+        (r.get("fit") or {}).get("summary", "")
+        for r in scored
+        if (r.get("fit") or {}).get("fit_verdict") == "error"
+    ][:3]
+
     payload = {
         "brief_date": brief_date,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
@@ -279,6 +303,8 @@ def main() -> int:
         "triaged": sum(1 for r in scored if (r.get("_triage") or {}).get("stage1_pass")),
         "scored": len([r for r in scored if r.get("fit")]),
         "actionable": len(actionable),
+        "error_count": error_count,
+        "sample_errors": sample_errors,
         "top": top,
     }
     out_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")

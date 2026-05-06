@@ -86,6 +86,9 @@ def make_entry(r: dict) -> dict:
     title_slug = slugify(r["title"], 30)
     _id = f"auto-{co_slug}-{title_slug}"
 
+    variants = f.get("applicable_resume_variants") or []
+    primary_variant = variants[0] if variants else ""
+
     return {
         "id": _id,
         "company": co,
@@ -93,6 +96,7 @@ def make_entry(r: dict) -> dict:
         "tier": final_tier,
         "title": r["title"],
         "level": "",
+        "location": r.get("location", ""),
         "url": r["link"],
         "portal_url": r["link"].split("?")[0].rsplit("/", 1)[0] + "/",
         "date_found": date.today().isoformat(),
@@ -104,6 +108,8 @@ def make_entry(r: dict) -> dict:
         "fit_score": "High" if f.get("fit_score", 0) >= 8 else "Medium" if f.get("fit_score", 0) >= 6 else "Low",
         "fit_score_numeric": int(f.get("fit_score", 0)),
         "osfi_hook": f.get("osfi_hook", "None"),
+        "resume_variants": variants,
+        "primary_variant": primary_variant,
         "urgency": defaults.get("urgency", "Low"),
         "expected_comp_band_cad": "",
         "fit_notes": f.get("summary", "") + " | Top reasons: " + "; ".join(f.get("top_3_reasons", [])[:3]),
@@ -176,6 +182,10 @@ def main() -> int:
                 existing["fit_score"] = e["fit_score"]
                 existing["osfi_hook"] = e["osfi_hook"]
                 existing["fit_notes"] = e["fit_notes"]
+                # Populate variant info even on re-score (older entries won't have it)
+                if e.get("resume_variants"):
+                    existing["resume_variants"] = e["resume_variants"]
+                    existing["primary_variant"] = e["primary_variant"]
                 updated += 1
             else:
                 skipped_dupe += 1
@@ -220,14 +230,15 @@ def main() -> int:
         "",
         "## Top 20 would-be-added (by score)",
         "",
-        "| Score | Verdict | Tier | Sector | Company | Title | OSFI hook | Link |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Score | Verdict | Tier | Sector | Company | Title | Resume | OSFI hook | Link |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for e in sorted(new_entries, key=lambda x: -x["fit_score_numeric"])[:20]:
+        variants_str = "/".join(e.get("resume_variants") or []) or "—"
         report_lines.append(
             f"| {e['fit_score_numeric']} | {e['status']} | {e['tier']} | {e['sector']} | "
-            f"{e['company']} | {e['title'].replace('|', '/')} | {e['osfi_hook']} | "
-            f"[open]({e['url']}) |"
+            f"{e['company']} | {e['title'].replace('|', '/')} | {variants_str} | "
+            f"{e['osfi_hook']} | [open]({e['url']}) |"
         )
     report_path = OUT_DIR / f"promote_report_{stamp}.md"
     report_path.write_text("\n".join([l for l in report_lines if l is not None]), encoding="utf-8")

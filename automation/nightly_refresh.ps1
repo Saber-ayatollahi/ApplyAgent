@@ -56,9 +56,9 @@ Log "=== nightly_refresh starting ==="
 Log "repo: $repoRoot"
 Log "python: $python"
 
-# Stage 1 — scrape
-Log "[1/3] Scraping..."
-& $python "automation\jd_scraper.py" --expansion 2>&1 | Tee-Object -FilePath $log -Append
+# Stage 1 — scrape (web + Gmail alerts folded in)
+Log "[1/3] Scraping (web + Gmail alerts)..."
+& $python "automation\jd_scraper.py" --expansion --gmail 2>&1 | Tee-Object -FilePath $log -Append
 if ($LASTEXITCODE -ne 0) {
     Log "Scraper failed with exit code $LASTEXITCODE — aborting."
     exit 1
@@ -67,8 +67,26 @@ if ($LASTEXITCODE -ne 0) {
 # Stage 2 — delta
 Log "[2/3] Computing delta..."
 & $python "automation\scan_delta.py" 2>&1 | Tee-Object -FilePath $log -Append
-if ($LASTEXITCODE -ne 0) {
-    Log "scan_delta failed with exit code $LASTEXITCODE — continuing to brief anyway."
+$deltaExit = $LASTEXITCODE
+if ($deltaExit -ne 0) {
+    Log "scan_delta failed with exit code $deltaExit"
+}
+
+# Guard: verify today's delta file exists and is non-trivial before invoking
+# morning_brief. If scan_delta silently wrote nothing (or the file is stale
+# from a previous day), morning_brief would either score yesterday's delta
+# again (double-charging on cached roles) or score an empty set (no brief
+# emitted, auto-tailor runs on nothing, the dashboard shows stale data).
+$today = Get-Date -Format "yyyyMMdd"
+$deltaPath = Join-Path $repoRoot "automation\outputs\delta_$today.json"
+if (-not (Test-Path $deltaPath)) {
+    Log "ABORT: expected $deltaPath not found — morning_brief would run on stale data. Skipping stage 3."
+    exit 1
+}
+$deltaSize = (Get-Item $deltaPath).Length
+if ($deltaSize -lt 100) {
+    Log "ABORT: $deltaPath is suspiciously small ($deltaSize bytes). Skipping stage 3."
+    exit 1
 }
 
 # Stage 3 — brief (auto-add top 3 + auto-tailor drafts)

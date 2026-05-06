@@ -8,6 +8,7 @@ One page, one flow. Background execution via ui/scan_runner.py.
 """
 from __future__ import annotations
 import json
+import re
 import subprocess
 import sys
 from datetime import date, datetime, timedelta
@@ -235,6 +236,83 @@ def render_template(body: str, contact: dict) -> str:
     return out
 
 
+_CRM_STOPWORDS = {"bank", "financial", "canadian", "canada", "global", "group",
+                    "capital", "management", "investments", "pension", "plan",
+                    "corp", "inc", "ltd", "company", "the", "and"}
+
+
+_GTA_AREAS = [
+    ("Toronto", ("toronto", "north york", "scarborough", "etobicoke", "east york",
+                  "york, on", "downtown")),
+    ("Mississauga", ("mississauga",)),
+    ("Markham", ("markham", "unionville")),
+    ("Vaughan", ("vaughan", "concord", "woodbridge", "thornhill")),
+    ("Brampton", ("brampton",)),
+    ("Oakville", ("oakville",)),
+    ("Burlington", ("burlington",)),
+    ("Milton", ("milton",)),
+    ("Richmond Hill", ("richmond hill",)),
+    ("Durham", ("pickering", "ajax", "whitby", "oshawa")),
+    ("York Region", ("aurora", "newmarket", "stouffville", "king city")),
+    ("Waterloo/Kitchener", ("waterloo", "kitchener", "cambridge")),
+    ("Remote Canada", ("remote - canada", "canada - remote", "remote canada",
+                        "remote, canada")),
+    ("Ottawa", ("ottawa",)),
+    ("Montreal", ("montreal", "montréal")),
+]
+
+
+def gta_area_for(location: str | None) -> str:
+    """Classify a location string into a GTA area bucket. Returns '—' if unknown.
+    Used for Kanban column + filter so Saber can slice newly-unblocked
+    non-Toronto GTA roles (Mississauga, Markham etc.)."""
+    if not location:
+        return "—"
+    loc = str(location).lower()
+    for label, tokens in _GTA_AREAS:
+        if any(tok in loc for tok in tokens):
+            return label
+    # Last resort — anything with "on" or "ontario" is likely GTA-adjacent
+    if "ontario" in loc or ", on" in loc or " on," in loc or loc.endswith(", on"):
+        return "Other Ontario"
+    return "—"
+
+
+def crm_contacts_at_company(crm: dict, company: str) -> list[dict]:
+    """Match CRM recruiters + alumni entries to a given company name.
+    Bidirectional token-overlap: 'Scotiabank' matches 'Scotia' (prefix) and
+    'Scotia' matches 'Scotiabank'. Covers abbreviations + full legal names."""
+    if not company:
+        return []
+    co_tokens = [t for t in re.split(r"[^a-z0-9]+", company.lower())
+                 if len(t) >= 4 and t not in _CRM_STOPWORDS]
+    if not co_tokens:
+        return []
+
+    def _match(hay: str) -> bool:
+        hay_tokens = [h for h in re.split(r"[^a-z0-9]+", hay.lower()) if len(h) >= 4]
+        for co_tok in co_tokens:
+            for h in hay_tokens:
+                # Bidirectional prefix match — 'scotia' ⇔ 'scotiabank'
+                if co_tok == h or co_tok.startswith(h) or h.startswith(co_tok):
+                    return True
+        return False
+
+    matches = []
+    for rec in (crm or {}).get("recruiters", []):
+        hay = (rec.get("firm", "") + " " + rec.get("coverage", "") + " "
+               + rec.get("notes", ""))
+        if _match(hay):
+            matches.append({**rec, "_kind": "recruiter"})
+    for al in (crm or {}).get("alumni_warm_intros", []):
+        hay = (al.get("company_targeted", "") + " "
+               + al.get("current_firm", "") + " "
+               + al.get("notes", ""))
+        if _match(hay):
+            matches.append({**al, "_kind": "alumni"})
+    return matches
+
+
 def fmt_dt(s: str | None) -> str:
     if not s:
         return "—"
@@ -258,6 +336,41 @@ def human_elapsed(started_iso: str | None, end_iso: str | None = None) -> str:
     if secs < 3600:
         return f"{secs // 60}m {secs % 60}s"
     return f"{secs // 3600}h {(secs % 3600) // 60}m"
+
+
+def hours_since_posted(posted_date: str | None) -> float | None:
+    """Return hours elapsed since posted_date. None if unparseable.
+    Accepts 'YYYY-MM-DD' or any ISO8601 string."""
+    if not posted_date:
+        return None
+    s = str(posted_date).replace("Z", "+00:00")
+    try:
+        dt = datetime.fromisoformat(s)
+    except Exception:
+        try:
+            dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        except Exception:
+            return None
+    # Drop tz for uniform comparison; we only need hour-level precision.
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    delta = datetime.now() - dt
+    return max(0.0, delta.total_seconds() / 3600.0)
+
+
+def urgent_from_brief(brief: dict | None, hours_threshold: int = 48) -> list[dict]:
+    """Return brief rows posted within the threshold, newest first.
+    Used to power the Dashboard's '🔴 Urgent' widget."""
+    if not brief:
+        return []
+    out: list[tuple[float, dict]] = []
+    for r in brief.get("top") or []:
+        hrs = hours_since_posted(r.get("posted_date"))
+        if hrs is None or hrs > hours_threshold:
+            continue
+        out.append((hrs, r))
+    out.sort(key=lambda t: t[0])
+    return [r for _, r in out]
 
 
 def freshness_badge(posted_date: str | None, found_at: str | None) -> str:
@@ -579,6 +692,361 @@ if page == "🏠 Dashboard":
 
     st.markdown("---")
 
+    # ---------- Attention queue — consolidated 'needs your eyes today' ----------
+    # Five buckets, each with a default action the user can see at a glance:
+    #   1. Tier-1 Found without tailor draft → run tailor
+    #   2. Tier-1 promoted with CRM contact at company → warm intro before cold apply
+    #   3. High-scored roles with no/short JD → verify JD, consider rescore
+    #   4. Tracker entries that errored during scoring → rescore
+    #   5. Tracker entries missing primary_variant (pre-variant-upgrade) → rescore
+    # This is the "first thing you should look at" list — all other widgets support it.
+
+    # Bucket 1 — Tier-1 Found, no tailor draft.
+    # jd_tailor.py writes {safe_company}_{safe_role}_{stamp}.md — it does NOT
+    # embed the job_id. The old job_id substring-glob returned [] for almost
+    # every role (false NEGATIVE — said "no draft" when a draft existed, or
+    # said "draft exists" when another role's company name collided). Reproduce
+    # jd_tailor's safe-name transform and check for the final .md (dry-run
+    # previews with _prompt.md suffix don't count as a real draft).
+    def _tailor_safe_dash(s: str, cap: int | None = None) -> str:
+        out = re.sub(r"[^a-zA-Z0-9]+", "_", s or "").strip("_")
+        return out[:cap] if cap else out
+
+    def _tailor_draft_exists(company: str, title: str) -> bool:
+        sc = _tailor_safe_dash(company, None)
+        sr = _tailor_safe_dash(title, 60)
+        if not sc or not sr:
+            return False
+        matches = list(OUT_DIR.glob(f"{sc}_{sr}_*.md"))
+        return any(not p.name.endswith("_prompt.md") for p in matches)
+
+    tier1_no_draft = [
+        j for j in jobs
+        if j.get("tier") == 1
+        and j.get("status") in ("Found", "Watch")
+        and not _tailor_draft_exists(j.get("company", ""), j.get("title", ""))
+    ]
+
+    # Bucket 2 — Tier-1 Found with CRM contact at the same company
+    tier1_warm_intro = []
+    for j in jobs:
+        if j.get("tier") != 1 or j.get("status") not in ("Found", "Watch"):
+            continue
+        contacts = crm_contacts_at_company(crm, j.get("company", ""))
+        if contacts:
+            tier1_warm_intro.append((j, contacts))
+
+    # Bucket 3 — High-scored (≥7) with missing JD signal
+    # Use fit_notes length as a proxy when _jd_len isn't persisted
+    high_score_thin_jd = [
+        j for j in jobs
+        if int(j.get("fit_score_numeric") or 0) >= 7
+        and j.get("status") in ("Found", "Watch")
+        and len(j.get("fit_notes", "") or "") < 80
+    ]
+
+    # Bucket 4 — Scoring errors (fit_score_numeric=0 on Found/Watch)
+    scoring_errors = [
+        j for j in jobs
+        if int(j.get("fit_score_numeric") or 0) == 0
+        and j.get("status") in ("Found", "Watch")
+        and j.get("tier", 4) <= 2  # only flag top-tier broken entries
+    ]
+
+    # Bucket 5 — Missing primary_variant (pre-variant-upgrade entries)
+    missing_variant = [
+        j for j in jobs
+        if j.get("status") in ("Found", "Watch")
+        and j.get("tier", 4) == 1
+        and not j.get("primary_variant")
+    ]
+
+    attention_total = (len(tier1_no_draft) + len(tier1_warm_intro)
+                        + len(high_score_thin_jd) + len(scoring_errors)
+                        + len(missing_variant))
+
+    if attention_total:
+        st.subheader(f"🎯 Needs your attention ({attention_total})")
+        ac1, ac2, ac3, ac4, ac5 = st.columns(5)
+        ac1.metric("📄 Need draft", len(tier1_no_draft),
+                   help="Tier-1 roles in Found/Watch without a jd_tailor output yet.")
+        ac2.metric("⚡ Warm intro", len(tier1_warm_intro),
+                   help="Tier-1 roles at companies where you have CRM contacts — "
+                        "reach out before applying cold.")
+        ac3.metric("⚠ Thin JD", len(high_score_thin_jd),
+                   help="High-scored roles (≥7) where scoring had little JD text. "
+                        "Consider rescoring or verifying the JD live.")
+        ac4.metric("🔧 Rescore", len(scoring_errors),
+                   help="Top-tier tracker entries with fit_score_numeric=0 — "
+                        "scoring errored. Rerun fit_scorer.")
+        ac5.metric("📌 Missing variant", len(missing_variant),
+                   help="Tier-1 roles from before the resume-variants feature. "
+                        "Rescore to populate primary_variant.")
+
+        # Tier-1 needing draft — most actionable
+        if tier1_no_draft:
+            with st.expander(f"📄 Tier-1 needing draft ({len(tier1_no_draft)}) — "
+                              "tailor runs cost ~$0.15 each", expanded=True):
+                tdf = pd.DataFrame([{
+                    "id": j.get("id", ""),
+                    "company": j.get("company", ""),
+                    "title": j.get("title", "")[:70],
+                    "variant": j.get("primary_variant", "—"),
+                    "fit": j.get("fit_score_numeric", 0),
+                    "osfi": j.get("osfi_hook", ""),
+                    "url": j.get("url", ""),
+                } for j in tier1_no_draft[:20]])
+                st.dataframe(tdf, hide_index=True, use_container_width=True,
+                              column_config={"url": st.column_config.LinkColumn("open")})
+                _td_key = api_key.is_key_valid()
+                td_pick = st.selectbox("Tailor which role?",
+                                        [j.get("id") for j in tier1_no_draft],
+                                        key="attention_tailor_pick")
+                if st.button("✏️ Run tailor now", key="attention_tailor_btn",
+                              disabled=not _td_key,
+                              use_container_width=False):
+                    cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
+                           "--job-id", td_pick]
+                    rec = scan_runner.start_run(f"tailor_{td_pick}", cmd)
+                    st.success(f"Tailor started (`{rec.run_id}`). "
+                               "Draft will land in outputs/ in ~60s.")
+
+        # Warm-intro opportunities
+        if tier1_warm_intro:
+            with st.expander(f"⚡ Warm-intro opportunities ({len(tier1_warm_intro)}) — "
+                              "70% of Director hiring is referral-driven",
+                              expanded=True):
+                for j, contacts in tier1_warm_intro[:10]:
+                    with st.container(border=True):
+                        cols = st.columns([3, 1])
+                        cols[0].markdown(
+                            f"**{j.get('company', '')}** — {j.get('title', '')}"
+                            f"  \n_Tier {j.get('tier', '?')} · fit {j.get('fit_score_numeric', 0)}/10"
+                            f" · variant {j.get('primary_variant') or '—'}_"
+                        )
+                        contact_lines = []
+                        for c in contacts[:3]:
+                            if c["_kind"] == "recruiter":
+                                contact_lines.append(
+                                    f"  • **{c.get('firm', '?')}** ({c.get('firm_type', '')}) "
+                                    f"— last touch: {c.get('last_touchpoint', 'never')}"
+                                )
+                            else:
+                                contact_lines.append(
+                                    f"  • **{c.get('name', '?')}** at "
+                                    f"{c.get('current_firm', '?')} "
+                                    f"— {c.get('relationship', '')}"
+                                )
+                        cols[0].markdown("\n".join(contact_lines))
+                        cols[1].link_button("🔗 Open JD", j.get("url", ""),
+                                             use_container_width=True)
+
+        # Other buckets — combined, lower priority
+        other_n = len(high_score_thin_jd) + len(scoring_errors) + len(missing_variant)
+        if other_n:
+            with st.expander(f"⚙ Scoring / data issues ({other_n})"):
+                if high_score_thin_jd:
+                    st.markdown(f"**⚠ Thin JD** ({len(high_score_thin_jd)}) — "
+                                "these were scored on title/short text; consider rescoring:")
+                    thin_df = pd.DataFrame([{
+                        "id": j.get("id"),
+                        "company": j.get("company"),
+                        "title": j.get("title", "")[:70],
+                        "fit": j.get("fit_score_numeric", 0),
+                        "url": j.get("url", ""),
+                    } for j in high_score_thin_jd[:10]])
+                    st.dataframe(thin_df, hide_index=True, use_container_width=True,
+                                  column_config={"url": st.column_config.LinkColumn()})
+                if scoring_errors:
+                    st.markdown(f"**🔧 Scoring errors** ({len(scoring_errors)}) — "
+                                "fit_score_numeric=0 (LLM call failed or cache poisoned):")
+                    err_df = pd.DataFrame([{
+                        "id": j.get("id"),
+                        "company": j.get("company"),
+                        "title": j.get("title", "")[:70],
+                        "url": j.get("url", ""),
+                    } for j in scoring_errors[:10]])
+                    st.dataframe(err_df, hide_index=True, use_container_width=True,
+                                  column_config={"url": st.column_config.LinkColumn()})
+                if missing_variant:
+                    st.markdown(f"**📌 Missing variant** ({len(missing_variant)}) — "
+                                "pre-variant-upgrade; rescore to populate:")
+                    mv_df = pd.DataFrame([{
+                        "id": j.get("id"),
+                        "company": j.get("company"),
+                        "title": j.get("title", "")[:70],
+                        "tier": j.get("tier"),
+                    } for j in missing_variant[:10]])
+                    st.dataframe(mv_df, hide_index=True, use_container_width=True)
+
+        st.markdown("---")
+
+    # ---------- Pipeline health — freshness + coverage gaps ----------
+    # Surfaces scan age, zero-result companies, scored-file health so Saber
+    # can see if data is stale or the scraper is quietly failing somewhere.
+    scan_p = latest_scan()
+    scored_p = latest_scored()
+    scan_age_days = None
+    scored_age_days = None
+    scan_zero_cos: list[str] = []
+    scan_total_results: int | None = None
+    scan_total_companies: int | None = None
+    scored_verdicts: dict = {}
+    scored_errors = 0
+    if scan_p:
+        try:
+            scan_age_days = (datetime.now() - datetime.fromtimestamp(
+                scan_p.stat().st_mtime)).days
+            d = json.loads(scan_p.read_text(encoding="utf-8"))
+            scan_total_results = len(d.get("results", []))
+            scan_total_companies = d.get("companies_scanned")
+            scan_zero_cos = (d.get("diagnostics") or {}).get("zero_result_companies") or []
+        except Exception:
+            pass
+    if scored_p:
+        try:
+            scored_age_days = (datetime.now() - datetime.fromtimestamp(
+                scored_p.stat().st_mtime)).days
+            sd = json.loads(scored_p.read_text(encoding="utf-8"))
+            for r in sd.get("results", []):
+                v = (r.get("fit") or {}).get("fit_verdict", "?")
+                scored_verdicts[v] = scored_verdicts.get(v, 0) + 1
+            scored_errors = scored_verdicts.get("error", 0)
+        except Exception:
+            pass
+
+    health_issues = []
+    if scan_age_days is None:
+        health_issues.append("⚫ No scan on file — run the pipeline.")
+    elif scan_age_days >= 7:
+        health_issues.append(f"🔴 Scan is **{scan_age_days}d old** — run nightly refresh.")
+    elif scan_age_days >= 2:
+        health_issues.append(f"🟡 Scan is {scan_age_days}d old — consider refreshing.")
+    if scored_errors >= 10:
+        health_issues.append(
+            f"🔴 **{scored_errors} scoring errors** in the latest run — "
+            "check API key / credits."
+        )
+    zero_frac = (len(scan_zero_cos) / scan_total_companies) if scan_total_companies else 0
+    if zero_frac > 0.3:
+        health_issues.append(
+            f"🟡 {len(scan_zero_cos)}/{scan_total_companies} companies "
+            f"returned 0 candidates ({zero_frac:.0%}) — some ATS adapters "
+            "may be down."
+        )
+
+    if health_issues or (scan_age_days is not None and scan_age_days <= 1):
+        st.subheader("📊 Pipeline health")
+        hc1, hc2, hc3, hc4 = st.columns(4)
+        hc1.metric("Scan age",
+                   f"{scan_age_days}d" if scan_age_days is not None else "—",
+                   delta=None if scan_age_days is None else (
+                       "fresh" if scan_age_days == 0 else f"-{scan_age_days}d"
+                   ))
+        hc2.metric("Scored age",
+                   f"{scored_age_days}d" if scored_age_days is not None else "—")
+        hc3.metric("Scan roles", scan_total_results or "—",
+                   help=f"{scan_total_companies or '—'} companies scanned")
+        hc4.metric("Zero-result cos", len(scan_zero_cos),
+                   delta=None if not scan_zero_cos else f"of {scan_total_companies}",
+                   delta_color="inverse")
+        for issue in health_issues:
+            if "🔴" in issue:
+                st.error(issue, icon="⚠️")
+            elif "🟡" in issue:
+                st.warning(issue, icon="📊")
+            else:
+                st.info(issue, icon="📊")
+        if scan_zero_cos:
+            with st.expander(
+                f"⚠ {len(scan_zero_cos)} companies returned 0 candidates "
+                "— possible ATS gaps"
+            ):
+                st.caption(
+                    "Companies where the scraper found nothing this run. "
+                    "Usually means: (a) the ATS adapter isn't configured, "
+                    "(b) LinkedIn guest search hides their listings, or "
+                    "(c) LinkedIn rate-limited the run. If one recurs weekly, "
+                    "it's worth adding a dedicated ATS adapter."
+                )
+                # Group by sector if we have the per-company diag
+                try:
+                    diag = json.loads(scan_p.read_text(encoding="utf-8"))\
+                                .get("diagnostics") or {}
+                    per_co = {pc["name"]: pc for pc in (diag.get("per_company") or [])}
+                except Exception:
+                    per_co = {}
+                rows = []
+                for name in scan_zero_cos:
+                    pc = per_co.get(name, {})
+                    rows.append({
+                        "company": name,
+                        "sector": pc.get("sector", "?"),
+                        "has_workday": "✓" if pc.get("has_workday_config") else "",
+                        "has_greenhouse": "✓" if pc.get("has_greenhouse_config") else "",
+                        "has_phenom": "✓" if pc.get("has_phenom_config") else "",
+                        "has_sf": "✓" if pc.get("has_successfactors_config") else "",
+                    })
+                st.dataframe(pd.DataFrame(rows), hide_index=True,
+                              use_container_width=True, height=min(400, 40 + 30 * len(rows)))
+        st.markdown("---")
+
+    # ---------- Urgent widget — roles posted in the last 48h ----------
+    # Union of (brief top N) + (tracker Found/Watch entries with posted_date).
+    brief_preview = load_morning_brief()
+    urgent_rows: list[tuple[float, dict, str]] = []  # (hours, row, kind)
+    for r in urgent_from_brief(brief_preview, 48):
+        urgent_rows.append((hours_since_posted(r.get("posted_date")) or 0.0, r, "brief"))
+    for j in jobs:
+        if j.get("status") not in ("Found", "Watch"):
+            continue
+        hrs = hours_since_posted(j.get("posted_date"))
+        if hrs is None or hrs > 48:
+            continue
+        # Avoid double-counting: skip if already in urgent_rows by URL
+        if any(r.get("link") == j.get("url") for _, r, _ in urgent_rows):
+            continue
+        urgent_rows.append((hrs, j, "tracker"))
+    urgent_rows.sort(key=lambda t: t[0])
+
+    if urgent_rows:
+        st.error(
+            f"🔴 **{len(urgent_rows)} urgent role(s) posted in the last 48h** — "
+            "apply-speed matters; callback rate drops sharply after 72h.",
+            icon="⚡",
+        )
+        with st.expander(f"⚡ Urgent queue ({len(urgent_rows)})",
+                          expanded=len(urgent_rows) <= 5):
+            urgent_table = []
+            for hrs, r, kind in urgent_rows:
+                if kind == "brief":
+                    fit = r.get("fit") or {}
+                    urgent_table.append({
+                        "source": "🌅 brief",
+                        "hours_ago": f"{hrs:.0f}h",
+                        "company": r.get("company", ""),
+                        "title": r.get("title", "")[:70],
+                        "verdict": fit.get("fit_verdict", ""),
+                        "fit": fit.get("fit_score", ""),
+                        "url": r.get("link", ""),
+                    })
+                else:
+                    urgent_table.append({
+                        "source": f"📋 {r.get('status', '')}",
+                        "hours_ago": f"{hrs:.0f}h",
+                        "company": r.get("company", ""),
+                        "title": r.get("title", "")[:70],
+                        "verdict": r.get("fit_score", ""),
+                        "fit": r.get("fit_score_numeric", ""),
+                        "url": r.get("url", ""),
+                    })
+            st.dataframe(
+                pd.DataFrame(urgent_table),
+                hide_index=True, use_container_width=True,
+                column_config={"url": st.column_config.LinkColumn("open")},
+            )
+        st.markdown("---")
+
     # ---------- Morning brief widget — today's 2-3 fresh matches ----------
     brief = load_morning_brief()
     if brief:
@@ -588,7 +1056,8 @@ if page == "🏠 Dashboard":
         except ValueError:
             brief_date_parsed = None
         top = brief.get("top") or []
-        is_stale = brief_date_parsed and (date.today() - brief_date_parsed).days >= 2
+        # Stale after 1 day — brief is meant to be daily.
+        is_stale = brief_date_parsed and (date.today() - brief_date_parsed).days >= 1
         staleness = "" if not brief_date_parsed else (
             f" · {(date.today() - brief_date_parsed).days}d old"
             if is_stale else " · today"
@@ -600,12 +1069,31 @@ if page == "🏠 Dashboard":
                 "Run the nightly scrape + morning brief to refresh. "
                 "See bottom of Pipeline → Run for a one-click button."
             )
-        if not top:
-            st.info(
-                f"No fresh matches in today's delta "
-                f"(triaged {brief.get('triaged', '?')}, scored {brief.get('scored', '?')}, "
-                f"0 actionable)."
+
+        # Distinguish API-failure from genuinely quiet day
+        error_count = brief.get("error_count", 0)
+        sample_errors = brief.get("sample_errors") or []
+        total_scored = brief.get("scored", 0) or 0
+        mostly_errors = error_count > 0 and error_count >= max(1, total_scored * 0.5)
+        if mostly_errors:
+            st.error(
+                f"⛔ Brief may be incomplete — {error_count}/{total_scored} roles "
+                f"errored during scoring (likely API/credit issue). "
+                f"Fix your Anthropic key in the sidebar and re-run the nightly "
+                f"refresh.\n\n"
+                + ("\n".join(f"• {e[:180]}" for e in sample_errors) if sample_errors else ""),
+                icon="🔑",
             )
+
+        if not top:
+            if mostly_errors:
+                pass  # already showed the error banner
+            else:
+                st.info(
+                    f"No fresh matches in today's delta "
+                    f"(triaged {brief.get('triaged', '?')}, scored {brief.get('scored', '?')}, "
+                    f"0 actionable). No API errors — this is a genuinely quiet day."
+                )
         else:
             st.caption(
                 f"Ranked from **{brief.get('total_new', 0)} jobs new since yesterday**. "
@@ -615,20 +1103,27 @@ if page == "🏠 Dashboard":
                 f = r.get("fit") or {}
                 verdict = f.get("fit_verdict", "?")
                 badge = "🟢" if verdict == "apply_now" else "🟡"
+                fb = freshness_badge(r.get("posted_date"), r.get("found_at"))
                 with st.container(border=True):
                     cols = st.columns([6, 1])
-                    cols[0].markdown(
+                    # Freshness now sits in the header line — first thing you see.
+                    header = (
                         f"### {badge} {i}. [{f.get('fit_score', '?')}/10 · "
                         f"Tier {f.get('tier', '?')}] {r.get('company', '')} — "
                         f"{r.get('title', '')}"
                     )
+                    if fb and fb != "—":
+                        header += f"  \n<span style='font-size:0.85em; opacity:0.9'>{fb}</span>"
+                        cols[0].markdown(header, unsafe_allow_html=True)
+                    else:
+                        cols[0].markdown(header)
+                    variants = f.get("applicable_resume_variants") or []
+                    variants_str = " · ".join(variants) if variants else "—"
                     cols[0].caption(
+                        f"📄 Lead-with: **{variants_str}** · "
                         f"Sector: {r.get('sector', '')} · "
                         f"OSFI hook: {f.get('osfi_hook', 'None')} · "
                         f"Source: {r.get('source', '')}"
-                    )
-                    cols[0].caption(
-                        freshness_badge(r.get("posted_date"), r.get("found_at"))
                     )
                     cols[0].markdown(f"**{f.get('summary', '')}**")
                     reasons = f.get("top_3_reasons") or []
@@ -648,18 +1143,28 @@ if page == "🏠 Dashboard":
                             # Generate a tracker id
                             from uuid import uuid4
                             new_id = f"brief-{datetime.now().strftime('%Y%m%d')}-{str(uuid4())[:6]}"
+                            _v = f.get("applicable_resume_variants") or []
+                            # Mirror auto_promote / morning_brief: fit_score is
+                            # a High/Medium/Low category so the Kanban filter
+                            # works; numeric lives in fit_score_numeric.
+                            _num = int(f.get("fit_score") or 0)
+                            _cat = "High" if _num >= 8 else ("Medium" if _num >= 6 else "Low")
                             new_entry = {
                                 "id": new_id,
                                 "company": r.get("company", ""),
                                 "title": r.get("title", ""),
                                 "sector": r.get("sector", ""),
+                                "location": r.get("location", ""),
                                 "url": r.get("link", ""),
                                 "source": r.get("source", ""),
                                 "tier": f.get("tier", 3),
-                                "fit_score": verdict,
-                                "fit_score_numeric": f.get("fit_score", 0),
+                                "fit_score": _cat,
+                                "fit_score_numeric": _num,
+                                "fit_verdict": verdict,
                                 "fit_notes": f.get("summary", ""),
                                 "osfi_hook": f.get("osfi_hook", ""),
+                                "resume_variants": _v,
+                                "primary_variant": _v[0] if _v else "",
                                 "status": "Found" if verdict == "apply_now" else "Watch",
                                 "urgency": "High" if verdict == "apply_now" else "Medium",
                                 "date_found": date.today().isoformat(),
@@ -699,25 +1204,117 @@ if page == "🏠 Dashboard":
             st.caption(f"Gmail load failed: {e}")
         alerts = [x for x in inbox if x["kind"] == "alert"]
         recruiters = [x for x in inbox if x["kind"] == "recruiter"]
+
+        # Build a quick "which tracker roles plausibly sent this email" lookup.
+        # Match on either (a) tracker URL host matches sender domain, or
+        # (b) tracker company name token appears in subject/sender text.
+        # Generic ATS hosts (myworkdayjobs.com, greenhouse.io, lever.co) are
+        # NOT used as domain matches — they'd match every company.
+        _GENERIC_ATS_HOSTS = {
+            "myworkdayjobs.com", "workdayjobs.com", "wd3.myworkdayjobs.com",
+            "greenhouse.io", "lever.co", "icims.com", "successfactors.com",
+            "linkedin.com",
+        }
+        from urllib.parse import urlparse
+
+        def _registrable(host: str) -> str:
+            parts = (host or "").lower().split(".")
+            if len(parts) >= 2:
+                return ".".join(parts[-2:])
+            return host or ""
+
+        tracker_index: list[dict] = []  # {"job": j, "domains": set, "tokens": set}
+        for j in jobs:
+            domains: set[str] = set()
+            url = j.get("url") or ""
+            if url:
+                try:
+                    host = urlparse(url).hostname or ""
+                    reg = _registrable(host)
+                    if reg and reg not in _GENERIC_ATS_HOSTS:
+                        domains.add(reg)
+                except Exception:
+                    pass
+            name = (j.get("company") or "").lower()
+            tokens = {t for t in re.split(r"[^a-z0-9]+", name)
+                      if len(t) >= 4 and t not in {"bank", "financial", "canada",
+                                                   "canadian", "group", "capital",
+                                                   "global", "asset", "management",
+                                                   "investments", "pension", "plan"}}
+            tracker_index.append({"job": j, "domains": domains, "tokens": tokens})
+
+        def _match_mail_to_tracker(sender_email: str, subject: str) -> list[dict]:
+            """Return tracker jobs plausibly related to this email."""
+            se = (sender_email or "").lower()
+            subj_l = (subject or "").lower()
+            hits: list[dict] = []
+            for entry in tracker_index:
+                if any(se.endswith("@" + d) or se.endswith("." + d)
+                       for d in entry["domains"]):
+                    hits.append(entry["job"])
+                    continue
+                if any(tok in subj_l or tok in se for tok in entry["tokens"]):
+                    hits.append(entry["job"])
+            return hits
+
         st.subheader(f"📬 Inbox signals (14d)")
-        ic1, ic2, ic3 = st.columns(3)
+        ic1, ic2, ic3, ic4 = st.columns(4)
+        # Pre-compute matches so we can report how many recruiter emails
+        # plausibly map to applied roles.
+        recruiter_matches = [
+            (r, _match_mail_to_tracker(r["sender_email"], r["subject"]))
+            for r in recruiters
+        ]
+        matched_n = sum(1 for _, hits in recruiter_matches if hits)
         ic1.metric("Recruiter/ATS mail", len(recruiters))
-        ic2.metric("Job alerts", len(alerts))
-        ic3.metric("Total", len(inbox))
+        ic2.metric("→ match tracker", matched_n,
+                   help="Recruiter emails whose sender domain or subject "
+                        "matches a role in your tracker.")
+        ic3.metric("Job alerts", len(alerts))
+        ic4.metric("Total", len(inbox))
+
+        # Highlight: recruiter emails matched to Applied roles are likely
+        # status-change signals.
+        applied_matches = [
+            (r, [j for j in hits if j.get("status") in (
+                "Applied", "Recruiter_Screen", "Phone_Screen",
+                "Take_Home", "Onsite")])
+            for r, hits in recruiter_matches
+        ]
+        applied_matches = [(r, hs) for r, hs in applied_matches if hs]
+        if applied_matches:
+            st.warning(
+                f"⚡ **{len(applied_matches)} recruiter email(s) match active "
+                "applications** — likely status change. Open Kanban to update.",
+                icon="📨",
+            )
+
         with st.expander("👀 Recent recruiter mail (likely status changes)",
-                         expanded=bool(recruiters)):
+                         expanded=bool(recruiter_matches)):
             if not recruiters:
                 st.caption("Nothing from recruiters in the last 14d.")
             else:
-                rec_rows = [{
-                    "date": r["date"],
-                    "from": r["sender"],
-                    "subject": r["subject"][:80],
-                    "snippet": r["snippet"][:140],
-                } for r in recruiters[:30]]
+                rec_rows = []
+                for r, hits in recruiter_matches[:30]:
+                    match_str = ""
+                    if hits:
+                        match_str = ", ".join(
+                            f"{h.get('id', '?')} [{h.get('status', '?')}]"
+                            for h in hits[:3]
+                        )
+                        if len(hits) > 3:
+                            match_str += f" (+{len(hits) - 3} more)"
+                    rec_rows.append({
+                        "date": r["date"],
+                        "from": r["sender"],
+                        "subject": r["subject"][:80],
+                        "tracker_match": match_str or "—",
+                        "snippet": r["snippet"][:120],
+                    })
                 st.dataframe(pd.DataFrame(rec_rows), hide_index=True,
                               use_container_width=True)
-                st.caption("Tip: open Kanban → update role status to match what you see here.")
+                st.caption("Tip: rows with a `tracker_match` are likely status-change "
+                           "signals — open Kanban and move the role accordingly.")
         st.markdown("---")
 
     # ---------- Follow-up nudge widget ----------
@@ -1034,7 +1631,8 @@ elif page == "🎯 Pipeline":
 
     # ---------- Main tabs ----------
     tabs = st.tabs(
-        ["🎯 Run pipeline", "🛰️ 1·Scrape", "🤖 2·Score", "👁 3·Triage", "🚀 4·Promote", "📜 History"]
+        ["🎯 Run pipeline", "🔗 Score a URL", "🛰️ 1·Scrape", "🤖 2·Score",
+         "👁 3·Triage", "🚀 4·Promote", "📜 History"]
     )
 
     # ================== TAB: Run pipeline ==================
@@ -1123,9 +1721,9 @@ elif page == "🎯 Pipeline":
                     ]
                 else:
                     chained = (
-                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion && "
+                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion --gmail && "
                         f"{sys.executable} {ROOT / 'automation' / 'scan_delta.py'} && "
-                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5"
+                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5 --auto-add 3 --auto-tailor"
                     )
                     nightly_cmd_list = ["bash", "-c", chained]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
@@ -1162,8 +1760,95 @@ elif page == "🎯 Pipeline":
                 _t.sleep(3)
                 st.rerun()
 
-    # ================== TAB: Scrape ==================
+    # ================== TAB: Score a URL ==================
     with tabs[1]:
+        st.subheader("🔗 Score a URL")
+        st.caption(
+            "Paste any job URL (jobs.citi.com, OSFI careers, company career site, "
+            "even a LinkedIn you found outside the scan) and get a fresh LLM fit score "
+            "against your Master Repository. Takes ~5s and costs ~$0.001."
+        )
+        url_key_ok = api_key.is_key_valid()
+        if not url_key_ok:
+            st.warning("🔑 API key required. Set it in the sidebar.")
+        url_in = st.text_input(
+            "JD URL",
+            placeholder="https://jobs.citi.com/job/mississauga/non-trading-market-risk-officer-vice-president/287/93536402784",
+            key="url_score_input",
+        )
+        u1, u2, u3 = st.columns([2, 2, 1])
+        with u1:
+            company_in = st.text_input("Company (optional — inferred from URL)",
+                                        key="url_score_company")
+        with u2:
+            title_in = st.text_input("Title (optional — inferred from JD)",
+                                      key="url_score_title")
+        with u3:
+            add_to_tr = st.checkbox("Add to tracker",
+                                     help="If result is actionable, append to "
+                                          "job_tracker_data.json",
+                                     key="url_score_add")
+        rescore = st.checkbox("Bypass cache (force fresh LLM call)",
+                               key="url_score_rescore")
+        if st.button("🤖 Score this URL", type="primary",
+                     disabled=not (url_key_ok and url_in.strip()),
+                     key="url_score_btn"):
+            cmd = [sys.executable, str(ROOT / "automation" / "score_url.py"),
+                   url_in.strip(), "--json-only"]
+            if company_in.strip():
+                cmd += ["--company", company_in.strip()]
+            if title_in.strip():
+                cmd += ["--title", title_in.strip()]
+            if rescore:
+                cmd.append("--rescore")
+            if add_to_tr:
+                cmd.append("--add-to-tracker")
+            with st.spinner("Fetching JD and scoring..."):
+                res = subprocess.run(cmd, capture_output=True, text=True,
+                                      cwd=str(ROOT), timeout=60)
+            if res.returncode != 0:
+                st.error(f"Scoring failed (exit {res.returncode}):")
+                st.code(res.stderr[-2000:], language="text")
+            else:
+                try:
+                    fit = json.loads(res.stdout)
+                except json.JSONDecodeError:
+                    st.error("Scorer did not return JSON:")
+                    st.code(res.stdout[-1000:], language="text")
+                else:
+                    verdict = fit.get("fit_verdict", "?")
+                    score = fit.get("fit_score", "?")
+                    tier = fit.get("tier", "?")
+                    variants = fit.get("applicable_resume_variants") or []
+                    badge = {"apply_now": "🟢", "tailor_and_apply": "🟡",
+                             "watch": "⚪", "skip": "🔴", "error": "❌"}.get(verdict, "⚪")
+                    st.markdown(
+                        f"### {badge} Verdict: `{verdict}` · "
+                        f"Score: **{score}/10** · Tier {tier}"
+                    )
+                    cA, cB = st.columns(2)
+                    with cA:
+                        st.markdown("**Lead-with resume(s):** "
+                                    + (" · ".join(variants) if variants else "—"))
+                        st.markdown("**OSFI hook:** " + fit.get("osfi_hook", "—"))
+                        st.markdown("**Summary:** " + fit.get("summary", "—"))
+                    with cB:
+                        reasons = fit.get("top_3_reasons") or []
+                        if reasons:
+                            st.markdown("**Why it fits:**")
+                            for r in reasons:
+                                st.markdown(f"- {r}")
+                        gaps = fit.get("skill_gaps") or []
+                        if gaps:
+                            st.markdown("**Gaps:** " + "; ".join(gaps))
+                    if add_to_tr and "Added" in (res.stderr or ""):
+                        st.success("✅ Added to tracker. Reload the Kanban to see it.")
+                        st.cache_data.clear()
+                    with st.expander("Raw scorer output"):
+                        st.code(json.dumps(fit, indent=2), language="json")
+
+    # ================== TAB: Scrape ==================
+    with tabs[2]:
         st.subheader("Stage 1 — Scrape")
         st.caption("Pull raw job postings from LinkedIn + Workday + Greenhouse + Lever.")
         if scan_f:
@@ -1234,7 +1919,7 @@ elif page == "🎯 Pipeline":
                 st.success(f"Started `{rec.run_id}`")
 
     # ================== TAB: Score ==================
-    with tabs[2]:
+    with tabs[3]:
         st.subheader("Stage 2 — Score with Claude")
         st.caption(
             "Each candidate is rated 1–10 against Saber's Master Repository. "
@@ -1320,7 +2005,7 @@ elif page == "🎯 Pipeline":
                     st.success(f"Started `{rec.run_id}`")
 
     # ================== TAB: Triage ==================
-    with tabs[3]:
+    with tabs[4]:
         st.subheader("Stage 3 — Triage scored results")
         st.caption("Review Claude's scored candidates. Filter, sort, open JDs.")
 
@@ -1344,6 +2029,7 @@ elif page == "🎯 Pipeline":
                     "sector": r.get("sector", ""),
                     "company": r.get("company", ""),
                     "title": r.get("title", ""),
+                    "variants": "/".join(f.get("applicable_resume_variants") or []),
                     "osfi": f.get("osfi_hook", ""),
                     "summary": f.get("summary", ""),
                     "gaps": ", ".join(f.get("skill_gaps") or []),
@@ -1404,7 +2090,7 @@ elif page == "🎯 Pipeline":
                         st.link_button("🔗 Open JD", row["url"], use_container_width=True)
 
     # ================== TAB: Promote ==================
-    with tabs[4]:
+    with tabs[5]:
         st.subheader("Stage 4 — Promote to tracker")
         st.caption("Push scored candidates into `job_tracker_data.json`. Dry-run first; commit when ready.")
 
@@ -1464,7 +2150,7 @@ elif page == "🎯 Pipeline":
                     st.success(msg)
 
     # ================== TAB: History ==================
-    with tabs[5]:
+    with tabs[6]:
         st.subheader("📜 Pipeline run history")
         pipelines = list_pipelines(50)
         if not pipelines:
@@ -1527,11 +2213,38 @@ elif page == "📋 Jobs Kanban":
         st.warning("Tracker is empty.")
         st.stop()
 
+    # Derive gta_area for every row — prefer explicit location, fall back to
+    # URL slug inference (for pre-location-field tracker entries).
+    def _area_for_row(row) -> str:
+        loc = row.get("location") if isinstance(row, dict) else getattr(row, "location", None)
+        url = row.get("url") if isinstance(row, dict) else getattr(row, "url", None)
+        if loc:
+            a = gta_area_for(loc)
+            if a != "—":
+                return a
+        if url:
+            # Extract city slug from /job/<city>/... (Phenom etc.) or location token in URL
+            m = re.search(r"/job/([a-z\-]+)/", str(url).lower())
+            if m:
+                a = gta_area_for(m.group(1).replace("-", " "))
+                if a != "—":
+                    return a
+            # Any GTA city token in the URL at large
+            for label, toks in _GTA_AREAS:
+                for t in toks:
+                    if t.replace(" ", "-") in str(url).lower() or t in str(url).lower():
+                        return label
+        return "—"
+
+    if not jobs_df.empty:
+        jobs_df = jobs_df.assign(gta_area=jobs_df.apply(_area_for_row, axis=1))
+
     # Filters
-    f1, f2, f3, f4 = st.columns([2, 2, 2, 2])
+    f1, f2, f3, f4, f5 = st.columns([2, 2, 2, 2, 2])
     sectors = sorted(jobs_df["sector"].dropna().unique()) if "sector" in jobs_df.columns else []
     statuses = sorted(jobs_df["status"].dropna().unique()) if "status" in jobs_df.columns else []
     fits = sorted(jobs_df["fit_score"].dropna().unique()) if "fit_score" in jobs_df.columns else []
+    areas = sorted(jobs_df["gta_area"].dropna().unique()) if "gta_area" in jobs_df.columns else []
     with f1:
         sel_sector = st.multiselect("Sector", sectors, default=[])
     with f2:
@@ -1540,6 +2253,8 @@ elif page == "📋 Jobs Kanban":
         sel_fit = st.multiselect("Fit", fits, default=[])
     with f4:
         sel_tier = st.multiselect("Tier", sorted(jobs_df["tier"].dropna().unique()) if "tier" in jobs_df.columns else [])
+    with f5:
+        sel_area = st.multiselect("GTA area", areas, default=[])
     q = st.text_input("Search (company/title)", "")
 
     view = jobs_df.copy()
@@ -1551,6 +2266,8 @@ elif page == "📋 Jobs Kanban":
         view = view[view["fit_score"].isin(sel_fit)]
     if sel_tier:
         view = view[view["tier"].isin(sel_tier)]
+    if sel_area:
+        view = view[view["gta_area"].isin(sel_area)]
     if q:
         qlo = q.lower()
         view = view[view["company"].str.lower().str.contains(qlo, na=False) |
@@ -1558,13 +2275,32 @@ elif page == "📋 Jobs Kanban":
 
     st.caption(f"Showing {len(view)} of {len(jobs_df)} roles")
 
-    # Enrich view with a "draft" indicator based on whether a tailor output exists
-    def _has_draft(job_id: str) -> str:
-        # jd_tailor outputs are <Company>_<Role>_<date>_prompt.md — match by job_id in the filename.
-        slug = job_id.replace("-", "_")
-        matches = list(OUT_DIR.glob(f"*{slug}*_prompt.md"))
-        if matches:
+    # Enrich view with a "draft" indicator based on whether a tailor output
+    # exists for this role. jd_tailor.py writes:
+    #   {safe_company}_{safe_role}_{YYYYMMDD}.md        (final, real run)
+    #   {safe_company}_{safe_role}_{YYYYMMDD}_prompt.md (dry-run preview)
+    # where safe_company/safe_role use re.sub(r"[^a-zA-Z0-9]+", "_", ...).
+    # Job_id is NOT in the filename — the previous implementation globbed on
+    # a job_id substring, which almost always returned [] (false NEGATIVE).
+    # Fix: reproduce jd_tailor's safe-name transform from the tracker's
+    # company + title and match exact-prefix, preferring final over dry-run.
+    def _tailor_safe(s: str, cap: int | None = None) -> str:
+        out = re.sub(r"[^a-zA-Z0-9]+", "_", s or "").strip("_")
+        return out[:cap] if cap else out
+
+    def _has_draft_for(company: str, title: str) -> str:
+        sc = _tailor_safe(company, None)
+        sr = _tailor_safe(title, 60)
+        if not sc or not sr:
+            return ""
+        # Final runs write <sc>_<sr>_YYYYMMDD.md (no _prompt suffix)
+        final = list(OUT_DIR.glob(f"{sc}_{sr}_*.md"))
+        final = [p for p in final if not p.name.endswith("_prompt.md")]
+        if final:
             return "📄 ready"
+        # Dry-run only — preview exists but no real tailor output
+        if list(OUT_DIR.glob(f"{sc}_{sr}_*_prompt.md")):
+            return "📝 preview"
         return ""
 
     # Load url_history once and enrich rows with posted/found
@@ -1578,14 +2314,20 @@ elif page == "📋 Jobs Kanban":
         entry = _url_hist.get(url or "") or {}
         return freshness_badge(None, entry.get("found_at"))
 
-    if "id" in view.columns:
-        view = view.assign(draft=view["id"].apply(_has_draft))
+    if "company" in view.columns and "title" in view.columns:
+        view = view.assign(
+            draft=view.apply(
+                lambda row: _has_draft_for(row.get("company", ""), row.get("title", "")),
+                axis=1,
+            )
+        )
     if "url" in view.columns:
         view = view.assign(freshness=view["url"].apply(_freshness))
 
-    cols = [c for c in ["id", "draft", "freshness", "company", "title", "sector",
-                        "tier", "status", "fit_score", "fit_score_numeric",
-                        "osfi_hook", "urgency", "date_found", "date_applied", "url"]
+    cols = [c for c in ["id", "draft", "freshness", "company", "title", "gta_area",
+                        "sector", "tier", "status", "fit_score", "fit_score_numeric",
+                        "primary_variant", "osfi_hook", "urgency",
+                        "date_found", "date_applied", "url"]
             if c in view.columns]
     st.dataframe(
         view[cols].sort_values(["tier", "fit_score_numeric"], ascending=[True, False])
@@ -1603,10 +2345,44 @@ elif page == "📋 Jobs Kanban":
             c1, c2 = st.columns(2)
             with c1:
                 st.markdown(f"**{job['company']} — {job['title']}**")
-                st.caption(f"{job.get('sector')} · Tier {job.get('tier')} · fit {job.get('fit_score')}")
+                variants = job.get("resume_variants") or ([job["primary_variant"]]
+                    if job.get("primary_variant") else [])
+                variant_str = " · ".join(variants) if variants else "—"
+                st.caption(
+                    f"{job.get('sector')} · Tier {job.get('tier')} · "
+                    f"fit {job.get('fit_score')} ({job.get('fit_score_numeric', '?')}/10) · "
+                    f"📄 {variant_str}"
+                )
                 st.markdown(f"[Open posting]({job.get('url')})")
                 st.write(job.get("fit_notes", ""))
                 st.write("**Next action:** " + (job.get("next_action") or ""))
+
+                # CRM cross-reference — "you have N contacts at this company"
+                _crm_hits = crm_contacts_at_company(crm, job.get("company", ""))
+                if _crm_hits:
+                    with st.container(border=True):
+                        st.markdown(
+                            f"⚡ **{len(_crm_hits)} CRM contact(s) at {job['company']}** "
+                            "— warm-intro pathway before cold apply:"
+                        )
+                        for c in _crm_hits[:5]:
+                            if c["_kind"] == "recruiter":
+                                st.markdown(
+                                    f"- 🎯 **{c.get('firm', '?')}** "
+                                    f"({c.get('firm_type', '')}) · "
+                                    f"priority={c.get('priority', '?')} · "
+                                    f"last-touch {c.get('last_touchpoint', 'never')}"
+                                )
+                            else:
+                                st.markdown(
+                                    f"- 🎓 **{c.get('name', '?')}** at "
+                                    f"{c.get('current_firm', '?')} · "
+                                    f"{c.get('relationship', '')}"
+                                )
+                        if len(_crm_hits) > 5:
+                            st.caption(f"…and {len(_crm_hits) - 5} more — see CRM page.")
+                        st.caption("Jump to 🤝 Recruiter CRM to draft an outreach message.")
+
                 # One-click tailor
                 _tailor_ok = api_key.is_key_valid()
                 if st.button(f"✏️ Tailor resume + cover for {sel_id}", key=f"tailor_{sel_id}",

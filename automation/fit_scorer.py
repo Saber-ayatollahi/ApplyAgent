@@ -73,7 +73,11 @@ MASTER_REPO = ROOT / "Saber_Ayatollahi_Master_Repository.md"
 PROGRESS_PATH = OUT_DIR / "fit_scorer_progress.json"
 
 MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")
-FALLBACK_MODEL = "claude-haiku-4-5-20251001"
+# Fallback must be a DIFFERENT model — otherwise score_with_llm's retry loop
+# burns 2× attempts against the same model on any non-transient failure.
+# Sonnet is a stronger model that a rare Haiku parse-failure on a weird JD is
+# very unlikely to repeat on. Cost impact is ~$0.01 per fallback, rare.
+FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6")
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +250,17 @@ NEG_TITLE_TERMS = [
     "java developer", ".net developer", "python developer",
     "devops engineer", "site reliability", "platform engineer",
     "application support", "production support",
+    # Software engineering variants — Saber is not a SWE even when the role is
+    # "risk-adjacent". These burn LLM budget to always return verdict=skip.
+    "software engineer", "staff engineer", "principal engineer",
+    "staff software", "senior software engineer",
+    "data engineer", "senior data engineer", "machine learning engineer",
+    "ml engineer", "ai engineer", "cloud engineer", "network engineer",
+    "security engineer", "infrastructure engineer",
+    "technical lead", "tech lead", "lead engineer",
+    "database administrator", "dba,", "sre ",
+    "scrum master", "agile coach",
+    "penetration tester", "pentester",
     # Legal / audit-only / generic
     "senior counsel", "junior counsel", "legal counsel",
     "registered supervisor",
@@ -282,6 +297,7 @@ STRONG_POS = [  # +3 each — unambiguous lane hits
     "swaps trader", "swap desk", "g10 rates",
     # Structured / capital markets
     "securitization", "structured credit", "structured finance",
+    "credit structuring", "debt structuring", "rates structuring",
     "collateralized", "clo ", "abs trader",
     # OSFI-adjacent emerging
     "climate risk", "climate financial", "b-15",
@@ -310,6 +326,12 @@ MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage
     "insurance investment", "insurance solutions",
     # Resolution/recovery planning (OSFI reg)
     "resolution planning", "recovery and resolution", "erm",
+    # Balance-sheet-adjacent senior-role vocab that wasn't covered
+    "balance sheet strategy", "treasury strategy", "capital strategy",
+    "liquidity strategy", "risk strategy",
+    "capital planning", "liquidity planning", "stress planning",
+    # Strategy-flavored roles with a finance/risk noun attached are worth the LLM look
+    "risk transformation", "finance transformation", "risk framework",
     # French equivalents for QC postings
     "validation des modèles", "gestion de l'actif", "gestion des risques",
     "risque de crédit", "risque de marché", "analytique", "modélisation",
@@ -319,6 +341,15 @@ WEAK_POS = [  # +1 each — noisy tokens, require combos
     "risk", "capital", "liquidity",
     "quant", "analytics", "modeling", "modelling",
     "model", "reporting",
+    # Strategy / planning / advisory / transformation — noisy on their own, but
+    # at Director+ seniority they're often risk/ALM/treasury roles in disguise.
+    # These pass stage-1 only when combined with a level term (see pass rules).
+    "strategy", "strategic", "planning", "advisory",
+    "framework", "transformation", "governance",
+    "enterprise", "corporate development",
+    # Finance-domain nouns that often accompany strategy/planning roles
+    "finance", "financial", "investment", "portfolio",
+    "balance sheet", "fixed income", "derivative",
 ]
 
 LEVEL_TERMS = [  # +1 each — target seniority
@@ -396,8 +427,13 @@ def rule_triage(title: str) -> dict:
     #   - any MEDIUM hit                      -> pass (domain-specific)
     #   - any WEAK hit + level                -> pass ("Senior Manager, Liquidity Management")
     #   - >=2 WEAK hits                       -> pass ("Capital Risk Analyst")
-    # A pure LEVEL-only match does NOT pass — too noisy. The LLM will still see the
-    # role title and can make the call; but we don't want to LLM-score every "VP, Strategy".
+    #   - Director/VP/Head/Principal/MD level + ANY weak hit -> pass
+    #     ("VP, Strategy" alone still drops; "VP, Strategy & Corporate Development"
+    #     now passes — 'strategy' + 'corporate development' = 2 weak hits; "Director,
+    #     Treasury Strategy" passes via the multi-weak rule too.)
+    #     This deliberately widens the funnel for senior roles since the LLM cost is
+    #     cheap (~$0.001/role at Haiku) and false-positives get scored=skip.
+    # A pure LEVEL-only match does NOT pass — too noisy.
     pass_reason = None
     if strong:
         pass_reason = "strong_hit"
@@ -465,17 +501,39 @@ _BOILERPLATE_PATTERNS = [
     re.compile(r"(?is)job (?:alerts|search|openings|category|function|family)[^\n]*\n"),
 ]
 
-# Section-header hints — lines starting with these get +score during section scoring
-_KEEP_SECTION_HINTS = (
+# Section-header hints — tiered by signal value. P1 hints tell the LLM what the
+# job ACTUALLY IS (responsibilities/duties); P2 hints tell it about required
+# background; P3 hints describe the role context; P4 hints are marketing fluff.
+# _extract_sections walks tiers in order and returns the first tier with a hit
+# whose position is reasonable. Before this change, we picked the EARLIEST hit
+# regardless of tier — so "About Us" at pos 200 beat "Responsibilities" at pos
+# 5000, sending 6 KB of marketing text to the LLM instead of the job content.
+_SECTION_HINTS_P1 = (  # Job content (highest signal)
     "responsibilities", "key responsibilities", "what you'll do", "what you will do",
-    "your role", "in this role", "the role", "duties",
+    "your role", "in this role", "the role", "duties", "core duties",
+    "role overview", "job description", "job responsibilities",
+    # French
+    "responsabilités",
+)
+_SECTION_HINTS_P2 = (  # Required profile
     "qualifications", "requirements", "what you'll bring", "what you bring",
-    "must have", "must-have", "experience required", "skills",
-    "about the team", "about the role", "position summary", "job summary",
+    "must have", "must-have", "experience required", "required experience",
+    "required qualifications", "skills we're looking for",
     "we're looking for", "we are looking for", "ideal candidate",
     # French
-    "responsabilités", "exigences", "profil recherché", "qualifications requises",
+    "exigences", "profil recherché", "qualifications requises",
 )
+_SECTION_HINTS_P3 = (  # Role framing
+    "about the team", "about the role", "position summary", "job summary",
+    "summary", "skills",
+)
+_SECTION_HINTS_P4 = (  # Low-signal boilerplate — only as last resort before head-of-doc
+    "about us", "about the company", "our company", "who we are",
+    "benefits", "why join",
+)
+
+# Kept for backward compat; unions of the above.
+_KEEP_SECTION_HINTS = _SECTION_HINTS_P1 + _SECTION_HINTS_P2 + _SECTION_HINTS_P3
 
 
 def _clean_jd(raw_text: str) -> str:
@@ -511,21 +569,33 @@ def _clean_jd(raw_text: str) -> str:
 
 
 def _extract_sections(cleaned: str, max_chars: int) -> str:
-    """If we can identify responsibilities/qualifications sections, prefer those.
-    Fall back to a head-of-document truncation otherwise."""
+    """Priority-tiered JD windowing. Walk tiers from highest-signal (P1:
+    responsibilities/duties) to lowest (P4: about-us). The first tier with any
+    hit wins, and we return max_chars starting from that tier's EARLIEST hit.
+
+    Before this change the function picked the earliest hit across ALL tiers,
+    which meant "About Us" at pos 200 beat "Responsibilities" at pos 5000 on
+    many JDs — the LLM then got 6 KB of marketing fluff with the actual job
+    description truncated off the end.
+    """
     if not cleaned or len(cleaned) <= max_chars:
         return cleaned
     lower = cleaned.lower()
-    # Find the earliest section header hit
-    earliest = len(cleaned)
-    for hint in _KEEP_SECTION_HINTS:
-        idx = lower.find(hint)
-        if 0 <= idx < earliest:
-            earliest = idx
-    if earliest < len(cleaned) and earliest < max_chars * 2:
-        # We found a section start — grab from there
-        return cleaned[earliest:earliest + max_chars]
-    # Fall back to head of document
+
+    def _earliest_hit(hints: tuple[str, ...]) -> int:
+        best = len(cleaned)
+        for hint in hints:
+            idx = lower.find(hint)
+            if 0 <= idx < best:
+                best = idx
+        return best
+
+    for tier in (_SECTION_HINTS_P1, _SECTION_HINTS_P2,
+                  _SECTION_HINTS_P3, _SECTION_HINTS_P4):
+        start = _earliest_hit(tier)
+        if start < len(cleaned):
+            return cleaned[start:start + max_chars]
+    # No section header found anywhere — head-of-document fallback.
     return cleaned[:max_chars]
 
 
@@ -533,7 +603,13 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
     """Fetch, strip HTML, clean boilerplate, prefer responsibilities section.
 
     Caching: we cache the CLEANED text (not raw HTML), so a cache bump is needed
-    when the cleaner logic changes. Use a versioned cache filename."""
+    when the cleaner logic changes. Use a versioned cache filename.
+
+    Empty/short results (common when the page is JS-shell, 404, or blocked by
+    anti-bot) are NOT cached, so a later re-run can try again. A short JD is
+    flagged to stderr so Saber can see JS-SPA domains that are silently losing
+    roles to title-only scoring.
+    """
     JD_CACHE.mkdir(parents=True, exist_ok=True)
     # Cache filename versioned — bump when cleaner changes
     cache_path = JD_CACHE / f"{_url_hash(url)}.v2.txt"
@@ -543,6 +619,7 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
     try:
         r = requests.get(url, headers=HEADERS, timeout=25)
         if r.status_code != 200:
+            print(f"  [fetch_jd] {r.status_code} on {url}", file=sys.stderr)
             return ""
         soup = BeautifulSoup(r.text, "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header", "button", "form",
@@ -554,6 +631,12 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
         body = main if main else soup
         raw_text = body.get_text("\n")
         cleaned = _clean_jd(raw_text)
+        # Don't cache suspiciously-empty results — the page is either JS-shell
+        # (needs headless browser) or blocked. Caching would poison future runs.
+        if len(cleaned) < 300:
+            print(f"  [fetch_jd] short ({len(cleaned)} chars) for {url} "
+                  f"— likely JS-SPA; not caching", file=sys.stderr)
+            return cleaned  # return what we have but don't persist
         # Legacy cache cleanup
         if legacy_cache.exists():
             try: legacy_cache.unlink()
@@ -568,38 +651,170 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
 # ---------------------------------------------------------------------------
 # Stage 2 — LLM scoring (cached)
 # ---------------------------------------------------------------------------
-SYSTEM_PROMPT = (
+
+# Resume variants mirror Saber_Ayatollahi_Master_Repository.md §10.
+# The scorer picks 1-3 of these per role so the UI + tailor know which to lead with.
+RESUME_VARIANTS = ["ALM", "VAL", "VEN", "QUANT", "CON"]
+
+# Canonical osfi_hook enum. LLM output that doesn't match is coerced to "None"
+# so downstream filters (UI, auto_promote, brief) can trust the value.
+VALID_OSFI_HOOKS = {
+    "E-23 Model Risk Management",
+    "B-12 IRRBB revision",
+    "LAR 2026 Liquidity Adequacy",
+    "IFRS 17",
+    "None",
+}
+
+_FALLBACK_SYSTEM_PROMPT = (
     "You are a hard-nosed senior finance career strategist assessing job fit for Saber Ayatollahi.\n"
     "\n"
-    "Saber's profile (do not over-interpret — stick to this):\n"
+    "Saber's profile:\n"
     "- CFA charterholder. Dual MSc (Financial Modelling + Chemical Engineering).\n"
-    "- ~7.3 years experience: Moody's Analytics (May 2022-present, Assistant Director Modelling Services),\n"
-    "  EY (Sep 2021-Apr 2022, Sr Consultant IFRS 17/9), Ortec Finance (Feb 2019-Sep 2021, ALM/LDI).\n"
-    "- Core competencies: ALM, IRRBB, Model Validation/Governance, Cash-Flow Projection, LDI,\n"
-    "  Derivatives Pricing, Stochastic Scenario Generation, IFRS 17/9, Python, agentic AI workflows.\n"
+    "- ~7.3 years finance experience at Moody's Analytics (ALM/model governance sign-off),\n"
+    "  EY (IFRS 17/9 transformation), Ortec Finance (pension ALM + LDI).\n"
+    "- Core competencies: ALM, IRRBB, Market Risk, Model Validation/Governance, Cash-Flow\n"
+    "  Projection, LDI, Derivatives Pricing, Stochastic Scenario Generation, IFRS 17/9,\n"
+    "  Python, agentic AI workflows, enterprise risk-platform delivery.\n"
     "- Formal sign-off authority on multi-asset institutional portfolios $5-25bn.\n"
-    "- TARGET POSITIONING: (1) Primary = ALM/IRRBB/Model Governance Director/VP; \n"
-    "  (2) Secondary = Vendor-Platform / Client Solutions (Aladdin, Bloomberg, MSCI, S&P Global).\n"
-    "- RETIRED from outbound: pure Product Manager, Project Manager, generalist PM, pure asset-management\n"
-    "  quant-research at boutique HFs. If a role is primarily in these lanes, it's NOT a fit.\n"
     "- Toronto-based, not relocating.\n"
     "\n"
-    "Regulatory tailwinds relevant to this search:\n"
-    "- OSFI E-23 Model Risk Management (eff. 2027-05-01, AI/ML scope).\n"
-    "- OSFI B-12 IRRBB revision (Q1 2026 consultations).\n"
-    "- OSFI LAR 2026 Liquidity Adequacy.\n"
-    "- IFRS 17/9 (insurers/banks).\n"
+    "Resume variants Saber can lead with (pick the best-fit 1-3 in your output):\n"
+    "- ALM    — Asset-Liability Management, IRRBB, Balance Sheet Risk, Treasury Risk\n"
+    "- VAL    — Model Validation, Model Risk Management, Model Governance\n"
+    "- VEN    — Vendor-Platform / Client Solutions (Aladdin, Bloomberg, MSCI, S&P)\n"
+    "- QUANT  — Quantitative / Fixed Income Analytics, derivatives pricing, ESG/Monte Carlo\n"
+    "- CON    — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
     "\n"
-    "You score each role. Return ONLY valid JSON matching the schema given, no prose, no markdown.\n"
+    "Broad scoring principle: judge each role against the FULL skill inventory above,\n"
+    "not a narrow primary/secondary frame. Strategy, market risk, treasury, valuations,\n"
+    "regulatory transformation, and related adjacent lanes are in-scope when the seniority\n"
+    "is Director / VP / Head / Principal / AVP / Senior Manager at a target Toronto finance\n"
+    "employer and the JD has substantive quantitative / risk / regulatory content.\n"
+    "\n"
+    "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
+    "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
+    "- Retail banking (teller, personal banker, branch manager, mobile mortgage)\n"
+    "- Sales / marketing / communications / PR\n"
+    "- Internships, co-ops, student programs, new-grad rotational\n"
+    "- Generalist Product Manager / Project Manager (non-risk/non-ALM scope)\n"
+    "- Boutique HF quant-research as PRIMARY focus (Saber is buy-side adjacent, not HF)\n"
+    "\n"
+    "Regulatory tailwinds to cite where relevant (osfi_hook field):\n"
+    "- E-23 Model Risk Management (eff. 2027-05-01, AI/ML scope)\n"
+    "- B-12 IRRBB revision (Q1 2026 consultations)\n"
+    "- LAR 2026 Liquidity Adequacy\n"
+    "- IFRS 17/9 (insurers/banks — EY background directly applicable)\n"
+    "- None — if no direct OSFI hook applies\n"
+    "\n"
+    "Return ONLY valid JSON matching the schema given, no prose, no markdown.\n"
 )
+
+
+def _extract_repo_sections(repo_text: str) -> str:
+    """Extract §4 (Skills Inventory), §7 (Positioning), §10 (Resume Variants) from the
+    Master Repository markdown. We keep these sections only — sending the whole 433-line
+    repo would cost ~5k input tokens per scan (once, with caching) for noise the scorer
+    doesn't need. Section headers in the repo use '## 4.', '## 7.', '## 10.' form.
+    """
+    if not repo_text:
+        return ""
+
+    def _grab(start_marker: str, next_markers: list[str]) -> str:
+        idx = repo_text.find(start_marker)
+        if idx < 0:
+            return ""
+        end = len(repo_text)
+        for nm in next_markers:
+            i = repo_text.find(nm, idx + len(start_marker))
+            if 0 <= i < end:
+                end = i
+        return repo_text[idx:end].strip()
+
+    # Each section is bounded by the next top-level ## heading.
+    s4 = _grab("## 4. SKILLS INVENTORY",
+                ["## 5.", "## 6.", "## 7.", "## 10."])
+    s7 = _grab("## 7. TARGET ROLE POSITIONING",
+                ["## 8.", "## 9.", "## 10."])
+    s10 = _grab("## 10. RESUME VARIANTS",
+                 ["## 11.", "---"])
+
+    parts = [p for p in (s4, s7, s10) if p]
+    if not parts:
+        return ""
+    return "\n\n".join(parts)
+
+
+def _build_system_prompt() -> str:
+    """Build the scorer system prompt.
+
+    Strategy: boilerplate frame + extracted Master Repo sections (Skills §4, Positioning §7,
+    Variants §10). Prompt-cached — the per-scan cost is paid once, the per-role cost is ~$0.
+    Falls back to a constant prompt if the repo file is missing or sectioning fails.
+    """
+    if not MASTER_REPO.exists():
+        return _FALLBACK_SYSTEM_PROMPT
+    try:
+        repo_text = MASTER_REPO.read_text(encoding="utf-8")
+    except Exception:
+        return _FALLBACK_SYSTEM_PROMPT
+    sections = _extract_repo_sections(repo_text)
+    if not sections:
+        return _FALLBACK_SYSTEM_PROMPT
+
+    return (
+        "You are a hard-nosed senior finance career strategist assessing job fit for\n"
+        "Saber Ayatollahi. Below is Saber's canonical skills inventory, positioning angles,\n"
+        "and active resume variants (extracted from the Master Career Repository).\n"
+        "\n"
+        "# Saber's Master Repository (evidenced skills, positioning, resume variants)\n"
+        "\n"
+        f"{sections}\n"
+        "\n"
+        "# How to score\n"
+        "\n"
+        "Broad principle: judge each role against the FULL skill inventory above, not a\n"
+        "narrow primary/secondary frame. Strategy, market risk, treasury, balance-sheet,\n"
+        "valuations, regulatory transformation, and related adjacent lanes are IN SCOPE\n"
+        "when the seniority is Director / VP / Head / Principal / AVP / Senior Manager at\n"
+        "a target Toronto finance employer and the JD has substantive quantitative, risk,\n"
+        "regulatory, or platform-delivery content.\n"
+        "\n"
+        "For every role also pick the 1-3 resume variants best suited (from this set):\n"
+        "  ALM   — Asset-Liability Management / IRRBB / Balance-Sheet / Treasury Risk\n"
+        "  VAL   — Model Validation / Model Risk / Model Governance\n"
+        "  VEN   — Vendor-Platform / Client Solutions (Aladdin, Bloomberg, MSCI, S&P)\n"
+        "  QUANT — Quantitative / Fixed Income Analytics / Derivatives / ESG / Monte Carlo\n"
+        "  CON   — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
+        "If a role leans market-risk, list ALM first (the bullet library overlaps) and VAL\n"
+        "second; if it leans strategy, list ALM + CON + relevant others; etc.\n"
+        "\n"
+        "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
+        "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
+        "- Retail banking (teller, personal banker, branch manager, mobile mortgage)\n"
+        "- Sales / marketing / communications / PR\n"
+        "- Internships, co-ops, student programs, new-grad rotational\n"
+        "- Generalist Product Manager / Project Manager where scope is NOT risk/ALM/platform\n"
+        "- Pure HF quant-research as primary focus (Saber is buy-side adjacent, not HF)\n"
+        "\n"
+        "osfi_hook options: 'E-23 Model Risk Management' | 'B-12 IRRBB revision' |\n"
+        "'LAR 2026 Liquidity Adequacy' | 'IFRS 17' | 'None'\n"
+        "\n"
+        "Return ONLY valid JSON matching the schema given. No prose, no markdown.\n"
+    )
+
+
+# Computed once at import. Cheap enough.
+SYSTEM_PROMPT = _build_system_prompt()
 
 SCHEMA = """{
   "fit_score": 1-10 integer,
   "fit_verdict": "apply_now" | "tailor_and_apply" | "watch" | "skip",
   "top_3_reasons": ["...", "...", "..."],
-  "skill_gaps": ["..."],   // can be empty
+  "skill_gaps": ["..."],                 // can be empty
   "osfi_hook": "E-23 Model Risk Management" | "B-12 IRRBB revision" | "LAR 2026 Liquidity Adequacy" | "IFRS 17" | "None",
   "tier": 1-4 integer (1=top tier apply-this-week; 4=watch-only),
+  "applicable_resume_variants": ["ALM" | "VAL" | "VEN" | "QUANT" | "CON", ...],  // 1-3 items, best-fit first
   "summary": "30-word-ish pitch for Saber of why to apply (or why not)"
 }"""
 
@@ -724,6 +939,28 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 parsed.setdefault("osfi_hook", "None")
                 parsed.setdefault("tier", 4)
                 parsed.setdefault("summary", "")
+                # Coerce osfi_hook to the canonical enum — LLM sometimes emits
+                # "E-23" (short) or "IFRS17" (no space). Keep only recognized
+                # hooks so UI filters and brief-rendering don't silently miss them.
+                if parsed.get("osfi_hook") not in VALID_OSFI_HOOKS:
+                    parsed["osfi_hook"] = "None"
+                # Sanitize resume variants — LLM sometimes invents tokens ("FI", "BS").
+                # Keep only the recognized set; cap at 3; preserve order (primary first).
+                raw_variants = parsed.get("applicable_resume_variants") or []
+                if isinstance(raw_variants, str):
+                    raw_variants = [raw_variants]
+                seen: set[str] = set()
+                cleaned: list[str] = []
+                for v in raw_variants:
+                    if not isinstance(v, str):
+                        continue
+                    key = v.strip().upper()
+                    if key in RESUME_VARIANTS and key not in seen:
+                        seen.add(key)
+                        cleaned.append(key)
+                    if len(cleaned) >= 3:
+                        break
+                parsed["applicable_resume_variants"] = cleaned
                 cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
                 return parsed
             except Exception as e:
