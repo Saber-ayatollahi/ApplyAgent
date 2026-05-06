@@ -44,20 +44,35 @@ Write-Host '  Stop:    Ctrl+C (this window will pause, not close)'
 Write-Host '============================================================' -ForegroundColor Cyan
 Write-Host ''
 
-# ---------- Preflight: streamlit on PATH? ----------
-$streamlit = Get-Command streamlit -ErrorAction SilentlyContinue
-if (-not $streamlit) {
-    Write-Host '[preflight] streamlit not found on PATH.' -ForegroundColor Yellow
-    Write-Host '[preflight] Attempting: pip install -r requirements.txt -r ui/requirements.txt' -ForegroundColor Yellow
+# ---------- Preflight: is the `streamlit` Python module importable? ----------
+# We DON'T rely on `streamlit` being on PATH. pip installs on Windows often
+# drop the launcher into %APPDATA%\Python\Python3xx\Scripts\ which is not on
+# PATH by default. Instead we invoke `python -m streamlit run ...` below, and
+# only need the module to be importable here.
+$python = Get-Command python -ErrorAction SilentlyContinue
+if (-not $python) {
+    Write-Host '[preflight] `python` not on PATH. Install Python 3.10+ and retry.' -ForegroundColor Red
+    Write-Host 'Press any key to exit...'
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    exit 1
+}
+
+& python -c "import streamlit" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host '[preflight] streamlit not importable. Running pip install...' -ForegroundColor Yellow
     python -m pip install -r requirements.txt -r ui/requirements.txt
-    $streamlit = Get-Command streamlit -ErrorAction SilentlyContinue
-    if (-not $streamlit) {
-        Write-Host '[preflight] Streamlit still missing. Fix the install and retry.' -ForegroundColor Red
+    & python -c "import streamlit" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host '[preflight] streamlit still not importable after pip install.' -ForegroundColor Red
+        Write-Host '           Try: python -m pip install --upgrade streamlit' -ForegroundColor Red
         Write-Host 'Press any key to exit...'
         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
         exit 1
     }
 }
+# Report version for the log
+$stVersion = & python -c "import streamlit; print(streamlit.__version__)" 2>$null
+Write-Host ('[preflight] streamlit {0} OK' -f $stVersion) -ForegroundColor Green
 
 # ---------- Open browser after boot (async) ----------
 if (-not $NoBrowser) {
@@ -74,7 +89,7 @@ if (-not $NoBrowser) {
 # accept the streamlit output is plain text in this terminal. The UI log
 # viewer reads the same file regardless.
 try {
-    & streamlit run ui/app.py --server.port $Port --server.headless true 2>&1 |
+    & python -m streamlit run ui/app.py --server.port $Port --server.headless true 2>&1 |
         Tee-Object -FilePath $logFile -Append
 }
 catch {

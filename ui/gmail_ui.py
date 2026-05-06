@@ -73,13 +73,28 @@ def render_sidebar():
                          key="_gmail_save"):
                 # Strip Gmail's habit of formatting with spaces
                 pw_clean = new_pw.replace(" ", "").strip()
-                gr.save_credentials(new_email.strip(), pw_clean)
+                try:
+                    gr.save_credentials(new_email.strip(), pw_clean)
+                except Exception as e:
+                    st.error(f"Save failed (filesystem error): {e}")
+                    st.caption(f"Target path: `{gr.CONFIG_PATH}`")
+                    st.stop()
+                # Confirm the file actually landed and loads back what we wrote
+                saved_email, saved_pw = gr.load_credentials()
+                if not saved_email or saved_pw != pw_clean:
+                    st.error(
+                        "Save appeared to succeed but reading back failed or "
+                        f"returned different data. Check `{gr.CONFIG_PATH}` "
+                        "manually — it should contain gmail_address and "
+                        "gmail_app_password keys."
+                    )
+                    st.stop()
                 res = gr.validate(new_email.strip(), pw_clean)
                 st.session_state["_gmail_check"] = res
                 if res.ok:
-                    st.success(f"Saved. {res.message}")
+                    st.success(f"Saved to {gr.CONFIG_PATH.name}. {res.message}")
                 else:
-                    st.error(f"Saved but: {res.message}")
+                    st.error(f"Saved to {gr.CONFIG_PATH.name}, but: {res.message}")
                 st.rerun()
         with c2:
             if st.button("🔄 Test", use_container_width=True,
@@ -102,6 +117,37 @@ def render_sidebar():
                 st.caption(f"✅ Checked {check.checked_at} — {check.message}")
             else:
                 st.caption(f"❌ Checked {check.checked_at} — {check.message}")
+
+        # Diagnostic runner — walks DNS/TCP/TLS/LOGIN/SELECT/SEARCH/FETCH
+        # and prints where it breaks. Useful when the one-line "Login rejected"
+        # from validate() doesn't tell you whether it's creds, network, or a
+        # firewall/proxy in the way.
+        st.markdown("---")
+        if st.button("🩺 Run full diagnostic",
+                     disabled=not (email_addr and pw),
+                     use_container_width=True,
+                     key="_gmail_diagnose",
+                     help="Step-by-step probe of config → DNS → TCP → TLS → "
+                          "LOGIN → SELECT → SEARCH → FETCH. Takes ~5 seconds."):
+            import subprocess
+            try:
+                script = (Path(__file__).resolve().parent.parent
+                           / "automation" / "gmail_diagnose.py")
+                r = subprocess.run(
+                    [sys.executable, str(script), "--days", "14"],
+                    capture_output=True, text=True, timeout=60,
+                )
+                out = r.stdout + (r.stderr if r.returncode else "")
+                # Strip ANSI color codes for Streamlit code block
+                import re as _re
+                out = _re.sub(r"\x1b\[[0-9;]*m", "", out)
+                if r.returncode == 0:
+                    st.success("Diagnostic passed — Gmail is healthy.")
+                else:
+                    st.error(f"Diagnostic failed (exit {r.returncode}). See below.")
+                st.code(out or "(no output)", language="text")
+            except Exception as e:
+                st.error(f"Could not run diagnostic: {e}")
 
 
 def is_connected() -> bool:
