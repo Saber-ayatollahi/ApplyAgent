@@ -1,24 +1,18 @@
 # Target Companies — Saber Ayatollahi, CFA | 2026 Job Search
 
-> **Profile snapshot:** CFA Charterholder · Dual MSc (Financial Modelling + Chemical Engineering, Western University) · 8+ years in ALM, interest rate risk in the banking book (IRRBB), derivatives valuation, model governance, multi-asset cash flow analytics, and institutional platform delivery. Formal sign-off authority on $10–25bn portfolios at Moody's Analytics. IFRS 17/9 transformation (EY). Pension + asset manager + buy-side platform cross-sector exposure. Python/SQL + agentic AI workflow experience (rare at senior finance level).
+> **Profile snapshot:** CFA Charterholder · Dual MSc (Financial Modelling + Chemical Engineering, Western University) · ~7 years in ALM, interest rate risk in the banking book (IRRBB), derivatives valuation, model governance, multi-asset cash flow analytics, and institutional platform delivery. Formal sign-off authority on $10–25bn portfolios at Moody's Analytics. Insurance-accounting transformation (EY). Pension + asset manager + buy-side platform cross-sector exposure. Python/SQL + agentic AI workflow experience (rare at senior finance level).
 
 ---
 
-## Why Now Is a Strong Time to Be in This Market
+## Why This Market
 
-Three converging regulatory tailwinds in Canada are creating structural hiring demand directly in Saber's skill set:
-
-**OSFI Guideline E-23 (Model Risk Management) — effective May 1, 2027.** Published September 2025, E-23 now explicitly covers AI/ML models alongside traditional quantitative models. It requires FRFIs (all Canadian banks and federally regulated insurers) to establish functional separation between model developers, model owners, and independent model reviewers — with documented accountability for each. This is generating urgent hiring for experienced model governance professionals who can build and operate these frameworks ahead of the 2027 deadline.
-
-**OSFI IRRBB Guideline Update — consultations expected Q1 2026.** OSFI is revising Guideline B-12 (Interest Rate Risk in the Banking Book) to align with Basel Committee IRRBB standards. This is directly driving ALM and IRR model build-out and validation hiring at the Big 6.
-
-**OSFI Liquidity Adequacy Requirements (LAR) Guideline 2026.** Updated LAR requirements are tightening liquidity stress testing, pushing banks to invest in cash flow projection and liquidity gap analytics — exactly the infrastructure Saber built at Moody's.
+Canadian Big 6 banks, Maple 8 pensions, and large insurers collectively run the largest ALM, IRRBB, Treasury Risk, Model Validation, and Market Risk organizations in the country — all concentrated in Toronto. Saber's profile (practitioner sign-off authority on multi-asset institutional portfolios, cash-flow-engine build, LDI depth, platform-delivery experience) maps directly onto Director / VP roles at these firms. Hiring volume at this level is steady; the scan pipeline surfaces new roles weekly across Treasury, model risk, and risk-analytics platforms.
 
 ---
 
 ## 1. Canadian Big 6 Banks
 
-The most liquid hiring market for Saber's profile. All six banks maintain dedicated ALM/Treasury, IRRBB Modelling, Model Validation, and Market Risk groups in Toronto. OSFI's E-23 and IRRBB guideline revisions are forcing every bank to expand their model risk and ALM capabilities, making this the single highest-volume opportunity set.
+The most liquid hiring market for Saber's profile. All six banks maintain dedicated ALM/Treasury, IRRBB Modelling, Model Validation, and Market Risk groups in Toronto. Steady Director-level hiring across model risk, ALM, and market risk makes this the single highest-volume opportunity set.
 
 **Eligible role families:** Director/VP – ALM & Balance Sheet Risk · Director – IRRBB Modelling · Senior Manager/Director – Model Risk & Validation · Senior Manager – Market Risk Analytics · Fixed Income/Rates Risk Lead
 
@@ -59,7 +53,7 @@ This is the highest near-term fit based on confirmed active postings. The Direct
 ### BMO (Bank of Montreal)
 **Priority: ★★★★☆ | Strong capital markets and model risk function**
 
-BMO runs a well-regarded Model Risk Management group and a dedicated ALM/Market Risk analytics team. BMO's capital markets platform (BMO Capital Markets) is a top-3 dealer in Canada, creating demand for rates and fixed income risk analytics. BMO has been investing in IRRBB model infrastructure ahead of OSFI's guideline revision.
+BMO runs a well-regarded Model Risk Management group and a dedicated ALM/Market Risk analytics team. BMO's capital markets platform (BMO Capital Markets) is a top-3 dealer in Canada, creating demand for rates and fixed income risk analytics. BMO has been investing in IRRBB model infrastructure.
 
 *Target teams: Treasury Risk & ALM, Model Risk Management, Market Risk (Rates/FX).*
 
@@ -176,7 +170,7 @@ Bank-owned and independent asset managers run institutional mandates requiring s
 ### Manulife Investment Management
 **Priority: ★★★★★ | ~C$900bn+ global AUM | Largest Canadian-headquartered AM**
 
-Manulife Investment Management's Canadian Fixed Income team is Toronto-based with 10 members managing C$26.7bn+ in assets, averaging 18 years' experience. The team focuses on interest rate, credit, currency, and liquidity risk. The broader Manulife group (life insurer parent) runs one of the most complex ALM programs in Canada. Saber's EY IFRS 17 experience, combined with ALM and derivatives expertise, is highly differentiated for Manulife's institutional and balance sheet risk teams.
+Manulife Investment Management's Canadian Fixed Income team is Toronto-based with 10 members managing C$26.7bn+ in assets, averaging 18 years' experience. The team focuses on interest rate, credit, currency, and liquidity risk. The broader Manulife group (life insurer parent) runs one of the most complex ALM programs in Canada. Saber's EY insurance-accounting background, combined with ALM and derivatives expertise, is highly differentiated for Manulife's institutional and balance sheet risk teams.
 
 *Target teams: Canadian Fixed Income (risk/analytics), Investment Risk, ALM (Corporate/Asset Management), Multi-Asset Strategies.*
 
@@ -185,7 +179,7 @@ Manulife Investment Management's Canadian Fixed Income team is Toronto-based wit
 ### Sun Life Investment Management
 **Priority: ★★★★★ | C$1T+ group AUM | Sun Life Global Investments in Toronto**
 
-Sun Life Global Investments is based in Toronto as part of the ~$1T Sun Life group. The asset management arm runs institutional mandates across fixed income and multi-asset, with strong LDI capabilities. The parent insurer's IFRS 17 program is ongoing. Very similar profile to Manulife for Saber's purposes.
+Sun Life Global Investments is based in Toronto as part of the ~$1T Sun Life group. The asset management arm runs institutional mandates across fixed income and multi-asset, with strong LDI capabilities. Very similar profile to Manulife for Saber's purposes.
 
 *Target teams: Fixed Income & LDI, Investment Risk, ALM Analytics.*
 
@@ -471,14 +465,14 @@ Morningstar DBRS (formerly DBRS Morningstar) is the dominant Canadian credit rat
 |---|---|---|
 | Director/VP – ALM & Balance Sheet Risk | ★★★★★ | Core of last 3 years; cash flow engine, IRRBB, formal sign-off |
 | Director – IRRBB Modelling | ★★★★★ | EVE/NII analysis, parallel/non-parallel shocks, model governance |
-| Senior Manager/Director – Model Risk & Validation | ★★★★★ | Formal sign-off authority; model governance framework at Moody's; OSFI E-23 demand |
+| Senior Manager/Director – Model Risk & Validation | ★★★★★ | Formal sign-off authority; model governance framework at Moody's |
 | Portfolio Risk Manager (buy-side) | ★★★★☆ | Multi-asset valuation, derivatives, scenario analytics |
 | Fixed Income / Rates Risk | ★★★★☆ | Curve construction, duration, spread calibration, stress scenarios |
 | Senior Quant Analyst / Strats | ★★★★☆ | Dual MSc, Python/SQL, stochastic modelling, scenario generators |
 | ALM Consultant / Client Solutions | ★★★★☆ | Ortec + Moody's institutional client delivery across pension/AM verticals |
 | Aladdin / Risk Platform Analytics | ★★★★☆ | Platform build, multi-asset analytics, institutional client workflows |
 | Product Manager – Risk/FinTech | ★★★☆☆ | Agentic AI + platform delivery differentiates vs. pure PM candidates |
-| IFRS 17 / Actuarial Risk | ★★★☆☆ | EY experience, but better matched to insurance context (excluded here) |
+| Insurance-accounting Transformation / Actuarial Risk | ★★★☆☆ | EY experience, but better matched to insurance context (excluded here) |
 
 ---
 
@@ -508,11 +502,11 @@ The original shortlist omitted several canonical fits for Saber's ALM / IRRBB / 
 
 *Target teams: Total Portfolio Risk, Fixed Income & Rates, LDI, Investment Risk.*
 
-### 7.2 Canadian insurers (ALM / IFRS 17 tailwind)
+### 7.2 Canadian insurers
 
-**Canada Life / Great-West Lifeco** — Priority ★★★★★. Missed from original shortlist. Toronto-heavy. IFRS 17 ongoing program = EY + Moody's + Ortec combined profile differentiator. Tracker: `canadalife-001`.
+**Canada Life / Great-West Lifeco** — Priority ★★★★★. Missed from original shortlist. Toronto-heavy. Combined EY + Moody's + Ortec profile is a strong differentiator for their ALM / risk teams. Tracker: `canadalife-001`.
 
-**Intact Financial** — Priority ★★★★☆. Canada's largest P&C insurer. Toronto presence. IFRS 17 relevance for reserving/capital. P&C flavor of ALM (shorter duration, more credit-driven) vs. life insurer. Tracker: `intact-001`.
+**Intact Financial** — Priority ★★★★☆. Canada's largest P&C insurer. Toronto presence. P&C flavor of ALM (shorter duration, more credit-driven) vs. life insurer. Tracker: `intact-001`.
 
 **Definity Financial** — Priority ★★★☆☆. Post-IPO P&C; Toronto/Waterloo. Tracker: `definity-001`.
 
@@ -530,11 +524,11 @@ The original shortlist omitted several canonical fits for Saber's ALM / IRRBB / 
 
 **Eckler** — Priority ★★★☆☆. Canadian boutique pension actuarial/consulting. Toronto. *(monitor quarterly; add to tracker when live role surfaces.)*
 
-### 7.4 Big 4 FS Risk Advisory (OSFI E-23 build-out)
+### 7.4 Big 4 FS Risk Advisory
 
 **EY Canada — FSRM** — Priority ★★★★★. Boomerang opportunity at Senior Manager/Director level. 2021-2022 EY alumni network is live. Tracker: `ey-fsrm-001`.
 
-**Deloitte Canada — FSI Risk Advisory** — Priority ★★★★★. E-23 implementation is driving Director-level Risk Advisory hiring waves. Tracker: `deloitte-fsi-001`.
+**Deloitte Canada — FSI Risk Advisory** — Priority ★★★★★. Director-level Risk Advisory hiring is active. Tracker: `deloitte-fsi-001`.
 
 **KPMG Canada — FRM** — Priority ★★★★☆. Tracker: `kpmg-frm-001`.
 
@@ -568,23 +562,11 @@ The original shortlist omitted several canonical fits for Saber's ALM / IRRBB / 
 
 ### 7.8 Regulators and adjacent (ad-hoc)
 
-**OSFI** (Office of the Superintendent of Financial Institutions) — Ottawa-based regulator driving E-23, B-12, LAR. Highly relevant employer for Saber's regulatory-practitioner angle; limited Toronto presence but Ottawa-based roles exist. *(Monitor osfi-bsif.gc.ca/careers quarterly.)*
+**OSFI** (Office of the Superintendent of Financial Institutions) — Ottawa-based federal regulator. Limited Toronto presence; Ottawa-based risk/modelling roles surface occasionally. *(Monitor osfi-bsif.gc.ca/careers quarterly.)*
 
 **Bank of Canada — Financial Stability Department** — Ottawa. Similar profile fit. *(Monitor bankofcanada.ca/careers quarterly.)*
 
 ---
 
-## 8. OSFI regulatory hooks — per-company explicit framing
-
-Every target company's ALM / model-risk / validation role should lead the cover letter with a 1-sentence OSFI hook. Use the `osfi_hook` field in `job_tracker_data.json` to select the right angle:
-
-- **OSFI E-23 Model Risk Management** (effective 2027-05-01): use for all model-validation roles at banks, insurers, and custody/servicing banks (BNY, State Street). Emphasizes functional separation of model developer / owner / independent reviewer.
-- **OSFI B-12 IRRBB revision** (consultations Q1 2026): use for all Big 6 / mid-bank / Citi / HSBC / JPM / Northern Trust ALM and IRRBB roles.
-- **OSFI LAR 2026** (Liquidity Adequacy): use for any Treasury / liquidity / cash-flow-projection-specific role at banks.
-- **IFRS 17**: use for all insurer (Manulife, Sun Life, Canada Life, Intact, Definity, iA, RGA) ALM/risk roles.
-- **None**: pensions and vendor-platform roles — use Moody's / Ortec narrative anchor instead.
-
----
-
-*Last updated: 2026-05-03 | v2 expansion: IMCO, Canada Life, Mercer/WTW/Aon, Big 4 FSI, Equitable Bank/EQB, SS&C Algorithmics, Numerix, Prometeia, boutique AMs added. OSFI-hook framing generalized to all entries via tracker.*
-*Source research (v1): Scotiabank/RBC active postings confirmed via CareerBeacon/Ladders/Scotiabank Jobs; HOOPP compensation data via LinkedIn; OSFI guidelines via OSFI.gc.ca/Fasken/BLG; CPP team structure via CPP Investments website; Brookfield hiring data via Glassdoor/LinkedIn April 2026; Bloomberg role confirmed via Bloomberg Avature careers portal*
+*Last updated: 2026-05-06 | Regulatory-tailwind and OSFI-hook framing removed — cover letters now open on capability claims tied to the specific employer/role. Earlier v2 expansion added IMCO, Canada Life, Mercer/WTW/Aon, Big 4 FSI, Equitable Bank/EQB, SS&C Algorithmics, Numerix, Prometeia, boutique AMs.*
+*Source research (v1): Scotiabank/RBC active postings confirmed via CareerBeacon/Ladders/Scotiabank Jobs; HOOPP compensation data via LinkedIn; CPP team structure via CPP Investments website; Brookfield hiring data via Glassdoor/LinkedIn April 2026; Bloomberg role confirmed via Bloomberg Avature careers portal.*

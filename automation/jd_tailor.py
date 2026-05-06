@@ -125,14 +125,15 @@ def build_system_prompt() -> str:
         "Rules:\n"
         "1. Every resume bullet MUST come from the tagged bullet library in the Master Repository (§5). "
         "   Pick bullets whose tags match the JD. Do NOT invent new accomplishments.\n"
-        "2. Cover letter MUST be 300-350 words, 3 paragraphs, lead with regulatory hook or platform parallel.\n"
+        "2. Cover letter MUST be 300-350 words, 3 paragraphs. OPEN on a concrete capability claim tied to\n"
+        "   the specific employer/role (e.g., sign-off authority on a comparable book, a platform parallel,\n"
+        "   a relevant EY/Moody's/Ortec engagement). Do NOT lead with regulatory-calendar narratives\n"
+        "   (OSFI E-23 / B-12 / LAR / IFRS 17 etc.) — those read as generic and are explicitly de-emphasized.\n"
         "3. Year count is ~7.3 years. Do not say '8+' or '10+'.\n"
         "4. Sign-off authority framing: multi-asset institutional portfolios in the $5-25bn range per "
         "   engagement, cumulative ~$50bn book. Do not inflate.\n"
         "5. If the JD implies a skill Saber does not have (check §4 of Master Repo), do NOT claim it. "
-        "   Address obliquely via adjacent skills.\n"
-        "6. OSFI hook selection: E-23 for validation roles, B-12 for bank IRRBB roles, LAR 2026 for "
-        "   liquidity roles, IFRS 17 for insurers, None for pensions and vendors.\n\n"
+        "   Address obliquely via adjacent skills.\n\n"
         "Output format: always return a single markdown document with three sections — PARSE LOG, "
         "RESUME, COVER LETTER, INTERVIEW BRIEF — in that order."
     )
@@ -181,7 +182,7 @@ Produce one markdown document with exactly these sections, in this order:
 
 ## § PARSE LOG
 - Which positioning angle did you use: PRIMARY (ALM/IRRBB) or SECONDARY (Vendor-Platform) or AD-HOC (specify)?
-- Which OSFI hook did you select, and why?
+- Which capability/experience hook did you open the cover letter on, and why? (Do NOT default to regulatory-calendar framing.)
 - Which bullets from the Master Repository tagged library did you select for the resume, and which did you drop? List each with its tag.
 - Any risks you want Saber to be aware of before submitting (over-claims, gaps, interview-exposure).
 

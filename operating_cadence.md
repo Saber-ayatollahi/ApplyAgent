@@ -63,7 +63,7 @@ Cycle through this priority stack until the hour is up:
 
 ### Saturday
 - Off unless interview scheduled. Decompress.
-- Optional: 1 hour reading OSFI / Basel / IRRBB — feeds LinkedIn content engine.
+- Optional: 1 hour reading industry research (ALM, IRRBB, LDI, model governance) — feeds LinkedIn content engine.
 
 ### Sunday
 - 17:00–18:00 — draft Monday LinkedIn post (see `linkedin_content_engine.md`).
@@ -110,7 +110,7 @@ For each applied role, set `date_last_followup` and `followup_schedule.next_due`
 - **Apply targets (8):** scot-001, scot-002, scot-003, bmo-001, cib-001, bloom-001, br-001, spg-001.
 - **Outreach targets (10):** BlackRock Toronto hiring managers (Aladdin team); S&P Risk Solutions Toronto leads; MSCI Toronto hiring managers; 3 Moody's alumni at Scotia/BMO/RBC; 2 Ortec→HOOPP/OMERS/IMCO alumni; EY FSRM 2021-2022 ex-managers.
 - **Coffee chats (3):** 1 Moody's alum, 1 CFA Toronto society contact, 1 Western MSc alum.
-- **LinkedIn post:** "OSFI E-23 and the shape of Canadian model-risk hiring in 2026" (analytic, 400 words, positions Saber as the informed insider).
+- **LinkedIn post:** "What formal model sign-off authority actually looks like in day-to-day ALM" (analytic, 400 words, positions Saber as the practitioner insider).
 - **Infrastructure:** Set up `jd_tailor.py`, `jd_scraper.py`, `weekly_report.py`. First scrape run.
 
 ### Week 2 — 2026-05-10 → 05-16 — **"Expand the vendor front"**
@@ -127,9 +127,9 @@ For each applied role, set `date_last_followup` and `followup_schedule.next_due`
 
 ### Week 4 — 2026-05-24 → 05-30 — **"Insurer + mid-bank sweep"**
 - **Apply targets (8):** manulife-001, slim-001, canadalife-001, intact-001, ia-001, eqb-001, rga-001, definity-001.
-- **Outreach:** IFRS 17 networking — EY / Mercer / WTW contacts with insurer relationships; LinkedIn InMail to Heads of ALM at top 3 insurers.
+- **Outreach:** Insurer-ALM networking — EY / Mercer / WTW contacts with insurer relationships; LinkedIn InMail to Heads of ALM at top 3 insurers.
 - **Coffee chats:** 3 insurer contacts.
-- **LinkedIn post:** "IFRS 17 is done — now what? Post-implementation ALM opportunities at Canadian life insurers".
+- **LinkedIn post:** "Where Canadian life-insurer ALM teams are under-resourced right now".
 
 ### Week 5 — 2026-05-31 → 06-06 — **"Interview density"** (expected first-round density)
 - **Apply targets (6):** fill from any live roles surfaced; otherwise US-bank sweep (jpm-001, citi-001, hsbc-001) + gs-001 + ms-001 + db-001.
@@ -159,7 +159,7 @@ For each applied role, set `date_last_followup` and `followup_schedule.next_due`
 - Negotiation phase if offers are in hand. Counter-offer scripts from `references_and_salary.md`.
 - Reference checks complete.
 - Apps: none unless no offers (in which case, escalate to recruiter pressure + reactivate Week 1-4 ghosts).
-- **LinkedIn post:** (skip if in active negotiation; otherwise "OSFI B-12 update — what it means for 2027 planning").
+- **LinkedIn post:** (skip if in active negotiation; otherwise a capability-focused piece — e.g., "What I learned from four years of sign-off authority on $5-25bn institutional portfolios").
 
 ### Week 10 — 2026-07-05 → 07-11 — **"Decision / bridge"**
 - Offer accepted → decline others with grace; start-date confirmed.

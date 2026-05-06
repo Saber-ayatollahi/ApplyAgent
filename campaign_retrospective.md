@@ -48,7 +48,7 @@ List each rejection with its reason code. Cluster:
 ## 5. What worked
 
 - Positioning angles: did the ALM/IRRBB primary narrative convert? The Vendor-platform secondary?
-- Which regulatory hook (E-23 / B-12 / LAR / IFRS 17) drew the most engagement in cover letters and interviews?
+- Which cover-letter opening style (sign-off-authority claim vs platform-parallel vs EY/Ortec reference) drew the strongest response?
 - Which cover letter template converted best?
 - Which recruiter generated the most interviews?
 - Which LinkedIn post drove the most inbound?

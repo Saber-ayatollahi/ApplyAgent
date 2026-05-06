@@ -9,7 +9,6 @@ Master Repository profile. Outputs a scored JSON with per-role:
   - fit_verdict ("apply_now" | "tailor_and_apply" | "watch" | "skip")
   - top_3_reasons (why this matches)
   - skill_gaps (what Saber lacks for this role)
-  - osfi_hook (which OSFI angle to lead the cover letter with)
   - tier (1-4)
   - summary (30-word pitch of why to apply)
 
@@ -656,25 +655,15 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
 # The scorer picks 1-3 of these per role so the UI + tailor know which to lead with.
 RESUME_VARIANTS = ["ALM", "VAL", "VEN", "QUANT", "CON"]
 
-# Canonical osfi_hook enum. LLM output that doesn't match is coerced to "None"
-# so downstream filters (UI, auto_promote, brief) can trust the value.
-VALID_OSFI_HOOKS = {
-    "E-23 Model Risk Management",
-    "B-12 IRRBB revision",
-    "LAR 2026 Liquidity Adequacy",
-    "IFRS 17",
-    "None",
-}
-
 _FALLBACK_SYSTEM_PROMPT = (
     "You are a hard-nosed senior finance career strategist assessing job fit for Saber Ayatollahi.\n"
     "\n"
     "Saber's profile:\n"
     "- CFA charterholder. Dual MSc (Financial Modelling + Chemical Engineering).\n"
     "- ~7.3 years finance experience at Moody's Analytics (ALM/model governance sign-off),\n"
-    "  EY (IFRS 17/9 transformation), Ortec Finance (pension ALM + LDI).\n"
+    "  EY (insurance-accounting transformation), Ortec Finance (pension ALM + LDI).\n"
     "- Core competencies: ALM, IRRBB, Market Risk, Model Validation/Governance, Cash-Flow\n"
-    "  Projection, LDI, Derivatives Pricing, Stochastic Scenario Generation, IFRS 17/9,\n"
+    "  Projection, LDI, Derivatives Pricing, Stochastic Scenario Generation,\n"
     "  Python, agentic AI workflows, enterprise risk-platform delivery.\n"
     "- Formal sign-off authority on multi-asset institutional portfolios $5-25bn.\n"
     "- Toronto-based, not relocating.\n"
@@ -686,11 +675,12 @@ _FALLBACK_SYSTEM_PROMPT = (
     "- QUANT  — Quantitative / Fixed Income Analytics, derivatives pricing, ESG/Monte Carlo\n"
     "- CON    — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
     "\n"
-    "Broad scoring principle: judge each role against the FULL skill inventory above,\n"
-    "not a narrow primary/secondary frame. Strategy, market risk, treasury, valuations,\n"
-    "regulatory transformation, and related adjacent lanes are in-scope when the seniority\n"
-    "is Director / VP / Head / Principal / AVP / Senior Manager at a target Toronto finance\n"
-    "employer and the JD has substantive quantitative / risk / regulatory content.\n"
+    "Score each role on CAPABILITY FIT against the skill inventory above — not on\n"
+    "regulatory-calendar narratives. Judge whether Saber can do the job and whether the\n"
+    "role advances his trajectory. Strategy, market risk, treasury, balance-sheet, valuations,\n"
+    "and adjacent lanes are in-scope when seniority is Director / VP / Head / Principal /\n"
+    "AVP / Senior Manager at a target Toronto finance employer and the JD has substantive\n"
+    "quantitative, risk, or platform-delivery content.\n"
     "\n"
     "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
     "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
@@ -699,13 +689,6 @@ _FALLBACK_SYSTEM_PROMPT = (
     "- Internships, co-ops, student programs, new-grad rotational\n"
     "- Generalist Product Manager / Project Manager (non-risk/non-ALM scope)\n"
     "- Boutique HF quant-research as PRIMARY focus (Saber is buy-side adjacent, not HF)\n"
-    "\n"
-    "Regulatory tailwinds to cite where relevant (osfi_hook field):\n"
-    "- E-23 Model Risk Management (eff. 2027-05-01, AI/ML scope)\n"
-    "- B-12 IRRBB revision (Q1 2026 consultations)\n"
-    "- LAR 2026 Liquidity Adequacy\n"
-    "- IFRS 17/9 (insurers/banks — EY background directly applicable)\n"
-    "- None — if no direct OSFI hook applies\n"
     "\n"
     "Return ONLY valid JSON matching the schema given, no prose, no markdown.\n"
 )
@@ -773,12 +756,12 @@ def _build_system_prompt() -> str:
         "\n"
         "# How to score\n"
         "\n"
-        "Broad principle: judge each role against the FULL skill inventory above, not a\n"
-        "narrow primary/secondary frame. Strategy, market risk, treasury, balance-sheet,\n"
-        "valuations, regulatory transformation, and related adjacent lanes are IN SCOPE\n"
-        "when the seniority is Director / VP / Head / Principal / AVP / Senior Manager at\n"
-        "a target Toronto finance employer and the JD has substantive quantitative, risk,\n"
-        "regulatory, or platform-delivery content.\n"
+        "Score each role on CAPABILITY FIT against the skill inventory above — not on\n"
+        "regulatory-calendar narratives. Judge whether Saber can do the job and whether the\n"
+        "role advances his trajectory. Strategy, market risk, treasury, balance-sheet,\n"
+        "valuations, and adjacent lanes are IN SCOPE when the seniority is Director / VP /\n"
+        "Head / Principal / AVP / Senior Manager at a target Toronto finance employer and\n"
+        "the JD has substantive quantitative, risk, or platform-delivery content.\n"
         "\n"
         "For every role also pick the 1-3 resume variants best suited (from this set):\n"
         "  ALM   — Asset-Liability Management / IRRBB / Balance-Sheet / Treasury Risk\n"
@@ -797,9 +780,6 @@ def _build_system_prompt() -> str:
         "- Generalist Product Manager / Project Manager where scope is NOT risk/ALM/platform\n"
         "- Pure HF quant-research as primary focus (Saber is buy-side adjacent, not HF)\n"
         "\n"
-        "osfi_hook options: 'E-23 Model Risk Management' | 'B-12 IRRBB revision' |\n"
-        "'LAR 2026 Liquidity Adequacy' | 'IFRS 17' | 'None'\n"
-        "\n"
         "Return ONLY valid JSON matching the schema given. No prose, no markdown.\n"
     )
 
@@ -812,7 +792,6 @@ SCHEMA = """{
   "fit_verdict": "apply_now" | "tailor_and_apply" | "watch" | "skip",
   "top_3_reasons": ["...", "...", "..."],
   "skill_gaps": ["..."],                 // can be empty
-  "osfi_hook": "E-23 Model Risk Management" | "B-12 IRRBB revision" | "LAR 2026 Liquidity Adequacy" | "IFRS 17" | "None",
   "tier": 1-4 integer (1=top tier apply-this-week; 4=watch-only),
   "applicable_resume_variants": ["ALM" | "VAL" | "VEN" | "QUANT" | "CON", ...],  // 1-3 items, best-fit first
   "summary": "30-word-ish pitch for Saber of why to apply (or why not)"
@@ -881,7 +860,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
 
     if _abort_event.is_set():
         return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["aborted"],
-                "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+                "skill_gaps": [], "tier": 4,
                 "summary": "Aborted due to fatal earlier error."}
 
     user = (
@@ -936,14 +915,12 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 parsed.setdefault("fit_verdict", "skip")
                 parsed.setdefault("top_3_reasons", [])
                 parsed.setdefault("skill_gaps", [])
-                parsed.setdefault("osfi_hook", "None")
                 parsed.setdefault("tier", 4)
                 parsed.setdefault("summary", "")
-                # Coerce osfi_hook to the canonical enum — LLM sometimes emits
-                # "E-23" (short) or "IFRS17" (no space). Keep only recognized
-                # hooks so UI filters and brief-rendering don't silently miss them.
-                if parsed.get("osfi_hook") not in VALID_OSFI_HOOKS:
-                    parsed["osfi_hook"] = "None"
+                # Drop legacy osfi_hook if the LLM still emits one — the field is
+                # retired. Older cache entries may still have it; downstream code
+                # doesn't read it anymore so leaving stale cache is harmless.
+                parsed.pop("osfi_hook", None)
                 # Sanitize resume variants — LLM sometimes invents tokens ("FI", "BS").
                 # Keep only the recognized set; cap at 3; preserve order (primary first).
                 raw_variants = parsed.get("applicable_resume_variants") or []
@@ -976,7 +953,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                         )
                     return {"fit_score": 0, "fit_verdict": "error",
                             "top_3_reasons": ["fatal_api"], "skill_gaps": [],
-                            "osfi_hook": "None", "tier": 4,
+                            "tier": 4,
                             "summary": f"Fatal: {err_str[:120]}"}
                 if _is_transient_error(err_str) and attempt < MAX_RETRIES - 1:
                     backoff = BACKOFF_BASE * (3 ** attempt)
@@ -990,7 +967,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                       file=sys.stderr)
                 break
     return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["LLM_failure"],
-            "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+            "skill_gaps": [], "tier": 4,
             "summary": "LLM scoring failed after all retries."}
 
 
@@ -1076,7 +1053,7 @@ def main() -> int:
         if _abort_event.is_set():
             r["fit"] = {"fit_score": 0, "fit_verdict": "skip",
                         "top_3_reasons": ["aborted_fatal_api_error"],
-                        "skill_gaps": [], "osfi_hook": "None", "tier": 4,
+                        "skill_gaps": [], "tier": 4,
                         "summary": "Skipped — scorer aborted due to API error."}
             return r, False, True
 
@@ -1148,8 +1125,8 @@ def main() -> int:
     for v, n in sorted(by_verdict.items(), key=lambda x: -x[1]):
         md_lines.append(f"- **{v}**: {n}")
     md_lines += ["", "## Top 40 by fit score", "",
-                 "| Score | Verdict | Tier | Sector | Company | Title | OSFI hook | Summary | Link |",
-                 "|---|---|---|---|---|---|---|---|---|"]
+                 "| Score | Verdict | Tier | Sector | Company | Title | Summary | Link |",
+                 "|---|---|---|---|---|---|---|---|"]
     for r in scored[:40]:
         f = r["fit"]
         title = r["title"].replace("|", "/")
@@ -1157,7 +1134,7 @@ def main() -> int:
         md_lines.append(
             f"| {f.get('fit_score')} | {f.get('fit_verdict')} | {f.get('tier')} | "
             f"{r.get('sector', '')} | {r['company']} | {title} | "
-            f"{f.get('osfi_hook', '')} | {summary} | [open]({r['link']}) |"
+            f"{summary} | [open]({r['link']}) |"
         )
 
     md_out = OUT_DIR / (Path(args.scan).stem + "_scored.md")

@@ -97,29 +97,29 @@ See `Saber_Ayatollahi_Master_Repository.md` §6 for the full bank of 10 stories.
 ### 3.1 Scotiabank
 - **Team structure:** ALM Modelling Team in Treasury (6–8 quants); reports up to Treasury CIO-equivalent; partners with Global Risk Management on Model Validation.
 - **Known tech:** likely QRM or in-house IRRBB platform; Python + SAS mixed.
-- **Regulatory posture:** active B-12 consultation response; large IRRBB remediation program ongoing.
+- **Active area:** large IRRBB remediation program ongoing; ALM analytics platform modernization.
 - **Interview likely stages:** recruiter screen (30') → HM screen (45') → 2-3 technical interviews (IRRBB deep dive, model governance, coding) → panel with Director+ → offer.
 - **Questions to ask:**
   - "How is the ALM Modelling Team split between NMD behavioral modeling, TP curve construction, and scenario engine development?"
-  - "What's the biggest methodology gap you see ahead of the B-12 final guideline?"
-  - "How does the Director ALM Modelling role interface with Group Model Validation under E-23?"
+  - "What's the biggest methodology debate the team has had in the last quarter, and how did it resolve?"
+  - "How does the Director ALM Modelling role interface with Group Model Validation day to day?"
 
 ### 3.2 RBC
 - **Team structure:** Group Treasury ALM (multiple sub-teams) + Group Risk Management Model Risk (largest in Canada). Cross-entity scope (Canada, US, UK, EU, Caribbean).
 - **Known tech:** multi-platform; heavy QRM and custom in-house.
-- **Regulatory posture:** E-23 readiness program is material; RBC-HSBC Canada integration completing 2026.
+- **Active area:** RBC-HSBC Canada integration completing 2026; large cross-border model inventory requires ongoing governance build-out.
 - **Questions to ask:**
-  - "How is RBC sequencing the E-23 operational-separation requirements given the cross-border scope?"
+  - "How is the model inventory being consolidated post-HSBC integration, and where are the biggest overlapping-methodology debates?"
   - "What does success look like for this role 12 months in?"
 
 ### 3.3 BMO (Model Validation Director — bmo-001)
 - **Team structure:** Model Risk Management group, Director level reports to VP MRM.
 - **Known tech:** mixed; Python increasing, legacy SAS persistent.
-- **Regulatory posture:** active E-23 readiness; growing validation headcount.
+- **Active area:** growing validation headcount; expanding ML / vendor-model governance coverage.
 - **Questions to ask:**
   - "What's the current split of validation work — traditional models, ML models, vendor models?"
   - "How does the Director role balance new-model validation vs. ongoing-monitoring review?"
-  - "Given E-23 2027, what's the team's 12-month priority stack?"
+  - "What's the team's 12-month priority stack?"
 
 ### 3.4 BlackRock (Aladdin Client Engagement Director — br-001)
 - **Team structure:** Aladdin Toronto office; Client Engagement team serves Canadian institutional clients (banks, pensions, AMs, insurers).
@@ -162,15 +162,15 @@ See `Saber_Ayatollahi_Master_Repository.md` §6 for the full bank of 10 stories.
   - (IMCO) "How does IMCO balance the LDI mandates of OPB/WSIB against newer client onboarding?"
 
 ### 3.9 Manulife / Sun Life / Canada Life (insurers)
-- **Angle:** EY IFRS 17 + Moody's ALM + Ortec LDI combined profile is highly differentiated.
+- **Angle:** EY insurance-accounting + Moody's ALM + Ortec LDI combined profile is highly differentiated.
 - **Questions to ask:**
-  - "Where is the insurer's ALM function post-IFRS 17 implementation — resourcing up, consolidating, or pivoting?"
-  - "How is the CSM roll-forward interacting with the investment strategy for long-duration liability matching?"
+  - "Where is the insurer's ALM function today — resourcing up, consolidating, or pivoting into a new area?"
+  - "How is long-duration liability matching changing as rates normalize off the 2022-2024 regime?"
 
 ### 3.10 EY FSRM (boomerang — ey-fsrm-001)
 - **Team structure:** FSRM Toronto; natural Senior Manager / Director boomerang path.
 - **Questions to ask:**
-  - (Relevant EY contact) "What's the current hiring window, and what does the practice need most — IFRS follow-through, E-23 implementation, or ALM advisory?"
+  - (Relevant EY contact) "What's the current hiring window, and what's the practice's biggest delivery gap right now?"
   - "If I were to rejoin, what's the fastest on-ramp to Director / Senior Manager?"
 
 ---
@@ -219,7 +219,7 @@ See `Saber_Ayatollahi_Master_Repository.md` §6 for the full bank of 10 stories.
 1. "What does success look like in this role at 6 months and 12 months?"
 2. "What's the biggest open question this role will need to answer in Year 1?"
 3. "What's the makeup of the team — how many senior, how many junior, and where are you growing?"
-4. "How has the team handled the OSFI E-23 / B-12 / LAR transition so far?" *(for bank / insurer roles)*
+4. "What's the biggest methodology debate the team has had in the last quarter, and how did it resolve?" *(signals practitioner depth without leaning on regulatory-calendar framing)*
 5. "What are the next steps in the process and what's your timeline?"
 
 ---

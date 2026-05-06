@@ -10,16 +10,16 @@
 
 ## Apply this week (10) — highest Tier-1 finds from scan
 
-- [ ] `rbc-irrbb-001` — **RBC Director, IRRBB & FTP Model Risk Management** 🔥 near-verbatim match (B-12 hook)
-- [ ] `cibc-quant-001` — CIBC Director, Quantitative Risk Modelling (E-23 hook)
+- [ ] `rbc-irrbb-001` — **RBC Director, IRRBB & FTP Model Risk Management** 🔥 near-verbatim match
+- [ ] `cibc-quant-001` — CIBC Director, Quantitative Risk Modelling
 - [ ] `hoopp-mv-001` — HOOPP Senior Director, Model Validation (LDI + validation combo)
-- [ ] `bmo-001` — BMO Director, Model Validation (existing) (E-23 hook)
+- [ ] `bmo-001` — BMO Director, Model Validation (existing)
 - [ ] `bmo-mv-002` — BMO Director, Model Validation (second listing — different team)
 - [ ] `scot-treasplat-001` — Scotiabank AD, Treasury Strategic Platforms & Transformation (vendor-platform angle)
 - [ ] `br-aladdin-bd-001` — BlackRock Aladdin Business Development Director (Vendor-Platform primary)
 - [ ] `citi-ntmr-001` — Citi Non-Trading Market Risk VP (IRRBB in Citi-speak)
-- [ ] `ivari-alm-001` — ivari AVP, Asset Liability Management (life insurer, IFRS 17 hook)
-- [ ] `manu-mrm-001` — Manulife Manager/Director, Model Risk Management (IFRS 17 + E-23)
+- [ ] `ivari-alm-001` — ivari AVP, Asset Liability Management (life insurer)
+- [ ] `manu-mrm-001` — Manulife Manager/Director, Model Risk Management
 
 ## Outreach this week (10)
 
@@ -40,7 +40,7 @@
 
 ## LinkedIn post (1)
 
-- [ ] Mon 2026-05-04 07:30 — "OSFI E-23 and the shape of Canadian model-risk hiring in 2026" (see `linkedin_content_engine.md` Week 1)
+- [ ] Mon 2026-05-04 07:30 — pick a capability-led topic (see `linkedin_content_engine.md`). Default draft: "What formal model sign-off authority actually looks like in day-to-day ALM."
 
 ## Recruiter calls (2)
 

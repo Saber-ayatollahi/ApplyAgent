@@ -89,9 +89,9 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 | **`operating_cadence.md`** | 10-week calendar, daily ritual, KPI targets, follow-up cadence | Every Monday; ref daily |
 | **`job_tracker_data.json`** | Live pipeline — 96 roles, 14-status funnel, contacts, outreach log | Every application / interview / Friday |
 | **`Saber_Ayatollahi_Master_Repository.md`** | Single source of truth for resumes + cover letters. Tagged bullet library (§5). STAR stories (§6). Two positioning angles (§7) | Before every resume tailoring |
-| **`Target_Companies_2026.md`** | 155-firm curated shortlist with OSFI hook framing | When considering a new target |
+| **`Target_Companies_2026.md`** | 155-firm curated shortlist | When considering a new target |
 | **`cover_letter_templates.md`** | 3 templates (ALM-bank / Vendor-platform / Consulting) | Every cover letter |
-| **`interview_prep.md`** | IRRBB/ALM/E-23/LDI technical Q&A, STAR mapping, per-company prep, interview-day protocol | 1 hour before every interview |
+| **`interview_prep.md`** | IRRBB/ALM/model-risk/LDI technical Q&A, STAR mapping, per-company prep, interview-day protocol | 1 hour before every interview |
 | **`recruiter_crm.json`** | Toronto finance recruiters + warm-intro queues + outreach templates | Weekly — parallel with applications |
 | **`references_and_salary.md`** | Reference archetypes, CAD comp bands per tier, negotiation scripts | Week 1 (reference priming); final-round week |
 | **`linkedin_content_engine.md`** | 12-week post calendar; profile setup; engagement strategy | Every Sunday evening |
@@ -102,7 +102,7 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 | **`deep-research-report.md`** | Archival research layer (tokens stripped). Superseded by Target_Companies_2026.md | Reference only |
 | **`automation/README.md`** | Automation index + setup + smoke tests + pipeline commands | Before running any agent |
 | **`automation/jd_scraper.py`** | Scrape 155 companies (20+ validated Workday + Greenhouse + LinkedIn) | Friday |
-| **`automation/fit_scorer.py`** | Fetch JD + LLM-score (1-10, verdict, gaps, OSFI hook) with caches | After each scan |
+| **`automation/fit_scorer.py`** | Fetch JD + LLM-score (1-10, verdict, gaps, resume variants) with caches | After each scan |
 | **`automation/auto_promote.py`** | Promote scored roles to tracker; auto-expire stale URLs; backup-safe | After each fit_scorer |
 | **`automation/jd_tailor.py`** | JD → tailored resume + cover letter + interview brief | Before every application |
 | **`automation/weekly_report.py`** | KPI deltas, stale apps, followups due, interview pipeline, next-week targets | Friday 18:00 |
@@ -144,7 +144,7 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 Top 10 Tier-1 matches surfaced by scan v2/v3/v4:
 
 1. `rbc-irrbb-001` — **RBC Director, IRRBB & FTP Model Risk Management** 🔥 near-verbatim match
-2. `cibc-quant-001` — CIBC Director, Quantitative Risk Modelling (E-23 hook)
+2. `cibc-quant-001` — CIBC Director, Quantitative Risk Modelling
 3. `hoopp-mv-001` — HOOPP Senior Director, Model Validation
 4. `bmo-001` — BMO Director, Model Validation (existing)
 5. `bmo-mv-002` — BMO Director, Model Validation (2nd team)

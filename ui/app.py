@@ -793,7 +793,6 @@ if page == "🏠 Dashboard":
                     "title": j.get("title", "")[:70],
                     "variant": j.get("primary_variant", "—"),
                     "fit": j.get("fit_score_numeric", 0),
-                    "osfi": j.get("osfi_hook", ""),
                     "url": j.get("url", ""),
                 } for j in tier1_no_draft[:20]])
                 st.dataframe(tdf, hide_index=True, use_container_width=True,
@@ -1122,7 +1121,6 @@ if page == "🏠 Dashboard":
                     cols[0].caption(
                         f"📄 Lead-with: **{variants_str}** · "
                         f"Sector: {r.get('sector', '')} · "
-                        f"OSFI hook: {f.get('osfi_hook', 'None')} · "
                         f"Source: {r.get('source', '')}"
                     )
                     cols[0].markdown(f"**{f.get('summary', '')}**")
@@ -1162,7 +1160,6 @@ if page == "🏠 Dashboard":
                                 "fit_score_numeric": _num,
                                 "fit_verdict": verdict,
                                 "fit_notes": f.get("summary", ""),
-                                "osfi_hook": f.get("osfi_hook", ""),
                                 "resume_variants": _v,
                                 "primary_variant": _v[0] if _v else "",
                                 "status": "Found" if verdict == "apply_now" else "Watch",
@@ -1483,7 +1480,7 @@ if page == "🏠 Dashboard":
     apply_ids = meta.get("kanban_targets_week1", {}).get("apply_this_week", [])
     apply_rows = jobs_df[jobs_df["id"].isin(apply_ids)] if "id" in jobs_df.columns else pd.DataFrame()
     if not apply_rows.empty:
-        cols = [c for c in ["id", "company", "title", "tier", "fit_score", "osfi_hook", "url"] if c in apply_rows.columns]
+        cols = [c for c in ["id", "company", "title", "tier", "fit_score", "url"] if c in apply_rows.columns]
         st.dataframe(apply_rows[cols], hide_index=True, use_container_width=True,
                      column_config={"url": st.column_config.LinkColumn()})
     else:
@@ -1830,7 +1827,6 @@ elif page == "🎯 Pipeline":
                     with cA:
                         st.markdown("**Lead-with resume(s):** "
                                     + (" · ".join(variants) if variants else "—"))
-                        st.markdown("**OSFI hook:** " + fit.get("osfi_hook", "—"))
                         st.markdown("**Summary:** " + fit.get("summary", "—"))
                     with cB:
                         reasons = fit.get("top_3_reasons") or []
@@ -2030,7 +2026,6 @@ elif page == "🎯 Pipeline":
                     "company": r.get("company", ""),
                     "title": r.get("title", ""),
                     "variants": "/".join(f.get("applicable_resume_variants") or []),
-                    "osfi": f.get("osfi_hook", ""),
                     "summary": f.get("summary", ""),
                     "gaps": ", ".join(f.get("skill_gaps") or []),
                     "source": r.get("source", ""),
@@ -2082,7 +2077,6 @@ elif page == "🎯 Pipeline":
                         st.caption(f"Sector: {row['sector']} · Source: {row['source']}")
                         st.markdown(f"**Verdict:** `{row['verdict']}` · "
                                     f"**Fit:** {row['fit']}/10 · **Tier:** {row['tier']}")
-                        st.markdown(f"**OSFI hook:** {row['osfi'] or '—'}")
                         st.markdown(f"**Summary:** {row['summary']}")
                         if row["gaps"]:
                             st.markdown(f"**Gaps:** {row['gaps']}")
@@ -2326,7 +2320,7 @@ elif page == "📋 Jobs Kanban":
 
     cols = [c for c in ["id", "draft", "freshness", "company", "title", "gta_area",
                         "sector", "tier", "status", "fit_score", "fit_score_numeric",
-                        "primary_variant", "osfi_hook", "urgency",
+                        "primary_variant", "urgency",
                         "date_found", "date_applied", "url"]
             if c in view.columns]
     st.dataframe(

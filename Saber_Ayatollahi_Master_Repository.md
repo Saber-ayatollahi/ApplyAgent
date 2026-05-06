@@ -330,7 +330,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 ### 7.1 — PRIMARY: ALM / IRRBB / Model Governance
 **Best-fit titles:** Director — ALM & Balance Sheet Risk · Director — IRRBB Modelling · Senior Manager/Director — Model Risk & Validation · Head of ALM Analytics · Director — Treasury Risk · VP — Balance Sheet Risk
 
-**Evidence stack:** Sign-off authority on multi-asset institutional portfolios (Moody's) · Cash flow projection engine design and delivery (Moody's) · IRRBB-analogous shock analytics and curve calibration (Moody's) · LDI and stochastic scenario generators (Ortec) · Model governance framework operation (Moody's) · OSFI E-23 / B-12 / LAR regulatory awareness.
+**Evidence stack:** Sign-off authority on multi-asset institutional portfolios (Moody's) · Cash flow projection engine design and delivery (Moody's) · IRRBB-analogous shock analytics and curve calibration (Moody's) · LDI and stochastic scenario generators (Ortec) · Model governance framework operation (Moody's).
 
 **Summary angle (45–55 words):**
 > Asset-Liability Management and balance sheet risk professional with ~7 years spanning institutional ALM analytics, IRRBB modelling, liquidity projection, and model governance. Currently operates sign-off authority on multi-asset institutional portfolios at Moody's Analytics. CFA + dual MSc (Financial Modelling + Engineering). LDI background from Ortec Finance, IFRS 17 / IFRS 9 delivery from EY.
@@ -352,14 +352,14 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 ---
 
 ### 7.3 — Ad-hoc third lane: Consulting / Advisory (opportunistic)
-Only activate if an EY boomerang, Mercer/WTW LDI-specific role, Deloitte FSI Director E-23 role, or Oliver Wyman FS role surfaces. Do not run active search. If activated, lead with Ortec advisory roots + EY transformation evidence.
+Only activate if an EY boomerang, Mercer/WTW LDI-specific role, Deloitte FSI Director-level risk advisory role, or Oliver Wyman FS role surfaces. Do not run active search. If activated, lead with Ortec advisory roots + EY transformation evidence.
 
 ---
 
 ## 8. SUMMARY-STATEMENT BANK
 
 ### Short (LinkedIn headline, 150 chars)
-- `v-ALM-short` *Director-level ALM & IRRBB specialist · CFA · Moody's Analytics · ex-Ortec LDI · building model governance for OSFI E-23 / B-12*
+- `v-ALM-short` *Director-level ALM & IRRBB specialist · CFA · Moody's Analytics · ex-Ortec LDI · sign-off authority on multi-asset institutional portfolios*
 - `v-VEN-short` *Senior risk-analytics practitioner bridging institutional investment teams and enterprise platforms · CFA · Moody's Analytics · agentic AI workflow builder*
 
 ### Medium (resume header, 40–70 words)
@@ -368,10 +368,10 @@ Covered in §7.1 and §7.2.
 ### Long (cover-letter opening paragraph, 110–140 words)
 
 - `v-ALM-long`
-> I am an Asset-Liability Management and model-governance specialist currently at Moody's Analytics, where I hold sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios. Over the past four years I have led the design of a multi-scenario cash flow projection engine, operated IRRBB analytics under parallel and non-parallel rate shocks, and validated derivatives outputs at portfolio-level ALM aggregates. Before Moody's, I delivered IFRS 17 and IFRS 9 transformation at EY, and stochastic ALM studies for Canadian pension funds at Ortec Finance. I hold the CFA charter and dual MSc degrees (Financial Modelling, Chemical Engineering). I am writing because [TARGET COMPANY]'s [TARGET TEAM] is building exactly the ALM and model-governance capability that the OSFI E-23 and B-12 revisions require — and it is where my practitioner depth most directly translates.
+> I am an Asset-Liability Management and model-governance specialist currently at Moody's Analytics, where I hold sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios. Over the past four years I have led the design of a multi-scenario cash flow projection engine, operated IRRBB analytics under parallel and non-parallel rate shocks, and validated derivatives outputs at portfolio-level ALM aggregates. Before Moody's, I delivered insurance-accounting transformation at EY, and stochastic ALM studies for Canadian pension funds at Ortec Finance. I hold the CFA charter and dual MSc degrees (Financial Modelling, Chemical Engineering). I am writing because [TARGET COMPANY]'s [TARGET TEAM] is building exactly the ALM and model-governance capability where I have spent my career — and it is where my practitioner depth most directly translates.
 
 - `v-VEN-long`
-> I have spent four years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform that competes most directly with your own. At the institutional-client layer I have onboarded U.S. and Canadian pension funds, asset managers, and consulting firms; at the modelling layer I hold sign-off authority on valuation and ALM outputs for portfolios ranging into the mid-billions; at the engineering layer I have re-built spreadsheet workflows into production Python pipelines and have deployed agentic-AI workflows (Claude Code, Cursor) to accelerate code generation and validation. Prior roles at EY (IFRS 17 transformation) and Ortec Finance (pension ALM and LDI) extend the practitioner bench on the client side of the platform. I know your buyers because many of them are my current clients.
+> I have spent four years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform that competes most directly with your own. At the institutional-client layer I have onboarded U.S. and Canadian pension funds, asset managers, and consulting firms; at the modelling layer I hold sign-off authority on valuation and ALM outputs for portfolios ranging into the mid-billions; at the engineering layer I have re-built spreadsheet workflows into production Python pipelines and have deployed agentic-AI workflows (Claude Code, Cursor) to accelerate code generation and validation. Prior roles at EY (insurance-accounting transformation) and Ortec Finance (pension ALM and LDI) extend the practitioner bench on the client side of the platform. I know your buyers because many of them are my current clients.
 
 ---
 
@@ -421,7 +421,7 @@ Retired variants (no longer in rotation): Portfolio Manager (`_PM.docx`), Produc
 
 ## 11. JOB-SEARCH STRATEGY NOTES
 
-- Primary narrative: **ALM / IRRBB / Model Governance under the OSFI E-23 / B-12 / LAR tailwind.** Every Big 6 and insurer cover letter opens on this hook.
+- Primary narrative: **ALM / IRRBB / Model Governance — sign-off authority on multi-asset institutional portfolios, cash-flow-engine build, LDI practitioner depth.** Every Big 6 and insurer cover letter opens on a concrete capability tied to the target team (not on regulatory-calendar framing).
 - Secondary narrative: **Vendor-platform practitioner who already knows your buyers.** Every BlackRock / Bloomberg / MSCI / S&P cover letter opens on this hook.
 - Toronto-only geography — all target companies have confirmed Toronto presence.
 - Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). For every tailored application, attempt at least one warm-intro pathway before submitting.

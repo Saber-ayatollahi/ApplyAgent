@@ -107,7 +107,6 @@ def make_entry(r: dict) -> dict:
         "status": defaults.get("status", "Watch"),
         "fit_score": "High" if f.get("fit_score", 0) >= 8 else "Medium" if f.get("fit_score", 0) >= 6 else "Low",
         "fit_score_numeric": int(f.get("fit_score", 0)),
-        "osfi_hook": f.get("osfi_hook", "None"),
         "resume_variants": variants,
         "primary_variant": primary_variant,
         "urgency": defaults.get("urgency", "Low"),
@@ -180,7 +179,6 @@ def main() -> int:
             if int(existing.get("fit_score_numeric", 0)) < score:
                 existing["fit_score_numeric"] = score
                 existing["fit_score"] = e["fit_score"]
-                existing["osfi_hook"] = e["osfi_hook"]
                 existing["fit_notes"] = e["fit_notes"]
                 # Populate variant info even on re-score (older entries won't have it)
                 if e.get("resume_variants"):
@@ -230,15 +228,15 @@ def main() -> int:
         "",
         "## Top 20 would-be-added (by score)",
         "",
-        "| Score | Verdict | Tier | Sector | Company | Title | Resume | OSFI hook | Link |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Score | Verdict | Tier | Sector | Company | Title | Resume | Link |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for e in sorted(new_entries, key=lambda x: -x["fit_score_numeric"])[:20]:
         variants_str = "/".join(e.get("resume_variants") or []) or "—"
         report_lines.append(
             f"| {e['fit_score_numeric']} | {e['status']} | {e['tier']} | {e['sector']} | "
             f"{e['company']} | {e['title'].replace('|', '/')} | {variants_str} | "
-            f"{e['osfi_hook']} | [open]({e['url']}) |"
+            f"[open]({e['url']}) |"
         )
     report_path = OUT_DIR / f"promote_report_{stamp}.md"
     report_path.write_text("\n".join([l for l in report_lines if l is not None]), encoding="utf-8")

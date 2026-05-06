@@ -181,12 +181,12 @@ Still missing: the *per-Tier-1-job* cross-reference. When a new role lands at Co
 
 ### 3.1 Competitive Intelligence Monitor
 
-**Why:** Hiring at Director level often happens before jobs are posted. Regulatory announcements (OSFI releases, budget announcements) signal which teams are about to hire.
+**Why:** Hiring at Director level often happens before jobs are posted. Corporate signals (earnings commentary, restructuring news, platform migrations, senior departures) often leak upcoming hiring activity weeks in advance.
 
 **What to monitor:**
-- OSFI news and guideline updates
 - Target company press releases (earnings, restructuring, new initiatives)
 - LinkedIn posts from hiring managers at target companies
+- Senior departures at target companies (backfill signal)
 
 **Output:** Weekly briefing added to the Dashboard — "🔔 3 companies showing hiring signals this week"
 

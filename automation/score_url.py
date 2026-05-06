@@ -145,6 +145,9 @@ def _add_to_tracker(url: str, role: dict, fit: dict) -> str | None:
     new_id = f"manual-{stamp}"
     while any(j.get("id") == new_id for j in tr.get("jobs", [])):
         new_id += "a"
+    num_score = int(fit.get("fit_score") or 0)
+    fit_category = ("High" if num_score >= 8
+                    else "Medium" if num_score >= 6 else "Low")
     new_entry = {
         "id": new_id,
         "company": role["company"],
@@ -154,11 +157,11 @@ def _add_to_tracker(url: str, role: dict, fit: dict) -> str | None:
         "source": "manual_score_url",
         "tier": fit.get("tier", 3),
         "status": "Found" if verdict == "apply_now" else "Watch",
-        "fit_score": verdict,
-        "fit_score_numeric": fit.get("fit_score", 0),
+        "fit_score": fit_category,
+        "fit_score_numeric": num_score,
+        "fit_verdict": verdict,
         "fit_notes": (fit.get("summary") or "")
                      + " | Reasons: " + "; ".join(fit.get("top_3_reasons") or [])[:300],
-        "osfi_hook": fit.get("osfi_hook", "None"),
         "resume_variants": variants,
         "primary_variant": variants[0] if variants else "",
         "urgency": "High" if verdict == "apply_now" else "Medium",

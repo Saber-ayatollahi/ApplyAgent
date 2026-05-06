@@ -138,7 +138,7 @@ def _render_md(top: list[dict], total: int, delta_file: str,
             f"### {i}. [{f.get('fit_score', '?')}/10 · {f.get('fit_verdict', '?')} · "
             f"Tier {f.get('tier', '?')}] {r.get('company', '')} — {r.get('title', '')}",
             "",
-            f"**Lead-with resume:** {variants_str}  ·  **OSFI hook:** {f.get('osfi_hook', 'None')}  ",
+            f"**Lead-with resume:** {variants_str}  ",
             f"**Sector:** {r.get('sector', '')}  ·  **Location:** {r.get('location', '')}  ·  "
             f"**Source:** {r.get('source', '')}",
             "",
@@ -203,7 +203,6 @@ def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
             "fit_score_numeric": num_score,
             "fit_verdict": verdict,
             "fit_notes": f.get("summary", ""),
-            "osfi_hook": f.get("osfi_hook", ""),
             "resume_variants": variants,
             "primary_variant": variants[0] if variants else "",
             "status": "Found" if verdict == "apply_now" else "Watch",

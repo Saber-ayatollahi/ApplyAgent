@@ -5,7 +5,7 @@ Five Claude-powered Python agents that run the Saber Ayatollahi job-search pipel
 | Script | Purpose | Run cadence |
 |---|---|---|
 | `jd_scraper.py` | Hit 155 target careers pages (20+ validated Workday APIs + Greenhouse + LinkedIn guest search) → pull new postings → dedupe against tracker | Weekly (Fridays) |
-| `fit_scorer.py` | Rule-triage + LLM fit-score (1-10, verdict, skill gaps, OSFI hook) each surviving candidate. Fetches JDs, caches to disk | After each scan |
+| `fit_scorer.py` | Rule-triage + LLM fit-score (1-10, verdict, skill gaps, resume variants) each surviving candidate. Fetches JDs, caches to disk | After each scan |
 | `auto_promote.py` | Promote scored roles ≥ threshold to tracker (backup-safe); auto-expire entries whose URLs disappeared | After each fit_scorer run |
 | `jd_tailor.py` | Single-role: JD + Master Repo + cover templates → tailored resume + cover letter + interview brief | On-demand, before any application |
 | `weekly_report.py` | Read tracker + CRM → weekly KPI deltas, stale apps, followups due, LinkedIn posting plan | Friday 18:00 |

@@ -143,7 +143,7 @@ def check_tracker_schema(o: Outcome):
         else:
             o.warn_(f"tracker total_roles={meta_total} ≠ jobs[] length={actual} (non-fatal)")
         required_fields = ["id", "company", "title", "status", "tier", "fit_score",
-                           "osfi_hook", "contact", "outreach_log", "followup_schedule"]
+                           "contact", "outreach_log", "followup_schedule"]
         missing = []
         for j in tr.get("jobs", []):
             for f in required_fields:
