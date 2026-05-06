@@ -263,7 +263,7 @@ def render_sidebar():
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            if st.button("💾 Save & validate", use_container_width=True, disabled=not new_key.strip()):
+            if st.button("💾 Save & validate", width='stretch', disabled=not new_key.strip()):
                 save_key(new_key)
                 os.environ[ENV_VAR] = new_key.strip()
                 res = validate(new_key)
@@ -274,12 +274,12 @@ def render_sidebar():
                     st.error(f"Saved but invalid: {res.message}")
                 st.rerun()
         with c2:
-            if st.button("🔄 Re-validate", use_container_width=True, disabled=not key):
+            if st.button("🔄 Re-validate", width='stretch', disabled=not key):
                 res = validate(key or "")
                 st.session_state["_anth_validation"] = res
                 st.rerun()
         with c3:
-            if st.button("🗑 Clear", use_container_width=True, disabled=not key):
+            if st.button("🗑 Clear", width='stretch', disabled=not key):
                 clear_key()
                 st.session_state.pop("_anth_validation", None)
                 st.warning("Key cleared.")

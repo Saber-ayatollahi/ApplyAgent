@@ -496,7 +496,7 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
                     "score": r.get("score", ""),
                     "cache": "💾" if r.get("from_cache") else "🌐",
                 })
-            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True,
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch',
                          height=min(40 + 36 * len(rows), 300))
 
         # Per-model cost breakdown
@@ -513,7 +513,7 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
                         "output_tokens": m.get("out_tokens", 0),
                         "est_cost_usd": round(m.get("cost_usd", 0), 4),
                     })
-                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+                st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch')
                 st.caption(
                     f"Cache reads: {cost.get('cache_read_tokens', 0):,} tokens · "
                     f"Cache writes: {cost.get('cache_create_tokens', 0):,} tokens. "
@@ -649,7 +649,7 @@ with st.sidebar.expander("🪵 Backend log", expanded=False):
         except Exception as _e:
             st.caption(f"(read error: {_e})")
         if st.button("🔄 Refresh log", key="sidebar_log_refresh",
-                     use_container_width=True):
+                     width='stretch'):
             st.rerun()
 
 # -------- Recent background runs (agent subprocesses) --------
@@ -667,7 +667,7 @@ with st.sidebar.expander("📜 Recent background runs", expanded=False):
             )
         if st.button("Open Admin → Runs for details",
                      key="sidebar_go_admin_runs",
-                     use_container_width=True):
+                     width='stretch'):
             # Streamlit doesn't have programmatic page switching for radios;
             # nudge the user.
             st.info("Pick ⚙️ Admin from the navigator above.")
@@ -857,7 +857,7 @@ if page == "🏠 Dashboard":
                     "fit": j.get("fit_score_numeric", 0),
                     "url": j.get("url", ""),
                 } for j in tier1_no_draft[:20]])
-                st.dataframe(tdf, hide_index=True, use_container_width=True,
+                st.dataframe(tdf, hide_index=True, width='stretch',
                               column_config={"url": st.column_config.LinkColumn("open")})
                 _td_key = api_key.is_key_valid()
                 td_pick = st.selectbox("Tailor which role?",
@@ -865,7 +865,7 @@ if page == "🏠 Dashboard":
                                         key="attention_tailor_pick")
                 if st.button("✏️ Run tailor now", key="attention_tailor_btn",
                               disabled=not _td_key,
-                              use_container_width=False):
+                              width='content'):
                     cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
                            "--job-id", td_pick]
                     rec = scan_runner.start_run(f"tailor_{td_pick}", cmd)
@@ -900,7 +900,7 @@ if page == "🏠 Dashboard":
                                 )
                         cols[0].markdown("\n".join(contact_lines))
                         cols[1].link_button("🔗 Open JD", j.get("url", ""),
-                                             use_container_width=True)
+                                             width='stretch')
 
         # Other buckets — combined, lower priority
         other_n = len(high_score_thin_jd) + len(scoring_errors) + len(missing_variant)
@@ -916,7 +916,7 @@ if page == "🏠 Dashboard":
                         "fit": j.get("fit_score_numeric", 0),
                         "url": j.get("url", ""),
                     } for j in high_score_thin_jd[:10]])
-                    st.dataframe(thin_df, hide_index=True, use_container_width=True,
+                    st.dataframe(thin_df, hide_index=True, width='stretch',
                                   column_config={"url": st.column_config.LinkColumn()})
                 if scoring_errors:
                     st.markdown(f"**🔧 Scoring errors** ({len(scoring_errors)}) — "
@@ -927,7 +927,7 @@ if page == "🏠 Dashboard":
                         "title": j.get("title", "")[:70],
                         "url": j.get("url", ""),
                     } for j in scoring_errors[:10]])
-                    st.dataframe(err_df, hide_index=True, use_container_width=True,
+                    st.dataframe(err_df, hide_index=True, width='stretch',
                                   column_config={"url": st.column_config.LinkColumn()})
                 if missing_variant:
                     st.markdown(f"**📌 Missing variant** ({len(missing_variant)}) — "
@@ -938,7 +938,7 @@ if page == "🏠 Dashboard":
                         "title": j.get("title", "")[:70],
                         "tier": j.get("tier"),
                     } for j in missing_variant[:10]])
-                    st.dataframe(mv_df, hide_index=True, use_container_width=True)
+                    st.dataframe(mv_df, hide_index=True, width='stretch')
 
         st.markdown("---")
 
@@ -1049,7 +1049,7 @@ if page == "🏠 Dashboard":
                         "has_sf": "✓" if pc.get("has_successfactors_config") else "",
                     })
                 st.dataframe(pd.DataFrame(rows), hide_index=True,
-                              use_container_width=True, height=min(400, 40 + 30 * len(rows)))
+                              width='stretch', height=min(400, 40 + 30 * len(rows)))
         st.markdown("---")
 
     # ---------- Urgent widget — roles posted in the last 48h ----------
@@ -1103,7 +1103,7 @@ if page == "🏠 Dashboard":
                     })
             st.dataframe(
                 pd.DataFrame(urgent_table),
-                hide_index=True, use_container_width=True,
+                hide_index=True, width='stretch',
                 column_config={"url": st.column_config.LinkColumn("open")},
             )
         st.markdown("---")
@@ -1196,10 +1196,10 @@ if page == "🏠 Dashboard":
                                 st.markdown("**Gaps:** " + "; ".join(gaps))
                     with cols[1]:
                         st.link_button("🔗 Open JD", r.get("link", ""),
-                                       use_container_width=True)
+                                       width='stretch')
                         # Quick-add to tracker button
                         if st.button("➕ Add to tracker", key=f"brief_add_{i}",
-                                     use_container_width=True):
+                                     width='stretch'):
                             # Generate a tracker id
                             from uuid import uuid4
                             new_id = f"brief-{datetime.now().strftime('%Y%m%d')}-{str(uuid4())[:6]}"
@@ -1371,7 +1371,7 @@ if page == "🏠 Dashboard":
                         "snippet": r["snippet"][:120],
                     })
                 st.dataframe(pd.DataFrame(rec_rows), hide_index=True,
-                              use_container_width=True)
+                              width='stretch')
                 st.caption("Tip: rows with a `tracker_match` are likely status-change "
                            "signals — open Kanban and move the role accordingly.")
         st.markdown("---")
@@ -1435,7 +1435,7 @@ if page == "🏠 Dashboard":
                     })
                 tab.dataframe(
                     pd.DataFrame(rows),
-                    hide_index=True, use_container_width=True,
+                    hide_index=True, width='stretch',
                     column_config={"url": st.column_config.LinkColumn("open")},
                 )
                 # Action row — log follow-up on N selected
@@ -1446,7 +1446,7 @@ if page == "🏠 Dashboard":
                                       placeholder="Emailed recruiter re: status")
                 ca, cb = tab.columns(2)
                 if ca.button(f"✅ Log follow-up & advance cadence",
-                             key=f"fu_log_{mode}", use_container_width=True):
+                             key=f"fu_log_{mode}", width='stretch'):
                     for j in tr["jobs"]:
                         if j["id"] == pick:
                             j.setdefault("outreach_log", []).append({
@@ -1460,7 +1460,7 @@ if page == "🏠 Dashboard":
                     st.success(f"Logged follow-up on {pick} and advanced next_due.")
                     st.rerun()
                 if cb.button(f"⏭ Skip this rung (push +7d)",
-                             key=f"fu_skip_{mode}", use_container_width=True):
+                             key=f"fu_skip_{mode}", width='stretch'):
                     for j in tr["jobs"]:
                         if j["id"] == pick:
                             sched = j.setdefault("followup_schedule", {"cadence_days": [3, 10, 21]})
@@ -1489,7 +1489,7 @@ if page == "🏠 Dashboard":
         )
     qa1, qa2, qa3 = st.columns(3)
     with qa1:
-        if st.button("🎯 Run full pipeline", use_container_width=True, type="primary",
+        if st.button("🎯 Run full pipeline", width='stretch', type="primary",
                      disabled=not key_ok,
                      help="Scrape → Score → Promote preview (one-shot agent)"):
             rec = scan_runner.start_run(
@@ -1501,7 +1501,7 @@ if page == "🏠 Dashboard":
             st.success(f"Pipeline started (`{rec.run_id}`). Monitor in 🎯 Pipeline.")
             st.rerun()
     with qa2:
-        if st.button("🏛️ Fast pipeline (ATS-only)", use_container_width=True,
+        if st.button("🏛️ Fast pipeline (ATS-only)", width='stretch',
                      disabled=not key_ok,
                      help="Direct Workday/Greenhouse scan + score + promote preview (~10 min)"):
             rec = scan_runner.start_run(
@@ -1512,7 +1512,7 @@ if page == "🏠 Dashboard":
             st.success(f"Started `{rec.run_id}`")
             st.rerun()
     with qa3:
-        if st.button("📊 Weekly report", use_container_width=True):
+        if st.button("📊 Weekly report", width='stretch'):
             rec = scan_runner.start_run(
                 "weekly_report",
                 [sys.executable, str(ROOT / "automation" / "weekly_report.py")],
@@ -1533,7 +1533,7 @@ if page == "🏠 Dashboard":
     with d1:
         st.bar_chart(fd.set_index("status"))
     with d2:
-        st.dataframe(fd, hide_index=True, use_container_width=True)
+        st.dataframe(fd, hide_index=True, width='stretch')
 
     st.markdown("---")
 
@@ -1543,7 +1543,7 @@ if page == "🏠 Dashboard":
     apply_rows = jobs_df[jobs_df["id"].isin(apply_ids)] if "id" in jobs_df.columns else pd.DataFrame()
     if not apply_rows.empty:
         cols = [c for c in ["id", "company", "title", "tier", "fit_score", "url"] if c in apply_rows.columns]
-        st.dataframe(apply_rows[cols], hide_index=True, use_container_width=True,
+        st.dataframe(apply_rows[cols], hide_index=True, width='stretch',
                      column_config={"url": st.column_config.LinkColumn()})
     else:
         st.caption("No roles flagged for this week.")
@@ -1758,7 +1758,7 @@ elif page == "🎯 Pipeline":
 
         run_col, brief_col, spacer = st.columns([1, 1, 3])
         with run_col:
-            if st.button("▶️ Launch pipeline", type="primary", use_container_width=True,
+            if st.button("▶️ Launch pipeline", type="primary", width='stretch',
                          disabled=not can_run):
                 rec = scan_runner.start_run("pipeline", cmd)
                 st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
@@ -1767,7 +1767,7 @@ elif page == "🎯 Pipeline":
             # One-click: scrape + delta + morning brief.
             # Much cheaper than the full pipeline — scores only what's new.
             brief_key_ok = api_key.is_key_valid()
-            if st.button("🌅 Nightly refresh", use_container_width=True,
+            if st.button("🌅 Nightly refresh", width='stretch',
                          disabled=(not brief_key_ok) or bool(pipeline_running),
                          help="Scrape + find new roles since last scan + score only "
                               "those + emit top-3 brief. Cheap (~$0.03) and fast (~25 min)."):
@@ -1946,7 +1946,7 @@ elif page == "🎯 Pipeline":
                         show_zero = st.checkbox("Show only 0-result companies", value=False,
                                                  key="scrape_zero_only")
                         view = pc_df[pc_df["total"] == 0] if show_zero else pc_df
-                        st.dataframe(view, hide_index=True, use_container_width=True, height=400)
+                        st.dataframe(view, hide_index=True, width='stretch', height=400)
 
                 # Sample listings
                 st.markdown("**Recent candidates** (first 50)")
@@ -1960,7 +1960,7 @@ elif page == "🎯 Pipeline":
                         "location": r.get("location"),
                         "url": r.get("link"),
                     })
-                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True,
+                st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch',
                              column_config={"url": st.column_config.LinkColumn()})
             except Exception as e:
                 st.warning(f"Could not read {scan_f.name}: {e}")
@@ -2123,7 +2123,7 @@ elif page == "🎯 Pipeline":
                             view["title"].str.lower().str.contains(sl, na=False)]
 
             st.caption(f"Showing {len(view)} of {len(df)} scored candidates")
-            st.dataframe(view, hide_index=True, use_container_width=True, height=500,
+            st.dataframe(view, hide_index=True, width='stretch', height=500,
                          column_config={"url": st.column_config.LinkColumn("open")})
 
             # Inspect one
@@ -2143,7 +2143,7 @@ elif page == "🎯 Pipeline":
                         if row["gaps"]:
                             st.markdown(f"**Gaps:** {row['gaps']}")
                     with cR:
-                        st.link_button("🔗 Open JD", row["url"], use_container_width=True)
+                        st.link_button("🔗 Open JD", row["url"], width='stretch')
 
     # ================== TAB: Promote ==================
     with tabs[5]:
@@ -2174,7 +2174,7 @@ elif page == "🎯 Pipeline":
 
             preview_col, commit_col = st.columns(2)
             with preview_col:
-                if st.button("👀 Preview (dry-run)", use_container_width=True, key="prom_preview"):
+                if st.button("👀 Preview (dry-run)", width='stretch', key="prom_preview"):
                     cmd4 = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
                             "--scan", which, "--min-score", str(min_s)]
                     if inc_watch:
@@ -2187,7 +2187,7 @@ elif page == "🎯 Pipeline":
                 _at_ok = (not auto_tailor) or api_key.is_key_valid()
                 if not _at_ok:
                     st.caption("🔑 API key required when auto-tailor is on.")
-                if st.button("🚀 Commit to tracker", type="primary", use_container_width=True,
+                if st.button("🚀 Commit to tracker", type="primary", width='stretch',
                              key="prom_commit", disabled=not _at_ok):
                     cmd4 = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
                             "--scan", which, "--min-score", str(min_s), "--commit"]
@@ -2228,7 +2228,7 @@ elif page == "🎯 Pipeline":
                     "score": f"{score.get('state', '-')} ({score.get('scored_count', '?')})",
                     "promote": promote.get("state", "-"),
                 })
-            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True,
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch',
                          height=300)
 
             pick_id = st.selectbox("Inspect pipeline", [p["pipeline_id"] for p in pipelines])
@@ -2248,7 +2248,7 @@ elif page == "🎯 Pipeline":
                 "duration": human_elapsed(r.get("started_at"), r.get("finished_at")),
                 "pid": r.get("pid"),
             } for r in runs]
-            st.dataframe(pd.DataFrame(rrows), hide_index=True, use_container_width=True,
+            st.dataframe(pd.DataFrame(rrows), hide_index=True, width='stretch',
                          height=260)
             sel_run = st.selectbox("Tail log", [r["run_id"] for r in runs])
             r = next((r for r in runs if r["run_id"] == sel_run), None)
@@ -2388,7 +2388,7 @@ elif page == "📋 Jobs Kanban":
     st.dataframe(
         view[cols].sort_values(["tier", "fit_score_numeric"], ascending=[True, False])
         if "fit_score_numeric" in cols else view[cols],
-        hide_index=True, use_container_width=True, height=500,
+        hide_index=True, width='stretch', height=500,
         column_config={"url": st.column_config.LinkColumn()},
     )
 
@@ -2547,7 +2547,7 @@ elif page == "🤝 Recruiter CRM":
                     "days_since": days if days is not None else "—",
                     "next_action": (c.get("next_action") or "")[:80],
                 })
-            tab.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+            tab.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch')
             # Draft a message
             pick = tab.selectbox("Contact to draft for", [r["id"] for r in rows],
                                   key=f"dig_pick_{mode}")
@@ -2566,7 +2566,7 @@ elif page == "🤝 Recruiter CRM":
                 tab.text_area("Drafted message (edit before sending)", rendered,
                               height=200, key=f"dig_msg_{mode}")
                 if tab.button(f"📝 Log as sent today",
-                              key=f"dig_log_{mode}", use_container_width=True):
+                              key=f"dig_log_{mode}", width='stretch'):
                     # Update the contact's last_touchpoint + append to structured log
                     for r in crm.get("recruiters", []):
                         if r["id"] == pick:
@@ -2601,7 +2601,7 @@ elif page == "🤝 Recruiter CRM":
         if not rdf.empty:
             cols = [c for c in ["id", "firm", "firm_type", "location", "priority",
                                 "status", "last_touchpoint", "next_action"] if c in rdf.columns]
-            st.dataframe(rdf[cols], hide_index=True, use_container_width=True)
+            st.dataframe(rdf[cols], hide_index=True, width='stretch')
             sel = st.selectbox("Pick firm id", rdf["id"].tolist())
             r = next((x for x in recs if x["id"] == sel), None)
             if r:
@@ -2630,7 +2630,7 @@ elif page == "🤝 Recruiter CRM":
 
     with tab2:
         alumni = crm.get("alumni_warm_intros", [])
-        st.dataframe(pd.DataFrame(alumni), hide_index=True, use_container_width=True)
+        st.dataframe(pd.DataFrame(alumni), hide_index=True, width='stretch')
 
     with tab3:
         templates = crm.get("outreach_message_templates", {})
@@ -2720,7 +2720,7 @@ elif page == "⚙️ Admin":
             "schtasks /delete /tn ApplyAgent_NightlyRefresh /f",
             language="powershell",
         )
-    if st.button("🌅 Run nightly refresh now (background)", use_container_width=False):
+    if st.button("🌅 Run nightly refresh now (background)", width='content'):
         ps = ROOT / "automation" / "nightly_refresh.ps1"
         rec = scan_runner.start_run(
             "nightly_refresh",
@@ -2740,7 +2740,7 @@ elif page == "⚙️ Admin":
             "size_kb": round(p.stat().st_size / 1024, 1),
             "modified": datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d %H:%M"),
         } for p in out_files]
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=320)
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch', height=320)
 
     st.markdown("---")
     st.subheader("Run a single agent")

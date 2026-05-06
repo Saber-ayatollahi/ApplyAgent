@@ -68,7 +68,7 @@ def render_sidebar():
         )
         c1, c2, c3 = st.columns(3)
         with c1:
-            if st.button("💾 Save", use_container_width=True,
+            if st.button("💾 Save", width='stretch',
                          disabled=not (new_email.strip() and new_pw.strip()),
                          key="_gmail_save"):
                 # Strip Gmail's habit of formatting with spaces
@@ -97,14 +97,14 @@ def render_sidebar():
                     st.error(f"Saved to {gr.CONFIG_PATH.name}, but: {res.message}")
                 st.rerun()
         with c2:
-            if st.button("🔄 Test", use_container_width=True,
+            if st.button("🔄 Test", width='stretch',
                          disabled=not (email_addr and pw),
                          key="_gmail_test"):
                 res = gr.validate(email_addr, pw)
                 st.session_state["_gmail_check"] = res
                 st.rerun()
         with c3:
-            if st.button("🗑 Clear", use_container_width=True,
+            if st.button("🗑 Clear", width='stretch',
                          disabled=not email_addr,
                          key="_gmail_clear"):
                 gr.clear_credentials()
@@ -125,7 +125,7 @@ def render_sidebar():
         st.markdown("---")
         if st.button("🩺 Run full diagnostic",
                      disabled=not (email_addr and pw),
-                     use_container_width=True,
+                     width='stretch',
                      key="_gmail_diagnose",
                      help="Step-by-step probe of config → DNS → TCP → TLS → "
                           "LOGIN → SELECT → SEARCH → FETCH. Takes ~5 seconds."):
