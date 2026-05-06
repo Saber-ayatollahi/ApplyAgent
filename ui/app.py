@@ -22,6 +22,11 @@ import scan_runner  # noqa: E402
 import api_key  # noqa: E402
 import gmail_ui  # noqa: E402
 
+# The lifetime cost ledger lives in automation/ so it can be imported by
+# scorer/tailor without those having a sibling dependency on ui/.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
+import cost_ledger  # noqa: E402
+
 # Ensure stored key is in env before anything launches a subprocess
 api_key.hydrate_env()
 
@@ -422,14 +427,58 @@ def load_morning_brief() -> dict | None:
 
 
 def load_scorer_progress() -> dict | None:
-    """Read outputs/fit_scorer_progress.json if present. Returns None if missing."""
+    """Read outputs/fit_scorer_progress.json if present. Returns None if missing.
+
+    A progress file with state='running' but an `updated_at` older than
+    ~5 minutes is treated as STALE — that usually means the scorer process
+    was killed (terminal closed, crash, OOM) without calling progress_end().
+    Stale files get rewritten to state='stale' so the banner clears and
+    future dashboards don't keep showing a phantom 'Scoring in progress'.
+    """
     p = OUT_DIR / "fit_scorer_progress.json"
     if not p.exists():
         return None
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        data = json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         return None
+
+    # Freshness guard. Only matters when state is "running" — finished/failed
+    # states are permanent records.
+    if data.get("state") == "running":
+        updated = data.get("updated_at") or data.get("started_at")
+        stale = False
+        if not updated:
+            stale = True
+        else:
+            try:
+                # Stored as ISO with trailing 'Z'; strip it for fromisoformat.
+                u = updated.rstrip("Z")
+                dt = datetime.fromisoformat(u)
+                # updated_at is UTC; use utcnow for the comparison.
+                if (datetime.utcnow() - dt).total_seconds() > 300:
+                    stale = True
+            except Exception:
+                stale = True
+
+        if stale:
+            # Also verify the producer PID (if we have one) isn't alive.
+            # The progress file doesn't carry a PID directly, but scan_runner
+            # tracks active runs. If there are NO running fit_scorer runs,
+            # the progress file is definitively orphaned.
+            try:
+                _active = [r for r in scan_runner.active_runs()
+                            if "fit_scorer" in (r.get("label") or "")]
+            except Exception:
+                _active = []
+            if not _active:
+                data["state"] = "stale"
+                data["finished_at"] = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+                try:
+                    p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                except Exception:
+                    pass
+    return data
 
 
 def _fmt_eta(secs: float | None) -> str:
@@ -444,12 +493,17 @@ def _fmt_eta(secs: float | None) -> str:
 
 
 def render_scorer_progress(container=None, title: str = "🤖 Scoring in progress"):
-    """Render a live progress bar + ETA + recent candidates table for the fit scorer."""
+    """Render a live progress bar + ETA + recent candidates table for the fit scorer.
+
+    Only renders when state=='running' (live). Finished/failed/stale progress
+    files are skipped so the dashboard doesn't falsely claim scoring is in
+    progress when the scraper (or nothing at all) is running.
+    """
     prog = load_scorer_progress()
     if not prog:
         return False
     state = prog.get("state", "idle")
-    if state == "idle":
+    if state != "running":
         return False
     target = container or st
     cur = prog.get("current", 0)
@@ -582,12 +636,38 @@ PAGES = [
     "🤝 Recruiter CRM",
     "📅 Weekly Plan",
     "📝 Content & Memory",
+    "📜 Scan History",
     "⚙️ Admin",
 ]
 
 # API key manager — always on top of sidebar
 api_key.render_sidebar()
 gmail_ui.render_sidebar()
+
+# -------- Lifetime LLM spend (never-reset ledger) --------
+# Reads data/lifetime_cost.json; written by fit_scorer._cost_tick (and any
+# future scorer/tailor calls that import cost_ledger). Always visible so the
+# user has an anchor on cumulative spend across sessions + machines.
+try:
+    _ledger = cost_ledger.load()
+    _lt_tot = _ledger.get("totals", {})
+    _lt_cost = _lt_tot.get("estimated_cost_usd", 0.0) or 0.0
+    _lt_calls = _lt_tot.get("llm_calls", 0) or 0
+    _lt_in = _lt_tot.get("input_tokens", 0) or 0
+    _lt_out = _lt_tot.get("output_tokens", 0) or 0
+    _lt_tokens = _lt_in + _lt_out
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 💰 Lifetime LLM spend")
+    _lsc1, _lsc2 = st.sidebar.columns(2)
+    _lsc1.metric("Total", f"${_lt_cost:.2f}")
+    _lsc2.metric("Calls", f"{_lt_calls:,}")
+    st.sidebar.caption(
+        f"{_lt_tokens:,} tokens ({_lt_in:,} in · {_lt_out:,} out) · "
+        f"never resets · see ⚙️ Admin → Cost ledger for details"
+    )
+except Exception as _e:
+    st.sidebar.caption(f"Ledger unavailable: {_e}")
+
 st.sidebar.markdown("---")
 
 page = st.sidebar.radio("Navigate", PAGES)
@@ -2691,12 +2771,210 @@ elif page == "📝 Content & Memory":
 
 
 # ============================================================================
+# 📜 SCAN HISTORY — cumulative record of every scan + pipeline run
+# ============================================================================
+elif page == "📜 Scan History":
+    st.title("📜 Scan History")
+    st.caption(
+        "Cumulative record of every scan the pipeline has produced. Scrape "
+        "outputs (`scan_*.json`), scored outputs (`scan_*_scored.json`), and "
+        "pipeline runs (`pipeline_*.json`) are all logged here forever."
+    )
+
+    # -------- Pipeline runs (from PIPELINE_DIR/*.json) --------
+    st.markdown("### Pipeline runs")
+    pipelines = list_pipelines(limit=200)
+    if not pipelines:
+        st.info("No pipeline runs yet. Launch one from the 🎯 Pipeline page.")
+    else:
+        pipe_rows = []
+        for p in pipelines:
+            stages = p.get("stages") or {}
+            scrape_s = stages.get("scrape") or {}
+            score_s = stages.get("score") or {}
+            verdicts = (score_s.get("verdicts") or {})
+            pipe_rows.append({
+                "pipeline_id": p.get("pipeline_id", "?"),
+                "started": p.get("started_at", ""),
+                "finished": p.get("finished_at", ""),
+                "state": p.get("state", "?"),
+                "mode": (p.get("args") or {}).get("scrape_mode", "?"),
+                "candidates": scrape_s.get("candidate_count", "—"),
+                "scored": score_s.get("scored_count", "—"),
+                "apply_now": verdicts.get("apply_now", 0),
+                "tailor": verdicts.get("tailor_and_apply", 0),
+                "watch": verdicts.get("watch", 0),
+                "skip": verdicts.get("skip", 0),
+                "scan_file": scrape_s.get("scan_file", ""),
+            })
+        st.dataframe(pd.DataFrame(pipe_rows), hide_index=True, width='stretch',
+                     height=min(40 + 36 * len(pipe_rows), 400))
+
+    st.markdown("---")
+
+    # -------- Scan files (raw scraper outputs) --------
+    st.markdown("### Raw scan files")
+    scan_files = sorted(
+        [f for f in OUT_DIR.glob("scan_*.json") if "_scored" not in f.name],
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    if not scan_files:
+        st.info("No scan files. Run the scraper.")
+    else:
+        scan_rows = []
+        for f in scan_files:
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                count = len(data.get("results", []))
+                scan_date = data.get("scan_date", "")
+                sectors = data.get("sector_counts") or {}
+            except Exception:
+                count = "?"
+                scan_date = ""
+                sectors = {}
+            scan_rows.append({
+                "file": f.name,
+                "scan_date": scan_date,
+                "candidates": count,
+                "sectors": len(sectors),
+                "mtime": datetime.fromtimestamp(f.stat().st_mtime).isoformat(timespec="seconds"),
+                "size_kb": round(f.stat().st_size / 1024, 1),
+            })
+        st.dataframe(pd.DataFrame(scan_rows), hide_index=True, width='stretch',
+                     height=min(40 + 36 * len(scan_rows), 300))
+
+        # Inspector
+        pick = st.selectbox("Inspect scan", [r["file"] for r in scan_rows],
+                            key="scan_hist_pick")
+        if pick:
+            try:
+                d = json.loads((OUT_DIR / pick).read_text(encoding="utf-8"))
+                cols = st.columns(4)
+                cols[0].metric("Candidates", len(d.get("results", [])))
+                cols[1].metric("Scan date", d.get("scan_date", "—"))
+                diag = d.get("diagnostics") or {}
+                cols[2].metric("Zero-result cos", len(diag.get("zero_result_companies", [])))
+                cols[3].metric("LI throttled", "yes" if diag.get("linkedin_throttled") else "no")
+                # Sector distribution
+                sc = d.get("sector_counts") or {}
+                if sc:
+                    st.markdown("**By sector**")
+                    st.dataframe(
+                        pd.DataFrame(
+                            [{"sector": k, "count": v} for k, v in sorted(sc.items(), key=lambda kv: -kv[1])]
+                        ),
+                        hide_index=True, width='stretch',
+                    )
+                # Paired scored file if it exists
+                scored = OUT_DIR / (Path(pick).stem + "_scored.json")
+                if scored.exists():
+                    st.success(f"📊 Scored counterpart: `{scored.name}` "
+                               f"({round(scored.stat().st_size / 1024, 1)} KB)")
+            except Exception as e:
+                st.error(f"Could not read {pick}: {e}")
+
+    st.markdown("---")
+
+    # -------- Scored files --------
+    st.markdown("### Scored scans")
+    scored_files = sorted(OUT_DIR.glob("*_scored.json"),
+                          key=lambda p: p.stat().st_mtime, reverse=True)
+    if not scored_files:
+        st.info("No scored files yet.")
+    else:
+        scored_rows = []
+        for f in scored_files:
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                results = data.get("results") or []
+                verdicts: dict = {}
+                for r in results:
+                    v = (r.get("fit") or {}).get("fit_verdict", "?")
+                    verdicts[v] = verdicts.get(v, 0) + 1
+            except Exception:
+                results = []
+                verdicts = {}
+            scored_rows.append({
+                "file": f.name,
+                "scored": len(results),
+                "apply_now": verdicts.get("apply_now", 0),
+                "tailor": verdicts.get("tailor_and_apply", 0),
+                "watch": verdicts.get("watch", 0),
+                "skip": verdicts.get("skip", 0),
+                "error": verdicts.get("error", 0),
+                "mtime": datetime.fromtimestamp(f.stat().st_mtime).isoformat(timespec="seconds"),
+            })
+        st.dataframe(pd.DataFrame(scored_rows), hide_index=True, width='stretch',
+                     height=min(40 + 36 * len(scored_rows), 300))
+
+
+# ============================================================================
 # ⚙️ ADMIN  — direct access to individual agents and outputs
 # ============================================================================
 elif page == "⚙️ Admin":
     st.title("⚙️ Admin")
     st.caption("The 🎯 Pipeline page is the main entry point. This page is for running individual "
                "agents directly, or browsing raw outputs.")
+
+    # ---------- Cost ledger ----------
+    st.subheader("💰 Cost ledger (lifetime)")
+    st.caption(
+        "Every LLM call from fit_scorer (and any future scorer/tailor that "
+        "imports `cost_ledger`) is recorded here. Cumulative, never resets "
+        "across sessions or machines (per this machine's `data/` folder)."
+    )
+    try:
+        _ledger = cost_ledger.load()
+        _tot = _ledger.get("totals", {}) or {}
+        _pm = _ledger.get("per_model", {}) or {}
+        _daily = _ledger.get("daily", {}) or {}
+
+        cL1, cL2, cL3, cL4 = st.columns(4)
+        cL1.metric("Total spend", f"${_tot.get('estimated_cost_usd', 0):.4f}")
+        cL2.metric("LLM calls", f"{_tot.get('llm_calls', 0):,}")
+        cL3.metric("Cache hits", f"{_tot.get('cache_hits', 0):,}")
+        _in = _tot.get("input_tokens", 0) or 0
+        _out = _tot.get("output_tokens", 0) or 0
+        cL4.metric("Tokens", f"{(_in + _out):,}",
+                   f"in {_in:,} · out {_out:,}")
+
+        if _pm:
+            st.markdown("**Per-model breakdown**")
+            rows = []
+            for model, m in sorted(_pm.items(), key=lambda kv: -kv[1].get("cost_usd", 0)):
+                rows.append({
+                    "model": model,
+                    "calls": m.get("calls", 0),
+                    "in_tokens": m.get("in_tokens", 0),
+                    "out_tokens": m.get("out_tokens", 0),
+                    "cost_usd": round(m.get("cost_usd", 0), 4),
+                    "first_used": m.get("first_used", ""),
+                    "last_used": m.get("last_used", ""),
+                })
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch')
+
+        if _daily:
+            st.markdown("**Last 30 days**")
+            # Sort by date desc, show top 30
+            recent = sorted(_daily.items(), key=lambda kv: kv[0], reverse=True)[:30]
+            drows = []
+            for d, v in recent:
+                drows.append({
+                    "date": d,
+                    "calls": v.get("calls", 0),
+                    "in_tokens": v.get("in_tokens", 0),
+                    "out_tokens": v.get("out_tokens", 0),
+                    "cost_usd": round(v.get("cost_usd", 0), 4),
+                })
+            st.dataframe(pd.DataFrame(drows), hide_index=True, width='stretch',
+                         height=min(40 + 36 * len(drows), 300))
+
+        st.caption(f"Ledger file: `{cost_ledger.LEDGER_PATH}` · "
+                   f"created {_ledger.get('created_at', '—')} · "
+                   f"updated {_ledger.get('updated_at', '—')}")
+    except Exception as _le:
+        st.error(f"Ledger read failed: {_le}")
+    st.markdown("---")
 
     # ---------- Nightly schedule ----------
     st.subheader("🌙 Nightly schedule")

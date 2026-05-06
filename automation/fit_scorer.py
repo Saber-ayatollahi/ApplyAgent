@@ -64,6 +64,16 @@ try:
 except ImportError:
     anthropic = None  # type: ignore
 
+# Lifetime cost ledger (never-reset, cumulative across sessions).
+try:
+    from cost_ledger import record as _ledger_record  # type: ignore
+except ImportError:
+    # Same-package relative import fallback
+    try:
+        from .cost_ledger import record as _ledger_record  # type: ignore
+    except Exception:
+        _ledger_record = None  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 JD_CACHE = OUT_DIR / "jd_cache"
@@ -185,6 +195,7 @@ _cost_state = {
 
 def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0,
                cache_create: int = 0, cache_read: int = 0, cache_hit: bool = False):
+    cost = 0.0
     with _progress_lock:
         if cache_hit:
             _cost_state["cache_hits"] += 1
@@ -205,6 +216,23 @@ def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0
         # Mirror to progress state so the UI sees it
         _progress_state["cost"] = dict(_cost_state)
         _write_progress()
+
+    # Append to the lifetime ledger outside the progress lock so a slow
+    # disk write on the ledger file never blocks the scorer's progress
+    # writes. The ledger has its own internal lock for concurrent ticks.
+    if _ledger_record is not None:
+        try:
+            _ledger_record(
+                model=model or "?",
+                in_tokens=in_tokens,
+                out_tokens=out_tokens,
+                cost_usd=cost,
+                cache_create=cache_create,
+                cache_read=cache_read,
+                cache_hit=cache_hit,
+            )
+        except Exception:
+            pass
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
