@@ -996,18 +996,116 @@ def dedupe(jobs: list[dict]) -> tuple[list[dict], dict]:
     return out, stats
 
 
+CHECKPOINT_PATH = OUT_DIR / "scan_checkpoint.json"
+PAUSE_FLAG_PATH = OUT_DIR / "scan_pause.flag"
+
+
+def _targets_signature(companies: list[dict]) -> str:
+    """Stable hash of the target list so we detect "the user edited TARGETS
+    after pausing" and refuse to resume from a stale checkpoint."""
+    import hashlib
+    names = sorted([c.get("name", "") for c in companies])
+    return hashlib.sha1("|".join(names).encode("utf-8")).hexdigest()[:12]
+
+
+def _load_checkpoint() -> dict | None:
+    if not CHECKPOINT_PATH.exists():
+        return None
+    try:
+        return json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _save_checkpoint(state: dict):
+    """Atomic write so a kill mid-checkpoint doesn't corrupt the file."""
+    import os, tempfile
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(OUT_DIR), prefix=".scan_checkpoint.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2)
+        os.replace(tmp, CHECKPOINT_PATH)
+    except Exception:
+        try: os.unlink(tmp)
+        except OSError: pass
+        raise
+
+
+def _clear_checkpoint():
+    try: CHECKPOINT_PATH.unlink()
+    except FileNotFoundError: pass
+
+
+def _pause_requested() -> bool:
+    return PAUSE_FLAG_PATH.exists()
+
+
 def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
-         skip_linkedin: bool = False) -> tuple[list[dict], dict]:
+         skip_linkedin: bool = False, resume: bool = False) -> tuple[list[dict], dict]:
     """Run the scan. Returns (candidates, diagnostics) where diagnostics lists
-    companies that returned 0 candidates (for UI surfacing)."""
+    companies that returned 0 candidates (for UI surfacing).
+
+    Checkpoint + pause semantics:
+      - After each company is processed we write a checkpoint with the list
+        of completed company names and all accumulated results/diagnostics.
+      - If automation/outputs/scan_pause.flag exists, we stop cleanly after
+        the current company, leaving the checkpoint in place. The diagnostics
+        dict carries state='paused' so callers know to defer downstream stages.
+      - resume=True means: load the checkpoint, prime `found`/`per_company`
+        from it, and skip any company already in the completed set. Target
+        list must match (same companies, same order) — we detect divergence
+        via a SHA1 of company names and refuse to resume mismatched runs.
+    """
     # Reset the scan-wide LinkedIn throttle — even if the previous run
     # tripped it, we want to retry this run from clean state.
     _linkedin_throttle_reset()
     companies = list(companies)
-    seen = load_tracker_urls()
+
+    # -------- Resume setup --------
+    sig = _targets_signature(companies)
+    completed: set[str] = set()
     found: list[dict] = []
-    per_company: list[dict] = []  # diagnostics: how many results per company per source
+    per_company: list[dict] = []
+
+    if resume:
+        ck = _load_checkpoint()
+        if ck is None:
+            print("[scan] --resume requested but no checkpoint found. "
+                  "Starting a fresh scan.", file=sys.stderr)
+        elif ck.get("targets_signature") != sig:
+            print(f"[scan] Checkpoint signature mismatch (expected {sig}, got "
+                  f"{ck.get('targets_signature')}). Target list changed since pause. "
+                  "Delete scan_checkpoint.json to start fresh, or revert target "
+                  "edits and retry.", file=sys.stderr)
+            return [], {"error": "checkpoint_signature_mismatch",
+                         "checkpoint_sig": ck.get("targets_signature"),
+                         "current_sig": sig}
+        else:
+            completed = set(ck.get("completed", []))
+            found = ck.get("found", [])
+            per_company = ck.get("per_company", [])
+            print(f"[scan] Resuming from checkpoint: "
+                  f"{len(completed)}/{len(companies)} companies already done, "
+                  f"{len(found)} candidates captured so far.",
+                  file=sys.stderr)
+            # Clear any leftover pause flag; the user's --resume is a positive
+            # intent to continue, not to immediately pause again.
+            try: PAUSE_FLAG_PATH.unlink()
+            except FileNotFoundError: pass
+
+    seen = load_tracker_urls()
+    paused = False
     for i, c in enumerate(companies, 1):
+        # Skip already-completed companies on resume
+        if c["name"] in completed:
+            continue
+        # Check for pause BEFORE starting the company so we don't waste work
+        if _pause_requested():
+            print(f"[scan] Pause flag detected at company {i}/{len(companies)} "
+                  f"({c['name']}). Saving checkpoint and exiting.", file=sys.stderr)
+            paused = True
+            break
         print(f"[scan {i}/{len(companies)}] {c['name']} (sector: {c.get('sector', '—')})", file=sys.stderr)
         before = len(found)
         sources_used = []
@@ -1106,11 +1204,39 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         })
         print(f"  -> {added} new candidate(s) [{', '.join(sources_used) or 'none'}]",
               file=sys.stderr)
+
+        # Checkpoint AFTER finishing this company so a kill at any point
+        # from this moment until the next company starts is safely resumable.
+        completed.add(c["name"])
+        try:
+            _save_checkpoint({
+                "targets_signature": sig,
+                "updated_at": datetime.now().isoformat(timespec="seconds"),
+                "total_companies": len(companies),
+                "completed": sorted(completed),
+                "completed_count": len(completed),
+                "found": found,
+                "per_company": per_company,
+                "options": {
+                    "linkedin_only": linkedin_only,
+                    "workday_only": workday_only,
+                    "skip_linkedin": skip_linkedin,
+                },
+            })
+        except Exception as ck_err:
+            print(f"[scan] WARN: checkpoint save failed ({ck_err}); "
+                  "scan continues but resume won't work if killed now.",
+                  file=sys.stderr)
+
         time.sleep(0.75)
+
     diagnostics = {
         "per_company": per_company,
         "zero_result_companies": [c["name"] for c in per_company if c["total"] == 0],
         "linkedin_throttled": _linkedin_globally_throttled,
+        "paused": paused,
+        "completed_count": len(completed),
+        "total_companies": len(companies),
     }
     return found, diagnostics
 
@@ -1133,6 +1259,10 @@ def main() -> int:
     ap.add_argument("--gmail-days", type=int, default=14,
                     help="How many days of Gmail alerts to harvest (default 14). "
                          "Only used with --gmail.")
+    ap.add_argument("--resume", action="store_true",
+                    help="Resume from the most recent scan_checkpoint.json "
+                         "instead of starting a fresh scan. Skips companies "
+                         "already completed; target list must match.")
     args = ap.parse_args()
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1160,7 +1290,23 @@ def main() -> int:
             return 1
 
     raw, diagnostics = scan(targets, linkedin_only=args.linkedin_only,
-                             workday_only=args.workday_only)
+                             workday_only=args.workday_only,
+                             resume=args.resume)
+
+    # If the user paused mid-scan we stop here. The checkpoint file holds
+    # everything we've captured so far; the scored/promote pipeline should
+    # NOT run on a partial snapshot, so we exit with code 2 (distinct from
+    # "success" 0 and "hard failure" 1) to signal "paused, resumable".
+    if diagnostics.get("paused"):
+        print(
+            f"[scan] PAUSED at "
+            f"{diagnostics.get('completed_count', 0)}/{diagnostics.get('total_companies', '?')}"
+            f" companies. Checkpoint written to {CHECKPOINT_PATH.name}. "
+            "Re-run with --resume to continue; or clear scan_pause.flag first "
+            "if you launched the next run without --resume.",
+            file=sys.stderr,
+        )
+        return 2
 
     # Optional: fold in Gmail-harvested LinkedIn alerts. Dedup below collapses
     # URL collisions with the web scan, so "seen in both" produces one row.
@@ -1282,6 +1428,10 @@ def main() -> int:
     print(f"\n[scan] Wrote {json_path}")
     print(f"[scan] Wrote {md_path}")
     print(f"[scan] {len(results)} new candidates across {len(sector_counts)} sectors.")
+
+    # Clean run finished — clear the checkpoint so a stray --resume on the
+    # next invocation doesn't accidentally skip companies in a new scan.
+    _clear_checkpoint()
     return 0
 
 

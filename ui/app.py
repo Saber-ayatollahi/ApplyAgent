@@ -1639,6 +1639,109 @@ elif page == "🎯 Pipeline":
         "One flow; one click runs the whole chain. Each stage can also be run in isolation."
     )
 
+    # ---------- Pause / resume / checkpoint status ----------
+    # The scraper drops scan_checkpoint.json after each company and watches for
+    # scan_pause.flag. These controls let the user pause a long scrape and
+    # resume it later (e.g., after closing the laptop, a reboot, or moving
+    # to a personal network for Gmail).
+    _ckpt_path = OUT_DIR / "scan_checkpoint.json"
+    _pause_path = OUT_DIR / "scan_pause.flag"
+    _ckpt = None
+    if _ckpt_path.exists():
+        try:
+            _ckpt = json.loads(_ckpt_path.read_text(encoding="utf-8"))
+        except Exception:
+            _ckpt = None
+
+    _pause_requested = _pause_path.exists()
+
+    # Determine if a scraper is currently running
+    try:
+        _scraper_active = any(
+            "jd_scraper" in (r.get("label") or "") or
+            "scrape" in (r.get("label") or "")
+            for r in scan_runner.active_runs()
+        )
+    except Exception:
+        _scraper_active = False
+
+    if _ckpt or _pause_requested or _scraper_active:
+        with st.container(border=True):
+            st.markdown("#### ⏸ Scrape pause / resume")
+            pc = _ckpt or {}
+            done = pc.get("completed_count", 0)
+            tot = pc.get("total_companies", 0) or 1
+            found_so_far = len(pc.get("found", []))
+            cx1, cx2, cx3, cx4 = st.columns(4)
+            cx1.metric("State",
+                       "🔴 running (pause pending)" if (_scraper_active and _pause_requested)
+                       else "🟢 running" if _scraper_active
+                       else "⏸ paused (checkpoint)" if _ckpt
+                       else "⚪ idle")
+            cx2.metric("Companies", f"{done}/{tot}" if tot else "—",
+                        f"{(done/tot*100):.0f}%" if tot else None)
+            cx3.metric("Captured so far", found_so_far)
+            cx4.metric("Checkpoint age",
+                       human_elapsed(pc.get("updated_at")) if pc.get("updated_at") else "—")
+
+            bc1, bc2, bc3 = st.columns(3)
+            with bc1:
+                _can_pause = _scraper_active and not _pause_requested
+                if st.button("⏸ Request pause", disabled=not _can_pause,
+                              width='stretch', key="scrape_pause_btn",
+                              help="Creates scan_pause.flag. The scraper checks "
+                                   "between companies and exits cleanly after "
+                                   "the current one finishes."):
+                    _pause_path.parent.mkdir(parents=True, exist_ok=True)
+                    _pause_path.write_text(datetime.now().isoformat(), encoding="utf-8")
+                    st.success("Pause flag set. Scraper will stop after the "
+                                "company it's currently scanning.")
+                    st.rerun()
+            with bc2:
+                _key_ok_resume = api_key.is_key_valid()
+                _can_resume = bool(_ckpt) and not _scraper_active
+                if st.button("▶ Resume scrape", disabled=not _can_resume,
+                              width='stretch', type="primary",
+                              key="scrape_resume_btn",
+                              help="Launches jd_scraper.py --resume with the "
+                                   "same options as the checkpointed run."):
+                    opts = (pc.get("options") or {})
+                    cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py"),
+                           "--resume", "--expansion"]
+                    if opts.get("linkedin_only"):
+                        cmd.append("--linkedin-only")
+                    if opts.get("workday_only"):
+                        cmd.append("--workday-only")
+                    try:
+                        if _pause_path.exists():
+                            _pause_path.unlink()
+                    except Exception:
+                        pass
+                    rec = scan_runner.start_run("scrape_resume", cmd)
+                    st.success(f"Resumed as `{rec.run_id}`. "
+                               "Watch progress on Admin → Runs.")
+                    st.rerun()
+            with bc3:
+                if st.button("🗑 Discard checkpoint",
+                              disabled=not bool(_ckpt) or _scraper_active,
+                              width='stretch', key="scrape_ckpt_clear_btn",
+                              help="Delete the checkpoint file. The next scan "
+                                   "starts fresh. Use this if the target list "
+                                   "changed or you want to re-scan from scratch."):
+                    try:
+                        _ckpt_path.unlink()
+                        if _pause_path.exists():
+                            _pause_path.unlink()
+                        st.success("Checkpoint discarded.")
+                    except Exception as _e:
+                        st.error(f"Could not delete: {_e}")
+                    st.rerun()
+
+            if _pause_requested and _scraper_active:
+                st.caption("⏳ Pause requested — waiting for the current company to finish.")
+            elif _ckpt:
+                st.caption(f"Checkpoint file: `{_ckpt_path}` · signature {_ckpt.get('targets_signature', '?')}")
+
     # ---------- Top: pipeline stepper with live status ----------
     def _stage_card(col, emoji: str, name: str, info: dict | None,
                     data_summary: str = "", running: bool = False):
