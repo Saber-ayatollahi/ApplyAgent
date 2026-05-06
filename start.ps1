@@ -8,18 +8,84 @@
 #   the last ~20 lines instead of the window vanishing.
 #
 # Usage:
-#   .\start.ps1                   # default (port 8501)
-#   .\start.ps1 -Port 8600        # custom port
+#   .\start.ps1                   # default (port 8501; auto-finds free port if busy)
+#   .\start.ps1 -Port 8600        # explicit port
+#   .\start.ps1 -KillExisting     # stop whatever currently holds the port
 #   .\start.ps1 -NoBrowser        # don't auto-open browser
 # ===========================================================================
 
 param(
     [int]$Port = 8501,
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$KillExisting   # stop any process holding the requested port first
 )
 
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
+
+# ---------- Helpers ----------
+function Test-PortFree([int]$p) {
+    # True if no LISTEN on $p. Get-NetTCPConnection is the clean API on Win10+.
+    $inUse = $null -ne (Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue)
+    return (-not $inUse)
+}
+
+function Get-PortOwners([int]$p) {
+    # Return [pid, name] tuples for whatever holds the port.
+    $conns = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
+    if (-not $conns) { return @() }
+    $conns | ForEach-Object {
+        $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+        [pscustomobject]@{
+            Pid  = $_.OwningProcess
+            Name = if ($proc) { $proc.ProcessName } else { 'unknown' }
+        }
+    } | Sort-Object Pid -Unique
+}
+
+function Find-FreePort([int]$start, [int]$maxTries = 10) {
+    for ($i = 0; $i -lt $maxTries; $i++) {
+        $try = $start + $i
+        if (Test-PortFree $try) { return $try }
+    }
+    return $null
+}
+
+# ---------- Port selection ----------
+# If the requested port is taken, optionally kill the holder (--KillExisting)
+# or scan forward for the next free port. Prevents the opaque "Port XXXX is
+# already in use" crash that kicks the user back to a closed terminal.
+if (-not (Test-PortFree $Port)) {
+    $owners = Get-PortOwners $Port
+    $ownerTxt = if ($owners) {
+        ($owners | ForEach-Object { "$($_.Name)(pid $($_.Pid))" }) -join ', '
+    } else { 'unknown' }
+    Write-Host ("[port] {0} is already in use by: {1}" -f $Port, $ownerTxt) -ForegroundColor Yellow
+
+    if ($KillExisting -and $owners) {
+        foreach ($o in $owners) {
+            try {
+                Stop-Process -Id $o.Pid -Force -ErrorAction Stop
+                Write-Host ("[port] killed pid {0} ({1})" -f $o.Pid, $o.Name) -ForegroundColor Green
+            } catch {
+                Write-Host ("[port] could not kill pid {0}: {1}" -f $o.Pid, $_.Exception.Message) -ForegroundColor Red
+            }
+        }
+        Start-Sleep -Seconds 1
+    }
+
+    if (-not (Test-PortFree $Port)) {
+        $alt = Find-FreePort ($Port + 1) 20
+        if ($null -eq $alt) {
+            Write-Host ("[port] No free port found in range {0}..{1}. Use -KillExisting or -Port <n>." -f ($Port + 1), ($Port + 20)) -ForegroundColor Red
+            Write-Host 'Press any key to exit...'
+            try { $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') } catch {}
+            exit 1
+        }
+        Write-Host ("[port] switching to free port {0}" -f $alt) -ForegroundColor Cyan
+        $Port = $alt
+    }
+}
 
 # ---------- Log file ----------
 $logsDir = Join-Path $PSScriptRoot 'logs'
