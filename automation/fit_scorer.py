@@ -68,7 +68,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 JD_CACHE = OUT_DIR / "jd_cache"
 FIT_CACHE = OUT_DIR / "fit_cache"
-MASTER_REPO = ROOT / "Saber_Ayatollahi_Master_Repository.md"
+MASTER_REPO = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
 PROGRESS_PATH = OUT_DIR / "fit_scorer_progress.json"
 
 MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")

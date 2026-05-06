@@ -26,8 +26,8 @@ import gmail_ui  # noqa: E402
 api_key.hydrate_env()
 
 ROOT = Path(__file__).resolve().parent.parent
-TRACKER = ROOT / "job_tracker_data.json"
-CRM = ROOT / "recruiter_crm.json"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
+CRM = ROOT / "data" / "recruiter_crm.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 RUNS_DIR = OUT_DIR / "runs"
 PIPELINE_DIR = OUT_DIR / "pipelines"
@@ -609,6 +609,68 @@ if active_runs or pipeline_running:
         )
 else:
     st.sidebar.caption("No active runs")
+
+# -------- Backend session log (written by start.ps1) --------
+# `logs/current.log` is a pointer file with the path to the active session
+# log. If the app was launched via start.ps1 we'll tail it here so the user
+# has one place to see everything stdout/stderr that Streamlit + backend
+# subprocesses have printed.
+_LOGS_DIR = ROOT / "logs"
+_pointer = _LOGS_DIR / "current.log"
+_session_log = None
+if _pointer.exists():
+    try:
+        _p = _pointer.read_text(encoding="utf-8").strip()
+        if _p and Path(_p).exists():
+            _session_log = Path(_p)
+    except Exception:
+        _session_log = None
+
+st.sidebar.markdown("---")
+with st.sidebar.expander("🪵 Backend log", expanded=False):
+    if _session_log is None:
+        st.caption(
+            "No active session log. Launch via `start.ps1` to capture "
+            "Streamlit + backend stdout/stderr here."
+        )
+    else:
+        st.caption(f"`{_session_log.name}`")
+        try:
+            _size = _session_log.stat().st_size
+            _cap = 12_000  # keep the sidebar render fast
+            with open(_session_log, "rb") as _lf:
+                if _size > _cap:
+                    _lf.seek(_size - _cap)
+                    _txt = b"...[truncated - full log on disk]...\n" + _lf.read()
+                else:
+                    _txt = _lf.read()
+            st.code(_txt.decode("utf-8", errors="replace") or "(empty)",
+                    language="text")
+        except Exception as _e:
+            st.caption(f"(read error: {_e})")
+        if st.button("🔄 Refresh log", key="sidebar_log_refresh",
+                     use_container_width=True):
+            st.rerun()
+
+# -------- Recent background runs (agent subprocesses) --------
+with st.sidebar.expander("📜 Recent background runs", expanded=False):
+    _recent = scan_runner.list_runs(limit=8)
+    if not _recent:
+        st.caption("No runs recorded yet.")
+    else:
+        for _r in _recent:
+            _state = _r.get("state", "?")
+            _icon = {"running": "🟢", "finished": "✅",
+                     "failed": "❌", "stopped": "⚪"}.get(_state, "•")
+            st.caption(
+                f"{_icon} **{_r.get('label', '?')}** · {_r.get('started_at', '')}"
+            )
+        if st.button("Open Admin → Runs for details",
+                     key="sidebar_go_admin_runs",
+                     use_container_width=True):
+            # Streamlit doesn't have programmatic page switching for radios;
+            # nudge the user.
+            st.info("Pick ⚙️ Admin from the navigator above.")
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Project root")
@@ -2582,8 +2644,8 @@ elif page == "🤝 Recruiter CRM":
 # ============================================================================
 elif page == "📅 Weekly Plan":
     st.title("📅 Weekly Plan")
-    wp = ROOT / "this_week.md"
-    cp = ROOT / "operating_cadence.md"
+    wp = ROOT / "docs" / "this_week.md"
+    cp = ROOT / "docs" / "operating_cadence.md"
     t1, t2, t3 = st.tabs(["This week", "Operating cadence", "Weekly report"])
     with t1:
         st.markdown(wp.read_text(encoding="utf-8") if wp.exists() else "_(no this_week.md)_")
@@ -2605,13 +2667,13 @@ elif page == "📝 Content & Memory":
     st.title("📝 Content & Memory")
     t1, t2, t3, t4 = st.tabs(["LinkedIn calendar", "Engagement log", "Master repo", "Campaign memory"])
     with t1:
-        p = ROOT / "linkedin_content_engine.md"
+        p = ROOT / "docs" / "linkedin_content_engine.md"
         st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
     with t2:
-        p = ROOT / "linkedin_engagement_log.md"
+        p = ROOT / "docs" / "linkedin_engagement_log.md"
         st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
     with t3:
-        p = ROOT / "Saber_Ayatollahi_Master_Repository.md"
+        p = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
         st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
     with t4:
         candidates = [

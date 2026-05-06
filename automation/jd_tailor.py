@@ -66,10 +66,10 @@ def preflight_or_exit() -> None:
     sys.exit(2)
 
 ROOT = Path(__file__).resolve().parent.parent
-MASTER_REPO = ROOT / "Saber_Ayatollahi_Master_Repository.md"
-COVER_TEMPLATES = ROOT / "cover_letter_templates.md"
-INTERVIEW_PREP = ROOT / "interview_prep.md"
-TRACKER = ROOT / "job_tracker_data.json"
+MASTER_REPO = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
+COVER_TEMPLATES = ROOT / "docs" / "cover_letter_templates.md"
+INTERVIEW_PREP = ROOT / "docs" / "interview_prep.md"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
 MODEL = os.environ.get("JD_TAILOR_MODEL", "claude-opus-4-7")  # override via env

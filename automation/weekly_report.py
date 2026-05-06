@@ -28,8 +28,8 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TRACKER = ROOT / "job_tracker_data.json"
-CRM = ROOT / "recruiter_crm.json"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
+CRM = ROOT / "data" / "recruiter_crm.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
 

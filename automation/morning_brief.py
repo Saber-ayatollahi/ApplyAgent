@@ -162,7 +162,7 @@ def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
     """Add top-K actionable roles to the tracker as Found/Watch entries.
     Returns the list of new tracker IDs added (or []).
     Idempotent: skips URLs already in the tracker."""
-    tracker_path = ROOT / "job_tracker_data.json"
+    tracker_path = ROOT / "data" / "job_tracker_data.json"
     if not tracker_path.exists():
         return []
     tr = json.loads(tracker_path.read_text(encoding="utf-8"))

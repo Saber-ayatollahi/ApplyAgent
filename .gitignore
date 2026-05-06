@@ -55,6 +55,13 @@ automation/outputs/fit_cache/
 # ============================================================================
 job_tracker_data.bak*.json
 recruiter_crm.bak*.json
+data/job_tracker_data.bak*.json
+data/recruiter_crm.bak*.json
+
+# ============================================================================
+# App runtime logs — written by start.ps1
+# ============================================================================
+logs/
 
 # ============================================================================
 # Secrets — NEVER commit

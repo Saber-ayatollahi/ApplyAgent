@@ -85,11 +85,11 @@ def check_files(o: Outcome):
     print("\n[3] Canonical project files present")
     required = [
         "README.md", "CHANGELOG.md", "requirements.txt", ".gitignore",
-        "Saber_Ayatollahi_Master_Repository.md", "Target_Companies_2026.md",
-        "job_tracker_data.json", "recruiter_crm.json",
-        "cover_letter_templates.md", "interview_prep.md",
-        "operating_cadence.md", "references_and_salary.md",
-        "linkedin_content_engine.md", "this_week.md",
+        "docs/Saber_Ayatollahi_Master_Repository.md", "docs/Target_Companies_2026.md",
+        "data/job_tracker_data.json", "data/recruiter_crm.json",
+        "docs/cover_letter_templates.md", "docs/interview_prep.md",
+        "docs/operating_cadence.md", "docs/references_and_salary.md",
+        "docs/linkedin_content_engine.md", "docs/this_week.md",
         "automation/jd_scraper.py", "automation/fit_scorer.py",
         "automation/auto_promote.py", "automation/jd_tailor.py",
         "automation/weekly_report.py", "automation/expansion_companies.py",
@@ -106,7 +106,7 @@ def check_files(o: Outcome):
 
 def check_json(o: Outcome):
     print("\n[4] JSON files parse")
-    for rel in ("job_tracker_data.json", "recruiter_crm.json"):
+    for rel in ("data/job_tracker_data.json", "data/recruiter_crm.json"):
         p = ROOT / rel
         try:
             json.loads(p.read_text(encoding="utf-8"))
@@ -135,7 +135,7 @@ def check_compile(o: Outcome):
 def check_tracker_schema(o: Outcome):
     print("\n[6] Tracker schema sanity")
     try:
-        tr = json.loads((ROOT / "job_tracker_data.json").read_text(encoding="utf-8"))
+        tr = json.loads((ROOT / "data" / "job_tracker_data.json").read_text(encoding="utf-8"))
         meta_total = tr.get("meta", {}).get("total_roles")
         actual = len(tr.get("jobs", []))
         if meta_total == actual:
@@ -198,7 +198,7 @@ def check_weekly_report(o: Outcome):
 def check_jd_tailor_dry(o: Outcome):
     print("\n[10] jd_tailor.py --dry-run")
     try:
-        tr = json.loads((ROOT / "job_tracker_data.json").read_text(encoding="utf-8"))
+        tr = json.loads((ROOT / "data" / "job_tracker_data.json").read_text(encoding="utf-8"))
         job_id = tr["jobs"][0]["id"] if tr.get("jobs") else None
         if not job_id:
             o.warn_("no jobs in tracker to test against")

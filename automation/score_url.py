@@ -37,7 +37,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
-TRACKER = ROOT / "job_tracker_data.json"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
 
 # Reuse the fit_scorer infrastructure
 sys.path.insert(0, str(Path(__file__).resolve().parent))

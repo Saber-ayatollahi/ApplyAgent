@@ -36,7 +36,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
-TRACKER = ROOT / "job_tracker_data.json"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
 
 
 SECTOR_ROUGH_TIER = {

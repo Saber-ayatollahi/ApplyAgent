@@ -44,7 +44,7 @@ except ImportError:
     sys.exit(1)
 
 ROOT = Path(__file__).resolve().parent.parent
-TRACKER = ROOT / "job_tracker_data.json"
+TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
 # Keyword tiers. "Any" match in a title or JD makes the role a candidate.
