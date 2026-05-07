@@ -119,6 +119,23 @@ def main() -> int:
 
     args = ap.parse_args()
 
+    # Preflight the Anthropic API if this run will actually call the LLM.
+    # Catches revoked/stale/empty-credit keys BEFORE we burn 15 min scraping
+    # and then fail every scorer worker. Skip when the scorer itself is
+    # skipped or running in dry-run mode (neither calls the LLM).
+    will_call_llm = (not args.skip_score and not args.score_dry_run) \
+        or (not args.skip_promote and not args.skip_score)
+    if will_call_llm:
+        try:
+            from api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+        except ImportError:
+            try:
+                from .api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+            except Exception:
+                _cli_preflight = None  # type: ignore
+        if _cli_preflight is not None:
+            _cli_preflight(module="run_pipeline")
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     pipeline_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     status = {

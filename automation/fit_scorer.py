@@ -1218,7 +1218,23 @@ def main() -> int:
     if anthropic is None:
         print("ERROR: pip install anthropic", file=sys.stderr)
         return 2
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+
+    # Real API preflight: do a 1-token messages.create BEFORE spawning the
+    # worker pool. Without this, a revoked/stale key (or exhausted billing)
+    # lets fit_scorer spin up workers that all fail one-by-one, spamming
+    # the error log and making the scorer look broken when the fix is 30
+    # seconds of env work. Bypass with APPLYAGENT_SKIP_PREFLIGHT=1.
+    try:
+        from api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+    except ImportError:
+        try:
+            from .api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+        except Exception:
+            _cli_preflight = None  # type: ignore
+    if _cli_preflight is not None:
+        _cli_preflight(module="fit_scorer")
+    elif not os.environ.get("ANTHROPIC_API_KEY"):
+        # Legacy fallback if api_preflight isn't importable.
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
         return 2
 
