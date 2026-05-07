@@ -1698,6 +1698,55 @@ elif page == "🎯 Pipeline":
         "One flow; one click runs the whole chain. Each stage can also be run in isolation."
     )
 
+    # ---------- Data freshness headline: latest scan, latest Gmail -------
+    # Three compact metrics so the user sees at-a-glance what data they're
+    # working with BEFORE they decide whether to refresh anything.
+    def _latest_by_prefix(prefix: str):
+        files = sorted(OUT_DIR.glob(f"{prefix}*.json"),
+                        key=lambda p: p.stat().st_mtime, reverse=True)
+        # Exclude *_scored.json in the scan search so we don't show the
+        # scored artifact as if it were a fresh scrape.
+        files = [f for f in files if "_scored" not in f.name
+                 and "scan_checkpoint" not in f.name]
+        return files[0] if files else None
+
+    def _age_label(p: Path | None) -> str:
+        if p is None:
+            return "—"
+        age_s = datetime.now().timestamp() - p.stat().st_mtime
+        if age_s < 3600:
+            return f"{int(age_s / 60)}m ago"
+        if age_s < 86400:
+            return f"{int(age_s / 3600)}h ago"
+        return f"{int(age_s / 86400)}d ago"
+
+    _latest_web = _latest_by_prefix("scan_v4")
+    _latest_gm = _latest_by_prefix("scan_gmail_")
+    _latest_scored = _latest_by_prefix("scan_") if False else None
+    _latest_scored_files = sorted(OUT_DIR.glob("*_scored.json"),
+                                    key=lambda p: p.stat().st_mtime, reverse=True)
+    _latest_scored = _latest_scored_files[0] if _latest_scored_files else None
+
+    def _count_rows(p: Path | None) -> int:
+        if not p or not p.exists():
+            return 0
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            return len(d.get("results", []))
+        except Exception:
+            return 0
+
+    fh1, fh2, fh3, fh4 = st.columns(4)
+    fh1.metric("Latest web scan", _age_label(_latest_web),
+                f"{_count_rows(_latest_web):,} roles" if _latest_web else "—")
+    fh2.metric("Latest Gmail pull", _age_label(_latest_gm),
+                f"{_count_rows(_latest_gm):,} alerts" if _latest_gm else "—")
+    fh3.metric("Latest scored", _age_label(_latest_scored),
+                _latest_scored.name if _latest_scored else "—")
+    fh4.metric("Tracker roles", f"{len(jobs):,}",
+                f"{sum(1 for j in jobs if j.get('status') == 'Found')} Found")
+    st.markdown("---")
+
     # ---------- Pause / resume / checkpoint status ----------
     # The scraper drops scan_checkpoint.json after each company and watches for
     # scan_pause.flag. These controls let the user pause a long scrape and
@@ -1998,7 +2047,7 @@ elif page == "🎯 Pipeline":
                 icon="🔑",
             )
 
-        run_col, brief_col, spacer = st.columns([1, 1, 3])
+        run_col, brief_col, gmail_col, spacer = st.columns([1, 1, 1, 2])
         with run_col:
             if st.button("▶️ Launch pipeline", type="primary", width='stretch',
                          disabled=not can_run):
@@ -2031,6 +2080,31 @@ elif page == "🎯 Pipeline":
                 st.success(f"Nightly refresh started (`{rec.run_id}`). "
                            f"Dashboard will show fresh matches when done.")
                 st.rerun()
+        with gmail_col:
+            # Standalone Gmail alert fetch — pulls LinkedIn/Indeed job alert
+            # emails from the last 14 days, writes scan_gmail_<stamp>.json.
+            # Separate button so the user can refresh alerts daily in ~10s
+            # without kicking off a full web scrape.
+            _gmail_ok = gmail_ui.is_connected()
+            if st.button("📬 Pull Gmail alerts", width='stretch',
+                         disabled=(not _gmail_ok) or bool(pipeline_running),
+                         help="Fetch the last 14 days of LinkedIn/Indeed job "
+                              "alert emails, dedupe against tracker, and write "
+                              "scan_gmail_<stamp>.json. ~10-30s. Doesn't call "
+                              "the API. Run fit_scorer on the output after."):
+                rec = scan_runner.start_run("gmail_fetch", [
+                    sys.executable,
+                    str(ROOT / "automation" / "gmail_fetch.py"),
+                    "--days", "14",
+                ])
+                st.success(
+                    f"Gmail fetch started (`{rec.run_id}`). "
+                    f"Output lands in `automation/outputs/scan_gmail_*.json`. "
+                    f"Then score it from the 2·Score tab."
+                )
+                st.rerun()
+            if not _gmail_ok:
+                st.caption("🔌 Connect Gmail in the sidebar first.")
 
         # Scorer progress bar (visible whenever fit_scorer is running,
         # whether invoked directly or as part of a pipeline)
