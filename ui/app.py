@@ -1053,35 +1053,37 @@ if page == "🏠 Dashboard":
             st.markdown(f"**Gmail pull:** {_age(_ds_gm[0] if _ds_gm else None)}")
     st.markdown("")
 
-    # Live pipeline banner
-    if pipeline_running:
-        st.info(
-            f"🎯 **Pipeline `{pipe['pipeline_id']}` running** — "
-            f"elapsed {human_elapsed(pipe['started_at'])}. "
-            f"Jump to 🎯 Pipeline to watch stages.",
-            icon="⚡",
-        )
-
-    # Scorer progress banner (shown whether pipeline or standalone)
+    # ---------- Compact status strip ----------
+    # Previously three stacked banners. Now: one caption line if nothing is
+    # running, or a progress bar for live scoring, or a one-line "X running"
+    # banner. Eliminates 3 banners' worth of vertical chrome on every page
+    # load when nothing interesting is happening.
     _sp = load_scorer_progress()
-    if _sp and _sp.get("state") == "running":
+    _scorer_live = bool(_sp and _sp.get("state") == "running")
+    if _scorer_live:
         cur = _sp.get("current", 0); tot = _sp.get("total", 0) or 1
         frac = min(1.0, cur / tot)
         st.progress(
             frac,
             text=(
-                f"🤖 Scoring {cur}/{tot} candidates · "
+                f"🤖 Scoring {cur}/{tot} · "
                 f"elapsed {_fmt_eta(_sp.get('elapsed_sec'))} · "
                 f"ETA {_fmt_eta(_sp.get('eta_sec'))} · "
                 f"apply_now={(_sp.get('verdict_counts') or {}).get('apply_now', 0)}"
             ),
         )
-
-    if not pipeline_running and pipe and pipe.get("state") == "finished":
-        st.success(
-            f"✅ Last pipeline `{pipe['pipeline_id']}` finished {fmt_dt(pipe.get('finished_at'))}. "
-            f"Review in 🎯 Pipeline.",
-            icon="🎯",
+    elif pipeline_running:
+        st.info(
+            f"🎯 Pipeline `{pipe['pipeline_id']}` running · "
+            f"elapsed {human_elapsed(pipe['started_at'])} — "
+            f"jump to Pipeline to watch stages.",
+            icon="⚡",
+        )
+    elif pipe and pipe.get("state") == "finished":
+        st.caption(
+            f"✅ Last pipeline `{pipe['pipeline_id']}` "
+            f"finished {fmt_dt(pipe.get('finished_at'))} · "
+            f"Inspect tab on Pipeline for results."
         )
 
     # KPIs
@@ -1208,7 +1210,7 @@ if page == "🏠 Dashboard":
         # Tier-1 needing draft — most actionable
         if tier1_no_draft:
             with st.expander(f"📄 Tier-1 needing draft ({len(tier1_no_draft)}) — "
-                              "tailor runs cost ~$0.15 each", expanded=True):
+                              "tailor runs cost ~$0.15 each", expanded=False):
                 tdf = pd.DataFrame([{
                     "id": j.get("id", ""),
                     "company": j.get("company", ""),
@@ -1236,7 +1238,7 @@ if page == "🏠 Dashboard":
         if tier1_warm_intro:
             with st.expander(f"⚡ Warm-intro opportunities ({len(tier1_warm_intro)}) — "
                               "70% of Director hiring is referral-driven",
-                              expanded=True):
+                              expanded=False):
                 for j, contacts in tier1_warm_intro[:10]:
                     with st.container(border=True):
                         cols = st.columns([3, 1])
@@ -1356,7 +1358,11 @@ if page == "🏠 Dashboard":
             "may be down."
         )
 
-    if health_issues or (scan_age_days is not None and scan_age_days <= 1):
+    # Only render the health block when there is a genuine ISSUE. A fresh
+    # scan with no problems used to trigger the full 4-metric widget; now
+    # it stays silent. Sidebar auto-refresh and freshness on Quick-actions
+    # already show "fresh scan" without taking a full row.
+    if health_issues:
         st.subheader("📊 Pipeline health")
         hc1, hc2, hc3, hc4 = st.columns(4)
         hc1.metric("Scan age",
@@ -1469,6 +1475,9 @@ if page == "🏠 Dashboard":
         st.markdown("---")
 
     # ---------- Morning brief widget — today's 2-3 fresh matches ----------
+    # Wrap the whole block in a single outer expander. When the brief is
+    # today's, open by default; when it's stale, stay collapsed so the user
+    # isn't forced to scroll past old matches on every page load.
     brief = load_morning_brief()
     if brief:
         brief_date_raw = brief.get("brief_date", "")
@@ -1477,13 +1486,19 @@ if page == "🏠 Dashboard":
         except ValueError:
             brief_date_parsed = None
         top = brief.get("top") or []
-        # Stale after 1 day — brief is meant to be daily.
         is_stale = brief_date_parsed and (date.today() - brief_date_parsed).days >= 1
-        staleness = "" if not brief_date_parsed else (
-            f" · {(date.today() - brief_date_parsed).days}d old"
-            if is_stale else " · today"
+        _brief_title = f"🌅 Today's fresh matches" + ("" if not brief_date_parsed
+            else f" · {(date.today() - brief_date_parsed).days}d old"
+            if is_stale else " · today")
+        _brief_outer = st.expander(
+            _brief_title + f" ({len(top)} match(es))",
+            expanded=not is_stale,
         )
-        st.subheader(f"🌅 Today's fresh matches{staleness}")
+    else:
+        _brief_outer = None
+
+    if brief and _brief_outer is not None:
+      with _brief_outer:
         if is_stale:
             st.caption(
                 f"⚠ Latest brief is from `{brief_date_raw}`. "
@@ -1676,8 +1691,6 @@ if page == "🏠 Dashboard":
                     hits.append(entry["job"])
             return hits
 
-        st.subheader(f"📬 Inbox signals (14d)")
-        ic1, ic2, ic3, ic4 = st.columns(4)
         # Pre-compute matches so we can report how many recruiter emails
         # plausibly map to applied roles.
         recruiter_matches = [
@@ -1685,15 +1698,10 @@ if page == "🏠 Dashboard":
             for r in recruiters
         ]
         matched_n = sum(1 for _, hits in recruiter_matches if hits)
-        ic1.metric("Recruiter/ATS mail", len(recruiters))
-        ic2.metric("→ match tracker", matched_n,
-                   help="Recruiter emails whose sender domain or subject "
-                        "matches a role in your tracker.")
-        ic3.metric("Job alerts", len(alerts))
-        ic4.metric("Total", len(inbox))
 
         # Highlight: recruiter emails matched to Applied roles are likely
-        # status-change signals.
+        # status-change signals. ONLY render the banner when there are real
+        # matches — otherwise the Inbox section stays collapsed and quiet.
         applied_matches = [
             (r, [j for j in hits if j.get("status") in (
                 "Applied", "Recruiter_Screen", "Phone_Screen",
@@ -1708,8 +1716,22 @@ if page == "🏠 Dashboard":
                 icon="📨",
             )
 
-        with st.expander("👀 Recent recruiter mail (likely status changes)",
-                         expanded=bool(recruiter_matches)):
+        # Compact: single outer expander, metrics inside. When there are
+        # no applied-matches the whole section stays collapsed.
+        _inbox_title = (f"📬 Inbox signals (14d) · "
+                         f"{len(recruiters)} recruiter · "
+                         f"{matched_n} tracker-match · "
+                         f"{len(alerts)} alerts")
+        with st.expander(_inbox_title, expanded=bool(applied_matches)):
+            ic1, ic2, ic3, ic4 = st.columns(4)
+            ic1.metric("Recruiter/ATS", len(recruiters))
+            ic2.metric("→ match tracker", matched_n,
+                       help="Recruiter emails whose sender domain or "
+                            "subject matches a role in your tracker.")
+            ic3.metric("Job alerts", len(alerts))
+            ic4.metric("Total", len(inbox))
+
+            st.markdown("**Recent recruiter mail (likely status changes)**")
             if not recruiters:
                 st.caption("Nothing from recruiters in the last 14d.")
             else:
@@ -1836,77 +1858,37 @@ if page == "🏠 Dashboard":
             _render_followup_rows(fb["due_this_week"], t_week, "upcoming")
             _render_followup_rows(fb["no_schedule"], t_noschd, "noschedule")
 
-    st.markdown("---")
-
-    # Quick actions
-    st.subheader("⚡ Quick actions")
-    key_ok = api_key.is_key_valid()
-    if not key_ok:
-        st.warning(
-            "⚠️ Anthropic API key missing or invalid — LLM-backed pipeline actions are disabled. "
-            "Set it in the sidebar.",
-            icon="🔑",
+    # ---------- Collapsed: pipeline bar-chart + apply-this-week ----------
+    # Both are reference-only. Fold into a single expander so they don't
+    # chew two full screens of vertical space on load. Quick-actions block
+    # at the top of the page already covers the "run something" need; the
+    # older duplicate set (Run full / Fast / Weekly report) was removed.
+    with st.expander("📈 Pipeline chart · apply-this-week queue", expanded=False):
+        status_counts = (jobs_df["status"].value_counts()
+                           if "status" in jobs_df.columns else pd.Series())
+        status_order = meta.get("status_enum", list(status_counts.index))
+        fd = pd.DataFrame(
+            [{"status": s, "count": int(status_counts.get(s, 0))}
+             for s in status_order]
         )
-    qa1, qa2, qa3 = st.columns(3)
-    with qa1:
-        if st.button("🎯 Run full pipeline", width='stretch', type="primary",
-                     disabled=not key_ok,
-                     help="Scrape → Score → Promote preview (one-shot agent)"):
-            rec = scan_runner.start_run(
-                "pipeline_full",
-                [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                 "--scrape-mode", "full"],
-            )
-            st.session_state["last_pipeline_run"] = rec.run_id
-            st.success(f"Pipeline started (`{rec.run_id}`). Monitor in 🎯 Pipeline.")
-            st.rerun()
-    with qa2:
-        if st.button("🏛️ Fast pipeline (ATS-only)", width='stretch',
-                     disabled=not key_ok,
-                     help="Direct Workday/Greenhouse scan + score + promote preview (~10 min)"):
-            rec = scan_runner.start_run(
-                "pipeline_ats",
-                [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                 "--scrape-mode", "ats"],
-            )
-            st.success(f"Started `{rec.run_id}`")
-            st.rerun()
-    with qa3:
-        if st.button("📊 Weekly report", width='stretch'):
-            rec = scan_runner.start_run(
-                "weekly_report",
-                [sys.executable, str(ROOT / "automation" / "weekly_report.py")],
-            )
-            st.success(f"Started `{rec.run_id}`")
-            st.rerun()
+        d1, d2 = st.columns([2, 1])
+        with d1:
+            st.bar_chart(fd.set_index("status"))
+        with d2:
+            st.dataframe(fd, hide_index=True, width='stretch')
 
-    st.markdown("---")
-
-    # Funnel
-    st.subheader("📈 Pipeline by status")
-    status_counts = jobs_df["status"].value_counts() if "status" in jobs_df.columns else pd.Series()
-    status_order = meta.get("status_enum", list(status_counts.index))
-    fd = pd.DataFrame(
-        [{"status": s, "count": int(status_counts.get(s, 0))} for s in status_order]
-    )
-    d1, d2 = st.columns([2, 1])
-    with d1:
-        st.bar_chart(fd.set_index("status"))
-    with d2:
-        st.dataframe(fd, hide_index=True, width='stretch')
-
-    st.markdown("---")
-
-    # Apply-this-week queue
-    st.subheader("🎯 Apply this week")
-    apply_ids = meta.get("kanban_targets_week1", {}).get("apply_this_week", [])
-    apply_rows = jobs_df[jobs_df["id"].isin(apply_ids)] if "id" in jobs_df.columns else pd.DataFrame()
-    if not apply_rows.empty:
-        cols = [c for c in ["id", "company", "title", "tier", "fit_score", "url"] if c in apply_rows.columns]
-        st.dataframe(apply_rows[cols], hide_index=True, width='stretch',
-                     column_config={"url": st.column_config.LinkColumn()})
-    else:
-        st.caption("No roles flagged for this week.")
+        st.markdown("**🎯 Apply this week**")
+        apply_ids = meta.get("kanban_targets_week1", {}).get("apply_this_week", [])
+        apply_rows = (jobs_df[jobs_df["id"].isin(apply_ids)]
+                       if "id" in jobs_df.columns else pd.DataFrame())
+        if not apply_rows.empty:
+            cols = [c for c in ["id", "company", "title", "tier",
+                                  "fit_score", "url"]
+                    if c in apply_rows.columns]
+            st.dataframe(apply_rows[cols], hide_index=True, width='stretch',
+                         column_config={"url": st.column_config.LinkColumn()})
+        else:
+            st.caption("No roles flagged for this week.")
 
 
 # ============================================================================
