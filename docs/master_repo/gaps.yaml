@@ -1,0 +1,79 @@
+# Explicit capability gaps. The JD extractor walks `not_hands_on` and flags
+# any JD mention as a gap (severity: hard | soft). Each gap has an `aliases`
+# list so partial mentions ("Aladdin" vs. "BlackRock Aladdin") still match.
+#
+# `severity: hard` — recruiter screens will probe it; if the JD requires it as
+# primary, the role is a stretch.
+# `severity: soft` — nice-to-have in the JD; mentionable adjacency but don't
+# claim hands-on.
+---
+not_hands_on:
+  - canonical: "BlackRock Aladdin (hands-on user)"
+    severity: hard
+    aliases: ["Aladdin", "BlackRock Aladdin", "Aladdin Risk", "Aladdin Wealth", "eFront"]
+    adjacent_note: "Competitive/parallel familiarity from Moody's platform delivery"
+
+  - canonical: "Murex"
+    severity: hard
+    aliases: ["Murex", "MX.3", "Murex MX.3"]
+    adjacent_note: "Conceptual adjacency via IRRBB and derivatives valuation"
+
+  - canonical: "Algorithmics (SS&C)"
+    severity: hard
+    aliases: ["Algorithmics", "SS&C Algorithmics", "Algo One", "Algorithmics Risk"]
+    adjacent_note: "Competitive awareness only"
+
+  - canonical: "Barra / MSCI RiskMetrics (hands-on)"
+    severity: hard
+    aliases: ["Barra", "RiskMetrics", "MSCI Barra", "BarraOne"]
+    adjacent_note: "Competitive awareness from Moody's analytics platform"
+
+  - canonical: "QRM (hands-on)"
+    severity: hard
+    aliases: ["QRM", "Quantitative Risk Management Inc"]
+    adjacent_note: "Conceptual adjacency in ALM/IRRBB lane"
+
+  - canonical: "TypeScript / Node.js / React (production delivery)"
+    severity: hard
+    aliases: ["TypeScript", "Node.js", "NodeJS", "React", "Next.js", "Express", "NestJS"]
+    adjacent_note: "Hobbyist level; not shipped in production"
+
+  - canonical: "Java / C++ (production delivery)"
+    severity: hard
+    aliases: ["Java", "J2EE", "Spring Boot", "C++", "Kotlin"]
+    adjacent_note: "Not production-shipped; readable not writable"
+
+  - canonical: "Kubernetes / EKS"
+    severity: hard
+    aliases: ["Kubernetes", "K8s", "EKS", "GKE", "AKS", "Helm"]
+    adjacent_note: "Not hands-on"
+
+  - canonical: "TensorFlow / PyTorch (production ML)"
+    severity: hard
+    aliases: ["TensorFlow", "PyTorch", "Keras", "scikit-learn production"]
+    adjacent_note: "Not production-shipped; classical ML only"
+
+  - canonical: "MongoDB / Snowflake (production)"
+    severity: hard
+    aliases: ["MongoDB", "Snowflake", "Databricks", "Redshift"]
+    adjacent_note: "PostgreSQL is the evidenced stack"
+
+  - canonical: "AWS Bedrock / Azure ML"
+    severity: hard
+    aliases: ["AWS Bedrock", "Azure ML", "Azure OpenAI", "SageMaker"]
+    adjacent_note: "Direct-API Claude/OpenAI integration; no cloud-ML-stack"
+
+  - canonical: "Multi-agent orchestration frameworks (production)"
+    severity: hard
+    aliases: ["LangGraph", "CrewAI", "AutoGen", "LangChain production"]
+    adjacent_note: "Hobbyist level; Claude Code + Cursor IDE is the evidenced stack"
+
+  - canonical: "Hedge fund quant-research (pure research)"
+    severity: soft
+    aliases: ["hedge fund quant research", "portfolio construction HF", "statistical arbitrage"]
+    adjacent_note: "Buy-side ALM/LDI adjacent, not HF primary"
+
+  - canonical: "Reserving actuary / pricing actuary (credentialed)"
+    severity: soft
+    aliases: ["reserving actuary", "pricing actuary", "FSA", "FCAS", "FCIA"]
+    adjacent_note: "IFRS 17/9 delivery exposure; not a credentialed actuary"

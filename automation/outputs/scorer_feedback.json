@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-05-07T01:20:54Z",
+  "total_in_tracker": 96,
+  "sectors": {
+    "sector:Canadian Big 6 Banks": {
+      "key": "sector:Canadian Big 6 Banks",
+      "total_in_pipeline": 25,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Analytics & Risk Vendors": {
+      "key": "sector:Analytics & Risk Vendors",
+      "total_in_pipeline": 8,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Pension Funds": {
+      "key": "sector:Canadian Pension Funds",
+      "total_in_pipeline": 14,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Asset Managers": {
+      "key": "sector:Canadian Asset Managers",
+      "total_in_pipeline": 12,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:US & Global Asset Managers": {
+      "key": "sector:US & Global Asset Managers",
+      "total_in_pipeline": 7,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:US Banks (Toronto)": {
+      "key": "sector:US Banks (Toronto)",
+      "total_in_pipeline": 10,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Asset Managers / Insurers": {
+      "key": "sector:Canadian Asset Managers / Insurers",
+      "total_in_pipeline": 2,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Insurers": {
+      "key": "sector:Canadian Insurers",
+      "total_in_pipeline": 7,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Pension / ALM Consulting": {
+      "key": "sector:Pension / ALM Consulting",
+      "total_in_pipeline": 3,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Big 4 FS Risk Advisory": {
+      "key": "sector:Big 4 FS Risk Advisory",
+      "total_in_pipeline": 4,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:FS Strategy & Risk Consulting": {
+      "key": "sector:FS Strategy & Risk Consulting",
+      "total_in_pipeline": 1,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Schedule I Banks (Mid)": {
+      "key": "sector:Canadian Schedule I Banks (Mid)",
+      "total_in_pipeline": 1,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Canadian Insurers / Reinsurance": {
+      "key": "sector:Canadian Insurers / Reinsurance",
+      "total_in_pipeline": 1,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "sector:Regulators & Crown": {
+      "key": "sector:Regulators & Crown",
+      "total_in_pipeline": 1,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    }
+  },
+  "tiers": {
+    "tier:1": {
+      "key": "tier:1",
+      "total_in_pipeline": 31,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "tier:2": {
+      "key": "tier:2",
+      "total_in_pipeline": 18,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "tier:4": {
+      "key": "tier:4",
+      "total_in_pipeline": 26,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    },
+    "tier:3": {
+      "key": "tier:3",
+      "total_in_pipeline": 21,
+      "applied": 0,
+      "interviewed": 0,
+      "offered": 0,
+      "rejected": 0
+    }
+  },
+  "variants": {},
+  "hot_lanes": [],
+  "cold_lanes": []
+}

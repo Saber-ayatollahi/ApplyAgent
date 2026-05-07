@@ -190,26 +190,46 @@ def extract(jd_text: str, repo: Optional[MasterRepo] = None,
     matched = matched[:max_skills]
     primary_hits = [h for h in matched if h.is_primary]
 
-    # 2. Gap detection — walk gaps.not_hands_on and look for any JD mention.
+    # 2. Gap detection — walk gaps.not_hands_on. Structured entries (with
+    # `aliases`) are the expected format; legacy flat strings are supported
+    # via the head-phrase splitting fallback.
     gaps_flagged: list[GapHit] = []
-    for phrase in repo.gaps.get("not_hands_on", []):
-        # The gap items are noisy ("BlackRock Aladdin (hands-on user)" etc).
-        # Take the head-phrase before the first "(" for matching.
-        head = phrase.split("(")[0].strip()
-        if not head:
-            continue
-        # For multi-keyword lines split by "/" (e.g. "Java / C++"), test each.
-        for probe in re.split(r"\s*/\s*", head):
-            probe = probe.strip()
+    gap_canonicals_seen: set[str] = set()
+
+    def _record_gap(canonical: str, matched_phrase: str, severity: str) -> None:
+        if canonical in gap_canonicals_seen:
+            return
+        gap_canonicals_seen.add(canonical)
+        gaps_flagged.append(GapHit(
+            canonical=canonical, matched_phrase=matched_phrase, severity=severity,
+        ))
+        keywords_found.append(matched_phrase)
+
+    for entry in repo.gaps.get("not_hands_on", []) or []:
+        if isinstance(entry, dict):
+            canonical = entry.get("canonical", "")
+            severity = entry.get("severity", "hard")
+            probes = list(entry.get("aliases") or [])
+            # Also use the canonical's head (pre-parenthesis) as a probe, so
+            # "BlackRock Aladdin (hands-on user)" still matches "BlackRock
+            # Aladdin" directly even if aliases list is sparse.
+            head = canonical.split("(")[0].strip()
+            if head and head not in probes:
+                probes.insert(0, head)
+        else:
+            # Legacy flat-string form: "Java / C++"
+            canonical = str(entry)
+            severity = "hard"
+            head = canonical.split("(")[0].strip()
+            probes = [p.strip() for p in re.split(r"\s*/\s*", head) if p.strip()]
+
+        for probe in probes:
             if len(probe) < 3:
                 continue
             m = _find_phrase(jd, probe)
             if m:
-                gaps_flagged.append(GapHit(
-                    canonical=phrase, matched_phrase=m, severity="hard",
-                ))
-                keywords_found.append(m)
-                break  # don't double-count within one gap entry
+                _record_gap(canonical, m, severity)
+                break  # one hit per gap entry is enough
 
     # 3. Variant scoring — walk bullets, for each variant sum (1) distinct
     # bullets whose skill_ids intersect matched skill ids, (2) distinct matched

@@ -46,6 +46,16 @@ automation/outputs/fit_scorer_stderr.log
 # Progress file — rewritten per candidate during scoring, churns the diff
 automation/outputs/fit_scorer_progress.json
 
+# Portalocker sidecar lock files (safe_json). These exist alongside the
+# real JSON — presence is semantic-free, content is empty.
+*.lock
+
+# Lifetime cost ledger — personal, per-machine counter. Don't sync across
+# machines (would merge-conflict on every pull). Each machine keeps its
+# own totals.
+data/lifetime_cost.json
+data/lifetime_cost.*.json
+
 # Caches — can grow to many MB of JD text; regenerate on demand
 automation/outputs/jd_cache/
 automation/outputs/fit_cache/

@@ -48,10 +48,26 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 import threading
 from datetime import date, datetime
 from pathlib import Path
+
+# Cross-process lock + atomic writes. If safe_json isn't importable (e.g.
+# cost_ledger invoked standalone in a stripped-down env), we fall back to
+# the legacy in-process-only behavior with a warning.
+try:
+    from safe_json import mutate_json as _sj_mutate, read_json as _sj_read  # type: ignore
+    _USE_SAFE_JSON = True
+except ImportError:
+    try:
+        from .safe_json import mutate_json as _sj_mutate, read_json as _sj_read  # type: ignore
+        _USE_SAFE_JSON = True
+    except Exception:
+        _sj_mutate = None  # type: ignore
+        _sj_read = None  # type: ignore
+        _USE_SAFE_JSON = False
 
 ROOT = Path(__file__).resolve().parent.parent
 LEDGER_PATH = ROOT / "data" / "lifetime_cost.json"
@@ -99,8 +115,16 @@ def _load() -> dict:
         for k, v in base["totals"].items():
             data["totals"].setdefault(k, v)
         return data
-    except Exception:
+    except Exception as e:
         # Keep the bad file around for forensic reasons, then start fresh.
+        # A corrupt ledger is a loud alarm — log it so the user sees the
+        # cost-panel surprise-reset has a cause, not a ghost.
+        try:
+            from error_log import log_error  # type: ignore
+            log_error("ledger_corrupt", e, module="cost_ledger",
+                      extra={"path": str(LEDGER_PATH)})
+        except Exception:
+            pass
         try:
             bak = LEDGER_PATH.with_suffix(".corrupt.json")
             LEDGER_PATH.rename(bak)
@@ -143,54 +167,72 @@ def record(
     a paid LLM call) -- kept cheap so it never blocks scoring. A cache hit
     records no tokens but increments the counter for observability.
     """
-    with _write_lock:
-        try:
-            data = _load()
-            now_iso = datetime.utcnow().isoformat(timespec="seconds") + "Z"
-            today = date.today().isoformat()
+    now_iso = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    today = date.today().isoformat()
 
-            if cache_hit:
-                data["totals"]["cache_hits"] += 1
-            else:
-                t = data["totals"]
-                t["llm_calls"] += 1
-                t["input_tokens"] += int(in_tokens or 0)
-                t["output_tokens"] += int(out_tokens or 0)
-                t["cache_create_tokens"] += int(cache_create or 0)
-                t["cache_read_tokens"] += int(cache_read or 0)
-                t["estimated_cost_usd"] = round(
-                    t["estimated_cost_usd"] + float(cost_usd or 0.0), 6
-                )
+    def _mutator(data):
+        # `data` is None the first time the ledger is written; seed it from
+        # _empty_ledger() so we don't crash on the first call.
+        if not isinstance(data, dict) or "totals" not in data:
+            data = _empty_ledger()
+        # Defensive: if the user added new keys since last write, fill them.
+        base = _empty_ledger()
+        for k, v in base.items():
+            data.setdefault(k, v)
+        for k, v in base["totals"].items():
+            data["totals"].setdefault(k, v)
 
-                # Per-model
-                mkey = model or "?"
-                m = data["per_model"].setdefault(mkey, {
-                    "calls": 0, "in_tokens": 0, "out_tokens": 0, "cost_usd": 0.0,
-                    "first_used": now_iso, "last_used": now_iso,
-                })
-                m["calls"] += 1
-                m["in_tokens"] += int(in_tokens or 0)
-                m["out_tokens"] += int(out_tokens or 0)
-                m["cost_usd"] = round(m["cost_usd"] + float(cost_usd or 0.0), 6)
-                m["last_used"] = now_iso
+        if cache_hit:
+            data["totals"]["cache_hits"] += 1
+        else:
+            t = data["totals"]
+            t["llm_calls"] += 1
+            t["input_tokens"] += int(in_tokens or 0)
+            t["output_tokens"] += int(out_tokens or 0)
+            t["cache_create_tokens"] += int(cache_create or 0)
+            t["cache_read_tokens"] += int(cache_read or 0)
+            t["estimated_cost_usd"] = round(
+                t["estimated_cost_usd"] + float(cost_usd or 0.0), 6
+            )
 
-                # Per-day
-                d = data["daily"].setdefault(today, {
-                    "calls": 0, "in_tokens": 0, "out_tokens": 0, "cost_usd": 0.0,
-                })
-                d["calls"] += 1
-                d["in_tokens"] += int(in_tokens or 0)
-                d["out_tokens"] += int(out_tokens or 0)
-                d["cost_usd"] = round(d["cost_usd"] + float(cost_usd or 0.0), 6)
+            mkey = model or "?"
+            m = data["per_model"].setdefault(mkey, {
+                "calls": 0, "in_tokens": 0, "out_tokens": 0, "cost_usd": 0.0,
+                "first_used": now_iso, "last_used": now_iso,
+            })
+            m["calls"] += 1
+            m["in_tokens"] += int(in_tokens or 0)
+            m["out_tokens"] += int(out_tokens or 0)
+            m["cost_usd"] = round(m["cost_usd"] + float(cost_usd or 0.0), 6)
+            m["last_used"] = now_iso
 
-            data["updated_at"] = now_iso
-            _atomic_write(data)
-        except Exception as e:
-            # Never let ledger writes crash the caller. The session-level
-            # telemetry in fit_scorer is still captured separately.
-            import sys
-            print(f"[cost_ledger] record() swallowed exception: {e}",
-                  file=sys.stderr)
+            d = data["daily"].setdefault(today, {
+                "calls": 0, "in_tokens": 0, "out_tokens": 0, "cost_usd": 0.0,
+            })
+            d["calls"] += 1
+            d["in_tokens"] += int(in_tokens or 0)
+            d["out_tokens"] += int(out_tokens or 0)
+            d["cost_usd"] = round(d["cost_usd"] + float(cost_usd or 0.0), 6)
+
+        data["updated_at"] = now_iso
+        return data
+
+    try:
+        if _USE_SAFE_JSON:
+            # Cross-process safe — the in-process lock is redundant but cheap
+            # and avoids threading-level contention within the same PID.
+            with _write_lock:
+                _sj_mutate(LEDGER_PATH, _mutator, default=_empty_ledger())
+        else:
+            # Legacy path. Still protect against in-process races.
+            with _write_lock:
+                data = _load()
+                data = _mutator(data)
+                _atomic_write(data)
+    except Exception as e:
+        # Never let ledger writes crash the caller. Session-level telemetry
+        # in fit_scorer is still captured separately.
+        print(f"[cost_ledger] record() swallowed exception: {e}", file=sys.stderr)
 
 
 def load() -> dict:

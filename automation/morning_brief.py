@@ -161,66 +161,84 @@ def _render_md(top: list[dict], total: int, delta_file: str,
 def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
     """Add top-K actionable roles to the tracker as Found/Watch entries.
     Returns the list of new tracker IDs added (or []).
-    Idempotent: skips URLs already in the tracker."""
+    Idempotent: skips URLs already in the tracker.
+
+    Uses safe_json.mutate_json so the read-build-write happens inside an
+    exclusive file lock — a concurrent UI edit or auto_promote run won't
+    clobber our additions (and vice versa)."""
     tracker_path = ROOT / "data" / "job_tracker_data.json"
     if not tracker_path.exists():
         return []
-    tr = json.loads(tracker_path.read_text(encoding="utf-8"))
-    existing_urls = {j.get("url") for j in tr.get("jobs", []) if j.get("url")}
-    added_ids: list[str] = []
+
     today_iso = datetime.now().strftime("%Y-%m-%d")
     stamp = datetime.now().strftime("%Y%m%d")
-    for r in top_actionable[:max_add]:
-        f = r.get("fit") or {}
-        url = r.get("link")
-        if not url or url in existing_urls:
-            continue
-        verdict = f.get("fit_verdict")
-        if verdict not in ("apply_now", "tailor_and_apply"):
-            continue
-        new_id = f"brief-{stamp}-{len(added_ids) + 1:02d}"
-        while new_id in {j["id"] for j in tr["jobs"]}:
-            new_id = new_id + "a"
-        variants = f.get("applicable_resume_variants") or []
-        # fit_score is a High/Medium/Low CATEGORY in the tracker (so the Kanban
-        # multi-select filter works across entries); the numeric 1-10 value
-        # lives in fit_score_numeric. auto_promote.make_entry does the same
-        # mapping — keeping both writers in sync avoids polluting the category
-        # filter with verdict strings like "apply_now".
-        num_score = int(f.get("fit_score") or 0)
-        fit_category = "High" if num_score >= 8 else ("Medium" if num_score >= 6
-                                                       else "Low")
-        tr["jobs"].append({
-            "id": new_id,
-            "company": r.get("company", ""),
-            "title": r.get("title", ""),
-            "sector": r.get("sector", ""),
-            "location": r.get("location", ""),
-            "url": url,
-            "source": r.get("source", ""),
-            "tier": f.get("tier", 3),
-            "fit_score": fit_category,
-            "fit_score_numeric": num_score,
-            "fit_verdict": verdict,
-            "fit_notes": f.get("summary", ""),
-            "resume_variants": variants,
-            "primary_variant": variants[0] if variants else "",
-            "status": "Found" if verdict == "apply_now" else "Watch",
-            "urgency": "High" if verdict == "apply_now" else "Medium",
-            "date_found": today_iso,
-            "posted_date": r.get("posted_date"),
-            "next_action": (f.get("top_3_reasons") or [""])[0][:160],
-            "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
-            "outreach_log": [],
-        })
-        added_ids.append(new_id)
-        existing_urls.add(url)
-    if added_ids:
-        # Backup, then write
-        import shutil
-        bak = tracker_path.with_suffix(f".bak.auto_brief_{stamp}.json")
-        shutil.copy2(tracker_path, bak)
-        tracker_path.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+    added_ids: list[str] = []
+
+    def _mutator(tr: dict) -> dict:
+        if not isinstance(tr, dict) or "jobs" not in tr:
+            return tr  # bail; safe_json will re-persist as-is
+        existing_urls = {j.get("url") for j in tr.get("jobs", []) if j.get("url")}
+        existing_ids = {j["id"] for j in tr["jobs"]}
+        for r in top_actionable[:max_add]:
+            f = r.get("fit") or {}
+            url = r.get("link")
+            if not url or url in existing_urls:
+                continue
+            verdict = f.get("fit_verdict")
+            if verdict not in ("apply_now", "tailor_and_apply"):
+                continue
+            new_id = f"brief-{stamp}-{len(added_ids) + 1:02d}"
+            while new_id in existing_ids:
+                new_id = new_id + "a"
+            variants = f.get("applicable_resume_variants") or []
+            num_score = int(f.get("fit_score") or 0)
+            fit_category = ("High" if num_score >= 8
+                             else ("Medium" if num_score >= 6 else "Low"))
+            tr["jobs"].append({
+                "id": new_id,
+                "company": r.get("company", ""),
+                "title": r.get("title", ""),
+                "sector": r.get("sector", ""),
+                "location": r.get("location", ""),
+                "url": url,
+                "source": r.get("source", ""),
+                "tier": f.get("tier", 3),
+                "fit_score": fit_category,
+                "fit_score_numeric": num_score,
+                "fit_verdict": verdict,
+                "fit_notes": f.get("summary", ""),
+                "resume_variants": variants,
+                "primary_variant": variants[0] if variants else "",
+                "status": "Found" if verdict == "apply_now" else "Watch",
+                "urgency": "High" if verdict == "apply_now" else "Medium",
+                "date_found": today_iso,
+                "posted_date": r.get("posted_date"),
+                "next_action": (f.get("top_3_reasons") or [""])[0][:160],
+                "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
+                "outreach_log": [],
+            })
+            added_ids.append(new_id)
+            existing_ids.add(new_id)
+            existing_urls.add(url)
+        return tr
+
+    # Try the locked path first; fall back to legacy if safe_json unavailable.
+    try:
+        from safe_json import mutate_json  # type: ignore
+        # Backup before mutating (matches previous semantics).
+        if any(True for _ in top_actionable[:max_add]):
+            import shutil
+            bak = tracker_path.with_suffix(f".bak.auto_brief_{stamp}.json")
+            shutil.copy2(tracker_path, bak)
+        mutate_json(tracker_path, _mutator)
+    except ImportError:
+        tr = json.loads(tracker_path.read_text(encoding="utf-8"))
+        _mutator(tr)
+        if added_ids:
+            import shutil
+            bak = tracker_path.with_suffix(f".bak.auto_brief_{stamp}.json")
+            shutil.copy2(tracker_path, bak)
+            tracker_path.write_text(json.dumps(tr, indent=2), encoding="utf-8")
     return added_ids
 
 

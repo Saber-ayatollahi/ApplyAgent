@@ -14,3 +14,9 @@ anthropic>=0.40
 # Data frames + UI
 pandas>=2.0
 streamlit>=1.30
+
+# Master Repo YAML sources
+pyyaml>=6.0
+
+# Cross-process file locking (safe_json helper)
+portalocker>=2.7

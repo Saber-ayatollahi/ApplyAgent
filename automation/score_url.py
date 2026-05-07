@@ -129,55 +129,78 @@ def _parse_sector_hint(company: str) -> str:
 
 
 def _add_to_tracker(url: str, role: dict, fit: dict) -> str | None:
-    """Append a minimal tracker entry for this role. Idempotent on URL."""
+    """Append a minimal tracker entry for this role. Idempotent on URL.
+
+    Holds the tracker file lock for the entire read-check-write, so a
+    concurrent UI or auto_promote writer can't land between our dedupe check
+    and our append."""
     if not TRACKER.exists():
         print("[score_url] tracker file not found; skipping --add-to-tracker",
               file=sys.stderr)
-        return None
-    tr = json.loads(TRACKER.read_text(encoding="utf-8"))
-    if any(j.get("url") == url for j in tr.get("jobs", [])):
-        print(f"[score_url] Already in tracker (url match): {url}", file=sys.stderr)
         return None
 
     variants = fit.get("applicable_resume_variants") or []
     verdict = fit.get("fit_verdict") or "watch"
     stamp = datetime.now().strftime("%Y%m%d%H%M")
-    new_id = f"manual-{stamp}"
-    while any(j.get("id") == new_id for j in tr.get("jobs", [])):
-        new_id += "a"
     num_score = int(fit.get("fit_score") or 0)
     fit_category = ("High" if num_score >= 8
                     else "Medium" if num_score >= 6 else "Low")
-    new_entry = {
-        "id": new_id,
-        "company": role["company"],
-        "title": role["title"],
-        "sector": role.get("sector", ""),
-        "url": url,
-        "source": "manual_score_url",
-        "tier": fit.get("tier", 3),
-        "status": "Found" if verdict == "apply_now" else "Watch",
-        "fit_score": fit_category,
-        "fit_score_numeric": num_score,
-        "fit_verdict": verdict,
-        "fit_notes": (fit.get("summary") or "")
-                     + " | Reasons: " + "; ".join(fit.get("top_3_reasons") or [])[:300],
-        "resume_variants": variants,
-        "primary_variant": variants[0] if variants else "",
-        "urgency": "High" if verdict == "apply_now" else "Medium",
-        "date_found": date.today().isoformat(),
-        "next_action": (fit.get("top_3_reasons") or [""])[0][:160],
-        "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
-        "outreach_log": [],
-    }
-    # Backup then write
+
+    added_id: list[str | None] = [None]  # mutable closure capture
+
+    def _mutator(tr):
+        if not isinstance(tr, dict) or "jobs" not in tr:
+            return tr
+        if any(j.get("url") == url for j in tr.get("jobs", [])):
+            # Dedupe inside the lock — caller sees added_id=None on return.
+            print(f"[score_url] Already in tracker (url match): {url}",
+                  file=sys.stderr)
+            return tr
+        new_id = f"manual-{stamp}"
+        while any(j.get("id") == new_id for j in tr.get("jobs", [])):
+            new_id += "a"
+        tr["jobs"].append({
+            "id": new_id,
+            "company": role["company"],
+            "title": role["title"],
+            "sector": role.get("sector", ""),
+            "url": url,
+            "source": "manual_score_url",
+            "tier": fit.get("tier", 3),
+            "status": "Found" if verdict == "apply_now" else "Watch",
+            "fit_score": fit_category,
+            "fit_score_numeric": num_score,
+            "fit_verdict": verdict,
+            "fit_notes": (fit.get("summary") or "")
+                         + " | Reasons: " + "; ".join(fit.get("top_3_reasons") or [])[:300],
+            "resume_variants": variants,
+            "primary_variant": variants[0] if variants else "",
+            "urgency": "High" if verdict == "apply_now" else "Medium",
+            "date_found": date.today().isoformat(),
+            "next_action": (fit.get("top_3_reasons") or [""])[0][:160],
+            "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
+            "outreach_log": [],
+        })
+        tr.setdefault("meta", {})["total_roles"] = len(tr["jobs"])
+        added_id[0] = new_id
+        return tr
+
+    # Back up outside the lock (file copy does its own OS-level atomicity);
+    # then mutate under the lock.
     bak = TRACKER.with_suffix(f".bak.score_url_{stamp}.json")
     shutil.copy2(TRACKER, bak)
-    tr["jobs"].append(new_entry)
-    tr.setdefault("meta", {})["total_roles"] = len(tr["jobs"])
-    TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
-    print(f"[score_url] Added {new_id} to tracker. Backup at {bak.name}", file=sys.stderr)
-    return new_id
+    try:
+        from safe_json import mutate_json  # type: ignore
+        mutate_json(TRACKER, _mutator)
+    except ImportError:
+        tr = json.loads(TRACKER.read_text(encoding="utf-8"))
+        _mutator(tr)
+        TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+
+    if added_id[0]:
+        print(f"[score_url] Added {added_id[0]} to tracker. Backup at {bak.name}",
+              file=sys.stderr)
+    return added_id[0]
 
 
 def main() -> int:

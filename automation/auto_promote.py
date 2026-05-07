@@ -34,6 +34,13 @@ import sys
 from datetime import date, datetime
 from pathlib import Path
 
+# Cross-process-safe tracker reads/writes. Degrades to plain json if unavailable.
+try:
+    from safe_json import read_json as _sj_read, write_json as _sj_write  # type: ignore
+except ImportError:
+    _sj_read = None  # type: ignore
+    _sj_write = None  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 TRACKER = ROOT / "data" / "job_tracker_data.json"
@@ -151,7 +158,10 @@ def main() -> int:
         return 1
 
     scored = json.loads(scored_path.read_text(encoding="utf-8"))
-    tr = json.loads(TRACKER.read_text(encoding="utf-8"))
+    if _sj_read is not None:
+        tr = _sj_read(TRACKER, default={"jobs": [], "meta": {}})
+    else:
+        tr = json.loads(TRACKER.read_text(encoding="utf-8"))
 
     existing_by_url = {j["url"]: j for j in tr["jobs"] if j.get("url")}
     existing_ids = {j["id"] for j in tr["jobs"]}
@@ -253,7 +263,10 @@ def main() -> int:
             "event": f"auto_promote: +{added} new, {updated} upgraded, {expired} expired (min_score={args.min_score})",
             "roles": len(tr["jobs"]),
         })
-        TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+        if _sj_write is not None:
+            _sj_write(TRACKER, tr)
+        else:
+            TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
         print(f"[auto_promote] COMMIT: added {added}, upgraded {updated}, expired {expired}")
         print(f"[auto_promote] Tracker backed up to {bak.name}")
 

@@ -76,6 +76,42 @@ except ImportError:
     except Exception:
         _jd_extract = None  # type: ignore
 
+# Central error log. Replaces `except Exception: pass` on best-effort paths so
+# silent failures (progress writes, cache reads, etc.) land in logs/errors.jsonl.
+try:
+    from error_log import log_error as _log_error  # type: ignore
+except ImportError:
+    try:
+        from .error_log import log_error as _log_error  # type: ignore
+    except Exception:
+        _log_error = None  # type: ignore
+
+# Cost guardrail: daily + per-run USD caps. Lazy-constructed in main() so
+# `--dry-run` (which never calls the LLM) bypasses it entirely.
+try:
+    from cost_guard import CostGuard as _CostGuard  # type: ignore
+except ImportError:
+    try:
+        from .cost_guard import CostGuard as _CostGuard  # type: ignore
+    except Exception:
+        _CostGuard = None  # type: ignore
+
+# Outcome feedback — pipeline conversion data injected into the system prompt
+# once the tracker starts accumulating Applied/Interview/Offer transitions.
+# Returns "" until there's real signal, so pre-application runs see no change.
+try:
+    from outcome_feedback import prompt_snippet as _outcome_prompt_snippet  # type: ignore
+except ImportError:
+    try:
+        from .outcome_feedback import prompt_snippet as _outcome_prompt_snippet  # type: ignore
+    except Exception:
+        _outcome_prompt_snippet = None  # type: ignore
+
+# The guard is a process-global so _cost_tick can accumulate spend without
+# threading through every function signature. main() sets it before spawning
+# workers; None means "no guard active" (legacy behavior).
+_cost_guard: "Optional[_CostGuard]" = None  # type: ignore
+
 # Lifetime cost ledger (never-reset, cumulative across sessions).
 try:
     from cost_ledger import record as _ledger_record  # type: ignore
@@ -128,8 +164,12 @@ def _write_progress():
         serializable = dict(_progress_state)
         serializable["recent"] = list(_progress_state["recent"])
         PROGRESS_PATH.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
-    except Exception:
-        pass  # progress is best-effort; don't break scoring on IO hiccup
+    except Exception as e:
+        # Progress is best-effort; never break scoring on an IO hiccup. Log
+        # so a recurring hiccup (stale lockfile, disk full) becomes visible
+        # instead of degrading the UI silently.
+        if _log_error is not None:
+            _log_error("progress_write", e, module="fit_scorer")
 
 
 def progress_begin(scan_name: str, total: int):
@@ -229,6 +269,14 @@ def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0
         _progress_state["cost"] = dict(_cost_state)
         _write_progress()
 
+    # Cost guardrail: record this call and trip the abort event if either
+    # cap is exceeded. Outside the progress lock so the ledger-based daily
+    # cap check doesn't hold up progress writers.
+    if _cost_guard is not None and not cache_hit and cost > 0:
+        _cost_guard.record(cost)
+        if _cost_guard.exceeded():
+            _cost_guard.trigger_abort(_abort_event, _abort_reason)
+
     # Append to the lifetime ledger outside the progress lock so a slow
     # disk write on the ledger file never blocks the scorer's progress
     # writes. The ledger has its own internal lock for concurrent ticks.
@@ -243,8 +291,11 @@ def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0
                 cache_read=cache_read,
                 cache_hit=cache_hit,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            # Ledger write is best-effort — the session-level telemetry in
+            # _cost_state is still accurate for this run.
+            if _log_error is not None:
+                _log_error("ledger_record", e, module="fit_scorer")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -655,11 +706,27 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
     legacy_cache = JD_CACHE / f"{_url_hash(url)}.txt"
     if cache_path.exists():
         return _extract_sections(cache_path.read_text(encoding="utf-8"), max_chars)
+    # Retrying GET: handles transient 5xx/429 + Retry-After, logs terminal
+    # failures to logs/errors.jsonl. Returns None when retries are exhausted.
     try:
-        r = requests.get(url, headers=HEADERS, timeout=25)
-        if r.status_code != 200:
-            print(f"  [fetch_jd] {r.status_code} on {url}", file=sys.stderr)
+        from http_retry import retry_get  # type: ignore
+        r = retry_get(url, headers=HEADERS, timeout=25,
+                      max_tries=3, context="fetch_jd")
+    except ImportError:
+        # Fallback: legacy single-shot GET.
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=25)
+            if r.status_code != 200:
+                r = None
+        except Exception as e:
+            print(f"  [fetch_jd] err {url}: {e}", file=sys.stderr)
             return ""
+
+    if r is None:
+        # http_retry already logged the failure reason + URL to the error log.
+        return ""
+
+    try:
         soup = BeautifulSoup(r.text, "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header", "button", "form",
                          "aside", "iframe", "noscript"]):
@@ -678,12 +745,18 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
             return cleaned  # return what we have but don't persist
         # Legacy cache cleanup
         if legacy_cache.exists():
-            try: legacy_cache.unlink()
-            except Exception: pass
+            try:
+                legacy_cache.unlink()
+            except Exception as e:
+                if _log_error is not None:
+                    _log_error("jd_cache_legacy_unlink", e, module="fit_scorer")
         cache_path.write_text(cleaned, encoding="utf-8")
         return _extract_sections(cleaned, max_chars)
     except Exception as e:
-        print(f"  [fetch_jd] err {url}: {e}", file=sys.stderr)
+        if _log_error is not None:
+            _log_error("fetch_jd_parse", e, module="fit_scorer",
+                        extra={"url": url})
+        print(f"  [fetch_jd] parse err {url}: {e}", file=sys.stderr)
         return ""
 
 
@@ -772,7 +845,8 @@ def _build_system_prompt() -> str:
     """Build the scorer system prompt.
 
     Strategy: boilerplate frame + extracted Master Repo sections (Skills §4, Positioning §7,
-    Variants §10). Prompt-cached — the per-scan cost is paid once, the per-role cost is ~$0.
+    Variants §10) + outcome feedback (pipeline conversion data, once there's signal).
+    Prompt-cached — the per-scan cost is paid once, the per-role cost is ~$0.
     Falls back to a constant prompt if the repo file is missing or sectioning fails.
     """
     if not MASTER_REPO.exists():
@@ -785,6 +859,20 @@ def _build_system_prompt() -> str:
     if not sections:
         return _FALLBACK_SYSTEM_PROMPT
 
+    outcome_block = ""
+    if _outcome_prompt_snippet is not None:
+        try:
+            snippet = _outcome_prompt_snippet()
+            if snippet:
+                outcome_block = (
+                    "\n# Pipeline-outcome feedback (actual Saber results — weight accordingly)\n\n"
+                    f"{snippet}\n"
+                    "\nWhen scoring, treat hot-lane slices as slight positive signal and\n"
+                    "cold-lane slices as a yellow flag worth noting in `top_3_reasons`.\n"
+                )
+        except Exception:
+            outcome_block = ""
+
     return (
         "You are a hard-nosed senior finance career strategist assessing job fit for\n"
         "Saber Ayatollahi. Below is Saber's canonical skills inventory, positioning angles,\n"
@@ -793,6 +881,7 @@ def _build_system_prompt() -> str:
         "# Saber's Master Repository (evidenced skills, positioning, resume variants)\n"
         "\n"
         f"{sections}\n"
+        f"{outcome_block}"
         "\n"
         "# How to score\n"
         "\n"
@@ -932,8 +1021,12 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
             cached = json.loads(cache.read_text(encoding="utf-8"))
             _cost_tick(cache_hit=True)
             return cached
-        except Exception:
-            pass
+        except Exception as e:
+            # Corrupt cache entry — re-score. Surface so a pattern of
+            # corruption (disk full? concurrent writer?) is visible.
+            if _log_error is not None:
+                _log_error("fit_cache_read", e, module="fit_scorer",
+                            extra={"url": role.get("link")})
 
     if _abort_event.is_set():
         return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["aborted"],
@@ -1077,6 +1170,9 @@ def main() -> int:
                     help="Ignore fit cache; re-call LLM for every role.")
     ap.add_argument("--concurrency", type=int, default=4,
                     help="Parallel LLM calls (default 4).")
+    ap.add_argument("--no-cost-guard", action="store_true",
+                    help="Disable the daily/per-run USD cap. Use when you "
+                         "deliberately want a large run (e.g. full rescore).")
     args = ap.parse_args()
 
     scan_path = OUT_DIR / args.scan
@@ -1132,6 +1228,15 @@ def main() -> int:
             p = _cache_path_fit(r["link"])
             if p.exists():
                 p.unlink()
+
+    # Activate cost guardrail (daily + per-run USD caps from env). Preflight
+    # refuses to start if today's spend is already over cap; in-run checks
+    # trip _abort_event once per-run cap is hit. Skip in --no-guard mode.
+    global _cost_guard
+    if _CostGuard is not None and not args.no_cost_guard:
+        _cost_guard = _CostGuard.from_env()
+        print(f"[cost_guard] {_cost_guard.summary()}", file=sys.stderr)
+        _cost_guard.preflight_or_exit()
 
     client = anthropic.Anthropic()
     t0 = time.time()

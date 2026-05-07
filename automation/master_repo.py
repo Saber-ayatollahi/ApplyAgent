@@ -331,6 +331,14 @@ def load() -> MasterRepo:
     achievements = _yaml("achievements")["achievements"]
     keyword_bank = _yaml("keyword_bank")["aliases"]
 
+    # Prefer standalone gaps.yaml (with aliases); fall back to the legacy
+    # embedded `gaps:` block in skills.yaml for callers who haven't migrated.
+    gaps_path = MASTER_REPO_DIR / "gaps.yaml"
+    if gaps_path.exists():
+        gaps_data = _yaml("gaps")
+    else:
+        gaps_data = skills_data.get("gaps") or {}
+
     return MasterRepo(
         identity=identity,
         education=education,
@@ -346,7 +354,7 @@ def load() -> MasterRepo:
         strategy=strategy,
         achievements=achievements,
         keyword_bank=keyword_bank,
-        gaps=skills_data.get("gaps") or {},
+        gaps=gaps_data,
     )
 
 
