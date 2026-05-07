@@ -705,6 +705,7 @@ PAGES = [
     "⚙️ Admin",
 ]
 
+
 # API key manager — always on top of sidebar
 api_key.render_sidebar()
 gmail_ui.render_sidebar()
@@ -765,7 +766,40 @@ if error_log is not None:
 
 st.sidebar.markdown("---")
 
-page = st.sidebar.radio("Navigate", PAGES)
+# -------- Grouped sidebar nav --------
+# Sidebar radio with visual section dividers. Streamlit's radio doesn't
+# support true section headers natively, so we use non-selectable separator
+# strings inserted between groups. If the user somehow lands on one,
+# page-routing treats it as Dashboard so nothing breaks.
+_SEP_WORK    = "── Work ──"
+_SEP_TRACKER = "── Tracker ──"
+_SEP_ADMIN   = "── Admin ──"
+_SEPARATORS = {_SEP_WORK, _SEP_TRACKER, _SEP_ADMIN}
+
+_NAV_OPTIONS = [
+    _SEP_WORK,
+    "🏠 Dashboard",
+    "🎯 Pipeline",
+    _SEP_TRACKER,
+    "📋 Jobs Kanban",
+    "🤝 Recruiter CRM",
+    _SEP_ADMIN,
+    "📅 Weekly Plan",
+    "📝 Content & Memory",
+    "📜 Scan History",
+    "⚙️ Admin",
+]
+
+_nav_pick = st.sidebar.radio(
+    "Navigate",
+    _NAV_OPTIONS,
+    index=1,                                    # default: Dashboard
+    label_visibility="collapsed",
+    key="_applyagent_nav",
+)
+# If the user somehow picks a separator, fall back to Dashboard so the
+# if/elif page-router below always matches something.
+page = _nav_pick if _nav_pick not in _SEPARATORS else "🏠 Dashboard"
 
 # Active-runs badge in sidebar
 active_runs = scan_runner.active_runs()
