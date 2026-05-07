@@ -3674,6 +3674,235 @@ elif page == "⚙️ Admin":
             )
     st.markdown("---")
 
+    # ---------- Reset & cleanup ----------
+    # Four scopes, each a two-click (plan -> confirm -> execute) flow so
+    # the user always sees WHAT will be deleted before it happens. The
+    # plan/execute split lives in automation/reset_ops.py.
+    st.subheader("🗑 Reset & cleanup")
+    st.caption(
+        "Delete specific runs, clear caches, or reset the whole app. "
+        "Every destructive action shows a preview first; `Full reset` "
+        "requires a typed confirmation phrase. Backups are made of "
+        "tracker/CRM/ledger before any reset so you can roll back."
+    )
+
+    try:
+        import reset_ops  # noqa: E402  (already on sys.path via automation/)
+    except Exception as _rx:
+        st.error(f"reset_ops module unavailable: {_rx}")
+        reset_ops = None  # type: ignore
+
+    if reset_ops is not None:
+        # Inventory bar — what's on disk right now
+        _inv = reset_ops.inventory_outputs()
+        iv1, iv2, iv3, iv4, iv5 = st.columns(5)
+        iv1.metric("Scans", _inv["scan_count"])
+        iv2.metric("Scored", _inv["scored_count"])
+        iv3.metric("Pipeline runs", _inv["pipeline_runs"])
+        iv4.metric("Tailor docs", _inv["tailor_docs"])
+        iv5.metric("outputs/ size",
+                    f"{_inv['outputs_bytes'] / (1024*1024):.1f} MB")
+        st.caption(
+            f"Caches: JD {_inv['jd_cache_bytes']//1024} KB · "
+            f"Fit {_inv['fit_cache_bytes']//1024} KB · "
+            f"background runs logged: {_inv['background_runs']}"
+        )
+
+        reset_tabs = st.tabs([
+            "🎯 Delete one scan",
+            "🧹 Clear all scans",
+            "💾 Clear caches",
+            "💣 Full reset",
+        ])
+
+        # -------- Tab 1: Delete one scan ---------------------------------
+        with reset_tabs[0]:
+            scans = reset_ops.list_scans()
+            if not scans:
+                st.info("No scans on disk.")
+            else:
+                labels = [
+                    f"{s['stem']} · {s['rows']:,} rows · "
+                    f"{s['size_kb']:,} KB · {s['mtime']}"
+                    for s in scans
+                ]
+                idx = st.selectbox(
+                    "Scan to delete", range(len(scans)),
+                    format_func=lambda i: labels[i],
+                    key="reset_scan_pick",
+                )
+                chosen = scans[idx]
+                plan = reset_ops.plan_delete_scan(chosen["stem"])
+                if plan.files_to_delete:
+                    st.markdown("**Will delete:**")
+                    for p in plan.files_to_delete:
+                        st.code(str(p.name), language="text")
+                    st.caption(f"Total: {plan.summary()}")
+                    rc1, rc2 = st.columns([1, 3])
+                    with rc1:
+                        if st.button("🗑 Delete this scan",
+                                      type="primary",
+                                      width='stretch',
+                                      key="reset_scan_go"):
+                            result = reset_ops.execute(plan)
+                            if result.errors:
+                                st.error(
+                                    f"Deleted {result.deleted_files} file(s); "
+                                    f"{len(result.errors)} error(s): "
+                                    + "; ".join(result.errors[:3])
+                                )
+                            else:
+                                st.success(
+                                    f"Deleted {result.deleted_files} file(s) "
+                                    f"({result.deleted_bytes/1024:.0f} KB)."
+                                )
+                            st.cache_data.clear()
+                            st.rerun()
+                    with rc2:
+                        st.caption(
+                            "One-click delete. No typed confirmation for "
+                            "single-scan deletes — small blast radius."
+                        )
+
+        # -------- Tab 2: Clear all scans ---------------------------------
+        with reset_tabs[1]:
+            plan = reset_ops.plan_clear_scans()
+            if not plan.files_to_delete:
+                st.info("No scans to clear.")
+            else:
+                st.markdown(
+                    f"**Will delete {len(plan.files_to_delete)} file(s)** "
+                    f"(~{plan.total_bytes/(1024*1024):.1f} MB):"
+                )
+                preview_n = min(10, len(plan.files_to_delete))
+                for p in plan.files_to_delete[:preview_n]:
+                    st.code(p.name, language="text")
+                if len(plan.files_to_delete) > preview_n:
+                    st.caption(
+                        f"… +{len(plan.files_to_delete) - preview_n} more")
+                st.caption(
+                    f"**Preserved:** {', '.join(plan.preserved)}. "
+                    "The scan_checkpoint.json is also preserved so an "
+                    "in-progress paused scrape can still resume."
+                )
+                if st.checkbox("I understand this removes all scan history",
+                                 key="reset_scans_ack"):
+                    if st.button("🧹 Clear all scans now",
+                                  type="primary",
+                                  width='stretch',
+                                  key="reset_scans_go"):
+                        result = reset_ops.execute(plan)
+                        if result.errors:
+                            st.error(
+                                f"Deleted {result.deleted_files} file(s); "
+                                f"{len(result.errors)} error(s): "
+                                + "; ".join(result.errors[:3])
+                            )
+                        else:
+                            st.success(
+                                f"Deleted {result.deleted_files} file(s) "
+                                f"({result.deleted_bytes/(1024*1024):.1f} MB)."
+                            )
+                        st.cache_data.clear()
+                        st.rerun()
+
+        # -------- Tab 3: Clear caches ------------------------------------
+        with reset_tabs[2]:
+            plan = reset_ops.plan_clear_caches()
+            st.markdown(
+                f"**Will empty** `jd_cache/` and `fit_cache/` "
+                f"({len(plan.files_to_delete)} file(s), "
+                f"~{plan.total_bytes/1024:.0f} KB)."
+            )
+            st.caption(
+                "Forces scrapes to re-fetch JDs and the scorer to re-call "
+                "the LLM on every role. Useful when scoring logic changed "
+                "and you want clean re-runs. Does NOT delete scans, "
+                "scored files, tracker, CRM, or the lifetime ledger."
+            )
+            if plan.files_to_delete:
+                if st.button("💾 Clear caches",
+                              type="primary",
+                              width='stretch',
+                              key="reset_cache_go"):
+                    result = reset_ops.execute(plan)
+                    if result.errors:
+                        st.error(
+                            f"Deleted {result.deleted_files} file(s); "
+                            f"{len(result.errors)} error(s): "
+                            + "; ".join(result.errors[:3])
+                        )
+                    else:
+                        st.success(
+                            f"Deleted {result.deleted_files} cache file(s) "
+                            f"({result.deleted_bytes/1024:.0f} KB)."
+                        )
+                    st.cache_data.clear()
+                    st.rerun()
+            else:
+                st.info("Caches already empty.")
+
+        # -------- Tab 4: Full reset --------------------------------------
+        with reset_tabs[3]:
+            plan = reset_ops.plan_full_reset()
+            st.error(
+                "**Full reset** wipes `automation/outputs/`, clears the "
+                "tracker, clears the recruiter CRM, and resets the "
+                "lifetime cost ledger to zero. Tracker, CRM, and ledger "
+                "are backed up first."
+            )
+            rf1, rf2 = st.columns([1, 1])
+            with rf1:
+                st.markdown("**Will delete:**")
+                st.caption(
+                    f"{len(plan.files_to_delete)} top-level file(s), "
+                    f"{len(plan.dirs_to_empty)} subdir(s) emptied, "
+                    f"{len(plan.json_to_reset)} JSON reset, "
+                    f"ledger zeroed. "
+                    f"~{plan.total_bytes/(1024*1024):.1f} MB freed."
+                )
+            with rf2:
+                st.markdown("**Preserved:**")
+                for pr in plan.preserved:
+                    st.caption(f"· {pr}")
+            required_phrase = "RESET EVERYTHING"
+            typed = st.text_input(
+                f'Type `{required_phrase}` to confirm',
+                value="",
+                key="reset_full_confirm",
+                placeholder=required_phrase,
+            )
+            if st.button("💣 Full reset (cannot be undone except from backups)",
+                          type="primary",
+                          width='stretch',
+                          disabled=(typed.strip() != required_phrase),
+                          key="reset_full_go"):
+                result = reset_ops.execute(
+                    plan,
+                    confirm_phrase=typed,
+                    required_phrase=required_phrase,
+                )
+                if result.errors:
+                    st.error(
+                        f"Partial reset: {result.deleted_files} file(s) "
+                        f"deleted, {len(result.errors)} error(s): "
+                        + "; ".join(result.errors[:5])
+                    )
+                else:
+                    st.success(
+                        f"✅ Full reset complete. "
+                        f"{result.deleted_files} file(s) removed "
+                        f"({result.deleted_bytes/(1024*1024):.1f} MB). "
+                        f"Tracker + CRM + ledger: reset. "
+                        f"Backups: {len(result.backups)}."
+                    )
+                    for bak in result.backups:
+                        st.caption(f"🗄 backup: `{bak.name}`")
+                st.cache_data.clear()
+                st.rerun()
+
+    st.markdown("---")
+
     # ---------- Nightly schedule ----------
     st.subheader("🌙 Nightly schedule")
     st.caption(
