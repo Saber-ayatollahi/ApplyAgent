@@ -1,0 +1,213 @@
+# §6 — STAR story bank. Each story is tagged by resume-variant + skill_ids so
+# interview-prep agents can pick the right story for a target JD, not just
+# keyword-match the role title.
+#
+# `tags` preserves the v1 notation (ALM/VAL/VEN/QUANT/CON/AI/ALL) as strings,
+# since that's what the rendered .md needs. The structured `skill_ids` and
+# `project_ids` are what future agents should query off.
+---
+stories:
+  - id: story_cashflow_engine
+    number: 1
+    title: "Led enterprise cash flow projection engine from scratch"
+    situation: >
+      Moody's Analytics buy-side team needed forward-looking liquidity
+      visibility across multi-asset ALM horizons; prior approach was
+      manual-spreadsheet-based and not auditable. Situation sharpened by
+      institutional clients asking for reverse-stress and behavioral-cashflow
+      coverage.
+    task: >
+      Design and build a scalable multi-scenario cash flow projection engine
+      that integrated with the broader analytics platform.
+    action: >
+      Architected configurable time-bucketed liquidity gap analytics (T+1 →
+      multi-year), embedded behavioral cashflow assumptions and prepayment
+      logic, layered macro stress overlays, and re-engineered the upstream
+      spreadsheet workflows into Python pipelines with auditable logging.
+    result: >
+      Shipped production engine delivering forward-looking liquidity visibility,
+      unlocking analytical capability clients were asking for and reducing manual
+      workflow time materially.
+    tags: ["ALM", "VEN", "VAL"]
+    skill_ids: [sk_cash_flow_projection, sk_liquidity_gap, sk_stress_testing, sk_python, sk_alm, sk_model_signoff]
+    project_ids: [proj_cashflow_engine]
+
+  - id: story_escalated_signoff
+    number: 2
+    title: "Escalated a model output that was mathematically defensible but economically wrong"
+    situation: >
+      A client-delivery run produced portfolio-level sensitivities that passed
+      all internal checks but did not square with the client's economic
+      intuition under a specific rate-shock scenario.
+    task: >
+      Either sign off under deadline pressure or hold the release and escalate —
+      with client relationship and platform credibility on the line.
+    action: >
+      Held the release, re-ran the sensitivities decomposed by asset class,
+      identified a curve-calibration edge case (short-end inversion handling),
+      escalated to product owners and the client's Head of Risk, and walked
+      through the remediation plan.
+    result: >
+      Release delayed by 48 hours; client avoided acting on wrong numbers;
+      defect was remediated upstream and captured in validation tests. Built
+      trust with Head of Risk — became their direct escalation contact.
+    tags: ["VAL", "ALM"]
+    skill_ids: [sk_model_signoff, sk_escalation_exception, sk_assumption_validation, sk_yield_curve, sk_director_stakeholder]
+    project_ids: []
+
+  - id: story_bridged_client_dev
+    number: 3
+    title: "Bridged client investment team and development organization"
+    situation: >
+      During Calypso → PFaroe migration, a pension-fund client's ALM
+      configuration requirements were being lost in translation between their
+      investment desk and Moody's dev team, delaying onboarding.
+    task: >
+      Bring both sides to a working agreement quickly.
+    action: >
+      Scoped client requirements into structured Product Owner requests, walked
+      PO through the investment-team's decision logic, translated dev pushback
+      back into investment language.
+    result: >
+      Client onboarded on schedule; configuration pattern was reused for
+      subsequent clients in the migration cohort.
+    tags: ["VEN", "CON"]
+    skill_ids: [sk_po_requirements_scoping, sk_client_onboarding, sk_platform_migration, sk_cross_functional_coordination]
+    project_ids: [proj_calypso_to_pfaroe]
+
+  - id: story_ldi_saa_shift
+    number: 4
+    title: "LDI study that shifted a pension fund's SAA"
+    situation: >
+      Ortec Finance ALM study for a Canadian pension-fund client — client was
+      questioning whether their fixed-income duration positioning was
+      appropriate given a liability-duration extension.
+    task: >
+      Quantify the trade-off and present to the investment committee.
+    action: >
+      Built stochastic economic scenario generator calibrated to the client's
+      assumptions, ran funding-ratio distributions under base and stressed
+      regimes, decomposed duration gap contribution to funding-ratio volatility,
+      presented results with explicit SAA recommendations.
+    result: >
+      Committee adopted a duration extension recommendation; client returned to
+      Ortec for subsequent studies.
+    tags: ["ALM", "CON", "QUANT"]
+    skill_ids: [sk_ldi, sk_stochastic_modelling, sk_scenario_generator, sk_duration_gap, sk_funding_ratio, sk_investment_committee_presentation]
+    project_ids: [proj_ortec_ldi_studies, proj_ortec_scenario_generators]
+
+  - id: story_ifrs17_alignment
+    number: 5
+    title: "IFRS 17 program — reconciling finance, actuarial, and IT"
+    situation: >
+      EY client — Canadian insurer mid-way through IFRS 17 implementation with
+      finance, actuarial, and IT functions out of sync on data sourcing and
+      CSM mechanics.
+    task: >
+      Drive alignment at the technical level so the program could hit its
+      reporting readiness milestone.
+    action: >
+      Built shared requirements documentation, walked each function through
+      other functions' constraints, identified the three decisions that needed
+      executive sign-off, escalated clearly.
+    result: >
+      Program milestone hit; documentation was reused across subsequent IFRS 17
+      engagements.
+    tags: ["CON", "ALM"]
+    skill_ids: [sk_ifrs17, sk_ifrs9, sk_cross_functional_coordination, sk_cross_functional_regulatory]
+    project_ids: [proj_ifrs17_transformation]
+
+  - id: story_spreadsheet_to_python
+    number: 6
+    title: "Spreadsheet to Python pipeline — governance upgrade"
+    situation: >
+      A Moody's valuation workflow was spreadsheet-driven with limited logging
+      and no versioning — not acceptable under model-governance audit.
+    task: >
+      Migrate without disrupting live client delivery.
+    action: >
+      Parallel-built Python pipeline; ran in shadow mode for two cycles;
+      reconciled output; cut over with rollback plan.
+    result: >
+      Governance audit closed satisfactorily; pipeline became template for
+      adjacent workflows.
+    tags: ["VAL", "ALM", "VEN"]
+    skill_ids: [sk_python, sk_audit_documentation, sk_model_review_challenge, sk_model_signoff]
+    project_ids: [proj_spreadsheet_to_python_migration]
+
+  - id: story_claude_code_review
+    number: 7
+    title: "Using Claude Code to accelerate code review"
+    situation: >
+      Validation workload was expanding faster than the team could grow
+      headcount.
+    task: >
+      Find a force-multiplier.
+    action: >
+      Built agentic review workflows (Claude Code, Cursor IDE) — automated
+      first-pass code review, validation scaffolding, documentation drafts;
+      human still signs off on governance-critical review.
+    result: >
+      Cycle time on comparable validation modules dropped ~30–40%; approach is
+      being explored for broader adoption. Also a portfolio piece for any
+      AI-forward interview.
+    tags: ["AI", "VAL", "VEN"]
+    skill_ids: [sk_claude_code, sk_cursor_ide, sk_agent_dev, sk_llm_codegen, sk_model_review_challenge]
+    project_ids: [proj_agentic_ai_workflows]
+
+  - id: story_chemeng_pivot
+    number: 8
+    title: "Chem Eng → Finance — why the pivot stuck"
+    situation: >
+      Interviewer probes the chem-eng-to-finance pivot.
+    task: >
+      Answer credibly without apologizing for the transition.
+    action: >
+      Honest framing: chem eng gave mathematical fluency with PDEs, numerical
+      methods, and uncertainty quantification. Financial modelling MSc
+      translated that into the finance vocabulary. First five years (Ortec, EY)
+      were the bridge. CFA in 2024 consolidated the charter-level signal.
+    result: >
+      Positioned as deliberate, not accidental. Ties to interviewer's next
+      question (usually "what about finance sticks?").
+    tags: ["ALL"]
+    skill_ids: []
+    project_ids: []
+
+  - id: story_signoff_trust
+    number: 9
+    title: "Sign-off on a $15bn portfolio — how I think about that trust"
+    situation: >
+      Interviewer challenges "you're Assistant Director, how do you have
+      sign-off?"
+    task: >
+      Clarify role scope without overclaiming.
+    action: >
+      Honest framing: Moody's runs a formal governance framework where sign-off
+      authority is delegated by role, not title. The Assistant Director role is
+      IC-with-independent-review authority; sign-off attests to defensibility
+      of specific analytical outputs, not to the whole portfolio's investment
+      strategy.
+    result: >
+      Distinction is clear; interviewer moves to the technical probing (yield
+      curve, behavioral assumptions, etc).
+    tags: ["VAL", "ALM"]
+    skill_ids: [sk_model_signoff, sk_model_review_challenge]
+    project_ids: []
+
+  - id: story_difficult_client
+    number: 10
+    title: "Managed a difficult client escalation"
+    status: placeholder
+    situation: >
+      (Reserve this slot — log a real incident here within 2 weeks; every senior
+      finance interview uses one of these.) Placeholder: Difficult client
+      situation at Moody's / EY / Ortec where a stakeholder pushed hard on an
+      analytical answer they didn't like.
+    task: >
+      Hold the line on analytics while preserving the relationship.
+    action: "(to fill)"
+    result: "(to fill)"
+    tags: ["ALL"]
+    skill_ids: []
+    project_ids: []

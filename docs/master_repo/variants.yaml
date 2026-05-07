@@ -1,0 +1,42 @@
+# §10 — Resume variants on file. Status values: "active_update" | "build_now"
+# | "build_month" | "on_trigger" | "retired". Retired variants stay here for
+# historical reference so the tailor can refuse activation.
+---
+update_date: "2026-05-03"
+
+variants:
+  - id: var_alm
+    label: "ALM / IRRBB (primary)"
+    role_focus: "Big 6 banks, pensions, insurers"
+    file: "Saber_Ayatollahi_Spring_2026_ALM.docx"
+    status: "Update this week"
+    variant_tag: ALM
+  - id: var_val
+    label: "Model Validation"
+    role_focus: "RBC, TD, CIBC, BMO, Scotia validation teams, BNY, State Street"
+    file: "Saber_Ayatollahi_Spring_2026_Validation.docx"
+    status: "Build this week"
+    variant_tag: VAL
+  - id: var_ven
+    label: "Vendor-Platform"
+    role_focus: "BlackRock Aladdin, Bloomberg, MSCI, S&P, FactSet, SS&C Algorithmics"
+    file: "Saber_Ayatollahi_Spring_2026_VendorPlatform.docx"
+    status: "Build this week"
+    variant_tag: VEN
+  - id: var_quant
+    label: "Quant / Fixed Income Analytics"
+    role_focus: "PIMCO, Wellington, RBC GAM, TDAM, CPP/OTPP/OMERS quant teams"
+    file: "Saber_Ayatollahi_Spring_2026_Quant.docx"
+    status: "Build this month"
+    variant_tag: QUANT
+  - id: var_con
+    label: "Consulting / Advisory *(opportunistic)*"
+    role_focus: "EY FSRM, Mercer, WTW, Deloitte FSI"
+    file: "Saber_Ayatollahi_Spring_2026_Consulting.docx"
+    status: "Build on trigger"
+    variant_tag: CON
+
+retired:
+  - "Portfolio Manager (`_PM.docx`)"
+  - "Product Manager (`_Product.docx`)"
+  - "Project/Program Manager"

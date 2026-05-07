@@ -1,0 +1,13 @@
+# §11 — Job-search strategy notes. Operating cadence lives in
+# operating_cadence.md; this file captures the positioning/workflow rules
+# that the tailor and scorer prompts refer to.
+---
+strategy_notes_md: |
+  - Primary narrative: **ALM / IRRBB / Model Governance — sign-off authority on multi-asset institutional portfolios, cash-flow-engine build, LDI practitioner depth.** Every Big 6 and insurer cover letter opens on a concrete capability tied to the target team (not on regulatory-calendar framing).
+  - Secondary narrative: **Vendor-platform practitioner who already knows your buyers.** Every BlackRock / Bloomberg / MSCI / S&P cover letter opens on this hook.
+  - Toronto-only geography — all target companies have confirmed Toronto presence.
+  - Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). For every tailored application, attempt at least one warm-intro pathway before submitting.
+  - Cadence: 8 apps/wk · 10 outreach messages/wk · 3 coffees/wk · 1 LinkedIn post/wk (see `operating_cadence.md`).
+  - Use `jd_tailor.py` to draft resume + cover letter variants before applying; never ship a generic resume.
+
+last_updated_footer: "*Last updated: 2026-05-03 | v2 rewrite: narrowed positioning, added tagged bullet library, STAR story bank, resolved year-count and sign-off framing inconsistencies.*"

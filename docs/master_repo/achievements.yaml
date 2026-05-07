@@ -1,0 +1,53 @@
+# Quantified achievement ledger — ranked by strength of claim. Each entry
+# points back to the project / role that produced it. The tailor leads a
+# resume summary or cover letter opening with the top-N entries for the
+# target audience (banking vs. vendor vs. consulting).
+#
+# "strength" is a coarse ordinal: high | medium | low. High = defensible
+# number, clear $ or % impact, interview-safe. Low = qualitative framing.
+---
+achievements:
+  - id: ach_signoff_aum
+    strength: high
+    claim: "Sign-off authority on multi-asset institutional portfolios ranging $5-25bn per engagement, cumulatively ~$50bn+."
+    evidence_role_id: role_moodys
+    evidence_project_ids: [proj_cashflow_engine]
+    audience: [banking, pension, insurer, consulting]
+    caveats: "Per-engagement range is factual; 'cumulative ~$50bn+' is the lifetime book — don't inflate beyond this."
+
+  - id: ach_agentic_ai_cycle_time
+    strength: medium
+    claim: "Agentic AI workflows (Claude Code, Cursor IDE) reduced development cycle time by ~30-40% on comparable modules."
+    evidence_role_id: role_moodys
+    evidence_project_ids: [proj_agentic_ai_workflows]
+    audience: [vendor, ai_forward]
+    caveats: "30-40% is a point estimate; don't promote to a harder number."
+
+  - id: ach_cashflow_horizon
+    strength: medium
+    claim: "Cash flow projection engine spans T+1 overnight through multi-year horizons across base, stress, and reverse-stress scenarios."
+    evidence_role_id: role_moodys
+    evidence_project_ids: [proj_cashflow_engine]
+    audience: [banking, pension, insurer]
+
+  - id: ach_calypso_pfaroe_migration
+    strength: medium
+    claim: "Migrated all assigned client accounts from legacy Calypso to PFaroe PM with validated model outputs post-deployment."
+    evidence_role_id: role_moodys
+    evidence_project_ids: [proj_calypso_to_pfaroe]
+    audience: [vendor, consulting]
+
+  - id: ach_ldi_duration_extension
+    strength: low
+    claim: "Pension-fund investment committee adopted a duration-extension recommendation following LDI study presentation."
+    evidence_role_id: role_ortec
+    evidence_project_ids: [proj_ortec_ldi_studies]
+    audience: [pension, consulting]
+    caveats: "Aggregate of pension-fund engagements; don't name specific clients without confirming."
+
+  - id: ach_ifrs17_milestone
+    strength: low
+    claim: "IFRS 17 program milestone hit; governance documentation reused across subsequent engagements."
+    evidence_role_id: role_ey
+    evidence_project_ids: [proj_ifrs17_transformation]
+    audience: [consulting, insurer]

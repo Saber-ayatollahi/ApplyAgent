@@ -10,6 +10,8 @@
 > 5. Section 7 = role angles — **two primary**, not seven. All outbound focuses here.
 > 6. Sections 8–11 = logistics, summary-statement bank, resume variants, job-search strategy.
 
+> **Generated from:** `docs/master_repo/*.yaml`. Regenerate with `python docs/master_repo/_render.py`. Do not hand-edit this file.
+
 ---
 
 ## 1. IDENTITY & CONTACT

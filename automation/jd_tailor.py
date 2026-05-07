@@ -37,6 +37,26 @@ except ImportError:
     _missing_anthropic = True
     anthropic = None  # type: ignore
 
+# Deterministic pre-analysis: JD → skill hits, variants, bullet shortlist.
+# Loaded lazily so --dry-run still works without YAML sources available.
+try:
+    from jd_skill_extract import (  # type: ignore
+        extract as _jd_extract,
+        rank_bullets as _rank_bullets,
+        format_bullet_shortlist as _format_bullet_shortlist,
+    )
+except ImportError:
+    try:
+        from .jd_skill_extract import (  # type: ignore
+            extract as _jd_extract,
+            rank_bullets as _rank_bullets,
+            format_bullet_shortlist as _format_bullet_shortlist,
+        )
+    except Exception:
+        _jd_extract = None           # type: ignore
+        _rank_bullets = None         # type: ignore
+        _format_bullet_shortlist = None  # type: ignore
+
 try:
     import requests
     from bs4 import BeautifulSoup  # type: ignore
@@ -139,14 +159,55 @@ def build_system_prompt() -> str:
     )
 
 
+def _deterministic_preamble(jd: str) -> str:
+    """Build the deterministic analysis + ranked bullet shortlist that goes
+    into the user prompt ABOVE the full Master Repo. The LLM is instructed
+    to prefer the shortlist when assembling the resume but may still draw
+    from §5 of the repo for secondary fits.
+
+    Returns an empty string when the JD is missing or the extractor is not
+    available (e.g. tests running without PyYAML)."""
+    if not jd or _jd_extract is None:
+        return ""
+    try:
+        ex = _jd_extract(jd)
+    except Exception as e:
+        print(f"  [tailor] deterministic extract failed: {e}", file=sys.stderr)
+        return ""
+    blocks: list[str] = [ex.as_prompt_block()]
+    if _rank_bullets is not None and _format_bullet_shortlist is not None:
+        try:
+            ranked = _rank_bullets(ex, limit=18)
+            blocks.append(_format_bullet_shortlist(ranked))
+        except Exception as e:
+            print(f"  [tailor] bullet ranking failed: {e}", file=sys.stderr)
+    return "\n\n".join(blocks)
+
+
 def build_user_prompt(jd: str, company: str, role: str, tracker_entry: Optional[dict]) -> str:
     master_repo = slurp(MASTER_REPO)
     cover_templates = slurp(COVER_TEMPLATES)
     tracker_context = json.dumps(tracker_entry, indent=2) if tracker_entry else "(no tracker entry)"
+    det_preamble = _deterministic_preamble(jd)
+
+    # If deterministic extract produced output, instruct the LLM to ground
+    # the PARSE LOG in it and prefer the pre-ranked bullet shortlist when
+    # selecting resume bullets. Falls back silently if preamble is empty.
+    det_instructions = ""
+    if det_preamble:
+        det_instructions = (
+            "\n\nIMPORTANT: Read the `## Deterministic JD analysis` and "
+            "`## Pre-ranked bullet shortlist` blocks below FIRST. They are "
+            "computed deterministically from the Master Repository YAMLs — trust "
+            "them. Prefer bullets from the shortlist (in rank order) when "
+            "assembling the resume. Cite bullet IDs in your PARSE LOG. You may "
+            "still pull additional bullets from §5 of the Master Repository if "
+            "a narrative gap requires it, but NEVER invent new bullets."
+        )
 
     return f"""# TASK
 
-Generate tailored application materials for the following role.
+Generate tailored application materials for the following role.{det_instructions}
 
 ## Target company
 {company}
@@ -158,6 +219,8 @@ Generate tailored application materials for the following role.
 ```json
 {tracker_context}
 ```
+
+{det_preamble}
 
 ## Job description
 ```

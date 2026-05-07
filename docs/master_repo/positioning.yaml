@@ -1,0 +1,96 @@
+# §7 — Target role positioning. TWO primary angles only (v2 decision 2026-05-03).
+# Retired angles aren't removed from capability — they're removed from active
+# outbound. One-off matches to a retired angle are handled ad hoc from bullets.
+#
+# A scorer consuming this can drop JDs matching `out_of_scope.hard` without
+# LLM cost, and penalize ambiguous matches to `retired_angles` without
+# rejecting them outright (see positioning_decision_date for history).
+---
+positioning_decision_date: "2026-05-03"
+positioning_decision_note: >-
+  Retired 5 of the original 7 angles (Portfolio Manager, Product Manager,
+  Project/Program Manager, Valuations-as-primary, Asset Management
+  Quant-as-primary). Not removed from capability — removed from *active
+  outbound*. If a specific role appears that fits a retired angle
+  exceptionally well, treat it as a one-off and draft ad hoc from the
+  bullet library. Do not run parallel searches on retired angles.
+
+angles:
+  - id: pos_alm_primary
+    rank: primary
+    number: "7.1"
+    name: "ALM / IRRBB / Model Governance"
+    best_fit_titles:
+      - "Director — ALM & Balance Sheet Risk"
+      - "Director — IRRBB Modelling"
+      - "Senior Manager/Director — Model Risk & Validation"
+      - "Head of ALM Analytics"
+      - "Director — Treasury Risk"
+      - "VP — Balance Sheet Risk"
+    evidence_stack:
+      - "Sign-off authority on multi-asset institutional portfolios (Moody's)"
+      - "Cash flow projection engine design and delivery (Moody's)"
+      - "IRRBB-analogous shock analytics and curve calibration (Moody's)"
+      - "LDI and stochastic scenario generators (Ortec)"
+      - "Model governance framework operation (Moody's)"
+    summary_words: "45–55"
+    summary_text: >-
+      Asset-Liability Management and balance sheet risk professional with ~7 years spanning institutional ALM analytics, IRRBB modelling, liquidity projection, and model governance. Currently operates sign-off authority on multi-asset institutional portfolios at Moody's Analytics. CFA + dual MSc (Financial Modelling + Engineering). LDI background from Ortec Finance, IFRS 17 / IFRS 9 delivery from EY.
+    target_employers:
+      - "Scotiabank, RBC, BMO, CIBC, TD, National Bank, Equitable Bank/EQB, HSBC Canada, Citibank Canada, JPMorgan Canada"
+      - "CPP, OTPP, OMERS, HOOPP, PSP, OPTrust, CAAT, IMCO"
+      - "Manulife, Sun Life, Canada Life, Intact, iA, RGA"
+    linked_variants: [ALM, VAL]
+    linked_skill_ids: [sk_alm, sk_irrbb, sk_model_signoff, sk_ldi, sk_cash_flow_projection]
+
+  - id: pos_vendor_secondary
+    rank: secondary
+    number: "7.2"
+    name: "Vendor-Platform / Client Solutions"
+    best_fit_titles:
+      - "Director — Aladdin Client Engagement"
+      - "Senior Analytics Specialist"
+      - "Director — Risk Solutions"
+      - "Product Manager (Risk/ALM platforms)"
+      - "Senior Quantitative Analyst — IR Modelling"
+      - "Director — Client Advisory"
+    evidence_stack:
+      - "Institutional platform delivery at Moody's (direct parallel to Aladdin, S&P Risk Solutions, MSCI Analytics, Bloomberg Financial Solutions)"
+      - "Calypso→PFaroe migration leadership"
+      - "Client-translation across investment teams and dev"
+      - "Agentic-AI workflow design (Claude Code, Cursor)"
+    summary_words: "45–55"
+    summary_text: >-
+      Senior finance-technology professional bridging institutional investment teams and enterprise risk platforms. ~4 years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform competing directly with Aladdin, MSCI, and S&P Risk Solutions. CFA + dual MSc + agentic AI workflow experience — rare combination at the finance/platform boundary.
+    target_employers:
+      - "BlackRock (Aladdin), Bloomberg (Financial Solutions), MSCI, S&P Global, FactSet, Morningstar DBRS, SS&C Algorithmics, Numerix, Prometeia"
+    linked_variants: [VEN, AI]
+    linked_skill_ids: [sk_platform_migration, sk_client_onboarding, sk_risk_system_config, sk_agent_dev]
+
+  - id: pos_consulting_adhoc
+    rank: opportunistic
+    number: "7.3"
+    name: "Consulting / Advisory"
+    adhoc_only: true
+    trigger_description: >
+      Only activate if an EY boomerang, Mercer/WTW LDI-specific role, Deloitte
+      FSI Director-level risk advisory role, or Oliver Wyman FS role surfaces.
+      Do not run active search. If activated, lead with Ortec advisory roots +
+      EY transformation evidence.
+    linked_variants: [CON]
+    linked_skill_ids: [sk_cross_functional_regulatory, sk_ifrs17, sk_ifrs9, sk_investment_committee_presentation]
+
+out_of_scope:
+  hard:
+    - "Pure software engineering (web/mobile/backend/devops/SRE/QA)"
+    - "Retail banking (teller, personal banker, branch manager, mobile mortgage)"
+    - "Sales / marketing / communications / PR"
+    - "Internships, co-ops, student programs, new-grad rotational"
+    - "Generalist Product Manager / Project Manager where scope is NOT risk/ALM/platform"
+    - "Pure HF quant-research as primary focus (Saber is buy-side adjacent, not HF)"
+  soft_retired:
+    - "Portfolio Manager (primary)"
+    - "Product Manager (generalist)"
+    - "Project / Program Manager (generalist)"
+    - "Valuations-as-primary"
+    - "Asset Management Quant-as-primary"

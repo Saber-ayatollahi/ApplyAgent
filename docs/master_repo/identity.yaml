@@ -1,0 +1,45 @@
+# §1 — Identity & contact. Single source of truth for all application headers,
+# recruiter screens, and offer conversations. Keep `work_authorization.confirmed`
+# false until Saber signs off; recruiter screens ALWAYS open on this question.
+---
+name: "Saber Ayatollahi"
+full_name_with_credentials: "Saber Ayatollahi, CFA, MSc"
+location: "Toronto (North York), Ontario, Canada"
+city: "Toronto"
+phone: "+1 (416) 856-1276"
+email: "saber.ayatollahi@gmail.com"
+linkedin: "https://www.linkedin.com/in/sayatollahi/"
+
+languages:
+  - name: "English"
+    level: "fluent"
+  - name: "French"
+    level: "conversational"
+
+work_authorization:
+  status: "Canadian citizen / permanent resident"
+  needs_sponsorship: false
+  confirmed: false
+  display_phrase: "Canadian citizen / permanent resident (no sponsorship required — CONFIRM WITH SABER before sending)"
+
+notice_period:
+  standard_weeks: 2
+  display_phrase: "2 weeks (standard) — confirm per offer"
+
+earliest_start_weeks_post_offer: 4
+availability_phrase: "Interviewing now; earliest start ~4 weeks after offer acceptance"
+
+relocation:
+  willing: false
+  display_phrase: "Not needed (Toronto-based, Toronto-focused search)"
+
+target_comp_cad:
+  director:
+    base_low: 185000
+    base_high: 260000
+    bonus_pct_low: 30
+    bonus_pct_high: 50
+    ltip: true
+  senior_manager_floor_base: 160000
+  negotiation_stance: "Negotiate off total comp, not base alone."
+  display_phrase: "Base $185–260K + 30–50% bonus + LTIP at Director level; floor $160K base for Senior Manager. Negotiate off total comp, not base alone."

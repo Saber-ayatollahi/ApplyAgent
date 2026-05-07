@@ -1,0 +1,86 @@
+# §3 — Professional experience. Each role holds ongoing responsibilities (as
+# prose). Project deliverables live in projects.yaml and are cross-referenced
+# via `project_ids`. Resume-ready reworded bullets live in bullets.yaml.
+#
+# Years convention: "~7.3 years full-time finance experience" from Feb 2019 to
+# May 2026. Do NOT round to "8+" or "10+".
+---
+experience_years_as_of_2026_05: 7.3
+experience_narrative: "~7.3 years full-time finance experience (Feb 2019 → May 2026). Reference this consistently — avoid '8+' or '10+' phrasing that doesn't match."
+
+roles:
+  - id: role_moodys
+    employer: "Moody's Analytics"
+    division: "Asset Management & Buy-Side Solutions"
+    title: "Assistant Director — Modelling Services (Investment & ALM Risk Lead)"
+    location: "Toronto, ON"
+    period_start: "2022-05"
+    period_end: null
+    period_display: "May 2022 – Present (≈4 years)"
+    team_size_scope: "IC-plus-senior-review role within a Modelling Services team of ~12; formal sign-off mandate on output delivered to institutional clients."
+    phases:
+      - id: role_moodys_phase2
+        name: "Phase 2: Modelling Services"
+        period_display: "May 2023 – Present"
+        ongoing_responsibilities:
+          - "Holds **sign-off authority on valuation, sensitivity, and ALM outputs** delivered to multi-asset institutional client portfolios; portfolio sizes typically range from **~$5bn to ~$25bn per engagement**, cumulatively covering ~$50bn+ of institutional assets across the book of work."
+          - "Operates within Moody's internal model governance framework — independently reviews curve construction, spread calibration, cross-asset interactions, and stress behavior prior to production release."
+          - "Validates derivatives pricing outputs (rates, FX, inflation) and cross-checks sensitivity consistency at portfolio-level ALM aggregates."
+          - "Oversees interest rate risk and duration analysis under **parallel and non-parallel rate shocks**, aligned with industry IRRBB standards analogous to OSFI B-12 / Basel IRRBB."
+          - "Reviews aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes."
+          - "Escalates outputs lacking mathematical or economic defensibility; serves as escalation point for client-critical analytical issues, interfacing with clients' Heads of Risk and investment stakeholders."
+        project_ids:
+          - proj_cashflow_engine
+          - proj_agentic_ai_workflows
+          - proj_spreadsheet_to_python_migration
+        closing_responsibilities:
+          - "Prepared analytical summaries for senior stakeholders covering interest-rate exposure, scenario impacts, and balance-sheet sensitivities."
+
+      - id: role_moodys_phase1
+        name: "Phase 1: Client Service Specialist"
+        period_display: "May 2022 – May 2023"
+        ongoing_responsibilities:
+          - "Led **onboarding and implementation** for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the **PFaroe** analytics platform."
+          - "Served as the technical liaison between clients and product owners, translating investment-team requirements into development requests; advised clients on asset, liability, and ALM configurations; validated model outputs post-deployment."
+          - "Scoped client needs into Product Owner (PO) requests for development."
+          - "Contributed to the successful migration of all assigned client accounts from the legacy Calypso platform to the PFaroe PM platform."
+        project_ids: []
+
+  - id: role_ey
+    employer: "Ernst & Young (EY)"
+    division: null
+    title: "Senior Consultant — IFRS & Financial Risk Transformation"
+    location: "Toronto, ON"
+    period_start: "2021-09"
+    period_end: "2022-04"
+    period_display: "Sep 2021 – Apr 2022 (~7 months)"
+    brevity_note: "Short tenure — story_ey_brevity covers the interviewer probe."
+    ongoing_responsibilities:
+      - "Delivered **IFRS 17 and IFRS 9** technology-transformation projects for Canadian and international insurance clients."
+      - "Advised actuarial, IT, finance, and program-management functions on adoption of IFRS 17 and IFRS 9 standards."
+      - "Contributed to governance documentation and regulatory readiness processes for financial institutions."
+      - "Developed product offerings and go-to-market collateral for IFRS 17 implementation advisory services."
+      - "Coordinated across actuarial, finance, IT, risk, and PM teams on milestone delivery and implementation materials."
+    project_ids:
+      - proj_ifrs17_transformation
+
+  - id: role_ortec
+    employer: "Ortec Finance Canada"
+    division: null
+    title: "Senior Consultant — Asset-Liability Management & Risk"
+    location: "Toronto, ON"
+    period_start: "2019-02"
+    period_end: "2021-09"
+    period_display: "Feb 2019 – Sep 2021 (~2.5 years)"
+    ongoing_responsibilities:
+      - "Delivered **ALM studies** for Canadian and international pension funds and institutional investors."
+      - "Analyzed funding ratios, duration mismatch, and long-term balance-sheet risk exposures."
+      - "Built and interpreted **stochastic economic scenario generators** to assess interest rate risk and funding volatility under base-case and stressed environments."
+      - "Conducted **liability-driven investment (LDI)** analysis: trade-offs between return objectives, duration alignment, and liquidity considerations."
+      - "Advised clients on Strategic Asset Allocation (SAA) to meet long-term objectives and helped clients navigate Tactical Asset Allocation (TAA) risk through stress testing and sensitivity analysis."
+      - "Designed stochastic risk management frameworks for specific client mandates."
+      - "Presented findings at client on-site meetings, including discussions with investment committees at pension-fund clients."
+    project_ids:
+      - proj_ortec_alm_studies
+      - proj_ortec_scenario_generators
+      - proj_ortec_ldi_studies

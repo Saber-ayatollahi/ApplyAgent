@@ -1,0 +1,73 @@
+# §9 — Logistics, salary bands, references, publications. Salary bands are
+# "as of 2026 Q2"; recheck references_and_salary.md if more than 6 months old.
+---
+work_auth_confirmation_phrase: >
+  Confirm with Saber before first application: Canadian citizen / PR /
+  work-permit? (This section should be filled precisely; in recruiter
+  screens the first hard question is sponsorship.)
+
+notice_and_start_phrase: "Standard 2 weeks. Earliest practical start ≈ 4 weeks post-offer."
+
+salary_bands_reference_file: "references_and_salary.md"
+salary_bands:
+  - tier: "Director / VP Big 6 Banks"
+    base_low: 195000
+    base_high: 260000
+    bonus_pct_low: 35
+    bonus_pct_high: 50
+    tc_low: 300000
+    tc_high: 420000
+    display: "Director / VP Big 6 Banks: $195–260K base + 35–50% bonus + LTIP ≈ $300–420K TC."
+  - tier: "Director Maple 8 pension"
+    base_low: 200000
+    base_high: 310000
+    bonus_pct_low: 30
+    bonus_pct_high: 50
+    tc_low: 320000
+    tc_high: 500000
+    display: "Director Maple 8 pension: $200–310K base + 30–50% bonus + LTIP ≈ $320–500K TC."
+  - tier: "Director US/global AM (BlackRock, PIMCO)"
+    base_low: 195000
+    base_high: 310000
+    tc_low: 330000
+    tc_high: 550000
+    display: "Director US/global AM (BlackRock, PIMCO): $195–310K base + bonus + RSU ≈ $330–550K TC."
+  - tier: "Director vendor (Bloomberg, MSCI, S&P)"
+    base_low: 175000
+    base_high: 250000
+    tc_low: 260000
+    tc_high: 400000
+    display: "Director vendor (Bloomberg, MSCI, S&P): $175–250K base + bonus + RSU ≈ $260–400K TC."
+  - tier: "Senior Manager insurer / mid-bank (EQB, Canada Life, Intact)"
+    base_low: 165000
+    base_high: 230000
+    tc_low: 220000
+    tc_high: 310000
+    display: "Senior Manager insurer / mid-bank (EQB, Canada Life, Intact): $165–230K base + bonus ≈ $220–310K TC."
+  - tier: "Senior Manager / Director Big 4 Risk Advisory"
+    base_low: 170000
+    base_high: 230000
+    tc_low: 220000
+    tc_high: 300000
+    display: "Senior Manager / Director Big 4 Risk Advisory: $170–230K base + bonus ≈ $220–300K TC."
+
+references:
+  - source: "Moody's"
+    description: "direct manager (sign-off delegator)"
+    flavor: "primary technical reference"
+  - source: "Moody's"
+    description: "Product Owner for a recent platform engagement"
+    flavor: "platform delivery reference"
+  - source: "EY"
+    description: "senior manager from IFRS 17 engagement"
+    flavor: "consulting/transformation reference"
+  - source: "Ortec Finance"
+    description: "senior consultant or director who co-led a pension ALM study"
+    flavor: "ALM advisory reference"
+  - source: "CFA sponsor or MSc advisor"
+    description: ""
+    flavor: "character/academic reference"
+references_instruction: "Contact each BEFORE final-round interviews; confirm they can speak to the specific capabilities the target role requires."
+
+publications_speaking_note: >-
+  *(to fill)* — if none currently, the LinkedIn content engine (see `linkedin_content_engine.md`) is the plan to build a public footprint over the next 12 weeks.

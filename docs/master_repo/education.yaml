@@ -1,0 +1,29 @@
+# §2 — Education & credentials. Dual MSc + CFA is the distinctive credential mix;
+# interviewers frequently probe the chem-eng → finance pivot (see stories.yaml
+# story_chemeng_pivot for the ready answer).
+---
+credentials:
+  - id: cred_cfa
+    name: "Chartered Financial Analyst (CFA)"
+    institution: "CFA Institute"
+    year: 2024
+    signal: "Gold-standard credential for investment, risk, asset management, and valuations roles."
+
+  - id: cred_msc_financial_modelling
+    name: "MSc, Financial Modelling"
+    institution: "Western University"
+    year: 2018
+    signal: "Quantitative profile that Strats/risk-engineering desks explicitly look for."
+
+  - id: cred_msc_chem_eng
+    name: "MSc, Chemical Engineering"
+    institution: "Western University"
+    year: 2016
+    scholarship: "Full Scholarship"
+    signal: "Deep exposure to PDEs, numerical methods, and stochastic systems — the mathematical scaffolding underlying fixed income and derivatives modeling."
+
+why_these_matter_md: |
+  - **CFA** is the gold-standard credential for investment, risk, asset management, and valuations roles.
+  - **Dual MSc (Finance + Engineering)** is the quantitative profile that Strats/risk-engineering desks explicitly look for.
+  - **Chemical Engineering** gave deep exposure to PDEs, numerical methods, and stochastic systems — the mathematical scaffolding underlying fixed income and derivatives modeling.
+  - CFA was completed in 2024 — *why now*: the CFA was a deliberate mid-career credential after 5+ years of practitioner experience; the combination of practitioner depth + charter is less common than either alone.

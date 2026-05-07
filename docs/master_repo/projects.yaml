@@ -1,0 +1,221 @@
+# Project records — first-class deliverables, not buried sub-bullets. Each has
+# enough structure to feed a scorer's coverage query AND a tailor's bullet
+# reuse. Keep stack/scale grounded in what actually shipped; no inflation.
+---
+projects:
+  - id: proj_cashflow_engine
+    name: "Enterprise multi-asset cash flow projection engine"
+    role_id: role_moodys
+    phase_id: role_moodys_phase2
+    period_display: "2024 – 2025"
+    status: "Shipped / production"
+    problem: >
+      Buy-side clients needed forward-looking liquidity visibility with
+      reverse-stress and behavioral cashflow coverage across multi-asset
+      ALM horizons. Prior approach was manual-spreadsheet-based, not
+      auditable, and not scalable to the breadth of client portfolios.
+    approach: >
+      Designed configurable time-bucketed liquidity gap analytics (T+1
+      through multi-year) with embedded behavioral cashflow assumptions,
+      prepayment logic, and macro stress overlays. Delivered an enterprise
+      engine supporting base, stress, and reverse-stress scenarios and
+      re-engineered upstream spreadsheet workflows into scalable auditable
+      Python analytics pipelines.
+    stack: ["Python", "pandas", "NumPy", "SciPy"]
+    scale:
+      client_portfolios_covered: "multiple"
+      portfolio_size_range_usd: "$5bn – $25bn per engagement"
+      cumulative_aum_usd: "~$50bn+"
+      horizon: "overnight (T+1) to multi-year"
+    skill_ids:
+      - sk_alm
+      - sk_irrbb
+      - sk_liquidity_gap
+      - sk_cash_flow_projection
+      - sk_stress_testing
+      - sk_python
+      - sk_model_signoff
+      - sk_audit_documentation
+    outcomes:
+      - "Shipped production engine delivering forward-looking liquidity visibility across ALM horizons."
+      - "Unlocked analytical capability (reverse-stress, behavioral cashflow) that clients had been asking for."
+      - "Reduced manual spreadsheet workflow time materially and improved auditability for model-governance audit."
+    narrative_for_section3_md: |
+      - **Led design and implementation** of an enterprise multi-asset **cash flow projection engine** supporting base, stress, and reverse-stress scenarios — providing forward-looking liquidity visibility across ALM horizons.
+      - Architected configurable **time-bucketed liquidity gap analytics** (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset-allocation decisions.
+      - Embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory liquidity expectations.
+      - Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines.
+
+  - id: proj_agentic_ai_workflows
+    name: "Agentic AI development workflows"
+    role_id: role_moodys
+    phase_id: role_moodys_phase2
+    period_display: "2024 – Present"
+    status: "In production / expanding"
+    problem: >
+      Validation workload expanding faster than headcount; repetitive code
+      generation, scaffolding, and documentation were eating senior review
+      cycles.
+    approach: >
+      Built agentic AI workflows using Claude Code CLI and Cursor IDE —
+      automated first-pass code generation, validation scaffolding,
+      anomaly detection, and documentation. Human sign-off retained for
+      governance-critical review.
+    stack: ["Claude Code", "Cursor IDE", "Python"]
+    scale:
+      cycle_time_reduction: "~30-40% on comparable modules"
+    skill_ids:
+      - sk_python
+      - sk_claude_code
+      - sk_cursor_ide
+      - sk_agent_dev
+      - sk_llm_codegen
+    outcomes:
+      - "Cycle time on comparable validation modules dropped ~30–40%."
+      - "Approach being explored for broader team adoption."
+      - "Reusable portfolio piece for AI-forward interviews."
+    narrative_for_section3_md: |
+      - Built **agentic AI development workflows** using Claude Code and Cursor IDE — automated code generation, validation scaffolding, anomaly detection, and documentation — reducing development cycle time by an estimated 30–40% on comparable modules.
+
+  - id: proj_spreadsheet_to_python_migration
+    name: "Valuation workflow migration: spreadsheet → Python pipeline"
+    role_id: role_moodys
+    phase_id: role_moodys_phase2
+    period_display: "Moody's Phase 2"
+    status: "Shipped"
+    problem: >
+      A production valuation workflow was spreadsheet-driven with limited
+      logging and no versioning — not acceptable under formal
+      model-governance audit.
+    approach: >
+      Parallel-built Python pipeline; ran in shadow mode for two cycles;
+      reconciled output against spreadsheet; cut over with documented
+      rollback plan.
+    stack: ["Python", "pandas"]
+    skill_ids:
+      - sk_python
+      - sk_model_signoff
+      - sk_audit_documentation
+      - sk_model_review_challenge
+    outcomes:
+      - "Governance audit closed satisfactorily."
+      - "Pipeline became template for adjacent workflows."
+
+  - id: proj_calypso_to_pfaroe
+    name: "Calypso → PFaroe platform migration"
+    role_id: role_moodys
+    phase_id: role_moodys_phase1
+    period_display: "2022 – 2023"
+    status: "Completed — all assigned accounts migrated"
+    problem: >
+      U.S. and Canadian pension funds, asset managers, and consulting firms
+      needed to migrate from the legacy Calypso environment to Moody's
+      PFaroe PM platform without disrupting live investment workflows.
+    approach: >
+      Led onboarding and implementation; served as technical liaison between
+      client investment teams and product owners; translated requirements
+      into development asks; validated model outputs post-deployment.
+    stack: ["PFaroe PM", "Calypso"]
+    scale:
+      client_accounts_migrated: "all assigned"
+    skill_ids:
+      - sk_platform_migration
+      - sk_client_onboarding
+      - sk_po_requirements_scoping
+      - sk_risk_system_config
+      - sk_alm
+    outcomes:
+      - "All assigned client accounts migrated successfully with validated model outputs."
+      - "Configuration pattern reused for subsequent clients in the migration cohort."
+
+  - id: proj_ifrs17_transformation
+    name: "IFRS 17 & IFRS 9 transformation programs"
+    role_id: role_ey
+    period_display: "Sep 2021 – Apr 2022"
+    status: "Completed"
+    problem: >
+      Canadian and international insurers needed to align IFRS 17 and IFRS 9
+      adoption across finance, actuarial, IT, and program-management
+      functions with regulatory-readiness milestones.
+    approach: >
+      Delivered technology-transformation projects; built shared requirements
+      documentation across functions; identified decisions requiring executive
+      sign-off; contributed to governance documentation and regulatory readiness
+      processes; developed go-to-market collateral for the advisory service line.
+    skill_ids:
+      - sk_ifrs17
+      - sk_ifrs9
+      - sk_regulatory_readiness
+      - sk_cross_functional_regulatory
+    outcomes:
+      - "Program milestones hit for client insurers."
+      - "Documentation reused across subsequent IFRS 17 engagements."
+
+  - id: proj_ortec_alm_studies
+    name: "ALM studies for Canadian and international pension funds"
+    role_id: role_ortec
+    period_display: "Feb 2019 – Sep 2021"
+    status: "Delivered across multiple client mandates"
+    problem: >
+      Pension funds and institutional investors needed forward-looking
+      assessment of funding ratios, duration mismatch, and long-term
+      balance-sheet risk under base and stressed environments.
+    approach: >
+      Delivered full ALM studies — analyzed funding ratios, duration
+      mismatch, long-term risk exposures; advised on Strategic Asset
+      Allocation (SAA) and Tactical Asset Allocation (TAA) trade-offs;
+      designed stochastic risk-management frameworks tailored to client
+      mandates; presented findings to investment committees on-site.
+    skill_ids:
+      - sk_alm
+      - sk_funding_ratio
+      - sk_duration_gap
+      - sk_multiperiod_bs_risk
+      - sk_stress_testing
+      - sk_investment_committee_presentation
+    outcomes:
+      - "Clients returned for subsequent studies."
+      - "Frameworks reused across mandates."
+
+  - id: proj_ortec_scenario_generators
+    name: "Stochastic economic scenario generators"
+    role_id: role_ortec
+    period_display: "Feb 2019 – Sep 2021"
+    status: "Delivered in client engagements"
+    problem: >
+      Client ALM and LDI studies needed calibrated stochastic paths for
+      interest rates, inflation, equity, and credit to drive funding-ratio
+      distributions under base and stressed environments.
+    approach: >
+      Built and interpreted stochastic economic scenario generators
+      calibrated to client assumptions; ran funding-ratio distributions;
+      decomposed duration-gap contribution to funding-ratio volatility;
+      translated stochastic outputs into investment-committee narratives.
+    skill_ids:
+      - sk_stochastic_modelling
+      - sk_scenario_generator
+      - sk_yield_curve
+      - sk_stress_testing
+    outcomes:
+      - "Calibrated generators integrated into multiple pension-fund ALM studies."
+
+  - id: proj_ortec_ldi_studies
+    name: "LDI strategy studies for pension-fund clients"
+    role_id: role_ortec
+    period_display: "Feb 2019 – Sep 2021"
+    status: "Delivered across pension-fund engagements"
+    problem: >
+      Pension-fund clients questioned whether fixed-income duration
+      positioning was appropriate given liability-duration extension.
+    approach: >
+      Quantified return/duration/liquidity trade-offs; presented explicit
+      SAA recommendations to investment committees grounded in stochastic
+      funding-ratio distributions.
+    skill_ids:
+      - sk_ldi
+      - sk_duration_gap
+      - sk_funding_ratio
+      - sk_stochastic_modelling
+      - sk_investment_committee_presentation
+    outcomes:
+      - "At least one client adopted a duration-extension recommendation following presentation to investment committee."

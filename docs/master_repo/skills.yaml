@@ -1,0 +1,1014 @@
+# §4 — Skills inventory (evidenced). Every skill has:
+#   - level: expert | proficient | familiar | not_hands_on
+#   - years: integer (cumulative hands-on)
+#   - aliases: ATS/JD synonyms the same skill appears under
+#   - evidence_project_ids / evidence_role_ids: traceability back to work
+#   - interview_depth: true if defensible in 30-min technical grill
+#
+# Level definitions:
+#   expert       — can teach it, defend it under deep technical grilling,
+#                  has shipped production work relied on by others.
+#   proficient   — has shipped in production, can converse with experts,
+#                  would pass a screening question cold.
+#   familiar     — has used / understands at a working level; could
+#                  execute with context but not an authority.
+#   not_hands_on — surface-area exposure only; DO NOT claim on resume;
+#                  address obliquely via adjacent skills if asked.
+#
+# Rule: No skill in this file without evidence in roles.yaml / projects.yaml.
+# The `gaps` section explicitly lists the NOT-hands-on items so the scorer can
+# correctly answer "can this candidate hit the ground running?"
+---
+skills:
+  # -------------------------------------------------------------------------
+  # 4.1 ALM, IRRBB & Balance Sheet Risk (PRIMARY)
+  # -------------------------------------------------------------------------
+  - id: sk_alm
+    name: "Asset-Liability Management (ALM)"
+    display: "Asset–Liability Management (ALM) — structural and dynamic"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 7
+    aliases:
+      - "ALM"
+      - "asset liability management"
+      - "asset-liability management"
+      - "structural ALM"
+      - "dynamic ALM"
+      - "gestion de l'actif et du passif"
+    evidence_project_ids: [proj_cashflow_engine, proj_ortec_alm_studies, proj_ortec_ldi_studies]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_irrbb
+    name: "Interest Rate Risk in the Banking Book (IRRBB)"
+    display: "Interest Rate Risk in the Banking Book (IRRBB) — EVE and NII sensitivity under parallel and non-parallel shocks"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 6
+    aliases:
+      - "IRRBB"
+      - "banking book interest rate risk"
+      - "EVE sensitivity"
+      - "NII sensitivity"
+      - "EVE/NII sensitivity"
+      - "economic value of equity"
+      - "net interest income sensitivity"
+      - "repricing gap analysis"
+      - "parallel and non-parallel rate shocks"
+      - "B-12"
+      - "OSFI B-12"
+      - "Basel IRRBB"
+    evidence_project_ids: [proj_cashflow_engine, proj_ortec_alm_studies]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_duration_gap
+    name: "Duration gap & repricing mismatch analytics"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 7
+    aliases:
+      - "duration gap"
+      - "repricing gap"
+      - "duration mismatch"
+      - "key-rate duration"
+      - "convexity"
+    evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies, proj_cashflow_engine]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+
+  - id: sk_multiperiod_bs_risk
+    name: "Multi-period balance sheet risk assessment"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: proficient
+    years: 6
+    aliases:
+      - "multi-period balance sheet risk"
+      - "balance sheet risk"
+      - "long-term balance sheet exposures"
+    evidence_project_ids: [proj_cashflow_engine, proj_ortec_alm_studies]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_liquidity_gap
+    name: "Liquidity gap & cash flow projection modelling"
+    display: "Liquidity gap & cash flow projection modelling (T+1 to multi-year horizons)"
+    category: alm_irrbb_balance_sheet
+    skip_in_section4: false
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "liquidity gap"
+      - "liquidity gap analytics"
+      - "time-bucketed liquidity"
+      - "cash flow projection"
+      - "cash-flow projection"
+      - "cashflow projection"
+      - "behavioral cashflow"
+      - "prepayment logic"
+    evidence_project_ids: [proj_cashflow_engine]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_cash_flow_projection
+    name: "Cash flow projection (T+1 through multi-year)"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "cash flow projection engine"
+      - "forward-looking liquidity"
+      - "liquidity forecasting"
+    evidence_project_ids: [proj_cashflow_engine]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+    # Collapsed into sk_liquidity_gap display line in the §4 render — this is
+    # the structured record agents query by id; the .md doesn't double-list it.
+    skip_in_section4: true
+
+  - id: sk_stress_testing
+    name: "Stress testing & scenario analysis (base, stress, reverse-stress)"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 7
+    aliases:
+      - "stress testing"
+      - "scenario analysis"
+      - "reverse stress testing"
+      - "reverse-stress"
+      - "base/stress scenarios"
+      - "macro stress overlays"
+    evidence_project_ids: [proj_cashflow_engine, proj_ortec_alm_studies, proj_ortec_scenario_generators]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_ldi
+    name: "Liability-Driven Investment (LDI)"
+    display: "Liability-Driven Investment (LDI) strategy & analytics"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 3
+    aliases:
+      - "LDI"
+      - "liability-driven investment"
+      - "liability driven investing"
+    evidence_project_ids: [proj_ortec_ldi_studies]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_funding_ratio
+    name: "Funding ratio & solvency analytics"
+    category: alm_irrbb_balance_sheet
+    is_primary: true
+    level: expert
+    years: 3
+    aliases:
+      - "funding ratio"
+      - "solvency analytics"
+      - "funded status"
+      - "funding ratio distributions"
+    evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_osfi_b12
+    name: "OSFI B-12 (IRRBB) awareness"
+    display: "OSFI B-12 (IRRBB revision, Q1 2026 consultations) awareness and applied familiarity"
+    category: alm_irrbb_balance_sheet
+    is_primary: false
+    level: familiar
+    years: 2
+    aliases:
+      - "OSFI B-12"
+      - "B-12"
+      - "IRRBB revision"
+      - "Basel Committee IRRBB"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  - id: sk_osfi_lar
+    name: "OSFI LAR (Liquidity Adequacy Requirements) alignment"
+    display: "OSFI LAR 2026 (liquidity adequacy) alignment"
+    category: alm_irrbb_balance_sheet
+    is_primary: false
+    level: familiar
+    years: 1
+    aliases:
+      - "OSFI LAR"
+      - "LAR"
+      - "liquidity adequacy requirements"
+      - "LCR"
+      - "NSFR"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  # -------------------------------------------------------------------------
+  # 4.2 Interest Rate, Fixed Income & Derivatives
+  # -------------------------------------------------------------------------
+  - id: sk_yield_curve
+    name: "Yield curve construction & calibration"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: expert
+    years: 5
+    aliases:
+      - "yield curve construction"
+      - "curve construction"
+      - "curve calibration"
+      - "bootstrapping"
+      - "swap curve"
+    evidence_project_ids: [proj_ortec_scenario_generators]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_rate_shock_analysis
+    name: "Parallel & non-parallel rate-shock analysis"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: expert
+    years: 6
+    aliases:
+      - "parallel rate shock"
+      - "non-parallel rate shock"
+      - "steepener"
+      - "flattener"
+      - "twist"
+      - "key-rate shock"
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_key_rate_convexity
+    name: "Key-rate duration & convexity analytics"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: expert
+    years: 5
+    aliases: ["key-rate duration", "convexity", "key rate duration"]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_derivatives_valuation
+    name: "Rates, FX & inflation derivatives valuation"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: proficient
+    years: 4
+    aliases:
+      - "derivatives pricing"
+      - "derivatives valuation"
+      - "rates derivatives"
+      - "FX derivatives"
+      - "inflation derivatives"
+      - "swaption pricing"
+      - "cap/floor valuation"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_spread_calibration
+    name: "Spread calibration & cross-asset interaction analysis"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: proficient
+    years: 4
+    aliases:
+      - "spread calibration"
+      - "cross-asset interaction"
+      - "OAS"
+      - "credit spread modelling"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_stochastic_modelling
+    name: "Stochastic modelling & Monte Carlo simulation"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: expert
+    years: 7
+    aliases:
+      - "stochastic modelling"
+      - "stochastic modeling"
+      - "Monte Carlo simulation"
+      - "Monte Carlo"
+      - "stochastic simulation"
+      - "economic scenario generator"
+    evidence_project_ids: [proj_ortec_scenario_generators, proj_cashflow_engine]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_scenario_generator
+    name: "Scenario-generator design and validation"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: expert
+    years: 3
+    aliases:
+      - "scenario generator"
+      - "economic scenario generator"
+      - "ESG"
+      - "ESG calibration"
+    evidence_project_ids: [proj_ortec_scenario_generators]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  # -------------------------------------------------------------------------
+  # 4.3 Model Governance & Risk Controls (PRIMARY)
+  # -------------------------------------------------------------------------
+  - id: sk_model_signoff
+    name: "Formal sign-off authority across multi-asset institutional portfolios"
+    category: model_governance
+    is_primary: true
+    level: expert
+    years: 3
+    aliases:
+      - "sign-off authority"
+      - "model sign-off"
+      - "output sign-off"
+      - "production sign-off"
+    evidence_project_ids: [proj_cashflow_engine, proj_spreadsheet_to_python_migration]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_model_review_challenge
+    name: "Independent model review & challenge"
+    category: model_governance
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "model review"
+      - "model challenge"
+      - "independent review"
+      - "effective challenge"
+      - "model validation"
+      - "model vetting"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_assumption_validation
+    name: "Assumption validation & economic-defensibility assessment"
+    category: model_governance
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "assumption validation"
+      - "economic defensibility"
+      - "model assumption review"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_audit_documentation
+    name: "Auditability & documentation standards"
+    category: model_governance
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "auditability"
+      - "audit documentation"
+      - "model documentation"
+      - "governance documentation"
+    evidence_project_ids: [proj_cashflow_engine, proj_spreadsheet_to_python_migration]
+    evidence_role_ids: [role_moodys, role_ey]
+    interview_depth: true
+
+  - id: sk_escalation_exception
+    name: "Escalation & exception-handling processes"
+    category: model_governance
+    is_primary: true
+    level: proficient
+    years: 4
+    aliases:
+      - "escalation"
+      - "exception handling"
+      - "escalation protocol"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_osfi_e23
+    name: "OSFI E-23 (Model Risk Management) awareness"
+    display: "OSFI E-23 (Model Risk Management, effective 2027-05-01) awareness"
+    category: model_governance
+    is_primary: false
+    level: familiar
+    years: 2
+    aliases:
+      - "OSFI E-23"
+      - "E-23"
+      - "model risk management guideline"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  - id: sk_sr_11_7
+    name: "SR 11-7 framework awareness"
+    display: "SR 11-7 parallel framework awareness"
+    category: model_governance
+    is_primary: false
+    level: familiar
+    years: 2
+    aliases:
+      - "SR 11-7"
+      - "SR11-7"
+      - "Fed model risk guidance"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  # -------------------------------------------------------------------------
+  # 4.4 Portfolio & Investment Risk Analytics
+  # -------------------------------------------------------------------------
+  - id: sk_multi_asset_portfolio
+    name: "Multi-asset portfolio-level analytics"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: expert
+    years: 4
+    aliases:
+      - "multi-asset portfolio"
+      - "portfolio-level analytics"
+      - "cross-asset analytics"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_portfolio_stress
+    name: "Portfolio-level stress testing and scenario analysis"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: expert
+    years: 5
+    aliases:
+      - "portfolio stress testing"
+      - "portfolio scenarios"
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_duration_positioning
+    name: "Duration positioning & cross-asset exposure analysis"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases: ["duration positioning", "cross-asset exposure"]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_aggregation_logic
+    name: "Security-level to portfolio-level aggregation"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "security-level aggregation"
+      - "portfolio aggregation"
+      - "exposure aggregation"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_investment_risk_oversight
+    name: "Investment-risk oversight for multi-asset mandates"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "investment risk oversight"
+      - "investment risk"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  # -------------------------------------------------------------------------
+  # 4.5 Financial Transformation & Regulatory Programs
+  # -------------------------------------------------------------------------
+  - id: sk_ifrs17
+    name: "IFRS 17 transformation delivery"
+    display: "IFRS 17 & IFRS 9 transformation delivery (EY)"
+    category: financial_transformation
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "IFRS 17"
+      - "IFRS17"
+      - "insurance contract liabilities"
+      - "CSM"
+      - "contractual service margin"
+    evidence_project_ids: [proj_ifrs17_transformation]
+    evidence_role_ids: [role_ey]
+    interview_depth: true
+
+  - id: sk_ifrs9
+    name: "IFRS 9 transformation delivery"
+    category: financial_transformation
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "IFRS 9"
+      - "IFRS9"
+      - "ECL modelling"
+      - "expected credit loss"
+    evidence_project_ids: [proj_ifrs17_transformation]
+    evidence_role_ids: [role_ey]
+    interview_depth: true
+    # Bundled into sk_ifrs17 display line to match original §4.5 phrasing
+    skip_in_section4: true
+
+  - id: sk_regulatory_readiness
+    name: "Regulatory readiness support (Canadian insurers)"
+    category: financial_transformation
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "regulatory readiness"
+      - "regulatory compliance readiness"
+    evidence_role_ids: [role_ey]
+    interview_depth: false
+
+  - id: sk_cross_functional_regulatory
+    name: "Cross-functional Finance / Risk / IT alignment on regulatory programs"
+    category: financial_transformation
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "cross-functional regulatory delivery"
+      - "regulatory program alignment"
+    evidence_role_ids: [role_ey]
+    interview_depth: false
+
+  # -------------------------------------------------------------------------
+  # 4.6 Enterprise Platform & Risk System Implementation (PRIMARY for VEN)
+  # -------------------------------------------------------------------------
+  - id: sk_platform_migration
+    name: "Enterprise risk analytics platform migration (Calypso → PFaroe)"
+    category: enterprise_platform
+    is_primary: true
+    level: expert
+    years: 1
+    aliases:
+      - "platform migration"
+      - "Calypso to PFaroe"
+      - "risk platform migration"
+    evidence_project_ids: [proj_calypso_to_pfaroe]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_scenario_engine_integration
+    name: "Scenario-engine integration and validation"
+    category: enterprise_platform
+    is_primary: true
+    level: proficient
+    years: 3
+    aliases:
+      - "scenario engine integration"
+      - "scenario engine validation"
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_risk_reporting_architecture
+    name: "Production risk-reporting architecture"
+    category: enterprise_platform
+    is_primary: true
+    level: proficient
+    years: 3
+    aliases:
+      - "risk reporting architecture"
+      - "production risk reporting"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_risk_system_config
+    name: "Risk system configuration & validation"
+    category: enterprise_platform
+    is_primary: true
+    level: expert
+    years: 4
+    aliases:
+      - "risk system configuration"
+      - "risk platform configuration"
+    evidence_project_ids: [proj_calypso_to_pfaroe]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_client_onboarding
+    name: "Client onboarding for enterprise financial platforms"
+    category: enterprise_platform
+    is_primary: true
+    level: expert
+    years: 1
+    aliases:
+      - "client onboarding"
+      - "platform onboarding"
+      - "implementation"
+    evidence_project_ids: [proj_calypso_to_pfaroe]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_po_requirements_scoping
+    name: "Requirements scoping for Product Owners / development teams"
+    category: enterprise_platform
+    is_primary: true
+    level: proficient
+    years: 2
+    aliases:
+      - "product owner requirements"
+      - "PO requirements scoping"
+      - "requirements translation"
+    evidence_project_ids: [proj_calypso_to_pfaroe]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  # -------------------------------------------------------------------------
+  # 4.7 Valuation & Financial Modelling
+  # -------------------------------------------------------------------------
+  - id: sk_business_valuation
+    name: "Business valuation fundamentals (DCF, multiples, scenario analysis)"
+    category: valuation
+    is_primary: false
+    level: proficient
+    years: 2
+    aliases:
+      - "business valuation"
+      - "DCF"
+      - "discounted cash flow"
+      - "comparable company analysis"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_instrument_valuation
+    name: "Financial-instrument valuation (derivatives, fixed income)"
+    category: valuation
+    is_primary: false
+    level: expert
+    years: 4
+    aliases:
+      - "instrument valuation"
+      - "fixed income valuation"
+      - "derivative valuation"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_complex_payoff
+    name: "Complex payoff & sensitivity modelling"
+    category: valuation
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "complex payoff"
+      - "sensitivity modelling"
+      - "payoff engineering"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_longhorizon_monte_carlo
+    name: "Stochastic simulation and Monte Carlo modelling for long-horizon cash flow projections"
+    category: valuation
+    is_primary: false
+    level: expert
+    years: 5
+    aliases: ["long-horizon Monte Carlo", "long horizon cashflow simulation"]
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_esg_development
+    name: "Economic-scenario-generator development (Ortec)"
+    category: valuation
+    is_primary: false
+    level: proficient
+    years: 2
+    aliases: ["ESG development", "scenario generator development"]
+    evidence_project_ids: [proj_ortec_scenario_generators]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  # -------------------------------------------------------------------------
+  # 4.8 Programming & Technical Stack
+  # -------------------------------------------------------------------------
+  - id: sk_python
+    name: "Python"
+    category: programming_technical
+    is_primary: false
+    level: expert
+    years: 7
+    aliases:
+      - "Python"
+      - "pandas"
+      - "NumPy"
+      - "SciPy"
+    evidence_project_ids: [proj_cashflow_engine, proj_spreadsheet_to_python_migration, proj_agentic_ai_workflows]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_sql
+    name: "SQL"
+    category: programming_technical
+    is_primary: false
+    level: proficient
+    years: 4
+    aliases:
+      - "SQL"
+      - "PostgreSQL"
+      - "Postgres"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_r
+    name: "R"
+    category: programming_technical
+    is_primary: false
+    level: familiar
+    years: 3
+    years_note: "historical use"
+    aliases:
+      - "R"
+      - "RStudio"
+    evidence_role_ids: [role_ortec]
+    interview_depth: false
+
+  - id: sk_matlab
+    name: "MATLAB"
+    category: programming_technical
+    is_primary: false
+    level: familiar
+    years: 3
+    years_note: "historical use in research/engineering context"
+    aliases:
+      - "MATLAB"
+    evidence_role_ids: []
+    interview_depth: false
+
+  - id: sk_git
+    name: "Git / version control"
+    category: programming_technical
+    is_primary: false
+    level: proficient
+    years: 5
+    aliases:
+      - "Git"
+      - "GitHub"
+      - "version control"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_cicd
+    name: "CI/CD pipelines"
+    category: programming_technical
+    is_primary: false
+    level: familiar
+    years: 2
+    aliases:
+      - "CI/CD"
+      - "continuous integration"
+      - "GitHub Actions"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  - id: sk_claude_code
+    name: "Claude Code CLI"
+    category: programming_technical
+    is_primary: false
+    level: expert
+    years: 1
+    aliases:
+      - "Claude Code"
+      - "Claude Code CLI"
+    evidence_project_ids: [proj_agentic_ai_workflows]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_cursor_ide
+    name: "Cursor IDE"
+    category: programming_technical
+    is_primary: false
+    level: expert
+    years: 1
+    aliases:
+      - "Cursor IDE"
+      - "Cursor"
+    evidence_project_ids: [proj_agentic_ai_workflows]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_agent_dev
+    name: "Agent-oriented development workflows"
+    category: programming_technical
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "agent-oriented development"
+      - "agentic AI workflows"
+    evidence_project_ids: [proj_agentic_ai_workflows]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_llm_codegen
+    name: "LLM-assisted code generation and review"
+    category: programming_technical
+    is_primary: false
+    level: proficient
+    years: 1
+    aliases:
+      - "LLM code generation"
+      - "LLM-assisted development"
+    evidence_project_ids: [proj_agentic_ai_workflows]
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_excel
+    name: "Excel"
+    category: programming_technical
+    is_primary: false
+    level: expert
+    years: 7
+    aliases:
+      - "Excel"
+      - "advanced Excel"
+      - "VBA"
+    evidence_role_ids: [role_moodys, role_ey, role_ortec]
+    interview_depth: true
+
+  - id: sk_plotly_matplotlib
+    name: "Plotly / matplotlib"
+    category: programming_technical
+    is_primary: false
+    level: proficient
+    years: 5
+    aliases:
+      - "Plotly"
+      - "matplotlib"
+      - "data visualization"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+  # -------------------------------------------------------------------------
+  # 4.9 Regulatory context (knowledge, not training)
+  #     Listed under relevant skill ids above; left as-is here for clarity.
+  # -------------------------------------------------------------------------
+
+  # -------------------------------------------------------------------------
+  # 4.10 Leadership & Communication
+  # -------------------------------------------------------------------------
+  - id: sk_director_stakeholder
+    name: "Director-level stakeholder communication (Heads of Risk, CIO-office)"
+    category: leadership_communication
+    is_primary: false
+    level: proficient
+    years: 4
+    aliases:
+      - "senior stakeholder communication"
+      - "Head of Risk engagement"
+    evidence_role_ids: [role_moodys]
+    interview_depth: true
+
+  - id: sk_executive_presentation
+    name: "Executive risk presentation & storytelling"
+    category: leadership_communication
+    is_primary: false
+    level: proficient
+    years: 5
+    aliases:
+      - "executive presentation"
+      - "risk storytelling"
+    evidence_role_ids: [role_moodys, role_ortec]
+    interview_depth: true
+
+  - id: sk_cross_functional_coordination
+    name: "Cross-functional initiative coordination (risk / tech / product / client)"
+    category: leadership_communication
+    is_primary: false
+    level: proficient
+    years: 4
+    aliases:
+      - "cross-functional coordination"
+      - "multi-stakeholder coordination"
+    evidence_role_ids: [role_moodys, role_ey]
+    interview_depth: true
+
+  - id: sk_investment_committee_presentation
+    name: "Investment committee presentation"
+    display: "Investment-committee presentation experience (Ortec)"
+    category: leadership_communication
+    is_primary: false
+    level: proficient
+    years: 2
+    aliases:
+      - "investment committee"
+      - "IC presentation"
+    evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_mentorship
+    name: "Mentorship of junior colleagues"
+    category: leadership_communication
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "mentorship"
+      - "team mentoring"
+    evidence_role_ids: [role_moodys]
+    interview_depth: false
+
+# -------------------------------------------------------------------------
+# Explicit gaps — NOT hands-on. Do not claim on resume. If the JD requires
+# any of these heavily, the role is a stretch; flag it.
+# -------------------------------------------------------------------------
+gaps:
+  not_hands_on:
+    - "BlackRock Aladdin (hands-on user)"
+    - "Murex"
+    - "Algorithmics (SS&C)"
+    - "Barra / MSCI RiskMetrics"
+    - "QRM (hands-on)"
+    - "TypeScript / Node.js / React (production delivery)"
+    - "Java / C++"
+    - "Kubernetes / EKS"
+    - "TensorFlow / PyTorch (production ML)"
+    - "MongoDB / Snowflake (production)"
+    - "AWS Bedrock / Azure ML"
+    - "Multi-agent orchestration frameworks (LangGraph, CrewAI, AutoGen production)"
+  adjacent_knowledge:
+    - "Aladdin — competitive/parallel familiarity from Moody's platform delivery"
+    - "MSCI / Bloomberg / S&P risk platforms — competitive awareness"
+    - "Murex / Algorithmics — conceptual adjacency via IRRBB and derivatives valuation"
+    - "Hobbyist level with TypeScript/Node, LangChain, LangGraph"
+
+removed_from_v1_md: |
+  > **Removed from v1:** TypeScript/Node.js, Hono, Drizzle ORM, Java/C++, Kubernetes/EKS, TensorFlow/PyTorch, MongoDB, Snowflake, AWS Bedrock, Azure DevOps pipelines, multi-agent orchestration. These were not backed by experience and created interview-risk exposure. If an interviewer asks, the honest answer is *"I have used these at a hobby/learning level but haven't shipped production code with them."*
+
+# Category rendering order + display names for §4 of the .md.
+# Order matches original:
+#   4.1 ... 4.8 → "Removed from v1" note → 4.9 Regulatory → 4.10 Leadership
+# (The renderer emits the "Removed" note after the programming_technical block
+# and the regulatory block between programming_technical and leadership.)
+category_order:
+  - id: alm_irrbb_balance_sheet
+    display: "4.1 ALM, IRRBB & Balance Sheet Risk *(primary)*"
+  - id: rates_fixed_income_derivatives
+    display: "4.2 Interest Rate, Fixed Income & Derivatives"
+  - id: model_governance
+    display: "4.3 Model Governance & Risk Controls *(primary)*"
+  - id: portfolio_investment_risk
+    display: "4.4 Portfolio & Investment Risk Analytics"
+  - id: financial_transformation
+    display: "4.5 Financial Transformation & Regulatory Programs"
+  - id: enterprise_platform
+    display: "4.6 Enterprise Platform & Risk System Implementation *(primary for vendor-platform angle)*"
+  - id: valuation
+    display: "4.7 Valuation & Financial Modelling"
+  - id: programming_technical
+    display: "4.8 Programming & Technical Stack *(evidenced)*"
+  - id: regulatory_context
+    display: "4.9 Regulatory Context (knowledge, not training)"
+    is_markdown_only: true
+  - id: leadership_communication
+    display: "4.10 Leadership & Communication"
+
+# Programming section. Original formatting was inconsistent across groups
+# (level-parenthesis for Languages; no-level for Infra; parens-notes-only for
+# AI tools). Rather than re-derive that, store the verbatim lines here and
+# keep skill_ids alongside so agents can still trace each line back to a
+# structured skill record.
+programming_technical_display_groups:
+  - heading: "Languages:"
+    lines:
+      - {skill_id: sk_python,  text: "Python (Advanced) — pandas, NumPy, SciPy"}
+      - {skill_id: sk_sql,     text: "SQL (Intermediate) — PostgreSQL day-to-day"}
+      - {skill_id: sk_r,       text: "R (Intermediate — historical use)"}
+      - {skill_id: sk_matlab,  text: "MATLAB (Intermediate — historical use in research/engineering context)"}
+  - heading: "Infrastructure & Tooling:"
+    lines:
+      - {skill_id: sk_git,     text: "Git / version control"}
+      - {skill_id: sk_cicd,    text: "CI/CD pipelines in professional context"}
+  - heading: "AI & Developer Tools:"
+    lines:
+      - {skill_id: sk_claude_code, text: "Claude Code CLI (daily)"}
+      - {skill_id: sk_cursor_ide,  text: "Cursor IDE (daily)"}
+      - {skill_id: sk_agent_dev,   text: "Agent-oriented development workflows"}
+      - {skill_id: sk_llm_codegen, text: "LLM-assisted code generation and review"}
+  - heading: "Data & Visualization:"
+    lines:
+      - {skill_id: sk_excel,              text: "Excel (Advanced)"}
+      - {skill_id: sk_plotly_matplotlib,  text: "Plotly / matplotlib"}
+
+# 4.9 regulatory knowledge — rendered as a separate block in §4 of the .md
+regulatory_context_md: |
+  ### 4.9 Regulatory Context (knowledge, not training)
+  - OSFI Guideline E-23 (Model Risk Management, effective 2027-05-01) — understands scope including AI/ML coverage and functional-separation requirements
+  - OSFI Guideline B-12 (IRRBB revision, consultations Q1 2026) — understands Basel Committee IRRBB alignment direction
+  - OSFI LAR 2026 (Liquidity Adequacy Requirements) — understands tightening of liquidity stress testing and cash-flow projection requirements
+  - IFRS 17 & IFRS 9 (delivered transformation engagements at EY)

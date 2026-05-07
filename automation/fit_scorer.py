@@ -64,6 +64,18 @@ try:
 except ImportError:
     anthropic = None  # type: ignore
 
+# Deterministic JD → skill / variant / gap analysis. Runs BEFORE the LLM call so
+# the LLM gets pre-computed facts injected into its prompt. Optional — if the
+# master_repo YAMLs or loader aren't available, we silently fall back to
+# LLM-only scoring (legacy behavior).
+try:
+    from jd_skill_extract import extract as _jd_extract  # type: ignore
+except ImportError:
+    try:
+        from .jd_skill_extract import extract as _jd_extract  # type: ignore
+    except Exception:
+        _jd_extract = None  # type: ignore
+
 # Lifetime cost ledger (never-reset, cumulative across sessions).
 try:
     from cost_ledger import record as _ledger_record  # type: ignore
@@ -827,8 +839,12 @@ SCHEMA = """{
 
 
 def _cache_path_fit(url: str) -> Path:
+    """Fit-cache path. Versioned — v2 introduced deterministic JD analysis
+    injection; older v1 caches don't have `deterministic` block and we'd
+    rather re-score than back-fill. Old cache files are left in place (cheap
+    on disk) but never read."""
     FIT_CACHE.mkdir(parents=True, exist_ok=True)
-    return FIT_CACHE / f"{_url_hash(url)}.json"
+    return FIT_CACHE / f"{_url_hash(url)}.v2.json"
 
 
 # Per-1M-token prices (USD) for each supported model. Source: Anthropic pricing
@@ -868,6 +884,33 @@ def _is_transient_error(err_str: str) -> bool:
     ))
 
 
+def _compute_deterministic_analysis(jd_text: str) -> Optional[dict]:
+    """Run JD → skills/variants/gaps extraction. Returns a small serializable
+    dict, or None if the extractor is unavailable / JD is empty.
+
+    The LLM gets this as text in its prompt; the UI gets it as structured
+    JSON alongside the LLM output."""
+    if _jd_extract is None or not jd_text:
+        return None
+    try:
+        ex = _jd_extract(jd_text)
+    except Exception as e:
+        print(f"  [jd_extract] err: {e}", file=sys.stderr)
+        return None
+    return {
+        "coverage_pct": ex.coverage_pct,
+        "skill_ids_matched": ex.skill_ids_matched,
+        "primary_hit_ids": [h.skill_id for h in ex.primary_hits],
+        "gap_phrases": [g.matched_phrase for g in ex.gaps_flagged],
+        "suggested_variants": [
+            {"variant": v.variant, "bullets": v.bullets_supporting,
+             "skills": v.skills_supporting, "score": v.rank_score}
+            for v in ex.suggested_variants[:5]
+        ],
+        "_prompt_block": ex.as_prompt_block(),
+    }
+
+
 def score_with_llm(client, role: dict, jd_text: str) -> dict:
     """Call Claude with role+JD, cached by URL hash. Returns parsed dict.
 
@@ -876,6 +919,12 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
       - Fatal errors (billing/auth): set global abort event; stop pending jobs
       - Parse errors: 1 retry on same model, then fall through to fallback model
     Cost telemetry is accumulated into _cost_state on each successful call.
+
+    Before the LLM call, a deterministic JD → skill extraction runs over the
+    Master Repo YAMLs and is injected into the user prompt + persisted in
+    the result under `deterministic`. The LLM references it instead of
+    re-parsing the JD from scratch, which both reduces hallucination and
+    gives callers a structured coverage number independent of the LLM.
     """
     cache = _cache_path_fit(role["link"])
     if cache.exists():
@@ -891,6 +940,11 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 "skill_gaps": [], "tier": 4,
                 "summary": "Aborted due to fatal earlier error."}
 
+    # Deterministic pre-analysis. Always runs; costs ~1ms; may return None if
+    # extractor or JD is unavailable.
+    det = _compute_deterministic_analysis(jd_text)
+    det_block = det.get("_prompt_block") if det else ""
+
     user = (
         f"# ROLE\n"
         f"Company: {role['company']}\n"
@@ -899,7 +953,8 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         f"Location: {role.get('location', '')}\n"
         f"URL: {role['link']}\n"
         f"Source: {role.get('source', '')}\n"
-        f"\n# JOB DESCRIPTION (may be partial)\n"
+        + (f"\n{det_block}\n" if det_block else "")
+        + f"\n# JOB DESCRIPTION (may be partial)\n"
         f"{jd_text[:6000] if jd_text else '(JD not available — score from title/company only.)'}\n"
         f"\n# YOUR OUTPUT\n"
         f"Return ONLY valid JSON, no prose, matching this schema:\n"
@@ -966,6 +1021,12 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                     if len(cleaned) >= 3:
                         break
                 parsed["applicable_resume_variants"] = cleaned
+                # Attach the deterministic analysis to the persisted result
+                # (without `_prompt_block` — that's an LLM-prompt artifact and
+                # only adds noise to downstream consumers).
+                if det:
+                    persisted = {k: v for k, v in det.items() if not k.startswith("_")}
+                    parsed["deterministic"] = persisted
                 cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
                 return parsed
             except Exception as e:

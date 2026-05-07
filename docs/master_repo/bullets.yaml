@@ -1,0 +1,259 @@
+# §5 — Tagged bullet library. Each bullet is a first-class record with:
+#   - variant_tags: which resume variant(s) it belongs to
+#   - role_id / project_id: traceability back to the work
+#   - skill_ids: which evidenced skills this bullet demonstrates
+#   - has_metric: is there a quantified claim?
+#   - length: short (LinkedIn) | med (cover letter) | full (resume)
+#   - text: the exact bullet text used in the rendered .md
+#
+# The tailor selects bullets by a boolean filter over tags/skills rather than
+# re-generating them from prose. Don't edit `text` here and expect it to stay —
+# the .md is regenerated from this file.
+---
+variant_tags_legend:
+  ALM: "ALM / IRRBB / Balance-Sheet-Risk resume"
+  VAL: "Model Validation / Model Risk resume"
+  VEN: "Vendor-platform / Client Solutions resume (BlackRock Aladdin, Bloomberg, MSCI, S&P)"
+  QUANT: "Quantitative / Fixed Income Analytics resume"
+  CON: "Consulting / Advisory resume (Mercer, WTW, Deloitte FSI, EY FSRM boomerang)"
+  AI: "AI-in-finance angle (add sparingly — only for AI-forward roles)"
+
+section_groups:
+  - heading: "Moody's Analytics bullets"
+    role_id: role_moodys
+    bullet_ids:
+      - b_moodys_signoff_signoff_curve
+      - b_moodys_irrbb_shocks
+      - b_moodys_led_cashflow_engine
+      - b_moodys_liquidity_gap_architecture
+      - b_moodys_behavioral_cashflow
+      - b_moodys_model_governance_framework
+      - b_moodys_escalation_heads_of_risk
+      - b_moodys_derivatives_rates_fx_inflation
+      - b_moodys_onboarding_pfaroe
+      - b_moodys_calypso_migration
+      - b_moodys_agentic_ai_workflows
+      - b_moodys_spreadsheet_to_python
+      - b_moodys_analytical_summaries
+  - heading: "EY bullets"
+    role_id: role_ey
+    bullet_ids:
+      - b_ey_ifrs17_ifrs9_delivery
+      - b_ey_advised_actuarial_it_finance
+      - b_ey_product_offerings_collateral
+      - b_ey_cross_functional_coordination
+  - heading: "Ortec Finance bullets"
+    role_id: role_ortec
+    bullet_ids:
+      - b_ortec_alm_studies
+      - b_ortec_scenario_generators
+      - b_ortec_ldi_analysis
+      - b_ortec_saa_taa
+      - b_ortec_stochastic_frameworks
+      - b_ortec_investment_committee
+
+bullets:
+  # ---- Moody's ----
+  - id: b_moodys_signoff_signoff_curve
+    variant_tags: [ALM, VAL]
+    role_id: role_moodys
+    project_id: proj_cashflow_engine
+    skill_ids: [sk_model_signoff, sk_model_review_challenge, sk_yield_curve, sk_spread_calibration, sk_alm]
+    has_metric: true
+    length: full
+    text: "Held sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional client portfolios ranging $5–25bn per engagement — independently reviewed curve construction, spread calibration, and cross-asset interactions prior to production release."
+
+  - id: b_moodys_irrbb_shocks
+    variant_tags: [ALM]
+    role_id: role_moodys
+    skill_ids: [sk_irrbb, sk_rate_shock_analysis, sk_duration_gap, sk_osfi_b12]
+    has_metric: false
+    length: full
+    text: "Oversaw interest-rate risk and duration analysis under parallel and non-parallel rate shocks, aligned with IRRBB standards analogous to OSFI B-12 and Basel Committee frameworks."
+
+  - id: b_moodys_led_cashflow_engine
+    variant_tags: [ALM]
+    role_id: role_moodys
+    project_id: proj_cashflow_engine
+    skill_ids: [sk_cash_flow_projection, sk_liquidity_gap, sk_stress_testing, sk_alm]
+    has_metric: false
+    length: full
+    text: "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity visibility across ALM horizons."
+
+  - id: b_moodys_liquidity_gap_architecture
+    variant_tags: [ALM]
+    role_id: role_moodys
+    project_id: proj_cashflow_engine
+    skill_ids: [sk_liquidity_gap, sk_cash_flow_projection, sk_osfi_lar]
+    has_metric: false
+    length: full
+    text: "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset-allocation decisions under OSFI LAR-style liquidity requirements."
+
+  - id: b_moodys_behavioral_cashflow
+    variant_tags: [ALM, VAL]
+    role_id: role_moodys
+    project_id: proj_cashflow_engine
+    skill_ids: [sk_cash_flow_projection, sk_stress_testing, sk_assumption_validation]
+    has_metric: false
+    length: full
+    text: "Embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory liquidity expectations and executive contingency planning."
+
+  - id: b_moodys_model_governance_framework
+    variant_tags: [VAL]
+    role_id: role_moodys
+    skill_ids: [sk_model_review_challenge, sk_assumption_validation, sk_audit_documentation, sk_sr_11_7, sk_osfi_e23]
+    has_metric: false
+    length: full
+    text: "Operated within formal model-governance framework — reviewed assumptions, validated economic defensibility, escalated outputs lacking mathematical support; built documentation standards consistent with SR 11-7 and OSFI E-23 expectations."
+
+  - id: b_moodys_escalation_heads_of_risk
+    variant_tags: [VAL, ALM]
+    role_id: role_moodys
+    skill_ids: [sk_escalation_exception, sk_director_stakeholder, sk_model_signoff]
+    has_metric: false
+    length: full
+    text: "Escalated outputs lacking mathematical or economic defensibility and served as escalation point for client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders."
+
+  - id: b_moodys_derivatives_rates_fx_inflation
+    variant_tags: [QUANT, ALM]
+    role_id: role_moodys
+    skill_ids: [sk_derivatives_valuation, sk_instrument_valuation, sk_aggregation_logic]
+    has_metric: false
+    length: full
+    text: "Validated derivatives pricing outputs across rates, FX, and inflation — ensured consistency of sensitivities and scenario impacts at portfolio-level ALM aggregates."
+
+  - id: b_moodys_onboarding_pfaroe
+    variant_tags: [VEN]
+    role_id: role_moodys
+    project_id: proj_calypso_to_pfaroe
+    skill_ids: [sk_client_onboarding, sk_platform_migration, sk_po_requirements_scoping]
+    has_metric: false
+    length: full
+    text: "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to an enterprise analytics platform — served as technical liaison between client investment teams and product/development functions."
+
+  - id: b_moodys_calypso_migration
+    variant_tags: [VEN]
+    role_id: role_moodys
+    project_id: proj_calypso_to_pfaroe
+    skill_ids: [sk_platform_migration, sk_risk_system_config, sk_client_onboarding]
+    has_metric: false
+    length: full
+    text: "Successfully migrated all assigned client accounts from a legacy Calypso environment to a modern PFaroe PM platform, validating model outputs post-deployment."
+
+  - id: b_moodys_agentic_ai_workflows
+    variant_tags: [VEN, AI]
+    role_id: role_moodys
+    project_id: proj_agentic_ai_workflows
+    skill_ids: [sk_claude_code, sk_cursor_ide, sk_agent_dev, sk_llm_codegen]
+    has_metric: true
+    length: full
+    text: "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection — reducing development cycle time by an estimated 30–40% on comparable modules."
+
+  - id: b_moodys_spreadsheet_to_python
+    variant_tags: [VEN]
+    role_id: role_moodys
+    project_id: proj_spreadsheet_to_python_migration
+    skill_ids: [sk_python, sk_audit_documentation, sk_model_review_challenge]
+    has_metric: false
+    length: full
+    text: "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls."
+
+  - id: b_moodys_analytical_summaries
+    variant_tags: [ALM, VEN]
+    role_id: role_moodys
+    skill_ids: [sk_executive_presentation, sk_director_stakeholder]
+    has_metric: false
+    length: full
+    text: "Prepared analytical summaries for senior stakeholders on interest-rate exposure, scenario impacts, and balance-sheet sensitivities — translated quantitative outputs into investment-committee-ready narratives."
+
+  # ---- EY ----
+  - id: b_ey_ifrs17_ifrs9_delivery
+    variant_tags: [CON, ALM]
+    role_id: role_ey
+    project_id: proj_ifrs17_transformation
+    skill_ids: [sk_ifrs17, sk_ifrs9, sk_regulatory_readiness]
+    has_metric: false
+    length: full
+    text: "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation and financial-reporting frameworks."
+
+  - id: b_ey_advised_actuarial_it_finance
+    variant_tags: [CON]
+    role_id: role_ey
+    project_id: proj_ifrs17_transformation
+    skill_ids: [sk_cross_functional_regulatory, sk_regulatory_readiness, sk_audit_documentation]
+    has_metric: false
+    length: full
+    text: "Advised actuarial, IT, finance, and program-management functions on adoption of IFRS 17 and IFRS 9 standards; contributed to governance documentation and regulatory-readiness processes."
+
+  - id: b_ey_product_offerings_collateral
+    variant_tags: [CON]
+    role_id: role_ey
+    project_id: proj_ifrs17_transformation
+    skill_ids: [sk_ifrs17]
+    has_metric: false
+    length: full
+    text: "Developed IFRS 17 advisory product offerings and go-to-market collateral."
+
+  - id: b_ey_cross_functional_coordination
+    variant_tags: [CON]
+    role_id: role_ey
+    project_id: proj_ifrs17_transformation
+    skill_ids: [sk_cross_functional_coordination, sk_cross_functional_regulatory]
+    has_metric: false
+    length: full
+    text: "Coordinated across actuarial, finance, IT, risk, and PM teams on milestone delivery and implementation materials."
+
+  # ---- Ortec ----
+  - id: b_ortec_alm_studies
+    variant_tags: [ALM]
+    role_id: role_ortec
+    project_id: proj_ortec_alm_studies
+    skill_ids: [sk_alm, sk_funding_ratio, sk_duration_gap, sk_multiperiod_bs_risk]
+    has_metric: false
+    length: full
+    text: "Delivered ALM studies for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk exposures."
+
+  - id: b_ortec_scenario_generators
+    variant_tags: [ALM, QUANT]
+    role_id: role_ortec
+    project_id: proj_ortec_scenario_generators
+    skill_ids: [sk_stochastic_modelling, sk_scenario_generator, sk_stress_testing]
+    has_metric: false
+    length: full
+    text: "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base-case and stressed environments."
+
+  - id: b_ortec_ldi_analysis
+    variant_tags: [ALM]
+    role_id: role_ortec
+    project_id: proj_ortec_ldi_studies
+    skill_ids: [sk_ldi, sk_duration_gap, sk_funding_ratio]
+    has_metric: false
+    length: full
+    text: "Conducted liability-driven investment (LDI) analysis — trade-offs between return objectives, duration alignment, and liquidity considerations for pension-fund clients."
+
+  - id: b_ortec_saa_taa
+    variant_tags: [ALM, CON]
+    role_id: role_ortec
+    project_id: proj_ortec_alm_studies
+    skill_ids: [sk_stress_testing, sk_portfolio_stress, sk_investment_risk_oversight]
+    has_metric: false
+    length: full
+    text: "Advised clients on Strategic Asset Allocation (SAA) and Tactical Asset Allocation (TAA) trade-offs via stress testing and sensitivity analysis."
+
+  - id: b_ortec_stochastic_frameworks
+    variant_tags: [ALM, CON]
+    role_id: role_ortec
+    project_id: proj_ortec_scenario_generators
+    skill_ids: [sk_stochastic_modelling, sk_scenario_generator]
+    has_metric: false
+    length: full
+    text: "Designed stochastic risk-management frameworks tailored to specific client mandates."
+
+  - id: b_ortec_investment_committee
+    variant_tags: [CON]
+    role_id: role_ortec
+    project_id: proj_ortec_ldi_studies
+    skill_ids: [sk_investment_committee_presentation, sk_executive_presentation]
+    has_metric: false
+    length: full
+    text: "Presented ALM study findings to investment committees at Canadian pension-fund clients on-site."

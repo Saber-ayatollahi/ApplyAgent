@@ -1,0 +1,54 @@
+# ATS keyword aliases — canonical skill name + every synonym ATS parsers scan
+# for. A tailor pass that builds a resume variant should walk this list AFTER
+# it has selected the bullet set and guarantee each canonical phrase (or one
+# of its aliases) appears verbatim in the final document at least once if the
+# JD mentioned it.
+#
+# Most of these are redundant with skills.yaml:aliases — that's intentional.
+# This file is the flat lookup surface; skills.yaml is the structured record.
+---
+aliases:
+  - canonical: "Interest Rate Risk in the Banking Book"
+    synonyms: ["IRRBB", "banking book interest rate risk", "EVE/NII sensitivity", "EVE sensitivity", "NII sensitivity", "economic value of equity", "net interest income sensitivity"]
+  - canonical: "Asset-Liability Management"
+    synonyms: ["ALM", "asset liability management", "structural ALM", "dynamic ALM", "gestion de l'actif et du passif"]
+  - canonical: "Liability-Driven Investment"
+    synonyms: ["LDI", "liability driven investing", "liability-driven investing"]
+  - canonical: "Cash Flow Projection"
+    synonyms: ["cash flow projection", "cashflow projection", "cash-flow projection", "liquidity forecasting"]
+  - canonical: "Stress Testing"
+    synonyms: ["stress testing", "scenario analysis", "reverse stress", "reverse-stress testing", "macro stress"]
+  - canonical: "Model Validation"
+    synonyms: ["model validation", "model vetting", "model review", "independent model review", "effective challenge"]
+  - canonical: "Model Governance"
+    synonyms: ["model governance", "model risk management", "MRM"]
+  - canonical: "Model Risk Management"
+    synonyms: ["MRM", "model risk management", "SR 11-7", "OSFI E-23"]
+  - canonical: "Yield Curve Construction"
+    synonyms: ["yield curve construction", "curve construction", "swap curve", "bootstrapping", "curve calibration"]
+  - canonical: "Derivatives Valuation"
+    synonyms: ["derivatives valuation", "derivatives pricing", "rates derivatives", "FX derivatives", "inflation derivatives", "swaption pricing"]
+  - canonical: "Stochastic Modelling"
+    synonyms: ["stochastic modelling", "stochastic modeling", "Monte Carlo simulation", "ESG", "economic scenario generator"]
+  - canonical: "Duration Gap Analysis"
+    synonyms: ["duration gap", "repricing gap", "duration mismatch", "key-rate duration"]
+  - canonical: "Funding Ratio Analytics"
+    synonyms: ["funding ratio", "funded status", "solvency analytics"]
+  - canonical: "IFRS 17"
+    synonyms: ["IFRS 17", "IFRS17", "insurance contract liabilities", "CSM", "contractual service margin"]
+  - canonical: "IFRS 9"
+    synonyms: ["IFRS 9", "IFRS9", "ECL", "expected credit loss"]
+  - canonical: "OSFI B-12"
+    synonyms: ["OSFI B-12", "B-12", "IRRBB revision"]
+  - canonical: "OSFI E-23"
+    synonyms: ["OSFI E-23", "E-23", "model risk management guideline"]
+  - canonical: "OSFI LAR"
+    synonyms: ["OSFI LAR", "LAR", "liquidity adequacy requirements", "LCR", "NSFR"]
+  - canonical: "Python"
+    synonyms: ["Python", "pandas", "NumPy", "SciPy"]
+  - canonical: "SQL"
+    synonyms: ["SQL", "PostgreSQL", "Postgres"]
+  - canonical: "Claude Code"
+    synonyms: ["Claude Code", "Claude Code CLI", "Anthropic Claude"]
+  - canonical: "Agentic AI Workflows"
+    synonyms: ["agentic AI", "agentic AI workflows", "agent-oriented development"]
