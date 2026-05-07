@@ -48,8 +48,17 @@ SCRAPE_MODE_ARGS = {
 
 
 def _stream(cmd: list[str], prefix: str, status: dict, stage: str) -> int:
-    """Run cmd, stream output with prefix, update status dict."""
-    status[stage] = {
+    """Run cmd, stream output with prefix, update `status["stages"][stage]`.
+
+    Previously this wrote to the FLAT `status[stage]` key, but every other
+    call-site in this file (and the UI's `pipe["stages"][stage]` reader)
+    expects the stage slot nested under `"stages"`. The mismatch silently
+    truncated every real pipeline run: the scrape subprocess would finish
+    cleanly, then the follow-up `status["stages"]["scrape"]["scan_file"] = ...`
+    crashed with KeyError, leaving the pipeline dead and every downstream
+    stage un-run. Ticketed as "phantom running state"."""
+    status.setdefault("stages", {})
+    status["stages"][stage] = {
         "cmd": cmd,
         "started_at": datetime.now().isoformat(timespec="seconds"),
         "state": "running",
@@ -67,7 +76,7 @@ def _stream(cmd: list[str], prefix: str, status: dict, stage: str) -> int:
         last_line = line.rstrip()
         print(f"[{prefix}] {last_line}", flush=True)
     rc = proc.wait()
-    status[stage].update({
+    status["stages"][stage].update({
         "finished_at": datetime.now().isoformat(timespec="seconds"),
         "elapsed_sec": round(time.time() - t0, 1),
         "returncode": rc,
@@ -145,12 +154,31 @@ def main() -> int:
         "state": "running",
         "stages": {},
     }
-    # Flat aliases for UI convenience (legacy)
     _write_status(status)
 
     print(f"=== ApplyAgent pipeline {pipeline_id} ===", flush=True)
     print(f"Mode: scrape={args.scrape_mode} skip_scrape={args.skip_scrape} "
           f"skip_score={args.skip_score} skip_promote={args.skip_promote}", flush=True)
+
+    # Guard: if anything crashes or the user Ctrl-Cs, mark the pipeline
+    # "crashed" instead of leaving state=running forever. The UI and
+    # scan_runner both use state=running as an "actively working" signal;
+    # a stuck status file produces phantom banners and disables buttons
+    # for days. try/finally catches KeyError, KeyboardInterrupt, SystemExit
+    # (via except BaseException) so even kill-tree can't leave zombies.
+    try:
+        return _run(args, status, pipeline_id)
+    except BaseException as e:
+        if status.get("state") == "running":
+            status["state"] = "crashed"
+            status["crashed_at"] = datetime.now().isoformat(timespec="seconds")
+            status["crash_reason"] = f"{type(e).__name__}: {str(e)[:300]}"
+            _write_status(status)
+            print(f"\n[pipeline] ❌ CRASHED: {status['crash_reason']}", flush=True)
+        raise
+
+
+def _run(args, status: dict, pipeline_id: str) -> int:
 
     # -------- [1] SCRAPE --------
     scan_file: Path | None = None

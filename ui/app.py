@@ -596,6 +596,49 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
     return state == "running"
 
 
+def _resolve_pipeline_staleness(data: dict, path: Path) -> dict:
+    """Rewrite a pipeline status that claims `state=running` but is obviously
+    orphaned. Mirror of fit_scorer_progress.json's stale-detection logic.
+
+    A pipeline is stale when:
+      - state is 'running'
+      - AND file hasn't been touched in >10 minutes (pipelines heartbeat
+        via _write_status after every stage transition)
+      - AND no scan_runner job whose label contains 'pipeline' is alive
+
+    When all three are true, the producer is dead — the process either
+    crashed before hitting the try/finally guard, was kill-treed, or the
+    machine was rebooted. We flip state to 'stale' in-place so the UI
+    stops showing a phantom 'pipeline running' banner forever."""
+    if data.get("state") != "running":
+        return data
+    try:
+        age_s = datetime.now().timestamp() - path.stat().st_mtime
+    except Exception:
+        return data
+    if age_s < 600:  # <10 min: still plausibly alive, don't touch
+        return data
+    try:
+        alive = any("pipeline" in (r.get("label") or "")
+                     for r in scan_runner.active_runs())
+    except Exception:
+        alive = False
+    if alive:
+        return data
+    # Orphan. Rewrite the file.
+    data["state"] = "stale"
+    data["finished_at"] = datetime.now().isoformat(timespec="seconds")
+    data["stale_reason"] = (
+        f"No active pipeline subprocess and status file idle for "
+        f"{int(age_s/60)} minutes."
+    )
+    try:
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+    return data
+
+
 def latest_pipeline_status() -> dict | None:
     if not PIPELINE_DIR.exists():
         return None
@@ -604,9 +647,10 @@ def latest_pipeline_status() -> dict | None:
     if not files:
         return None
     try:
-        return json.loads(files[0].read_text(encoding="utf-8"))
+        data = json.loads(files[0].read_text(encoding="utf-8"))
     except Exception:
         return None
+    return _resolve_pipeline_staleness(data, files[0])
 
 
 def list_pipelines(limit: int = 20) -> list[dict]:
@@ -617,7 +661,8 @@ def list_pipelines(limit: int = 20) -> list[dict]:
     out = []
     for p in files[:limit]:
         try:
-            out.append(json.loads(p.read_text(encoding="utf-8")))
+            data = json.loads(p.read_text(encoding="utf-8"))
+            out.append(_resolve_pipeline_staleness(data, p))
         except Exception:
             continue
     return out
