@@ -17,6 +17,19 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+# Auto-refresh component — polling, not websocket. Only installed as a dep
+# when streamlit-autorefresh is listed in requirements.txt. If missing we
+# degrade to no-auto-refresh (user clicks Refresh manually).
+try:
+    from streamlit_autorefresh import st_autorefresh  # type: ignore
+    _HAVE_AUTOREFRESH = True
+except ImportError:
+    _HAVE_AUTOREFRESH = False
+
+    def st_autorefresh(interval: int = 2000, limit: int = 0, key: str = ""):
+        """No-op shim when streamlit-autorefresh isn't installed."""
+        return 0
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scan_runner  # noqa: E402
 import api_key  # noqa: E402
@@ -677,18 +690,64 @@ active_runs = scan_runner.active_runs()
 pipe = latest_pipeline_status()
 pipeline_running = pipe and pipe.get("state") == "running"
 
-if active_runs or pipeline_running:
+# Scorer progress is live if the progress file is <60s old and state=running.
+# We check this before deciding to auto-refresh so an idle page doesn't ping
+# the filesystem every 5s unnecessarily.
+def _scorer_progress_live() -> bool:
+    try:
+        p = OUT_DIR / "fit_scorer_progress.json"
+        if not p.exists():
+            return False
+        age = (datetime.now().timestamp() - p.stat().st_mtime)
+        if age > 60:
+            return False
+        state = json.loads(p.read_text(encoding="utf-8")).get("state")
+        return state == "running"
+    except Exception:
+        return False
+
+
+scorer_running = _scorer_progress_live()
+any_work_active = bool(active_runs or pipeline_running or scorer_running)
+
+# Auto-refresh: poll every 5s ONLY when something is actively running. An
+# idle dashboard stays idle (no rerun thrash, no battery drain). The user
+# can also hit 🔄 Refresh manually — see sidebar below. `key` is distinct
+# per page so Streamlit doesn't treat them as one counter.
+if any_work_active and _HAVE_AUTOREFRESH:
+    st_autorefresh(interval=5000, key=f"_autorefresh_{page}")
+
+if any_work_active:
     st.sidebar.markdown("### 🟢 Active work")
     if pipeline_running:
         st.sidebar.caption(
             f"**Pipeline** `{pipe['pipeline_id']}` · {human_elapsed(pipe.get('started_at'))}"
         )
+    if scorer_running:
+        st.sidebar.caption("**Scorer** running — progress updates every 5s")
     for r in active_runs:
         st.sidebar.caption(
             f"**{r['label']}** · {human_elapsed(r['started_at'])} · pid {r['pid']}"
         )
+    if _HAVE_AUTOREFRESH:
+        st.sidebar.caption("↻ auto-refresh every 5s while work is active")
+    else:
+        st.sidebar.caption(
+            "⚠️ streamlit-autorefresh not installed — pages won't auto-refresh. "
+            "pip install streamlit-autorefresh"
+        )
 else:
     st.sidebar.caption("No active runs")
+
+# Global manual refresh — clears data caches so tracker/CRM reload. Works
+# whether or not streamlit-autorefresh is installed. Distinct from the
+# backend-log refresh below, which only touches the session log.
+if st.sidebar.button("🔄 Refresh now", key="sidebar_refresh_now",
+                      width='stretch',
+                      help="Clear data caches and re-read tracker, CRM, "
+                           "progress, and run state."):
+    st.cache_data.clear()
+    st.rerun()
 
 # -------- Backend session log (written by start.ps1) --------
 # `logs/current.log` is a pointer file with the path to the active session
