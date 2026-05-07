@@ -40,6 +40,13 @@ import gmail_ui  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
 import cost_ledger  # noqa: E402
 
+# Error log — populated by the automation modules. Guarded import so the
+# UI still loads even if the module was renamed / broken.
+try:
+    import error_log  # noqa: E402
+except Exception:
+    error_log = None  # type: ignore
+
 # Ensure stored key is in env before anything launches a subprocess
 api_key.hydrate_env()
 
@@ -725,6 +732,36 @@ try:
     )
 except Exception as _e:
     st.sidebar.caption(f"Ledger unavailable: {_e}")
+
+# ---------------------------- Error log badge ----------------------------
+# logs/errors.jsonl records silent failures from scorer/tracker/scraper
+# (progress-write hiccups, fit-cache corruption, ledger writes, etc.).
+# Before this badge, users had no way to know something was degrading
+# silently. Now: green if quiet, yellow if recent errors, red if
+# accumulating. Click-through opens the Admin page.
+if error_log is not None:
+    try:
+        _err_last_hour = error_log.count_recent(since_minutes=60)
+        _err_last_day = error_log.count_recent(since_minutes=60 * 24)
+        st.sidebar.markdown("### 🪵 Error log")
+        if _err_last_hour == 0 and _err_last_day == 0:
+            st.sidebar.success("No errors logged", icon="✅")
+        elif _err_last_hour == 0:
+            st.sidebar.info(f"{_err_last_day} in last 24h · 0 in last hour",
+                             icon="ℹ️")
+        elif _err_last_hour < 5:
+            st.sidebar.warning(
+                f"{_err_last_hour} in last hour · {_err_last_day} in 24h",
+                icon="⚠️",
+            )
+        else:
+            st.sidebar.error(
+                f"{_err_last_hour} in last hour · {_err_last_day} in 24h",
+                icon="🔴",
+            )
+        st.sidebar.caption("See ⚙️ Admin → Error log for details.")
+    except Exception as _ee:
+        st.sidebar.caption(f"Error log unavailable: {_ee}")
 
 st.sidebar.markdown("---")
 
@@ -3394,6 +3431,134 @@ elif page == "⚙️ Admin":
                    f"updated {_ledger.get('updated_at', '—')}")
     except Exception as _le:
         st.error(f"Ledger read failed: {_le}")
+    st.markdown("---")
+
+    # ---------- Error log ----------
+    st.subheader("🪵 Error log")
+    st.caption(
+        "Silent failures (progress-file writes, fit-cache corruption, "
+        "HTTP retries exhausted, ledger writes) land in "
+        "`logs/errors.jsonl`. One JSONL record per error — module, "
+        "context, error_type, message, and traceback."
+    )
+    if error_log is None:
+        st.info("`automation/error_log.py` isn't importable — skipping.")
+    else:
+        try:
+            recent = error_log.recent_errors(limit=200)
+        except Exception as _ree:
+            st.error(f"Error log read failed: {_ree}")
+            recent = []
+
+        # Top metric row
+        _last_hour = error_log.count_recent(since_minutes=60) if error_log else 0
+        _last_day = error_log.count_recent(since_minutes=60 * 24) if error_log else 0
+        em1, em2, em3, em4 = st.columns(4)
+        em1.metric("Total recent", f"{len(recent):,}")
+        em2.metric("Last hour", f"{_last_hour:,}")
+        em3.metric("Last 24h", f"{_last_day:,}")
+        em4.metric("Log file",
+                   f"{(error_log.LOG_PATH.stat().st_size // 1024):,} KB"
+                   if error_log.LOG_PATH.exists() else "—")
+
+        if not recent:
+            st.success("✅ No errors in the log.")
+        else:
+            # Filter row
+            mods = sorted({r.get("module", "?") for r in recent})
+            ctxs = sorted({r.get("context", "?") for r in recent})
+            fe1, fe2, fe3 = st.columns([2, 2, 2])
+            with fe1:
+                pick_mod = st.multiselect("Module", mods, default=mods,
+                                            key="err_mod")
+            with fe2:
+                pick_ctx = st.multiselect("Context", ctxs, default=[],
+                                            key="err_ctx",
+                                            help="Leave empty to show all")
+            with fe3:
+                err_q = st.text_input("Search message/traceback",
+                                        key="err_q")
+
+            def _match(rec):
+                if rec.get("module") not in pick_mod:
+                    return False
+                if pick_ctx and rec.get("context") not in pick_ctx:
+                    return False
+                if err_q:
+                    q = err_q.lower()
+                    hay = (rec.get("message", "") + " "
+                           + rec.get("traceback", "")).lower()
+                    if q not in hay:
+                        return False
+                return True
+
+            filtered = [r for r in recent if _match(r)]
+            st.caption(f"Showing {len(filtered):,} of {len(recent):,} records")
+
+            # Table view
+            rows = [{
+                "when": r.get("timestamp", ""),
+                "module": r.get("module", "?"),
+                "context": r.get("context", "?"),
+                "error_type": r.get("error_type", "?"),
+                "message": r.get("message", "")[:120],
+            } for r in filtered]
+            if rows:
+                st.dataframe(pd.DataFrame(rows), hide_index=True,
+                             width='stretch', height=300)
+
+            # Drill-down on one record
+            if filtered:
+                labels = [
+                    f"{r.get('timestamp','?')} · {r.get('module','?')} · "
+                    f"{r.get('context','?')} · {r.get('error_type','?')}"
+                    for r in filtered
+                ]
+                idx = st.selectbox("Inspect record", range(len(filtered)),
+                                    format_func=lambda i: labels[i],
+                                    key="err_pick")
+                rec = filtered[idx]
+                with st.container(border=True):
+                    st.markdown(f"**{rec.get('error_type','?')}** "
+                                f"in `{rec.get('module','?')}` / "
+                                f"`{rec.get('context','?')}`")
+                    st.caption(rec.get("timestamp", ""))
+                    st.markdown(f"**Message:** {rec.get('message','')}")
+                    if rec.get("traceback"):
+                        st.code(rec["traceback"], language="text")
+                    # Extra fields beyond the core schema
+                    extra_keys = [k for k in rec
+                                   if k not in {"timestamp", "module", "context",
+                                                 "error_type", "message",
+                                                 "traceback"}]
+                    if extra_keys:
+                        st.markdown("**Extra fields**")
+                        st.json({k: rec[k] for k in extra_keys})
+
+        # Archive-current-log button. Never deletes; renames the current
+        # errors.jsonl to errors.archived_<stamp>.jsonl so the badge goes
+        # back to green but the forensic record is preserved.
+        st.markdown("---")
+        ac1, ac2 = st.columns([1, 3])
+        with ac1:
+            if st.button("🗄 Archive current log", key="err_archive",
+                          disabled=(error_log is None
+                                    or not error_log.LOG_PATH.exists())):
+                try:
+                    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    dest = error_log.LOG_PATH.with_name(
+                        f"errors.archived_{stamp}.jsonl")
+                    error_log.LOG_PATH.rename(dest)
+                    st.success(f"Archived to {dest.name}")
+                    st.rerun()
+                except Exception as _ae:
+                    st.error(f"Archive failed: {_ae}")
+        with ac2:
+            st.caption(
+                "Archiving renames `errors.jsonl` to "
+                "`errors.archived_<stamp>.jsonl`. The current log goes back "
+                "to empty; the archive file stays in `logs/` for forensics."
+            )
     st.markdown("---")
 
     # ---------- Nightly schedule ----------
