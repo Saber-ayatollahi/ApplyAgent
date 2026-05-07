@@ -2175,15 +2175,18 @@ elif page == "🎯 Pipeline":
     st.markdown("---")
 
     # ---------- Main tabs ----------
-    tabs = st.tabs(
-        ["🎯 Run pipeline", "🔗 Score a URL", "🛰️ 1·Scrape", "🤖 2·Score",
-         "👁 3·Triage", "🚀 4·Promote", "📜 History"]
-    )
+    # Three tabs: Run (chain + Score-a-URL expander), Inspect (triage
+    # funnel + scored drill-down), History. The old per-stage tabs
+    # (1·Scrape / 2·Score / 4·Promote) were UI wrappers around CLIs that
+    # the Run-chain button already invokes -- collapsed so the user sees
+    # one page instead of juggling seven.
+    tabs = st.tabs(["🎯 Run", "👁 Inspect", "📜 History"])
 
-    # ================== TAB: Run pipeline ==================
+    # ================== TAB: Run ==================
     with tabs[0]:
         st.subheader("Run the full agentic chain")
-        st.caption("Scrape → Score → Promote-preview. Review & commit happens in the 🚀 Promote tab.")
+        st.caption("Scrape → Score → Promote-preview. Commit in the Promote "
+                   "section below, or via auto_promote on the CLI.")
 
         cA, cB = st.columns([1, 1])
         with cA:
@@ -2295,7 +2298,8 @@ elif page == "🎯 Pipeline":
                 st.success(
                     f"Gmail fetch started (`{rec.run_id}`). "
                     f"Output lands in `automation/outputs/scan_gmail_*.json`. "
-                    f"Then score it from the 2·Score tab."
+                    f"Then launch the pipeline with `Skip scrape` ticked "
+                    f"to score it."
                 )
                 st.rerun()
             if not _gmail_ok:
@@ -2330,254 +2334,100 @@ elif page == "🎯 Pipeline":
                 _t.sleep(3)
                 st.rerun()
 
-    # ================== TAB: Score a URL ==================
-    with tabs[1]:
-        st.subheader("🔗 Score a URL")
-        st.caption(
-            "Paste any job URL (jobs.citi.com, OSFI careers, company career site, "
-            "even a LinkedIn you found outside the scan) and get a fresh LLM fit score "
-            "against your Master Repository. Takes ~5s and costs ~$0.001."
-        )
-        url_key_ok = api_key.is_key_valid()
-        if not url_key_ok:
-            st.warning("🔑 API key required. Set it in the sidebar.")
-        url_in = st.text_input(
-            "JD URL",
-            placeholder="https://jobs.citi.com/job/mississauga/non-trading-market-risk-officer-vice-president/287/93536402784",
-            key="url_score_input",
-        )
-        u1, u2, u3 = st.columns([2, 2, 1])
-        with u1:
-            company_in = st.text_input("Company (optional — inferred from URL)",
-                                        key="url_score_company")
-        with u2:
-            title_in = st.text_input("Title (optional — inferred from JD)",
-                                      key="url_score_title")
-        with u3:
-            add_to_tr = st.checkbox("Add to tracker",
-                                     help="If result is actionable, append to "
-                                          "job_tracker_data.json",
-                                     key="url_score_add")
-        rescore = st.checkbox("Bypass cache (force fresh LLM call)",
-                               key="url_score_rescore")
-        if st.button("🤖 Score this URL", type="primary",
-                     disabled=not (url_key_ok and url_in.strip()),
-                     key="url_score_btn"):
-            cmd = [sys.executable, str(ROOT / "automation" / "score_url.py"),
-                   url_in.strip(), "--json-only"]
-            if company_in.strip():
-                cmd += ["--company", company_in.strip()]
-            if title_in.strip():
-                cmd += ["--title", title_in.strip()]
-            if rescore:
-                cmd.append("--rescore")
-            if add_to_tr:
-                cmd.append("--add-to-tracker")
-            with st.spinner("Fetching JD and scoring..."):
-                res = subprocess.run(cmd, capture_output=True, text=True,
-                                      cwd=str(ROOT), timeout=60)
-            if res.returncode != 0:
-                st.error(f"Scoring failed (exit {res.returncode}):")
-                st.code(res.stderr[-2000:], language="text")
-            else:
-                try:
-                    fit = json.loads(res.stdout)
-                except json.JSONDecodeError:
-                    st.error("Scorer did not return JSON:")
-                    st.code(res.stdout[-1000:], language="text")
+        # ---------- Score a single URL (expander inside Run tab) ----------
+        # Kept from the old tabs[1]. Paste any URL → fresh LLM fit score.
+        st.markdown("---")
+        with st.expander("🔗 Score a single URL (ad-hoc, no scan needed)",
+                          expanded=False):
+            st.caption(
+                "Paste any job URL (jobs.citi.com, OSFI careers, company "
+                "career site, even a LinkedIn you found outside the scan) "
+                "and get a fresh LLM fit score against your Master "
+                "Repository. Takes ~5s and costs ~$0.001."
+            )
+            url_key_ok = api_key.is_key_valid()
+            if not url_key_ok:
+                st.warning("🔑 API key required. Set it in the sidebar.")
+            url_in = st.text_input(
+                "JD URL",
+                placeholder="https://jobs.citi.com/job/mississauga/non-trading-market-risk-officer-vice-president/287/93536402784",
+                key="url_score_input",
+            )
+            u1, u2, u3 = st.columns([2, 2, 1])
+            with u1:
+                company_in = st.text_input("Company (optional — inferred from URL)",
+                                            key="url_score_company")
+            with u2:
+                title_in = st.text_input("Title (optional — inferred from JD)",
+                                          key="url_score_title")
+            with u3:
+                add_to_tr = st.checkbox("Add to tracker",
+                                         help="If result is actionable, append to "
+                                              "job_tracker_data.json",
+                                         key="url_score_add")
+            rescore = st.checkbox("Bypass cache (force fresh LLM call)",
+                                   key="url_score_rescore")
+            if st.button("🤖 Score this URL", type="primary",
+                         disabled=not (url_key_ok and url_in.strip()),
+                         key="url_score_btn"):
+                cmd = [sys.executable, str(ROOT / "automation" / "score_url.py"),
+                       url_in.strip(), "--json-only"]
+                if company_in.strip():
+                    cmd += ["--company", company_in.strip()]
+                if title_in.strip():
+                    cmd += ["--title", title_in.strip()]
+                if rescore:
+                    cmd.append("--rescore")
+                if add_to_tr:
+                    cmd.append("--add-to-tracker")
+                with st.spinner("Fetching JD and scoring..."):
+                    res = subprocess.run(cmd, capture_output=True, text=True,
+                                          cwd=str(ROOT), timeout=60)
+                if res.returncode != 0:
+                    st.error(f"Scoring failed (exit {res.returncode}):")
+                    st.code(res.stderr[-2000:], language="text")
                 else:
-                    verdict = fit.get("fit_verdict", "?")
-                    score = fit.get("fit_score", "?")
-                    tier = fit.get("tier", "?")
-                    variants = fit.get("applicable_resume_variants") or []
-                    badge = {"apply_now": "🟢", "tailor_and_apply": "🟡",
-                             "watch": "⚪", "skip": "🔴", "error": "❌"}.get(verdict, "⚪")
-                    st.markdown(
-                        f"### {badge} Verdict: `{verdict}` · "
-                        f"Score: **{score}/10** · Tier {tier}"
-                    )
-                    cA, cB = st.columns(2)
-                    with cA:
-                        st.markdown("**Lead-with resume(s):** "
-                                    + (" · ".join(variants) if variants else "—"))
-                        st.markdown("**Summary:** " + fit.get("summary", "—"))
-                    with cB:
-                        reasons = fit.get("top_3_reasons") or []
-                        if reasons:
-                            st.markdown("**Why it fits:**")
-                            for r in reasons:
-                                st.markdown(f"- {r}")
-                        gaps = fit.get("skill_gaps") or []
-                        if gaps:
-                            st.markdown("**Gaps:** " + "; ".join(gaps))
-                    if add_to_tr and "Added" in (res.stderr or ""):
-                        st.success("✅ Added to tracker. Reload the Kanban to see it.")
-                        st.cache_data.clear()
-                    with st.expander("Raw scorer output"):
-                        st.code(json.dumps(fit, indent=2), language="json")
-
-    # ================== TAB: Scrape ==================
-    with tabs[2]:
-        st.subheader("Stage 1 — Scrape")
-        st.caption("Pull raw job postings from LinkedIn + Workday + Greenhouse + Lever.")
-        if scan_f:
-            try:
-                d = json.loads(scan_f.read_text(encoding="utf-8"))
-                ds = d.get("dedup_stats") or {}
-                ccol1, ccol2, ccol3, ccol4 = st.columns(4)
-                ccol1.metric("Raw", ds.get("input", "—"))
-                ccol2.metric("After dedup", len(d.get("results", [])),
-                             delta=-(ds.get("dropped_url", 0) + ds.get("dropped_near", 0))
-                             if ds else None)
-                ccol3.metric("Sectors", len(d.get("by_sector", {})))
-                ccol4.metric("Companies", d.get("companies_scanned", "—"))
-                st.caption(f"File: `{scan_f.name}` · modified "
-                           f"{datetime.fromtimestamp(scan_f.stat().st_mtime).strftime('%Y-%m-%d %H:%M')}"
-                           + (f" · dedup removed {ds.get('dropped_url',0)} dup URLs + "
-                              f"{ds.get('dropped_near',0)} near-dups" if ds else ""))
-
-                # By-sector breakdown
-                sb = d.get("by_sector", {})
-                if sb:
-                    sb_df = pd.DataFrame(sorted(sb.items(), key=lambda x: -x[1]),
-                                         columns=["sector", "candidates"])
-                    st.bar_chart(sb_df.set_index("sector"))
-
-                # Per-company diagnostics
-                diag = d.get("diagnostics") or {}
-                pc = diag.get("per_company") or []
-                if pc:
-                    pc_df = pd.DataFrame(pc)
-                    pc_df = pc_df.sort_values("total", ascending=False)
-                    with st.expander(f"🔍 Per-company breakdown ({len(pc_df)} targets)"):
-                        st.caption(
-                            "Filter: rows with `total=0` are companies that returned nothing. "
-                            "Check `has_workday_config` — if False, company relies on LinkedIn only."
+                    try:
+                        fit = json.loads(res.stdout)
+                    except json.JSONDecodeError:
+                        st.error("Scorer did not return JSON:")
+                        st.code(res.stdout[-1000:], language="text")
+                    else:
+                        verdict = fit.get("fit_verdict", "?")
+                        score = fit.get("fit_score", "?")
+                        tier = fit.get("tier", "?")
+                        variants = fit.get("applicable_resume_variants") or []
+                        badge = {"apply_now": "🟢", "tailor_and_apply": "🟡",
+                                 "watch": "⚪", "skip": "🔴", "error": "❌"}.get(verdict, "⚪")
+                        st.markdown(
+                            f"### {badge} Verdict: `{verdict}` · "
+                            f"Score: **{score}/10** · Tier {tier}"
                         )
-                        show_zero = st.checkbox("Show only 0-result companies", value=False,
-                                                 key="scrape_zero_only")
-                        view = pc_df[pc_df["total"] == 0] if show_zero else pc_df
-                        st.dataframe(view, hide_index=True, width='stretch', height=400)
+                        cA, cB = st.columns(2)
+                        with cA:
+                            st.markdown("**Lead-with resume(s):** "
+                                        + (" · ".join(variants) if variants else "—"))
+                            st.markdown("**Summary:** " + fit.get("summary", "—"))
+                        with cB:
+                            reasons = fit.get("top_3_reasons") or []
+                            if reasons:
+                                st.markdown("**Why it fits:**")
+                                for r in reasons:
+                                    st.markdown(f"- {r}")
+                            gaps = fit.get("skill_gaps") or []
+                            if gaps:
+                                st.markdown("**Gaps:** " + "; ".join(gaps))
+                        if add_to_tr and "Added" in (res.stderr or ""):
+                            st.success("✅ Added to tracker. Reload the Kanban to see it.")
+                            st.cache_data.clear()
+                        with st.expander("Raw scorer output"):
+                            st.code(json.dumps(fit, indent=2), language="json")
 
-                # Sample listings
-                st.markdown("**Recent candidates** (first 50)")
-                rows = []
-                for r in d.get("results", [])[:50]:
-                    rows.append({
-                        "company": r.get("company"),
-                        "title": r.get("title"),
-                        "sector": r.get("sector"),
-                        "source": r.get("source"),
-                        "location": r.get("location"),
-                        "url": r.get("link"),
-                    })
-                st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch',
-                             column_config={"url": st.column_config.LinkColumn()})
-            except Exception as e:
-                st.warning(f"Could not read {scan_f.name}: {e}")
-        else:
-            st.info("No scan file yet. Run the pipeline or a scrape.")
-
-        with st.expander("Run scrape only (no score/promote)"):
-            m = st.selectbox("Mode", ["full", "core", "ats", "linkedin", "expansion"],
-                             key="scrape_only_mode")
-            if st.button("🛰️ Scrape only", key="scrape_only_btn"):
-                cmd2 = [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                        "--scrape-mode", m, "--skip-score", "--skip-promote"]
-                rec = scan_runner.start_run(f"scrape_{m}", cmd2)
-                st.success(f"Started `{rec.run_id}`")
-
-    # ================== TAB: Score ==================
-    with tabs[3]:
-        st.subheader("Stage 2 — Score with Claude")
-        st.caption(
-            "Each candidate is rated 1–10 against Saber's Master Repository. "
-            "Verdicts: apply_now / tailor_and_apply / watch / skip."
-        )
-
-        # Live progress if scorer is running
-        scorer_running_here = render_scorer_progress()
-        if scorer_running_here:
-            if st.checkbox("🔄 Auto-refresh every 3s", value=True, key="score_auto_tab"):
-                import time as _t
-                _t.sleep(3)
-                st.rerun()
-
-        scored_files = sorted(OUT_DIR.glob("*_scored.json"),
-                              key=lambda p: p.stat().st_mtime, reverse=True)
-        if not scored_files:
-            st.warning("No scored scans yet.")
-        else:
-            which = st.selectbox("Scored file", [p.name for p in scored_files], key="score_file")
-            sc = json.loads((OUT_DIR / which).read_text(encoding="utf-8"))
-            results = sc.get("results", [])
-
-            # ── API error / failed-run warning ──────────────────────────────
-            api_err = sc.get("api_error")
-            verdicts: dict = {}
-            for r in results:
-                v = (r.get("fit") or {}).get("fit_verdict", "?")
-                verdicts[v] = verdicts.get(v, 0) + 1
-            all_skip = verdicts and set(verdicts.keys()) <= {"skip", "error", "?"}
-
-            if api_err:
-                st.error(
-                    f"⛔ **Scorer failed — API error detected.**\n\n"
-                    f"`{api_err[:300]}`\n\n"
-                    f"Fix your API key / credits, then re-score.",
-                    icon="🔑",
-                )
-            elif all_skip and sc.get("stage2_scored", 0) > 10:
-                st.warning(
-                    "⚠️ **All jobs scored as 'skip'** — this usually means the LLM calls "
-                    "failed silently (no API credits, wrong key, or network issue). "
-                    "Check your `ANTHROPIC_API_KEY` and billing, then re-score.",
-                    icon="⚠️",
-                )
-            # ────────────────────────────────────────────────────────────────
-
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Input", sc.get("total_input", "—"))
-            m2.metric("Stage 1 pass", sc.get("stage1_passed", "—"))
-            m3.metric("Stage 2 scored", sc.get("stage2_scored", "—"))
-            m4.metric("apply_now", verdicts.get("apply_now", 0))
-
-            st.caption(f"Scored at {sc.get('scored_at', '—')}")
-
-            # Verdict breakdown
-            if verdicts:
-                v_df = pd.DataFrame(sorted(verdicts.items(), key=lambda x: -x[1]),
-                                    columns=["verdict", "count"])
-                st.bar_chart(v_df.set_index("verdict"))
-
-        with st.expander("Re-score an existing scan"):
-            scan_choices = [p.name for p in sorted(OUT_DIR.glob("scan_*.json"),
-                                                    key=lambda p: p.stat().st_mtime,
-                                                    reverse=True) if "_scored" not in p.name]
-            if scan_choices:
-                pick = st.selectbox("Raw scan to score", scan_choices, key="score_raw_pick")
-                c1, c2, c3 = st.columns(3)
-                conc = c1.number_input("Concurrency", 1, 16, 6, key="score_conc")
-                lim = c2.number_input("Limit (0=all)", 0, 5000, 0, key="score_lim")
-                dry = c3.checkbox("Dry run", key="score_dry")
-                _key_ok_score = api_key.is_key_valid() or dry
-                if not _key_ok_score:
-                    st.caption("🔑 API key required (or tick Dry run for rule-stage only).")
-                if st.button("🤖 Run scorer", key="score_btn", disabled=not _key_ok_score):
-                    cmd3 = [sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
-                            "--scan", pick, "--concurrency", str(conc)]
-                    if lim:
-                        cmd3 += ["--limit", str(int(lim))]
-                    if dry:
-                        cmd3.append("--dry-run")
-                    rec = scan_runner.start_run("fit_scorer", cmd3)
-                    st.success(f"Started `{rec.run_id}`")
-
-    # ================== TAB: Triage ==================
-    with tabs[4]:
-        st.subheader("Stage 3 — Triage")
-        st.caption("Inspect the scoring funnel: which roles were dropped and why, "
-                   "vs. which made it to Claude. Sub-tabs below.")
+    # ================== TAB: Inspect ==================
+    with tabs[1]:
+        st.subheader("Inspect the scoring funnel")
+        st.caption("What was scraped, what got dropped at rule-triage, "
+                   "what Claude actually scored. Three sub-tabs below.")
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -2795,68 +2645,8 @@ elif page == "🎯 Pipeline":
                 by_co_df = pd.DataFrame(by_co).sort_values("scraped", ascending=False)
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
-    # ================== TAB: Promote ==================
-    with tabs[5]:
-        st.subheader("Stage 4 — Promote to tracker")
-        st.caption("Push scored candidates into `job_tracker_data.json`. Dry-run first; commit when ready.")
-
-        scored_files = sorted(OUT_DIR.glob("*_scored.json"),
-                              key=lambda p: p.stat().st_mtime, reverse=True)
-        if not scored_files:
-            st.warning("No scored scan available.")
-        else:
-            which = st.selectbox("Scored file to promote", [p.name for p in scored_files],
-                                 key="promote_file")
-            c1, c2, c3, c4 = st.columns(4)
-            with c1:
-                min_s = st.slider("Min fit score", 1, 10, 7, key="promote_min")
-            with c2:
-                inc_watch = st.checkbox("Include verdict=watch", key="promote_watch")
-            with c3:
-                expire = st.checkbox("Expire stale tracker URLs", key="promote_expire")
-            with c4:
-                auto_tailor = st.checkbox("🎯 Auto-tailor Tier-1 docs",
-                                           key="promote_autotailor",
-                                           help="After commit, generate resume+cover "
-                                                "letter drafts for every new Tier-1 "
-                                                "role (requires API key; "
-                                                "~$0.10-0.30 per Tier-1 role)")
-
-            preview_col, commit_col = st.columns(2)
-            with preview_col:
-                if st.button("👀 Preview (dry-run)", width='stretch', key="prom_preview"):
-                    cmd4 = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
-                            "--scan", which, "--min-score", str(min_s)]
-                    if inc_watch:
-                        cmd4.append("--include-watch")
-                    if expire:
-                        cmd4.append("--expire-stale")
-                    res = subprocess.run(cmd4, capture_output=True, text=True, cwd=str(ROOT))
-                    st.code(res.stdout + "\n" + (res.stderr or ""), language="text")
-            with commit_col:
-                _at_ok = (not auto_tailor) or api_key.is_key_valid()
-                if not _at_ok:
-                    st.caption("🔑 API key required when auto-tailor is on.")
-                if st.button("🚀 Commit to tracker", type="primary", width='stretch',
-                             key="prom_commit", disabled=not _at_ok):
-                    cmd4 = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
-                            "--scan", which, "--min-score", str(min_s), "--commit"]
-                    if inc_watch:
-                        cmd4.append("--include-watch")
-                    if expire:
-                        cmd4.append("--expire-stale")
-                    if auto_tailor:
-                        cmd4.append("--auto-tailor")
-                    res = subprocess.run(cmd4, capture_output=True, text=True, cwd=str(ROOT))
-                    st.code(res.stdout + "\n" + (res.stderr or ""), language="text")
-                    st.cache_data.clear()
-                    msg = "Tracker updated. Check 📋 Jobs Kanban."
-                    if auto_tailor:
-                        msg += " Tailor drafts will land in automation/outputs/ over the next ~2 min."
-                    st.success(msg)
-
     # ================== TAB: History ==================
-    with tabs[6]:
+    with tabs[2]:
         st.subheader("📜 Pipeline run history")
         pipelines = list_pipelines(50)
         if not pipelines:
