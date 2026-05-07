@@ -2306,8 +2306,9 @@ elif page == "🎯 Pipeline":
 
     # ================== TAB: Triage ==================
     with tabs[4]:
-        st.subheader("Stage 3 — Triage scored results")
-        st.caption("Review Claude's scored candidates. Filter, sort, open JDs.")
+        st.subheader("Stage 3 — Triage")
+        st.caption("Inspect the scoring funnel: which roles were dropped and why, "
+                   "vs. which made it to Claude. Sub-tabs below.")
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -2318,74 +2319,212 @@ elif page == "🎯 Pipeline":
             sc = json.loads((OUT_DIR / which).read_text(encoding="utf-8"))
             results = sc.get("results", [])
 
-            # Flatten
-            rows = []
-            for r in results:
-                f = r.get("fit") or {}
-                rows.append({
-                    "fit": f.get("fit_score", 0),
-                    "verdict": f.get("fit_verdict", ""),
-                    "tier": f.get("tier", 4),
-                    "sector": r.get("sector", ""),
-                    "company": r.get("company", ""),
-                    "title": r.get("title", ""),
-                    "variants": "/".join(f.get("applicable_resume_variants") or []),
-                    "summary": f.get("summary", ""),
-                    "gaps": ", ".join(f.get("skill_gaps") or []),
-                    "source": r.get("source", ""),
-                    "posted": r.get("posted_date", ""),
-                    "found": r.get("found_at", ""),
-                    "url": r.get("link", ""),
-                })
-            df = pd.DataFrame(rows).sort_values(["fit", "tier"], ascending=[False, True])
+            # --- Funnel headline metrics ------------------------------------
+            total_input = sc.get("total_input", len(results))
+            passed = sc.get("stage1_passed", 0)
+            dropped = sc.get("stage1_dropped", 0)
+            only_filt = sc.get("stage1_only_filtered", 0)
+            scored_n = sc.get("stage2_scored", len(results))
+            fm1, fm2, fm3, fm4 = st.columns(4)
+            fm1.metric("Total input", f"{total_input:,}")
+            fm2.metric("Dropped (rule)", f"{dropped:,}",
+                        f"{(100*dropped/max(total_input,1)):.0f}%",
+                        delta_color="inverse")
+            fm3.metric("Passed stage-1", f"{passed:,}",
+                        f"{(100*passed/max(total_input,1)):.0f}%")
+            fm4.metric("LLM-scored", f"{scored_n:,}")
 
-            f1, f2, f3, f4 = st.columns([2, 2, 2, 2])
-            with f1:
-                min_fit = st.slider("Min fit score", 1, 10, 7, key="triage_min")
-            with f2:
-                _verdict_opts = sorted(df["verdict"].dropna().unique())
-                _verdict_defaults = [v for v in ["apply_now", "tailor_and_apply"] if v in _verdict_opts]
-                verdict_filter = st.multiselect(
-                    "Verdict", _verdict_opts,
-                    default=_verdict_defaults, key="triage_verdict")
-            with f3:
-                sector_filter = st.multiselect(
-                    "Sector", sorted(df["sector"].dropna().unique()), key="triage_sector")
-            with f4:
-                search = st.text_input("Search company/title", key="triage_q")
+            triage_tabs = st.tabs([
+                "🎯 Scored candidates",
+                "🚫 Dropped (rule-triage)",
+                "🏢 By company",
+            ])
 
-            view = df[df["fit"] >= min_fit]
-            if verdict_filter:
-                view = view[view["verdict"].isin(verdict_filter)]
-            if sector_filter:
-                view = view[view["sector"].isin(sector_filter)]
-            if search:
-                sl = search.lower()
-                view = view[view["company"].str.lower().str.contains(sl, na=False) |
-                            view["title"].str.lower().str.contains(sl, na=False)]
+            # --- Sub-tab 1: scored candidates -------------------------------
+            with triage_tabs[0]:
+                if not results:
+                    st.info("No scored candidates in this file — "
+                            "either the scorer was dry-run, the API key "
+                            "preflight failed, or all roles dropped at stage 1.")
+                else:
+                    # Flatten
+                    rows = []
+                    for r in results:
+                        f = r.get("fit") or {}
+                        rows.append({
+                            "fit": f.get("fit_score", 0),
+                            "verdict": f.get("fit_verdict", ""),
+                            "tier": f.get("tier", 4),
+                            "sector": r.get("sector", ""),
+                            "company": r.get("company", ""),
+                            "title": r.get("title", ""),
+                            "variants": "/".join(f.get("applicable_resume_variants") or []),
+                            "summary": f.get("summary", ""),
+                            "gaps": ", ".join(f.get("skill_gaps") or []),
+                            "source": r.get("source", ""),
+                            "posted": r.get("posted_date", ""),
+                            "found": r.get("found_at", ""),
+                            "url": r.get("link", ""),
+                        })
+                    df = pd.DataFrame(rows).sort_values(["fit", "tier"],
+                                                         ascending=[False, True])
 
-            st.caption(f"Showing {len(view)} of {len(df)} scored candidates")
-            st.dataframe(view, hide_index=True, width='stretch', height=500,
-                         column_config={"url": st.column_config.LinkColumn("open")})
+                    f1, f2, f3, f4 = st.columns([2, 2, 2, 2])
+                    with f1:
+                        min_fit = st.slider("Min fit score", 1, 10, 7, key="triage_min")
+                    with f2:
+                        _verdict_opts = sorted(df["verdict"].dropna().unique())
+                        _verdict_defaults = [v for v in ["apply_now", "tailor_and_apply"]
+                                              if v in _verdict_opts]
+                        verdict_filter = st.multiselect(
+                            "Verdict", _verdict_opts,
+                            default=_verdict_defaults, key="triage_verdict")
+                    with f3:
+                        sector_filter = st.multiselect(
+                            "Sector", sorted(df["sector"].dropna().unique()),
+                            key="triage_sector")
+                    with f4:
+                        search = st.text_input("Search company/title", key="triage_q")
 
-            # Inspect one
-            if not view.empty:
-                titles = [f"{r.company} — {r.title[:60]}" for r in view.itertuples()]
-                idx = st.selectbox("Inspect candidate", range(len(view)),
-                                    format_func=lambda i: titles[i], key="triage_pick")
-                row = view.iloc[idx]
-                with st.container(border=True):
-                    cL, cR = st.columns([3, 1])
-                    with cL:
-                        st.markdown(f"### {row['company']} — {row['title']}")
-                        st.caption(f"Sector: {row['sector']} · Source: {row['source']}")
-                        st.markdown(f"**Verdict:** `{row['verdict']}` · "
-                                    f"**Fit:** {row['fit']}/10 · **Tier:** {row['tier']}")
-                        st.markdown(f"**Summary:** {row['summary']}")
-                        if row["gaps"]:
-                            st.markdown(f"**Gaps:** {row['gaps']}")
-                    with cR:
-                        st.link_button("🔗 Open JD", row["url"], width='stretch')
+                    view = df[df["fit"] >= min_fit]
+                    if verdict_filter:
+                        view = view[view["verdict"].isin(verdict_filter)]
+                    if sector_filter:
+                        view = view[view["sector"].isin(sector_filter)]
+                    if search:
+                        sl = search.lower()
+                        view = view[view["company"].str.lower().str.contains(sl, na=False) |
+                                    view["title"].str.lower().str.contains(sl, na=False)]
+
+                    st.caption(f"Showing {len(view)} of {len(df)} scored candidates")
+                    st.dataframe(view, hide_index=True, width='stretch', height=500,
+                                 column_config={"url": st.column_config.LinkColumn("open")})
+
+                    # Inspect one
+                    if not view.empty:
+                        titles = [f"{r.company} — {r.title[:60]}" for r in view.itertuples()]
+                        idx = st.selectbox("Inspect candidate", range(len(view)),
+                                            format_func=lambda i: titles[i],
+                                            key="triage_pick")
+                        row = view.iloc[idx]
+                        with st.container(border=True):
+                            cL, cR = st.columns([3, 1])
+                            with cL:
+                                st.markdown(f"### {row['company']} — {row['title']}")
+                                st.caption(f"Sector: {row['sector']} · Source: {row['source']}")
+                                st.markdown(f"**Verdict:** `{row['verdict']}` · "
+                                            f"**Fit:** {row['fit']}/10 · **Tier:** {row['tier']}")
+                                st.markdown(f"**Summary:** {row['summary']}")
+                                if row["gaps"]:
+                                    st.markdown(f"**Gaps:** {row['gaps']}")
+                            with cR:
+                                st.link_button("🔗 Open JD", row["url"], width='stretch')
+
+            # --- Sub-tab 2: dropped (rule-triage) ---------------------------
+            with triage_tabs[1]:
+                drops = sc.get("triage_drops") or []
+                if not drops:
+                    st.info(
+                        "No triage-drop records in this scored file. "
+                        "This usually means the scored file was produced by "
+                        "an older version of fit_scorer. Re-run the scorer "
+                        "(or a dry-run) to populate the triage audit trail."
+                    )
+                else:
+                    # Reason histogram
+                    from collections import Counter as _Counter
+                    _reason_ct = _Counter()
+                    _neg_term_ct = _Counter()
+                    for d in drops:
+                        for rr in d.get("rule_reasons", []):
+                            # "neg:intern" → show negative terms separately
+                            if rr.startswith("neg:"):
+                                _neg_term_ct[rr[4:]] += 1
+                                _reason_ct["neg_title_match"] += 1
+                            else:
+                                # strip the hit list so we group by type
+                                key = rr.split("=", 1)[0]
+                                _reason_ct[key] += 1
+
+                    rm1, rm2 = st.columns([1, 1])
+                    with rm1:
+                        st.markdown("**Drop reasons (histogram)**")
+                        _reason_df = pd.DataFrame(
+                            [{"reason": k, "count": v} for k, v in _reason_ct.most_common()]
+                        )
+                        if not _reason_df.empty:
+                            st.dataframe(_reason_df, hide_index=True, width='stretch',
+                                         height=200)
+                    with rm2:
+                        st.markdown("**Top negative-title terms**")
+                        st.caption("Phrases that hard-failed stage-1 "
+                                    "(e.g. 'intern', 'teller', 'software engineer'). "
+                                    "Tune fit_scorer.NEG_TITLE_TERMS to change.")
+                        _neg_df = pd.DataFrame(
+                            [{"term": k, "hits": v} for k, v in _neg_term_ct.most_common(20)]
+                        )
+                        if not _neg_df.empty:
+                            st.dataframe(_neg_df, hide_index=True, width='stretch',
+                                         height=200)
+                        else:
+                            st.caption("_(no hard-fail negative terms — all drops were "
+                                       "insufficient-signal)_")
+
+                    st.markdown("---")
+                    st.markdown(f"**All {len(drops):,} dropped roles**")
+                    _drop_q = st.text_input(
+                        "Search company/title in drops",
+                        key="triage_drop_q",
+                        placeholder="scotiabank / data engineer / ...",
+                    )
+                    _drop_rows = []
+                    for d in drops:
+                        co, ti = d.get("company", ""), d.get("title", "")
+                        if _drop_q:
+                            q = _drop_q.lower()
+                            if q not in co.lower() and q not in ti.lower():
+                                continue
+                        _drop_rows.append({
+                            "company": co,
+                            "title": ti,
+                            "why": ", ".join(d.get("rule_reasons", []))[:120],
+                            "score": d.get("score", 0),
+                            "source": d.get("source", ""),
+                            "url": d.get("link", ""),
+                        })
+                    st.caption(f"Showing {len(_drop_rows):,} of {len(drops):,}")
+                    if _drop_rows:
+                        st.dataframe(
+                            pd.DataFrame(_drop_rows),
+                            hide_index=True, width='stretch', height=420,
+                            column_config={"url": st.column_config.LinkColumn("open")},
+                        )
+
+            # --- Sub-tab 3: by-company breakdown ----------------------------
+            with triage_tabs[2]:
+                st.caption(
+                    "Roles per company at each stage of the funnel. "
+                    "'Scraped' is the raw count before triage; 'Passed' made "
+                    "it to LLM scoring; 'Dropped' were filtered by rule_triage."
+                )
+                from collections import Counter as _Counter
+                _passed_ct = _Counter(r.get("company", "?") for r in results)
+                _dropped_ct = _Counter((d.get("company") or "?") for d in sc.get("triage_drops") or [])
+                _all_companies = set(_passed_ct) | set(_dropped_ct)
+                by_co = []
+                for co in sorted(_all_companies):
+                    p = _passed_ct.get(co, 0)
+                    d = _dropped_ct.get(co, 0)
+                    tot = p + d
+                    by_co.append({
+                        "company": co,
+                        "scraped": tot,
+                        "passed": p,
+                        "dropped": d,
+                        "pass_rate": f"{(100*p/tot):.0f}%" if tot else "—",
+                    })
+                by_co_df = pd.DataFrame(by_co).sort_values("scraped", ascending=False)
+                st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
     # ================== TAB: Promote ==================
     with tabs[5]:

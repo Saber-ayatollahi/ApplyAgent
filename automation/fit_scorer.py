@@ -1184,21 +1184,38 @@ def main() -> int:
     roles = scan.get("results", [])
     print(f"[fit_scorer] Loaded {len(roles)} roles from {scan_path.name}", file=sys.stderr)
 
-    # Stage 1 — rule triage
-    triaged = []
-    skipped = 0
+    # Stage 1 — rule triage. We keep the dropped records in a separate list
+    # so the UI can show "why didn't this role get scored?" — before this,
+    # failed stage-1 roles vanished silently and the user had no way to
+    # audit the scoring funnel.
+    triaged: list[dict] = []
+    triage_drops: list[dict] = []   # compact records of stage-1 failures
+    only_filtered: list[dict] = []  # dropped via --only regex
     for r in roles:
         tri = rule_triage(r["title"])
         r["_triage"] = tri
         if not tri["stage1_pass"]:
-            skipped += 1
+            triage_drops.append({
+                "company": r.get("company", ""),
+                "title": r.get("title", ""),
+                "link": r.get("link", ""),
+                "source": r.get("source", ""),
+                "rule_reasons": tri.get("rule_reasons", []),
+                "hits_breakdown": tri.get("hits_breakdown", {}),
+                "score": tri.get("score", 0),
+            })
             continue
         if args.only and not any(re.search(p, r["title"], re.I) for p in args.only):
+            only_filtered.append({
+                "company": r.get("company", ""),
+                "title": r.get("title", ""),
+                "link": r.get("link", ""),
+            })
             continue
         triaged.append(r)
 
-    print(f"[fit_scorer] Stage 1: {len(triaged)} pass / {skipped} drop / "
-          f"{len(roles) - len(triaged) - skipped} filtered by --only", file=sys.stderr)
+    print(f"[fit_scorer] Stage 1: {len(triaged)} pass / {len(triage_drops)} drop / "
+          f"{len(only_filtered)} filtered by --only", file=sys.stderr)
 
     if args.limit:
         triaged = triaged[: args.limit]
@@ -1207,7 +1224,11 @@ def main() -> int:
     if args.dry_run:
         out = {"scan_date": scan.get("scan_date"), "stage1_only": True,
                "total_input": len(roles), "stage1_passed": len(triaged),
-               "results": triaged}
+               "stage1_dropped": len(triage_drops),
+               "stage1_only_filtered": len(only_filtered),
+               "results": triaged,
+               "triage_drops": triage_drops,
+               "only_filtered": only_filtered}
         (OUT_DIR / (Path(args.scan).stem + "_scored.json")).write_text(
             json.dumps(out, indent=2), encoding="utf-8")
         print(f"[fit_scorer] DRY RUN complete. Wrote {args.scan} "
@@ -1305,9 +1326,16 @@ def main() -> int:
         "scored_at": datetime.utcnow().isoformat() + "Z",
         "total_input": len(roles),
         "stage1_passed": len(triaged),
+        "stage1_dropped": len(triage_drops),
+        "stage1_only_filtered": len(only_filtered),
         "stage2_scored": len(scored),
         "api_error": api_error,
         "results": scored,
+        # Triage audit trail — consumed by the UI's Triage page so the user
+        # can answer "why didn't this role get scored?" without re-running
+        # rule_triage against the scan by hand.
+        "triage_drops": triage_drops,
+        "only_filtered": only_filtered,
     }
     if api_error:
         print(f"\n[fit_scorer] ⚠️  Run aborted early — results are incomplete.\n"
