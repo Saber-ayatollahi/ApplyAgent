@@ -1,0 +1,36 @@
+{
+  "pipeline_id": "20260506_184710",
+  "started_at": "2026-05-06T18:47:10",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": false,
+    "skip_score": false,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false
+  },
+  "state": "stale",
+  "stages": {},
+  "scrape": {
+    "cmd": [
+      "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+      "--expansion"
+    ],
+    "started_at": "2026-05-06T18:47:10",
+    "state": "finished",
+    "finished_at": "2026-05-06T19:54:57",
+    "elapsed_sec": 4066.9,
+    "returncode": 0,
+    "last_line": "[scan] 1502 new candidates across 19 sectors."
+  },
+  "finished_at": "2026-05-06T22:21:30",
+  "stale_reason": "No active pipeline subprocess and status file idle for 146 minutes."
+}

@@ -1,0 +1,6 @@
+# pipeline_ats
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --scrape-mode ats
+# started: 2026-05-06T18:54:27.785737
+
+=== ApplyAgent pipeline 20260506_185427 ===
+Mode: scrape=ats skip_scrape=False skip_score=False skip_promote=False

@@ -1,0 +1,19 @@
+{
+  "run_id": "fit_scorer_20260506_202404",
+  "label": "fit_scorer",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\fit_scorer.py",
+    "--scan",
+    "scan_20260506.json",
+    "--concurrency",
+    "10"
+  ],
+  "pid": 17504,
+  "started_at": "2026-05-06T20:24:04",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\fit_scorer_20260506_202404.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\fit_scorer_20260506_202404.json",
+  "state": "stopped",
+  "finished_at": "2026-05-06T20:33:19",
+  "returncode": null
+}

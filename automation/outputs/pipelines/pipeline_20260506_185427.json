@@ -1,0 +1,34 @@
+{
+  "pipeline_id": "20260506_185427",
+  "started_at": "2026-05-06T18:54:27",
+  "args": {
+    "scrape_mode": "ats",
+    "sector": null,
+    "company": null,
+    "skip_scrape": false,
+    "skip_score": false,
+    "skip_promote": false,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false
+  },
+  "state": "failed",
+  "stages": {},
+  "scrape": {
+    "cmd": [
+      "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+      "--workday-only"
+    ],
+    "started_at": "2026-05-06T18:54:27",
+    "state": "failed",
+    "finished_at": "2026-05-06T18:54:29",
+    "elapsed_sec": 1.9,
+    "returncode": 3221225786,
+    "last_line": ""
+  }
+}
