@@ -914,6 +914,107 @@ if page == "🏠 Dashboard":
     week_end = week_start + timedelta(days=6)
     targets = meta.get("weekly_kpi_targets", {})
 
+    # ---------- Quick actions — one-click entry points ----------
+    # Before this, the landing page had metrics and banners but no way
+    # to START work without navigating to 🎯 Pipeline first. Now the
+    # three most-used agents are one click from load. Disabled states
+    # and tooltips explain why a button is unavailable (key missing,
+    # pipeline already running, Gmail not connected).
+    _dash_key_ok = api_key.is_key_valid()
+    _dash_gmail_ok = gmail_ui.is_connected()
+    _dash_can_run_llm = _dash_key_ok and not pipeline_running
+    with st.container(border=True):
+        st.markdown("#### ⚡ Quick actions")
+        qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
+        with qa1:
+            _help_core = ("Scrape the 77 core targets (no expansion list). "
+                          "~15-30 min. Writes scan_v4_*.json only; no LLM "
+                          "call until you score. No API key needed.")
+            if st.button("🛰 Core scrape", width='stretch',
+                          disabled=bool(pipeline_running),
+                          help=_help_core, key="dash_qa_core"):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable,
+                    str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "core",
+                    "--skip-score", "--skip-promote",
+                ])
+                st.success(f"Core scrape started (`{rec.run_id}`). "
+                            "Watch the sidebar for live status.")
+                st.rerun()
+        with qa2:
+            _help_gmail = (
+                "Pull LinkedIn/Indeed job alert emails from the last 14 "
+                "days. ~10-30s. Doesn't call the API. Produces "
+                "scan_gmail_<stamp>.json that you can score or promote."
+            )
+            if st.button("📬 Pull Gmail alerts", width='stretch',
+                          disabled=(not _dash_gmail_ok) or bool(pipeline_running),
+                          help=_help_gmail, key="dash_qa_gmail"):
+                rec = scan_runner.start_run("gmail_fetch", [
+                    sys.executable,
+                    str(ROOT / "automation" / "gmail_fetch.py"),
+                    "--days", "14",
+                ])
+                st.success(f"Gmail fetch started (`{rec.run_id}`).")
+                st.rerun()
+            if not _dash_gmail_ok:
+                st.caption("🔌 Connect Gmail in the sidebar.")
+        with qa3:
+            _help_nightly = ("Scrape + find new roles since last scan + "
+                              "score only those + emit top-3 brief. "
+                              "Cheap (~$0.03), ~25 min. Needs API key.")
+            if st.button("🌅 Nightly refresh", width='stretch',
+                          disabled=(not _dash_can_run_llm),
+                          help=_help_nightly, key="dash_qa_nightly"):
+                if sys.platform == "win32":
+                    nightly_cmd_list = [
+                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+                        "-File", str(ROOT / "automation" / "nightly_refresh.ps1"),
+                    ]
+                else:
+                    chained = (
+                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion --gmail && "
+                        f"{sys.executable} {ROOT / 'automation' / 'scan_delta.py'} && "
+                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5 --auto-add 3 --auto-tailor"
+                    )
+                    nightly_cmd_list = ["bash", "-c", chained]
+                rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
+                st.success(f"Nightly refresh started (`{rec.run_id}`).")
+                st.rerun()
+            if not _dash_key_ok:
+                st.caption("🔑 Set API key in the sidebar.")
+        with qa4:
+            _help_pipe = ("Go to the 🎯 Pipeline page to configure and launch "
+                          "a full end-to-end run (choose scrape strategy, "
+                          "sector/company filter, scorer concurrency, etc.)")
+            st.markdown(
+                "<div style='padding-top:6px'></div>", unsafe_allow_html=True)
+            st.caption(_help_pipe)
+        with qa5:
+            # At-a-glance data freshness so the user can gauge whether they
+            # even NEED to re-scrape. Mirrors the Pipeline-page header but
+            # compacted to a single cell.
+            _ds_web = sorted([f for f in OUT_DIR.glob("scan_v4*.json")
+                                if "_scored" not in f.name],
+                              key=lambda p: p.stat().st_mtime, reverse=True)
+            _ds_gm = sorted(OUT_DIR.glob("scan_gmail_*.json"),
+                             key=lambda p: p.stat().st_mtime, reverse=True)
+
+            def _age(p):
+                if not p:
+                    return "—"
+                age = datetime.now().timestamp() - p.stat().st_mtime
+                if age < 3600:
+                    return f"{int(age/60)}m ago"
+                if age < 86400:
+                    return f"{int(age/3600)}h ago"
+                return f"{int(age/86400)}d ago"
+
+            st.markdown(f"**Web scan:** {_age(_ds_web[0] if _ds_web else None)}")
+            st.markdown(f"**Gmail pull:** {_age(_ds_gm[0] if _ds_gm else None)}")
+    st.markdown("")
+
     # Live pipeline banner
     if pipeline_running:
         st.info(
