@@ -928,7 +928,7 @@ if page == "🏠 Dashboard":
         qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
         with qa1:
             _help_core = ("Scrape the 77 core targets (no expansion list). "
-                          "~15-30 min. Writes scan_v4_*.json only; no LLM "
+                          "~15-30 min. Writes scan_<date>.json only; no LLM "
                           "call until you score. No API key needed.")
             if st.button("🛰 Core scrape", width='stretch',
                           disabled=bool(pipeline_running),
@@ -995,8 +995,12 @@ if page == "🏠 Dashboard":
             # At-a-glance data freshness so the user can gauge whether they
             # even NEED to re-scrape. Mirrors the Pipeline-page header but
             # compacted to a single cell.
-            _ds_web = sorted([f for f in OUT_DIR.glob("scan_v4*.json")
-                                if "_scored" not in f.name],
+            # jd_scraper writes scan_YYYYMMDD.json; earlier runs sometimes
+            # produced scan_v4.json. Glob both, exclude scored/gmail/checkpoint.
+            _ds_web = sorted([f for f in OUT_DIR.glob("scan_*.json")
+                                if "_scored" not in f.name
+                                and "scan_gmail_" not in f.name
+                                and "scan_checkpoint" not in f.name],
                               key=lambda p: p.stat().st_mtime, reverse=True)
             _ds_gm = sorted(OUT_DIR.glob("scan_gmail_*.json"),
                              key=lambda p: p.stat().st_mtime, reverse=True)
@@ -1884,13 +1888,22 @@ elif page == "🎯 Pipeline":
     # ---------- Data freshness headline: latest scan, latest Gmail -------
     # Three compact metrics so the user sees at-a-glance what data they're
     # working with BEFORE they decide whether to refresh anything.
-    def _latest_by_prefix(prefix: str):
-        files = sorted(OUT_DIR.glob(f"{prefix}*.json"),
+    def _latest_web_scan():
+        """Latest web-scraper output. jd_scraper writes scan_YYYYMMDD.json;
+        some historical runs landed as scan_v4.json. Glob all, exclude
+        scored/gmail/checkpoint noise so we don't falsely report 'web scan
+        2m ago' when the only fresh artifact is a Gmail pull."""
+        files = sorted(OUT_DIR.glob("scan_*.json"),
                         key=lambda p: p.stat().st_mtime, reverse=True)
-        # Exclude *_scored.json in the scan search so we don't show the
-        # scored artifact as if it were a fresh scrape.
-        files = [f for f in files if "_scored" not in f.name
+        files = [f for f in files
+                 if "_scored" not in f.name
+                 and "scan_gmail_" not in f.name
                  and "scan_checkpoint" not in f.name]
+        return files[0] if files else None
+
+    def _latest_gmail_scan():
+        files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
+                        key=lambda p: p.stat().st_mtime, reverse=True)
         return files[0] if files else None
 
     def _age_label(p: Path | None) -> str:
@@ -1903,9 +1916,8 @@ elif page == "🎯 Pipeline":
             return f"{int(age_s / 3600)}h ago"
         return f"{int(age_s / 86400)}d ago"
 
-    _latest_web = _latest_by_prefix("scan_v4")
-    _latest_gm = _latest_by_prefix("scan_gmail_")
-    _latest_scored = _latest_by_prefix("scan_") if False else None
+    _latest_web = _latest_web_scan()
+    _latest_gm = _latest_gmail_scan()
     _latest_scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                                     key=lambda p: p.stat().st_mtime, reverse=True)
     _latest_scored = _latest_scored_files[0] if _latest_scored_files else None
