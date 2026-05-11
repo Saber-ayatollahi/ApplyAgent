@@ -1,0 +1,4 @@
+# nightly_refresh
+# cmd: powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\PC\Documents\GitHub\ApplyAgent\automation\nightly_refresh.ps1
+# started: 2026-05-06T22:26:53.949654
+
