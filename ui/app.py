@@ -1901,14 +1901,8 @@ elif page == "🎯 Pipeline":
         "One flow; one click runs the whole chain. Each stage can also be run in isolation."
     )
 
-    # ---------- Data freshness headline: latest scan, latest Gmail -------
-    # Three compact metrics so the user sees at-a-glance what data they're
-    # working with BEFORE they decide whether to refresh anything.
+    # ---------- Data freshness + last activity summary ---------
     def _latest_web_scan():
-        """Latest web-scraper output. jd_scraper writes scan_YYYYMMDD.json;
-        some historical runs landed as scan_v4.json. Glob all, exclude
-        scored/gmail/checkpoint noise so we don't falsely report 'web scan
-        2m ago' when the only fresh artifact is a Gmail pull."""
         files = sorted(OUT_DIR.glob("scan_*.json"),
                         key=lambda p: p.stat().st_mtime, reverse=True)
         files = [f for f in files
@@ -1947,15 +1941,100 @@ elif page == "🎯 Pipeline":
         except Exception:
             return 0
 
-    fh1, fh2, fh3, fh4 = st.columns(4)
-    fh1.metric("Latest web scan", _age_label(_latest_web),
-                f"{_count_rows(_latest_web):,} roles" if _latest_web else "—")
-    fh2.metric("Latest Gmail pull", _age_label(_latest_gm),
-                f"{_count_rows(_latest_gm):,} alerts" if _latest_gm else "—")
-    fh3.metric("Latest scored", _age_label(_latest_scored),
-                _latest_scored.name if _latest_scored else "—")
-    fh4.metric("Tracker roles", f"{len(jobs):,}",
-                f"{sum(1 for j in jobs if j.get('status') == 'Found')} Found")
+    # --- Last activity block: what happened most recently? ---
+    # The single most important piece of info on this page: what ran last,
+    # did it work, and what should the user do next.
+    _last_pipe = latest_pipeline_status()
+    _last_runs = scan_runner.list_runs(limit=5)
+    _last_run = _last_runs[0] if _last_runs else None
+
+    # Determine the most recent event (pipeline or background run)
+    _last_event_time = None
+    _last_event_label = None
+    _last_event_state = None
+    _last_event_detail = ""
+    if _last_pipe:
+        t = _last_pipe.get("finished_at") or _last_pipe.get("started_at")
+        if t:
+            _last_event_time = t
+            _last_event_label = f"Pipeline ({_last_pipe.get('pipeline_id', '?')})"
+            _last_event_state = _last_pipe.get("state", "?")
+            stages = _last_pipe.get("stages") or {}
+            parts = []
+            if stages.get("scrape", {}).get("candidate_count"):
+                parts.append(f"scraped {stages['scrape']['candidate_count']}")
+            if stages.get("score", {}).get("scored_count"):
+                parts.append(f"scored {stages['score']['scored_count']}")
+            if not stages:
+                cr = _last_pipe.get("crash_reason") or ""
+                if "preflight" in cr.lower() or "api" in cr.lower():
+                    parts.append("failed at API preflight — key/credits issue")
+                elif cr:
+                    parts.append(cr[:100])
+                else:
+                    parts.append("no stages completed")
+            _last_event_detail = " · ".join(parts)
+
+    if _last_run:
+        t = _last_run.get("finished_at") or _last_run.get("started_at")
+        if t and (not _last_event_time or t > _last_event_time):
+            _last_event_time = t
+            _last_event_label = _last_run.get("label", "background run")
+            _last_event_state = _last_run.get("state", "?")
+            _last_event_detail = f"pid {_last_run.get('pid', '?')}"
+
+    # Render last-activity strip
+    with st.container(border=True):
+        la1, la2, la3 = st.columns([2, 3, 2])
+        with la1:
+            st.markdown("**Last activity**")
+            if _last_event_label:
+                _state_icon = {"finished": "✅", "failed": "❌", "running": "🟡",
+                               "stale": "⚪", "crashed": "💥", "stopped": "⏹"
+                               }.get(_last_event_state or "", "❓")
+                st.markdown(f"{_state_icon} **{_last_event_label}**")
+                st.caption(f"{_last_event_state} · {fmt_dt(_last_event_time)}")
+            else:
+                st.caption("No runs recorded yet.")
+        with la2:
+            if _last_event_detail:
+                st.caption(_last_event_detail)
+            # Show file names so user knows what's real
+            if _latest_web:
+                st.caption(f"📁 Scan: `{_latest_web.name}` ({_age_label(_latest_web)})")
+            if _latest_scored:
+                st.caption(f"📁 Scored: `{_latest_scored.name}` ({_age_label(_latest_scored)})")
+        with la3:
+            # "What to do next" — the key question
+            _scored_matches_scan = False
+            if _latest_web and _latest_scored:
+                _scored_matches_scan = _latest_web.stem in _latest_scored.name
+            _has_real_scores = False
+            if _latest_scored:
+                try:
+                    _sd = json.loads(_latest_scored.read_text(encoding="utf-8"))
+                    _has_real_scores = bool(_sd.get("stage2_scored"))
+                except Exception:
+                    pass
+
+            st.markdown("**Next step**")
+            if not _latest_web:
+                st.caption("🔴 No scan — run a scrape first")
+            elif not _latest_scored or not _scored_matches_scan:
+                st.caption(
+                    f"🟡 Scan exists but not scored yet. "
+                    f"Run scorer on `{_latest_web.name}`"
+                )
+            elif not _has_real_scores:
+                st.caption(
+                    "🟡 Only rule-triaged (dry-run) — "
+                    "run with API key to get LLM scores"
+                )
+            elif _last_event_state == "failed":
+                st.caption("🔴 Last run failed — check error, fix, re-run")
+            else:
+                st.caption("🟢 Scan + score complete — review Inspect tab")
+
     st.markdown("---")
 
     # ---------- Pause / resume / checkpoint status ----------
@@ -2124,46 +2203,78 @@ elif page == "🎯 Pipeline":
     tailored_docs = len(list(OUT_DIR.glob("*_prompt.md")))
 
     # ---------- Funnel visualization ----------
-    # Row 1: stage cards with counts
-    # Row 2: transition captions between cards
-    st.markdown("#### Pipeline funnel")
-    cols = st.columns([3, 1, 3, 1, 3, 1, 3, 1, 3])
+    # Explain what state the pipeline is in, then show the numbers.
+    # The funnel reads from the latest scan file + latest scored file, which
+    # may be from DIFFERENT runs. Make that explicit.
+    _funnel_scan_name = scan_f.name if scan_f else None
+    _funnel_scored_name = scored_f.name if scored_f else None
+    _scored_matches_funnel_scan = (
+        scan_f and scored_f and scan_f.stem in scored_f.name
+    )
 
-    def _big_number(col, emoji, label, value, sub=""):
-        col.markdown(f"<div style='text-align:center'>"
-                     f"<div style='font-size:1.6em'>{emoji}</div>"
-                     f"<div style='font-size:2em; font-weight:600'>{value if value is not None else '—'}</div>"
-                     f"<div style='font-size:0.85em; opacity:0.8'>{label}</div>"
-                     f"<div style='font-size:0.75em; opacity:0.6'>{sub}</div>"
-                     f"</div>",
-                     unsafe_allow_html=True)
+    with st.expander(
+        f"📊 Pipeline funnel"
+        + (f" — `{_funnel_scan_name}`" if _funnel_scan_name else " — no scan")
+        + (" ✅ scored" if score_count else
+           " ⚠️ not scored" if scan_f else ""),
+        expanded=True,
+    ):
+        # Source attribution so user knows where numbers come from
+        if _funnel_scan_name and _funnel_scored_name and not _scored_matches_funnel_scan:
+            st.warning(
+                f"Numbers below mix two files: scan from `{_funnel_scan_name}` "
+                f"but scores from `{_funnel_scored_name}`. "
+                f"Run the scorer on your latest scan to unify them.",
+                icon="⚠️",
+            )
 
-    def _arrow(col, label=""):
-        col.markdown(f"<div style='text-align:center; padding-top:18px'>"
-                     f"<div style='font-size:1.8em; opacity:0.4'>→</div>"
-                     f"<div style='font-size:0.75em; opacity:0.7'>{label}</div>"
-                     f"</div>",
-                     unsafe_allow_html=True)
+        cols = st.columns([3, 1, 3, 1, 3, 1, 3, 1, 3])
 
-    _big_number(cols[0], "🛰️", "Scraped", scrape_raw if scrape_raw else scrape_count,
-                sub=f"across {len(per_company_diag)} cos" if per_company_diag else "")
-    _arrow(cols[1], f"-{(dedup_dropped_url or 0) + (dedup_dropped_near or 0)} dupe"
-                    if dedup_dropped_url is not None else "")
-    _big_number(cols[2], "✂️", "Unique", scrape_count,
-                sub=f"-{dedup_dropped_url} URL, -{dedup_dropped_near} near"
-                    if dedup_dropped_url is not None else "")
-    _arrow(cols[3], f"-{(score_input or scrape_count or 0) - (score_pass or 0)} off-profile"
-                    if score_input and score_pass else "")
-    _big_number(cols[4], "🎯", "Triaged", score_pass,
-                sub=f"stage-1 pass" if score_pass else "")
-    _arrow(cols[5], f"-{(score_pass or 0) - (score_count or 0)} err"
-                    if score_pass is not None and score_count is not None and score_pass != score_count else "")
-    _big_number(cols[6], "🤖", "Scored", score_count,
-                sub=f"apply_now:{apply_n} tailor:{tailor_n}" if score_count else "")
-    _arrow(cols[7], f"-{(actionable_n or 0) - tracker_found} pending" if actionable_n else "")
-    _big_number(cols[8], "📋", "Tracker",
-                tracker_found if tracker_found else "—",
-                sub=f"{tracker_applied} applied · {tailored_docs} tailored")
+        def _big_number(col, emoji, label, value, sub=""):
+            col.markdown(f"<div style='text-align:center'>"
+                         f"<div style='font-size:1.6em'>{emoji}</div>"
+                         f"<div style='font-size:2em; font-weight:600'>{value if value is not None else '—'}</div>"
+                         f"<div style='font-size:0.85em; opacity:0.8'>{label}</div>"
+                         f"<div style='font-size:0.75em; opacity:0.6'>{sub}</div>"
+                         f"</div>",
+                         unsafe_allow_html=True)
+
+        def _arrow(col, label=""):
+            col.markdown(f"<div style='text-align:center; padding-top:18px'>"
+                         f"<div style='font-size:1.8em; opacity:0.4'>→</div>"
+                         f"<div style='font-size:0.75em; opacity:0.7'>{label}</div>"
+                         f"</div>",
+                         unsafe_allow_html=True)
+
+        _big_number(cols[0], "🛰️", "Scraped", scrape_raw if scrape_raw else scrape_count,
+                    sub=f"across {len(per_company_diag)} cos" if per_company_diag else "")
+        _arrow(cols[1], f"-{(dedup_dropped_url or 0) + (dedup_dropped_near or 0)} dupe"
+                        if dedup_dropped_url is not None else "")
+        _big_number(cols[2], "✂️", "Unique", scrape_count,
+                    sub=f"-{dedup_dropped_url} URL, -{dedup_dropped_near} near"
+                        if dedup_dropped_url is not None else "")
+        _arrow(cols[3], f"-{(score_input or scrape_count or 0) - (score_pass or 0)} off-profile"
+                        if score_input and score_pass else "")
+        _big_number(cols[4], "🎯", "Triaged", score_pass,
+                    sub="stage-1 pass" if score_pass else
+                        ("not scored yet" if scan_f and not scored_f else ""))
+        _arrow(cols[5], f"-{(score_pass or 0) - (score_count or 0)} err"
+                        if score_pass is not None and score_count is not None and score_pass != score_count else "")
+
+        # Scored column: explain WHY it's blank if it is
+        _scored_sub = ""
+        if score_count:
+            _scored_sub = f"apply_now:{apply_n} tailor:{tailor_n}"
+        elif scored_f and not score_count:
+            _scored_sub = "dry-run only (rule-triage, no LLM)"
+        elif not scored_f and scan_f:
+            _scored_sub = "scorer not run yet"
+        _big_number(cols[6], "🤖", "Scored", score_count, sub=_scored_sub)
+
+        _arrow(cols[7], f"-{(actionable_n or 0) - tracker_found} pending" if actionable_n else "")
+        _big_number(cols[8], "📋", "Tracker",
+                    tracker_found if tracker_found else "—",
+                    sub=f"{tracker_applied} applied · {tailored_docs} tailored")
 
     if pipeline_running:
         st.info(
@@ -2181,13 +2292,6 @@ elif page == "🎯 Pipeline":
             )
             st.code("\n".join(f"  • {n}" for n in zero_companies), language="text")
 
-    if pipeline_running:
-        st.info(
-            f"⏱️ Pipeline `{pipe['pipeline_id']}` running for "
-            f"{human_elapsed(pipe['started_at'])}.",
-            icon="🎯",
-        )
-
     st.markdown("---")
 
     # ---------- Main tabs ----------
@@ -2200,88 +2304,76 @@ elif page == "🎯 Pipeline":
 
     # ================== TAB: Run ==================
     with tabs[0]:
-        st.subheader("Run the full agentic chain")
-        st.caption("Scrape → Score → Promote-preview. Commit in the Promote "
-                   "section below, or via auto_promote on the CLI.")
-
-        cA, cB = st.columns([1, 1])
-        with cA:
-            scrape_mode = st.selectbox(
-                "Scrape strategy",
-                options=["full", "core", "ats", "linkedin", "expansion"],
-                format_func=lambda x: {
-                    "full":      "Full — all targets + expansion (20–40 min)",
-                    "core":      "Core 77 targets (15–30 min)",
-                    "ats":       "Direct ATS only — Workday/Greenhouse (3–6 min)",
-                    "linkedin":  "LinkedIn guest search only (15–25 min)",
-                    "expansion": "Expansion list only (5–10 min)",
-                }[x],
-            )
-            sector = st.text_input("Limit to sector (optional)", placeholder="Pension Funds")
-            company = st.text_input("Limit to single company (optional)", placeholder="Scotiabank")
-        with cB:
-            skip_scrape = st.checkbox("Skip scrape (reuse latest scan)",
-                                       help=f"Latest: {scan_f.name if scan_f else '(none)'}")
-            skip_score = st.checkbox("Skip score (scrape only)")
-            skip_promote = st.checkbox("Skip promote (scrape + score only)", value=True)
-            score_concurrency = st.slider("Scorer concurrency", 1, 12, 6)
-            score_limit = st.number_input("Score limit (0 = all)", 0, 5000, 0)
-            dry_score = st.checkbox("Score dry-run (rule-stage only)")
-
-        cmd = [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-               "--scrape-mode", scrape_mode,
-               "--score-concurrency", str(score_concurrency)]
-        if sector.strip():
-            cmd += ["--sector", sector.strip()]
-        if company.strip():
-            cmd += ["--company", company.strip()]
-        if skip_scrape:
-            cmd.append("--skip-scrape")
-        if skip_score:
-            cmd.append("--skip-score")
-        if skip_promote:
-            cmd.append("--skip-promote")
-        if score_limit:
-            cmd += ["--score-limit", str(int(score_limit))]
-        if dry_score:
-            cmd.append("--score-dry-run")
-
-        st.code(" ".join(cmd), language="bash")
-
-        # Gate: LLM-backed stages (score / promote-that-needs-scored) require a valid key.
-        # Pure scrape (skip_score=True) does NOT require a key.
-        needs_llm = not skip_score or not skip_promote
+        # --- Quick actions: the 3 things the user actually does ---
+        # Buttons FIRST, config SECOND. Most visits to this page are
+        # "launch something" or "check what's running". The detailed
+        # configuration (scrape strategy, concurrency, etc.) is in an
+        # expander below for power-user tuning.
         key_ok_here = api_key.is_key_valid()
-        can_run = not pipeline_running and (key_ok_here or not needs_llm)
+        _gmail_ok = gmail_ui.is_connected()
+        _can_run = not pipeline_running
 
-        if needs_llm and not key_ok_here:
-            st.warning(
-                "⚠️ This pipeline run will call the Anthropic API. Set a valid key in the sidebar first, "
-                "or tick **Skip score** and **Skip promote** to run scrape-only (no API needed).",
+        # Show a clear blocker banner BEFORE the buttons so user knows why
+        # things are disabled, with a direct fix action.
+        if not key_ok_here:
+            st.error(
+                "**🔑 API key missing or invalid** — scoring, tailoring, and "
+                "full-refresh all require a working Anthropic key. "
+                "Open the **sidebar → Manage Anthropic API key** expander, "
+                "paste your `sk-ant-...` key, and hit Save & validate. "
+                "Scraping works without a key.",
                 icon="🔑",
             )
 
-        run_col, brief_col, gmail_col, spacer = st.columns([1, 1, 1, 2])
-        with run_col:
-            if st.button("▶️ Launch pipeline", type="primary", width='stretch',
-                         disabled=not can_run):
-                rec = scan_runner.start_run("pipeline", cmd)
-                st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
+        st.markdown("#### Quick launch")
+        qa1, qa2, qa3, qa4 = st.columns(4)
+        with qa1:
+            if st.button("🛰 Scrape only", width='stretch',
+                         type="primary" if not key_ok_here else "secondary",
+                         disabled=not _can_run,
+                         help="Core 77 targets, no API key needed. ~15-30 min. "
+                              "Writes scan_<date>.json."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
+                ])
+                st.success(f"Scrape started (`{rec.run_id}`).")
                 st.rerun()
-        with brief_col:
-            # One-click: scrape + delta + morning brief.
-            # Much cheaper than the full pipeline — scores only what's new.
-            brief_key_ok = api_key.is_key_valid()
-            if st.button("🌅 Nightly refresh", width='stretch',
-                         disabled=(not brief_key_ok) or bool(pipeline_running),
-                         help="Scrape + find new roles since last scan + score only "
-                              "those + emit top-3 brief. Cheap (~$0.03) and fast (~25 min)."):
-                # Platform-aware: use the PS1 on Windows, chained bash elsewhere
+        with qa2:
+            _score_label = "🤖 Score latest scan" if scan_f else "🤖 Score (no scan)"
+            if st.button(_score_label, width='stretch',
+                         type="primary" if (key_ok_here and scan_f) else "secondary",
+                         disabled=(not _can_run or not key_ok_here or not scan_f),
+                         help=f"Run the LLM scorer on `{scan_f.name if scan_f else '?'}`. "
+                              f"~5-15 min, costs ~$0.10-0.30. Requires API key."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-promote",
+                    "--score-concurrency", "6",
+                ])
+                st.success(f"Scoring started on `{scan_f.name}` (`{rec.run_id}`).")
+                st.rerun()
+        with qa3:
+            if st.button("📬 Gmail alerts", width='stretch',
+                         disabled=(not _gmail_ok or not _can_run),
+                         help="Pull LinkedIn/Indeed alert emails (14d). ~10s, free."):
+                rec = scan_runner.start_run("gmail_fetch", [
+                    sys.executable,
+                    str(ROOT / "automation" / "gmail_fetch.py"), "--days", "14",
+                ])
+                st.success(f"Gmail fetch started (`{rec.run_id}`).")
+                st.rerun()
+            if not _gmail_ok:
+                st.caption("🔌 Connect Gmail in sidebar")
+        with qa4:
+            if st.button("🌅 Full refresh", width='stretch',
+                         disabled=(not key_ok_here or not _can_run),
+                         help="Scrape + score new roles + morning brief. "
+                              "~25 min, ~$0.03. Requires API key."):
                 if sys.platform == "win32":
-                    ps = ROOT / "automation" / "nightly_refresh.ps1"
                     nightly_cmd_list = [
                         "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                        "-File", str(ps),
+                        "-File", str(ROOT / "automation" / "nightly_refresh.ps1"),
                     ]
                 else:
                     chained = (
@@ -2291,43 +2383,15 @@ elif page == "🎯 Pipeline":
                     )
                     nightly_cmd_list = ["bash", "-c", chained]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
-                st.success(f"Nightly refresh started (`{rec.run_id}`). "
-                           f"Dashboard will show fresh matches when done.")
+                st.success(f"Nightly refresh started (`{rec.run_id}`).")
                 st.rerun()
-        with gmail_col:
-            # Standalone Gmail alert fetch — pulls LinkedIn/Indeed job alert
-            # emails from the last 14 days, writes scan_gmail_<stamp>.json.
-            # Separate button so the user can refresh alerts daily in ~10s
-            # without kicking off a full web scrape.
-            _gmail_ok = gmail_ui.is_connected()
-            if st.button("📬 Pull Gmail alerts", width='stretch',
-                         disabled=(not _gmail_ok) or bool(pipeline_running),
-                         help="Fetch the last 14 days of LinkedIn/Indeed job "
-                              "alert emails, dedupe against tracker, and write "
-                              "scan_gmail_<stamp>.json. ~10-30s. Doesn't call "
-                              "the API. Run fit_scorer on the output after."):
-                rec = scan_runner.start_run("gmail_fetch", [
-                    sys.executable,
-                    str(ROOT / "automation" / "gmail_fetch.py"),
-                    "--days", "14",
-                ])
-                st.success(
-                    f"Gmail fetch started (`{rec.run_id}`). "
-                    f"Output lands in `automation/outputs/scan_gmail_*.json`. "
-                    f"Then launch the pipeline with `Skip scrape` ticked "
-                    f"to score it."
-                )
-                st.rerun()
-            if not _gmail_ok:
-                st.caption("🔌 Connect Gmail in the sidebar first.")
 
-        # Scorer progress bar (visible whenever fit_scorer is running,
-        # whether invoked directly or as part of a pipeline)
+        # --- Live progress (only when something is running) ---
         scorer_running = render_scorer_progress()
 
-        # Live log if pipeline just launched (runner log)
         if pipeline_running or active_runs:
-            st.markdown("### 📜 Live log")
+            st.markdown("---")
+            st.markdown("#### 📜 Live output")
             current = [r for r in active_runs if r["label"].startswith("pipeline")]
             current = current[0] if current else (active_runs[0] if active_runs else None)
             if current:
@@ -2335,19 +2399,97 @@ elif page == "🎯 Pipeline":
                                  expanded=True):
                     st.code(scan_runner.tail_log(current["log_path"]) or "(no output yet)",
                             language="text")
-                    if st.button("⏹ Stop pipeline", key="stop_pipe"):
+                    if st.button("⏹ Stop", key="stop_pipe"):
                         scan_runner.stop_run(current["run_id"])
                         st.warning("Stop signal sent.")
                         st.rerun()
-                if st.checkbox("🔄 Auto-refresh every 5s", value=True, key="pipe_auto"):
-                    import time as _t
-                    _t.sleep(5)
-                    st.rerun()
+                st.caption("↻ auto-refreshes every 5s while work is active")
         elif scorer_running:
-            # Scorer running standalone (not pipeline) — still auto-refresh
-            if st.checkbox("🔄 Auto-refresh every 3s", value=True, key="score_auto_pipe"):
-                import time as _t
-                _t.sleep(3)
+            st.caption("↻ auto-refreshes every 5s while scorer is active")
+
+        # --- Recent runs: what actually happened ---
+        st.markdown("---")
+        st.markdown("#### Recent runs")
+        _recent_runs = scan_runner.list_runs(limit=5)
+        if _recent_runs:
+            _rr_rows = []
+            for _rr in _recent_runs:
+                _rr_icon = {"running": "🟡", "finished": "✅",
+                            "failed": "❌", "stopped": "⏹"}.get(
+                            _rr.get("state", ""), "❓")
+                _rr_rows.append({
+                    "": _rr_icon,
+                    "run": _rr.get("label", "?"),
+                    "state": _rr.get("state", "?"),
+                    "started": fmt_dt(_rr.get("started_at")),
+                    "duration": human_elapsed(_rr.get("started_at"), _rr.get("finished_at")),
+                })
+            st.dataframe(pd.DataFrame(_rr_rows), hide_index=True, width='stretch',
+                         height=min(220, 40 + 36 * len(_rr_rows)))
+        else:
+            st.caption("No runs recorded. Launch something above.")
+
+        # --- Advanced config (collapsed by default) ---
+        st.markdown("---")
+        with st.expander("⚙️ Advanced pipeline configuration", expanded=False):
+            st.caption("Fine-tune scrape strategy, scorer settings, and promote options.")
+            cA, cB = st.columns([1, 1])
+            with cA:
+                scrape_mode = st.selectbox(
+                    "Scrape strategy",
+                    options=["full", "core", "ats", "linkedin", "expansion"],
+                    format_func=lambda x: {
+                        "full":      "Full — all targets + expansion (20–40 min)",
+                        "core":      "Core 77 targets (15–30 min)",
+                        "ats":       "Direct ATS only — Workday/Greenhouse (3–6 min)",
+                        "linkedin":  "LinkedIn guest search only (15–25 min)",
+                        "expansion": "Expansion list only (5–10 min)",
+                    }[x],
+                )
+                sector = st.text_input("Limit to sector (optional)", placeholder="Pension Funds")
+                company = st.text_input("Limit to single company (optional)", placeholder="Scotiabank")
+            with cB:
+                skip_scrape = st.checkbox("Skip scrape (reuse latest scan)",
+                                           help=f"Latest: {scan_f.name if scan_f else '(none)'}")
+                skip_score = st.checkbox("Skip score (scrape only)")
+                skip_promote = st.checkbox("Skip promote (scrape + score only)", value=True)
+                score_concurrency = st.slider("Scorer concurrency", 1, 12, 6)
+                score_limit = st.number_input("Score limit (0 = all)", 0, 5000, 0)
+                dry_score = st.checkbox("Score dry-run (rule-stage only)")
+
+            cmd = [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                   "--scrape-mode", scrape_mode,
+                   "--score-concurrency", str(score_concurrency)]
+            if sector.strip():
+                cmd += ["--sector", sector.strip()]
+            if company.strip():
+                cmd += ["--company", company.strip()]
+            if skip_scrape:
+                cmd.append("--skip-scrape")
+            if skip_score:
+                cmd.append("--skip-score")
+            if skip_promote:
+                cmd.append("--skip-promote")
+            if score_limit:
+                cmd += ["--score-limit", str(int(score_limit))]
+            if dry_score:
+                cmd.append("--score-dry-run")
+
+            st.code(" ".join(cmd), language="bash")
+
+            needs_llm = not skip_score or not skip_promote
+            can_run_adv = not pipeline_running and (key_ok_here or not needs_llm)
+            if needs_llm and not key_ok_here:
+                st.warning(
+                    "This run will call the Anthropic API. Set a valid key in the sidebar, "
+                    "or tick Skip score + Skip promote for scrape-only.",
+                    icon="🔑",
+                )
+            if st.button("▶️ Launch custom pipeline", type="primary",
+                         width='stretch', disabled=not can_run_adv,
+                         key="adv_launch_pipe"):
+                rec = scan_runner.start_run("pipeline", cmd)
+                st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
                 st.rerun()
 
         # ---------- Score a single URL (expander inside Run tab) ----------
