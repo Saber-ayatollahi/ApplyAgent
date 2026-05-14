@@ -5002,11 +5002,12 @@ elif page == "⚙️ Admin":
         # -------- Tab 4: Full reset --------------------------------------
         with reset_tabs[3]:
             plan = reset_ops.plan_full_reset()
-            st.error(
+            st.warning(
                 "**Full reset** wipes `automation/outputs/`, clears the "
                 "tracker, clears the recruiter CRM, and resets the "
                 "lifetime cost ledger to zero. Tracker, CRM, and ledger "
-                "are backed up first."
+                "are backed up first.",
+                icon="⚠️",
             )
             rf1, rf2 = st.columns([1, 1])
             with rf1:
@@ -5157,8 +5158,14 @@ elif page == "📊 Analytics":
     _an_tracker = load_tracker()
     _an_jobs    = _an_tracker.get("jobs", [])
 
-    # Scan files for trend
-    _an_scan_files = sorted(OUT_DIR.glob("scan_*.json"))
+    # Scan files for trend. Match scan_YYYYMMDD.json only — the loose
+    # scan_*.json glob also pulled in scan_YYYYMMDD_scored.json sidecars,
+    # which are missing top-level scrape stats and crashed Analytics with
+    # KeyError('total_new_candidates').
+    _an_scan_files = sorted(
+        p for p in OUT_DIR.glob("scan_*.json")
+        if p.stem.replace("scan_", "").isdigit() and len(p.stem) == 13
+    )
     _an_scans = []
     for _sf in _an_scan_files:
         try:
@@ -5168,7 +5175,7 @@ elif page == "📊 Analytics":
             pass
 
     # ── TOP KPI ROW ────────────────────────────────────────────────────────
-    _an_scraped  = _an_scans[-1]["total_new_candidates"] if _an_scans else 0
+    _an_scraped  = (_an_scans[-1].get("total_new_candidates", 0) if _an_scans else 0)
     _an_tracked  = len(_an_jobs)
     _an_high_fit = sum(1 for j in _an_jobs if (j.get("fit_score_numeric") or 0) >= 4)
     _an_applied  = sum(1 for j in _an_jobs if j.get("date_applied"))

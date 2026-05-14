@@ -6,6 +6,7 @@ shape so both credentials panels behave the same way in the sidebar.
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -13,6 +14,13 @@ import streamlit as st
 # Expose the automation module without hard-coding a path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
 import gmail_reader as gr  # noqa: E402
+
+# Re-validation cadence. Without this, every page render hits IMAP if the
+# previous result was a failure — fast on a closed-port network, but a 15s
+# stall per page on a silent-drop network. TTL-cache both success and
+# failure so the sidebar stays responsive.
+_CHECK_TTL_OK_S = 15 * 60      # success: re-check every 15 min
+_CHECK_TTL_FAIL_S = 5 * 60     # failure: retry every 5 min
 
 
 def mask(email_addr: str | None) -> str:
@@ -24,22 +32,57 @@ def mask(email_addr: str | None) -> str:
     return email_addr[:2] + "…" + email_addr[at:]
 
 
+def _is_login_rejected(check: gr.GmailCheck | None) -> bool:
+    """Distinguish 'wrong creds' (user-fixable) from 'network/firewall' (env)."""
+    if not check or check.ok:
+        return False
+    return "Login rejected" in (check.message or "")
+
+
+def _check_age_s(check: gr.GmailCheck | None) -> float | None:
+    if not check or not check.checked_at:
+        return None
+    try:
+        from datetime import datetime
+        ts = datetime.fromisoformat(check.checked_at).timestamp()
+        return max(time.time() - ts, 0.0)
+    except Exception:
+        return None
+
+
 def render_sidebar():
     email_addr, pw = gr.load_credentials()
     check: gr.GmailCheck | None = st.session_state.get("_gmail_check")
 
-    # Auto-validate once per session if we have creds and no result
-    if email_addr and pw and check is None:
-        check = gr.validate(email_addr, pw)
-        st.session_state["_gmail_check"] = check
+    # Re-validate when either:
+    #   - we have no result yet (first paint after creds saved), or
+    #   - the cached result is older than its TTL (success: 15m, failure: 5m).
+    # Without this gate, a transient network failure pinned the sidebar in
+    # red error state for the entire session; a silent-drop network also
+    # blocked rendering 15s per page.
+    if email_addr and pw:
+        age = _check_age_s(check)
+        ttl = _CHECK_TTL_OK_S if (check and check.ok) else _CHECK_TTL_FAIL_S
+        if check is None or (age is not None and age > ttl):
+            check = gr.validate(email_addr, pw)
+            st.session_state["_gmail_check"] = check
 
-    # Header badge
+    # Header badge. Login-rejected = red (user must fix creds). Network /
+    # connection failure = yellow (env, often firewall/VPN — not actionable
+    # from the UI).
     if not email_addr:
         st.sidebar.warning("📬 Gmail not connected", icon="✉️")
     elif check and check.ok:
         st.sidebar.success(f"📬 Gmail OK · {mask(email_addr)}", icon="✅")
     elif check and not check.ok:
-        st.sidebar.error(f"📬 Gmail error · {mask(email_addr)}", icon="❌")
+        if _is_login_rejected(check):
+            st.sidebar.error(f"📬 Gmail login rejected · {mask(email_addr)}",
+                              icon="❌")
+        else:
+            st.sidebar.warning(
+                f"📬 Gmail unreachable · {mask(email_addr)}",
+                icon="⚠️",
+            )
     else:
         st.sidebar.info(f"📬 Gmail unchecked · {mask(email_addr)}", icon="❓")
 

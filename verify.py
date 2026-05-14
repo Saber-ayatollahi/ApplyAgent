@@ -16,6 +16,7 @@ Checks:
  10. jd_tailor.py --dry-run end-to-end (no API needed)
  11. fit_scorer.py --dry-run end-to-end (no API needed)
  12. Streamlit importable
+ 13. UI pages render via AppTest (no exceptions in any of the 11 nav pages)
 
 Usage:
     python verify.py
@@ -27,6 +28,7 @@ import argparse
 import importlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -217,18 +219,26 @@ def check_jd_tailor_dry(o: Outcome):
 
 def check_fit_scorer_dry(o: Outcome):
     print("\n[11] fit_scorer.py --dry-run")
-    # Need a scan file. Use the shipped v4.
-    scan = ROOT / "automation" / "outputs" / "scan_v4.json"
-    if not scan.exists():
-        o.warn_("scan_v4.json not shipped; skipping fit_scorer dry-run")
+    # Pick the freshest dated scan_YYYYMMDD.json. v4 was retired when the
+    # weekly pipeline started writing date-stamped scans.
+    out_dir = ROOT / "automation" / "outputs"
+    candidates = sorted(out_dir.glob("scan_*.json"), reverse=True)
+    # Prefer date-stamped scans; ignore _scored / _delta / _brief sidecars.
+    scan = next(
+        (p for p in candidates
+         if p.stem.replace("scan_", "").isdigit() and len(p.stem) == 13),
+        None,
+    )
+    if scan is None:
+        o.warn_("no scan_YYYYMMDD.json in outputs/; skipping fit_scorer dry-run")
         return
     try:
         r = subprocess.run([sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
-                            "--scan", "scan_v4.json", "--dry-run"],
+                            "--scan", scan.name, "--dry-run"],
                            capture_output=True, text=True, cwd=str(ROOT), timeout=120)
         combined = r.stdout + r.stderr
         if r.returncode == 0 and "DRY RUN" in combined:
-            o.pass_("fit_scorer dry-run OK")
+            o.pass_(f"fit_scorer dry-run OK ({scan.name})")
         else:
             o.fail_(f"fit_scorer exited {r.returncode}: {combined[:300]}")
     except Exception as e:
@@ -242,6 +252,31 @@ def check_streamlit(o: Outcome):
         o.pass_(f"streamlit {streamlit.__version__}")
     except Exception as e:
         o.fail_(f"streamlit import failed: {e}")
+
+
+def check_pages_render(o: Outcome):
+    print("\n[13] UI pages render (AppTest)")
+    test_path = ROOT / "tests" / "test_pages.py"
+    if not test_path.exists():
+        o.warn_("tests/test_pages.py missing; skipping page-render check")
+        return
+    try:
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        r = subprocess.run([sys.executable, str(test_path)],
+                           capture_output=True, text=True, cwd=str(ROOT),
+                           timeout=180, env=env)
+        combined = (r.stdout or "") + (r.stderr or "")
+        # Look for the standalone runner's summary line.
+        match = re.search(r"Results:\s+(\d+)/(\d+)\s+pages OK", combined)
+        if r.returncode == 0 and match:
+            o.pass_(f"all {match.group(2)} pages render without exceptions")
+        elif match:
+            o.fail_(f"{match.group(1)}/{match.group(2)} pages OK; see logs/e2e_apptest_result.json")
+        else:
+            o.fail_(f"page-render harness exited {r.returncode}: {combined[-300:]}")
+    except Exception as e:
+        o.fail_(f"could not run tests/test_pages.py: {e}")
 
 
 def main() -> int:
@@ -269,6 +304,7 @@ def main() -> int:
         check_weekly_report(o)
         check_jd_tailor_dry(o)
         check_fit_scorer_dry(o)
+        check_pages_render(o)
 
     print()
     print("=" * 60)
