@@ -229,9 +229,12 @@ def render_sidebar():
         validation = validate(key)
         st.session_state["_anth_validation"] = validation
 
-    # Header badge — category-aware
+    # Header badge — category-aware. "Not set" is a normal first-run state,
+    # not an error — only AUTH/CREDIT/INVALID warrant the red banner. The
+    # Pipeline page (which actually needs the key) still surfaces a red
+    # in-page error when scoring/tailoring is attempted without a key.
     if not key:
-        st.sidebar.error("🔑 API key not set", icon="⚠️")
+        st.sidebar.info("🔑 API key not set — scoring/tailor disabled", icon="🔑")
     elif validation and validation.ok and validation.category == CATEGORY_OK:
         st.sidebar.success(f"🔑 Key valid · credits OK · {mask(key)}", icon="✅")
     elif validation and validation.category == CATEGORY_CREDIT:
