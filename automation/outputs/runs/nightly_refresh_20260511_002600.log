@@ -1,0 +1,6 @@
+# nightly_refresh
+# cmd: powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\PC\Documents\GitHub\ApplyAgent\automation\nightly_refresh.ps1
+# started: 2026-05-11T00:26:00.675999
+# Output is shown in the console window that opened on your desktop.
+# The script also writes its own timestamped log in automation/outputs/runs/
+

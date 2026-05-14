@@ -1,0 +1,19 @@
+{
+  "run_id": "nightly_refresh_20260511_003614",
+  "label": "nightly_refresh",
+  "cmd": [
+    "powershell.exe",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\nightly_refresh.ps1"
+  ],
+  "pid": 22288,
+  "started_at": "2026-05-11T00:36:14",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260511_003614.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260511_003614.json",
+  "state": "finished",
+  "finished_at": "2026-05-11T00:36:14",
+  "returncode": null
+}

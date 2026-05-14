@@ -156,6 +156,7 @@ if (-not $NoBrowser) {
 # viewer reads the same file regardless.
 try {
     & python -m streamlit run ui/app.py --server.port $Port --server.headless true 2>&1 |
+        ForEach-Object { "$_" } |
         Tee-Object -FilePath $logFile -Append
 }
 catch {

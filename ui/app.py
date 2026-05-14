@@ -190,6 +190,102 @@ def seed_followup(job: dict, applied_on: date | None = None) -> None:
 # ---------------------------------------------------------------------------
 # Outreach digest — computes staleness from CRM last_touchpoint
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# AI inline helpers — lightweight Claude Haiku calls for drafts & prep notes
+# Cached by a caller-supplied cache_key so reruns don't re-call the API.
+# ---------------------------------------------------------------------------
+@st.cache_data(show_spinner=False, ttl=3600)
+def _ai_draft(cache_key: str, prompt: str) -> str:
+    """Call Claude Haiku and return text. Returns error string if key missing."""
+    try:
+        import anthropic as _ant
+        _k = api_key.load_key()
+        if not _k:
+            return "⚠️ API key not configured — add it in the sidebar."
+        _client = _ant.Anthropic(api_key=_k)
+        _msg = _client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=700,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return _msg.content[0].text.strip()
+    except Exception as _e:
+        return f"⚠️ Draft failed: {_e}"
+
+
+def _email_draft_prompt(job: dict, touch_num: int = 1) -> str:
+    """Build an email-draft prompt from a tracker job dict."""
+    co       = job.get("company", "the company")
+    title    = job.get("title", "the role")
+    applied  = job.get("date_applied", "recently")
+    osfi     = job.get("osfi_hook", "")
+    fit      = (job.get("fit_notes") or "")[:300]
+    kw       = ", ".join((job.get("keywords") or [])[:6])
+    rec_name = (job.get("contact") or {}).get("recruiter_name") or ""
+    greeting = f"Hi {rec_name}," if rec_name else "Hi,"
+
+    ordinal = {1: "first", 2: "second", 3: "third"}.get(touch_num, f"{touch_num}th")
+    return f"""You are writing a {ordinal} follow-up email for Saber Ayatollahi (CFA, dual MSc, 7+ years ALM/IRRBB/Moody's Analytics).
+
+Role: {title} at {co}
+Applied: {applied}
+Key skills: {kw}
+OSFI regulatory angle: {osfi}
+Fit summary: {fit}
+
+Write a concise, confident follow-up email (120–160 words).
+- Open with {greeting}
+- Reference the specific role
+- Lead with one concrete value-add (IRRBB, OSFI B-12, ALM modelling, or vendor-platform expertise)
+- End with a clear, non-pushy CTA
+- Tone: professional, direct, not sycophantic
+- Output ONLY the email body — no subject line, no sign-off name"""
+
+
+def _interview_prep_prompt(job: dict) -> str:
+    """Build an interview prep prompt from a tracker job dict."""
+    co    = job.get("company", "the company")
+    title = job.get("title", "the role")
+    sec   = job.get("sector", "financial services")
+    osfi  = job.get("osfi_hook", "")
+    fit   = (job.get("fit_notes") or "")[:400]
+    kw    = ", ".join((job.get("keywords") or [])[:8])
+    level = job.get("level", "Director")
+    return f"""Generate interview prep notes for Saber Ayatollahi interviewing for:
+Role: {level} — {title} at {co} ({sec})
+Keywords: {kw}
+OSFI/regulatory angle: {osfi}
+Fit context: {fit}
+
+Produce a structured prep brief in markdown with these exact sections:
+## Technical Questions (5 likely questions with 1-line answer starters)
+## Behavioural Questions (3 questions with STAR talking-point bullets)
+## Key Selling Points (3 compelling angles specific to this role)
+## Questions to Ask Them (2 smart questions that signal domain depth)
+
+Be specific to the role — reference IRRBB/ALM/OSFI where relevant."""
+
+
+def _find_tailor_docs(job: dict) -> list:
+    """Return list of tailored doc Paths for this job (resume/CL markdown files)."""
+    jid = job.get("id", "")
+    co  = (job.get("company") or "").replace(" ", "_")
+    ttl = (job.get("title") or "").replace(" ", "_").replace("/", "_")
+    # Pattern 1: *_{job_id_underscored}*.md  (jd_tailor standard output)
+    pat1 = f"*_{jid.replace('-', '_')}*.md"
+    # Pattern 2: {Company}_{Title}*.md  (prompt files also useful as context)
+    pat2 = f"{co}_{ttl[:30]}*.md"
+    found = list(OUT_DIR.glob(pat1)) + list(OUT_DIR.glob(pat2))
+    # Exclude raw scan/delta/brief/report files
+    skip = {"scan_", "delta_", "brief_", "promote_", "SCAN_", "scorer_", "weekly_"}
+    return sorted(
+        {p for p in found if not any(p.name.startswith(s) for s in skip)
+         and "_prompt." not in p.name},
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+
+
 CRM_STALE_DAYS = 14  # past this, contacts get flagged as "nudge-worthy"
 CRM_DEAD_DAYS = 35   # past this, contacts get flagged as "probably cold"
 CRM_TERMINAL_STATUSES = {"Do_Not_Contact", "Past_Rep", "On_Hold"}
@@ -771,6 +867,18 @@ st.sidebar.markdown("---")
 # support true section headers natively, so we use non-selectable separator
 # strings inserted between groups. If the user somehow lands on one,
 # page-routing treats it as Dashboard so nothing breaks.
+# Pre-load CRM before nav so we can show urgency badge in sidebar.
+# load_crm() is @st.cache_data(ttl=15) so this call is cheap on reruns.
+_crm_early = load_crm()
+_crm_early_all = (_crm_early.get("recruiters") or []) + (_crm_early.get("alumni_warm_intros") or [])
+# High-priority contacts not yet reached — this is the "call to action" count
+_crm_badge_count = sum(
+    1 for c in _crm_early_all
+    if c.get("priority") == "High"
+    and c.get("status") in ("Not_Contacted",)
+    and not c.get("last_touchpoint")
+)
+
 _SEP_WORK    = "── Work ──"
 _SEP_TRACKER = "── Tracker ──"
 _SEP_ADMIN   = "── Admin ──"
@@ -780,7 +888,10 @@ _NAV_OPTIONS = [
     _SEP_WORK,
     "🏠 Dashboard",
     "🎯 Pipeline",
+    "📊 Analytics",
     _SEP_TRACKER,
+    "🔔 Follow-ups",
+    "📬 Review Queue",
     "📋 Jobs Kanban",
     "🤝 Recruiter CRM",
     _SEP_ADMIN,
@@ -789,6 +900,43 @@ _NAV_OPTIONS = [
     "📜 Scan History",
     "⚙️ Admin",
 ]
+
+# ── Campaign quick stats in sidebar ──────────────────────────────────────
+try:
+    _sb_meta = load_tracker().get("meta", {})
+    _sb_camp_start = _sb_meta.get("campaign_start", "")
+    _sb_camp_end   = _sb_meta.get("campaign_end", "")
+    _sb_today = date.today()
+    if _sb_camp_start and _sb_camp_end:
+        _sb_cs = datetime.strptime(_sb_camp_start, "%Y-%m-%d").date()
+        _sb_ce = datetime.strptime(_sb_camp_end,   "%Y-%m-%d").date()
+        _sb_total = max((_sb_ce - _sb_cs).days, 1)
+        _sb_done  = max(min((_sb_today - _sb_cs).days, _sb_total), 0)
+        _sb_pct   = int(_sb_done / _sb_total * 100)
+        _sb_left  = max((_sb_ce - _sb_today).days, 0)
+        st.sidebar.markdown("---")
+        st.sidebar.markdown(
+            f"<div style='font-size:11px;opacity:0.7;margin-bottom:3px'>Campaign · {_sb_pct}% · {_sb_left}d left</div>",
+            unsafe_allow_html=True,
+        )
+        st.sidebar.progress(_sb_pct / 100)
+except Exception:
+    pass
+
+# ── Targeting lanes strip ─────────────────────────────────────────────
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "<div style='font-size:11px;color:var(--text-color);opacity:0.75;margin-bottom:4px'>"
+    "<strong>Active search lanes</strong></div>"
+    "<div style='font-size:11px;padding:4px 8px;margin:2px 0;"
+    "background:rgba(59,130,246,0.12);border-left:2px solid #3b82f6;border-radius:3px'>"
+    "🔵 <strong>PRIMARY</strong> — ALM / IRRBB / Model Governance</div>"
+    "<div style='font-size:11px;padding:4px 8px;margin:2px 0;"
+    "background:rgba(245,158,11,0.12);border-left:2px solid #f59e0b;border-radius:3px'>"
+    "🟡 SECONDARY — Vendor-Platform / Client Solutions</div>",
+    unsafe_allow_html=True,
+)
+st.sidebar.markdown("---")
 
 _nav_pick = st.sidebar.radio(
     "Navigate",
@@ -800,6 +948,36 @@ _nav_pick = st.sidebar.radio(
 # If the user somehow picks a separator, fall back to Dashboard so the
 # if/elif page-router below always matches something.
 page = _nav_pick if _nav_pick not in _SEPARATORS else "🏠 Dashboard"
+
+# ── Sidebar urgency strip ──────────────────────────────────────────────
+# Surfaces the most time-sensitive action counts so they're visible from
+# any page without navigating to CRM.
+if _crm_badge_count > 0:
+    st.sidebar.markdown(
+        f"<div style='margin:4px 0 6px 0;padding:7px 10px;"
+        f"background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);"
+        f"border-radius:6px;font-size:12px;color:#f87171;line-height:1.4'>"
+        f"🤝 <strong>{_crm_badge_count}</strong> high-priority recruiter"
+        f"{'s' if _crm_badge_count != 1 else ''} awaiting outreach</div>",
+        unsafe_allow_html=True,
+    )
+
+# Follow-up due badge (overdue + due today)
+try:
+    _fu_jobs_early = load_tracker().get("jobs", [])
+    _fu_buckets_early = followup_buckets(_fu_jobs_early)
+    _fu_badge_count = len(_fu_buckets_early["overdue"]) + len(_fu_buckets_early["due_today"])
+    if _fu_badge_count > 0:
+        st.sidebar.markdown(
+            f"<div style='margin:4px 0 6px 0;padding:7px 10px;"
+            f"background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);"
+            f"border-radius:6px;font-size:12px;color:#fbbf24;line-height:1.4'>"
+            f"🔔 <strong>{_fu_badge_count}</strong> follow-up"
+            f"{'s' if _fu_badge_count != 1 else ''} due — check Follow-ups</div>",
+            unsafe_allow_html=True,
+        )
+except Exception:
+    _fu_badge_count = 0
 
 # Active-runs badge in sidebar
 active_runs = scan_runner.active_runs()
@@ -826,11 +1004,19 @@ def _scorer_progress_live() -> bool:
 scorer_running = _scorer_progress_live()
 any_work_active = bool(active_runs or pipeline_running or scorer_running)
 
+# @st.fragment — available in Streamlit ≥1.33. When present, the live
+# pipeline panel re-runs itself every 3s without flashing the entire page.
+# When absent, we fall back to the existing st_autorefresh approach.
+_HAS_FRAGMENT = hasattr(st, "fragment")
+
 # Auto-refresh: poll every 5s ONLY when something is actively running. An
 # idle dashboard stays idle (no rerun thrash, no battery drain). The user
 # can also hit 🔄 Refresh manually — see sidebar below. `key` is distinct
 # per page so Streamlit doesn't treat them as one counter.
-if any_work_active and _HAVE_AUTOREFRESH:
+# Only use the page-wide autorefresh when @st.fragment isn't available.
+# With fragments, only the live-output widget rerenders every 3s — the
+# rest of the page stays perfectly still while a job runs.
+if any_work_active and _HAVE_AUTOREFRESH and not _HAS_FRAGMENT:
     st_autorefresh(interval=5000, key=f"_autorefresh_{page}")
 
 if any_work_active:
@@ -938,15 +1124,395 @@ jobs_df = pd.DataFrame(jobs) if jobs else pd.DataFrame()
 
 
 # ============================================================================
+# Live pipeline monitor — must be defined BEFORE the if/elif page chain so
+# it can be optionally wrapped with @st.fragment (Streamlit ≥1.33), which
+# makes only this widget rerender every 3s instead of the entire page.
+# Falls back gracefully to a plain function (+ global autorefresh) if older.
+# ============================================================================
+def _pipeline_live_panel_inner():
+    """Core render logic — called by both fragment and non-fragment variants."""
+    _live_runs = scan_runner.active_runs()
+    _live_pipeline = latest_pipeline_status()
+    _live_pipeline_running = _live_pipeline and _live_pipeline.get("state") == "running"
+
+    render_scorer_progress()
+
+    if _live_pipeline_running or _live_runs:
+        st.markdown("---")
+        _current = next(
+            (r for r in _live_runs if r.get("label", "").startswith("pipeline")),
+            _live_runs[0] if _live_runs else None,
+        )
+        if _current:
+            with st.container(border=True):
+                _lh1, _lh2, _lh3 = st.columns([4, 2, 1])
+                _lh1.markdown(
+                    f"#### 📡 Live · `{_current['label']}` · pid {_current['pid']}"
+                )
+                _lh2.metric("Running", human_elapsed(_current["started_at"]))
+                if _lh3.button("⏹ Stop", key="frag_stop_pipe",
+                               help="Send stop signal — process exits after current step"):
+                    scan_runner.stop_run(_current["run_id"])
+                    st.warning(
+                        "⏹ Stop signal sent — process will exit after the current step."
+                    )
+                _log_text = scan_runner.tail_log(_current["log_path"]) or ""
+                # Surface current stage from log
+                _stage_match = None
+                for _ll in reversed((_log_text or "").splitlines()):
+                    if any(tag in _ll for tag in ("[0/3]", "[1/3]", "[2/3]", "[3/3]")):
+                        _stage_match = _ll.strip()
+                        break
+                if _stage_match:
+                    st.caption(f"⚙️ {_stage_match}")
+                st.code(
+                    _log_text if _log_text else "⏳ Starting — waiting for first output…",
+                    language="text",
+                )
+                _refresh_note = (
+                    "↻ live (every 3s — no page flash)"
+                    if _HAS_FRAGMENT else "↻ auto-refreshes every 5s"
+                )
+                st.caption(
+                    f"Run ID: `{_current['run_id']}` · {_refresh_note} · "
+                    f"log: `{Path(_current['log_path']).name}`"
+                )
+
+
+if _HAS_FRAGMENT:
+    @st.fragment(run_every=3)
+    def _pipeline_live_panel():
+        """Fragment version: only this widget rerenders every 3s — no page flash."""
+        _pipeline_live_panel_inner()
+else:
+    def _pipeline_live_panel():
+        """Fallback: plain function, page-wide autorefresh handles timing."""
+        _pipeline_live_panel_inner()
+
+
+# ============================================================================
 # 🏠 DASHBOARD
 # ============================================================================
 if page == "🏠 Dashboard":
-    st.title("🏠 Saber's Toronto Job Search")
     meta = tr.get("meta", {})
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
     targets = meta.get("weekly_kpi_targets", {})
+
+    # ── Personalized greeting ─────────────────────────────────────────────
+    _now = datetime.now()
+    _greet = ("Good morning" if _now.hour < 12
+              else "Good afternoon" if _now.hour < 17 else "Good evening")
+
+    # Pull brief data early for the stat row (load_morning_brief is cached)
+    _brief_now = load_morning_brief()
+    _brief_entries_top = (_brief_now.get("top") or []) if _brief_now else []
+    _brief_date_raw_top = (_brief_now.get("brief_date", "") if _brief_now else "")
+    _brief_is_today = False
+    if _brief_date_raw_top:
+        try:
+            _brief_is_today = (
+                datetime.strptime(_brief_date_raw_top, "%Y%m%d").date() == date.today()
+            )
+        except ValueError:
+            pass
+    _new_matches_today = len(_brief_entries_top) if _brief_is_today else 0
+    _top_score_val = None
+    _top_score_tip = "No brief today — run nightly refresh"
+    if _brief_entries_top:
+        try:
+            _top_score_val = int(
+                _brief_entries_top[0].get("fit", {}).get("fit_score", 0) or 0
+            )
+            _top_company = _brief_entries_top[0].get("company", "?")
+            _top_title = _brief_entries_top[0].get("title", "?")
+            _top_score_tip = f"{_top_company} — {_top_title}"
+        except (TypeError, ValueError):
+            pass
+
+    _applied_this_week = sum(
+        1 for j in jobs
+        if j.get("date_applied") and parse_date(j.get("date_applied")) is not None
+        and parse_date(j.get("date_applied")) >= week_start
+    )
+
+    # Last brief timestamp
+    _brief_files_top = sorted(
+        OUT_DIR.glob("brief_*.json"), key=lambda p: p.stat().st_mtime, reverse=True
+    )
+    _brief_ts_str = ""
+    if _brief_files_top:
+        _bts = datetime.fromtimestamp(_brief_files_top[0].stat().st_mtime)
+        _brief_ts_str = f"Brief refreshed {_bts.strftime('%b %d at %I:%M %p')}"
+
+    # Greeting row
+    _gh1, _gh2 = st.columns([3, 1])
+    with _gh1:
+        st.markdown(f"## {_greet}, Saber 👋")
+        st.caption(
+            f"{today.strftime('%A, %B %d')} · {_brief_ts_str}"
+            if _brief_ts_str else today.strftime('%A, %B %d')
+        )
+    with _gh2:
+        if any_work_active and active_runs:
+            _running_lbl = active_runs[0].get("label", "job")
+            st.info(f"🟡 **{_running_lbl}** is running", icon="🚀")
+        elif any_work_active:
+            st.info("🟡 Pipeline running", icon="🚀")
+
+    # Stat row
+    _sc1, _sc2, _sc3, _sc4 = st.columns(4)
+    _sc1.metric(
+        "New matches today",
+        _new_matches_today,
+        help=("Top picks from today's morning brief."
+              if _brief_is_today else "Run nightly refresh to get today's picks."),
+    )
+    _sc2.metric("Applied this week", _applied_this_week)
+    _sc3.metric(
+        "Top score",
+        f"{_top_score_val}/10" if _top_score_val else "—",
+        help=_top_score_tip,
+    )
+    _sc4.metric(
+        "CRM: outreach due",
+        _crm_badge_count,
+        delta="high priority" if _crm_badge_count > 0 else None,
+        delta_color="inverse" if _crm_badge_count > 0 else "normal",
+        help="High-priority recruiters not yet contacted. Go to 🤝 Recruiter CRM.",
+    )
+
+    # ── Campaign progress + pipeline funnel ──────────────────────────────────
+    _camp_start_str = meta.get("campaign_start", "2026-05-03")
+    _camp_end_str   = meta.get("campaign_end", "2026-07-12")
+    try:
+        _camp_start = datetime.strptime(_camp_start_str, "%Y-%m-%d").date()
+        _camp_end   = datetime.strptime(_camp_end_str,   "%Y-%m-%d").date()
+        _camp_total = max((_camp_end - _camp_start).days, 1)
+        _camp_done  = max(min((today - _camp_start).days, _camp_total), 0)
+        _camp_pct   = int(_camp_done / _camp_total * 100)
+        _camp_left  = max((_camp_end - today).days, 0)
+    except Exception:
+        _camp_pct = 0; _camp_left = 0
+
+    # Pipeline funnel — quick glance at jobs in each active stage
+    _stage_counts = {}
+    _ACTIVE_STAGES = ["Tailoring", "Applied", "Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite", "Offer"]
+    for _j in jobs:
+        _s = _j.get("status", "")
+        if _s in _ACTIVE_STAGES:
+            _stage_counts[_s] = _stage_counts.get(_s, 0) + 1
+
+    _cprog_col, _funnel_col = st.columns([1, 1], gap="large")
+    with _cprog_col:
+        with st.container(border=True):
+            st.markdown("##### 📅 Campaign Progress")
+            st.progress(_camp_pct / 100, text=f"{_camp_pct}% · {_camp_left} days remaining")
+            st.caption(
+                f"{_camp_start_str} → {_camp_end_str}  ·  "
+                f"Week {(_camp_done // 7) + 1} of {(_camp_total // 7) + 1}"
+            )
+    with _funnel_col:
+        with st.container(border=True):
+            st.markdown("##### 🔽 Active Pipeline")
+            if _stage_counts:
+                _stage_labels = {
+                    "Tailoring": "✍️ Tailoring",
+                    "Applied": "📤 Applied",
+                    "Recruiter_Screen": "📞 Recruiter",
+                    "Phone_Screen": "📱 Phone Screen",
+                    "Take_Home": "💻 Take-Home",
+                    "Onsite": "🏢 Onsite",
+                    "Offer": "🎉 Offer",
+                }
+                _funnel_parts = []
+                for _st_key in _ACTIVE_STAGES:
+                    if _st_key in _stage_counts:
+                        _funnel_parts.append(
+                            f"**{_stage_labels.get(_st_key, _st_key)}** {_stage_counts[_st_key]}"
+                        )
+                st.markdown("  ·  ".join(_funnel_parts))
+            else:
+                st.caption("No jobs in active stages yet — start applying!")
+
+    # ── 7-day activity strip ──────────────────────────────────────────────────
+    _act_days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
+    _act_applied  = {d: 0 for d in _act_days}
+    _act_outreach = {d: 0 for d in _act_days}
+    for _aj in jobs:
+        _ad = parse_date(_aj.get("date_applied"))
+        if _ad and _ad in _act_applied:
+            _act_applied[_ad] += 1
+        for _ol in (_aj.get("outreach_log") or []):
+            _od = parse_date(_ol.get("date"))
+            if _od and _od in _act_outreach:
+                _act_outreach[_od] += 1
+    with st.container(border=True):
+        st.markdown("##### 📆 Last 7 days")
+        _sp_cols = st.columns(7)
+        for _di, _dd in enumerate(_act_days):
+            _n_app = _act_applied[_dd]
+            _n_out = _act_outreach[_dd]
+            _lbl = "**Today**" if _dd == today else f"{_dd.strftime('%a')} {_dd.day}"
+            _delta_str = f"+{_n_out} outreach" if _n_out else None
+            _sp_cols[_di].metric(
+                _lbl,
+                f"{_n_app} app{'s' if _n_app != 1 else ''}",
+                delta=_delta_str,
+                delta_color="normal" if _n_out else "off",
+                help=f"{_dd.strftime('%B %d')}: {_n_app} applied, {_n_out} outreach",
+            )
+
+    st.markdown("---")
+
+    # ── Today's Game Plan ─────────────────────────────────────────────────
+    # Action-first band: surfaces the highest-priority things to do RIGHT NOW
+    # before the informational sections. Overdue follow-ups first, then review
+    # queue, then weekly progress. Empty = nothing to do = great news.
+    _gp_fu = followup_buckets(jobs)
+    _gp_overdue    = len(_gp_fu["overdue"])
+    _gp_due_today  = len(_gp_fu["due_today"])
+    _gp_no_sched   = len(_gp_fu["no_schedule"])
+    _gp_review_ct  = sum(1 for _j in jobs if _j.get("status") == "Found")
+    _gp_target_wk  = targets.get("applications_per_week", 5)
+    _gp_applied_wk = _applied_this_week
+
+    _gp_items = []
+    if _gp_overdue:
+        _gp_items.append(("#ef4444", "OVERDUE",
+            f"{_gp_overdue} follow-up{'s' if _gp_overdue!=1 else ''} past due — send a note today",
+            "🔔 Follow-ups"))
+    if _gp_due_today:
+        _gp_items.append(("#f59e0b", "TODAY",
+            f"{_gp_due_today} follow-up{'s' if _gp_due_today!=1 else ''} due today",
+            "🔔 Follow-ups"))
+    if _gp_no_sched:
+        _gp_items.append(("#f59e0b", "ACTION",
+            f"{_gp_no_sched} applied job{'s' if _gp_no_sched!=1 else ''} with no follow-up scheduled",
+            "🔔 Follow-ups"))
+    if _gp_review_ct:
+        _gp_items.append(("#8b5cf6", "QUEUE",
+            f"{_gp_review_ct} unreviewed match{'es' if _gp_review_ct!=1 else ''} waiting for triage",
+            "📬 Review Queue"))
+    _gp_remaining = max(0, _gp_target_wk - _gp_applied_wk)
+    if _gp_remaining > 0:
+        _gp_items.append(("#10b981", "GOAL",
+            f"{_gp_applied_wk}/{_gp_target_wk} applications this week — {_gp_remaining} to go",
+            "📬 Review Queue"))
+
+    if _gp_items:
+        with st.container(border=True):
+            st.markdown("#### 🎯 Today's game plan")
+            for _gp_col, _gp_pri, _gp_text, _gp_dest in _gp_items:
+                st.markdown(
+                    f"<div style='padding:7px 12px;margin:3px 0;"
+                    f"background:{_gp_col}15;border-left:3px solid {_gp_col};"
+                    f"border-radius:4px;display:flex;justify-content:space-between;'"
+                    f"><span><span style='font-size:10px;font-weight:700;"
+                    f"color:{_gp_col};letter-spacing:.05em'>{_gp_pri}</span> "
+                    f"<span style='font-size:13px;margin-left:6px'>{_gp_text}</span></span>"
+                    f"<span style='font-size:11px;opacity:.55'>→ {_gp_dest}</span></div>",
+                    unsafe_allow_html=True,
+                )
+    else:
+        st.success(
+            "🎉 All caught up — no overdue follow-ups, review queue empty, weekly goal met!",
+            icon="✅"
+        )
+    st.markdown("")
+    st.markdown("---")
+
+    # ── Today's top picks preview ─────────────────────────────────────────
+    # Shows the top 3 brief entries as compact action cards RIGHT at the top
+    # so the user sees what to work on the moment they open the Dashboard.
+    if _brief_is_today and _brief_entries_top:
+        st.markdown("#### 🌅 Today's top picks")
+        _VERDICT_COLOR = {"apply_now": "#10b981", "tailor_and_apply": "#f59e0b", "watch": "#6366f1"}
+        _VERDICT_LABEL = {"apply_now": "✅ Apply now", "tailor_and_apply": "✍️ Tailor & apply", "watch": "👀 Watch"}
+        for _bi, _br in enumerate(_brief_entries_top, 1):
+            _bf = _br.get("fit") or {}
+            _bscore = int(_bf.get("fit_score") or 0)
+            _bverdict = _bf.get("fit_verdict", "")
+            _bcolor = _VERDICT_COLOR.get(_bverdict, "#6b7280")
+            _bvlabel = _VERDICT_LABEL.get(_bverdict, _bverdict)
+            _bfb = freshness_badge(_br.get("posted_date"), _br.get("found_at"))
+            _bsummary = _bf.get("summary", "")
+            _bgaps = _bf.get("gaps", "")
+            _blink = _br.get("link", "")
+            with st.container(border=True):
+                _hcol, _scol, _acol = st.columns([6, 2, 1])
+                with _hcol:
+                    st.markdown(
+                        f"<div style='font-size:1.05em;font-weight:600;margin-bottom:2px'>"
+                        f"<span style='color:{_bcolor};font-size:1.3em;margin-right:6px'>{_bi}.</span>"
+                        f"{_br.get('company','')} — {_br.get('title','')}</div>"
+                        f"<div style='font-size:0.82em;opacity:0.65'>{_bfb}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    if _bsummary:
+                        st.caption(_bsummary)
+                    if _bgaps:
+                        st.caption(f"⚠️ Gaps: {_bgaps}")
+                with _scol:
+                    st.metric("Fit score", f"{_bscore}/10")
+                    st.markdown(
+                        f"<div style='font-size:0.78em;color:{_bcolor};font-weight:600'>"
+                        f"{_bvlabel}</div>",
+                        unsafe_allow_html=True,
+                    )
+                with _acol:
+                    if _blink:
+                        st.link_button("🔗 Open", _blink, width='stretch')
+        st.caption(
+            "↓ Scroll to **Today's fresh matches** below for full detail, "
+            "gap analysis, and tracker actions."
+        )
+        st.markdown("---")
+
+    elif not _brief_is_today:
+        # No today brief — clear call to action
+        _brief_age_msg = ""
+        if _brief_now and _brief_date_raw_top:
+            try:
+                _bd = datetime.strptime(_brief_date_raw_top, "%Y%m%d").date()
+                _days_old = (date.today() - _bd).days
+                _brief_age_msg = f" (last brief: {_days_old}d ago)"
+            except ValueError:
+                pass
+        elif not _brief_now:
+            _brief_age_msg = " — no brief on file yet"
+        st.info(
+            f"No brief for today{_brief_age_msg}. "
+            "Hit **🌅 Nightly refresh** below to generate today's picks.",
+            icon="🌅",
+        )
+        st.markdown("---")
+
+    # ── CRM urgency alert ─────────────────────────────────────────────────
+    if _crm_badge_count > 0:
+        _crm_high_list = [
+            c for c in _crm_early_all
+            if c.get("priority") == "High"
+            and c.get("status") == "Not_Contacted"
+            and not c.get("last_touchpoint")
+        ][:5]  # show at most 5
+        with st.expander(
+            f"🤝 {_crm_badge_count} high-priority recruiter"
+            f"{'s' if _crm_badge_count != 1 else ''} awaiting outreach",
+            expanded=False,
+        ):
+            st.caption(
+                "Recruiter relationships drive ~70% of Director+ moves in Toronto finance. "
+                "These high-priority firms haven't been contacted yet:"
+            )
+            for _crec in _crm_high_list:
+                _cname = _crec.get("firm") or _crec.get("name") or "?"
+                _cnext = _crec.get("next_action") or "—"
+                st.markdown(f"**{_cname}** — {_crec.get('firm_type','').replace('_',' ')}")
+                st.caption(f"Next action: {_cnext[:200]}")
+            st.caption("→ Navigate to 🤝 Recruiter CRM in the sidebar to log outreach.")
+        st.markdown("---")
 
     # ---------- Quick actions — one-click entry points ----------
     # Before this, the landing page had metrics and banners but no way
@@ -957,6 +1523,23 @@ if page == "🏠 Dashboard":
     _dash_key_ok = api_key.is_key_valid()
     _dash_gmail_ok = gmail_ui.is_connected()
     _dash_can_run_llm = _dash_key_ok and not pipeline_running
+    # --- Active-run banner in main content (persists across reruns) ---
+    _last = st.session_state.get("_last_launch")
+    if _last:
+        _banner_run = next((r for r in active_runs if r["run_id"] == _last["run_id"]), None)
+        if _banner_run:
+            _bc = st.container()
+            with _bc:
+                st.info(
+                    f"🟡 **{_last['label']}** is running — pid {_banner_run['pid']} · "
+                    f"{human_elapsed(_banner_run['started_at'])} elapsed. "
+                    f"Go to **🎯 Pipeline** to see live output and stop it.",
+                    icon="🚀",
+                )
+        else:
+            # Run finished — clear the banner
+            del st.session_state["_last_launch"]
+
     with st.container(border=True):
         st.markdown("#### ⚡ Quick actions")
         qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
@@ -965,7 +1548,7 @@ if page == "🏠 Dashboard":
                           "~15-30 min. Writes scan_<date>.json only; no LLM "
                           "call until you score. No API key needed.")
             if st.button("🛰 Core scrape", width='stretch',
-                          disabled=bool(pipeline_running),
+                          disabled=bool(pipeline_running or any_work_active),
                           help=_help_core, key="dash_qa_core"):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable,
@@ -973,8 +1556,8 @@ if page == "🏠 Dashboard":
                     "--scrape-mode", "core",
                     "--skip-score", "--skip-promote",
                 ])
-                st.success(f"Core scrape started (`{rec.run_id}`). "
-                            "Watch the sidebar for live status.")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
+                st.toast("🛰 Core scrape launched!", icon="🚀")
                 st.rerun()
         with qa2:
             _help_gmail = (
@@ -983,14 +1566,15 @@ if page == "🏠 Dashboard":
                 "scan_gmail_<stamp>.json that you can score or promote."
             )
             if st.button("📬 Pull Gmail alerts", width='stretch',
-                          disabled=(not _dash_gmail_ok) or bool(pipeline_running),
+                          disabled=(not _dash_gmail_ok) or bool(any_work_active),
                           help=_help_gmail, key="dash_qa_gmail"):
                 rec = scan_runner.start_run("gmail_fetch", [
                     sys.executable,
                     str(ROOT / "automation" / "gmail_fetch.py"),
                     "--days", "14",
                 ])
-                st.success(f"Gmail fetch started (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Gmail fetch"}
+                st.toast("📬 Gmail fetch launched!", icon="🚀")
                 st.rerun()
             if not _dash_gmail_ok:
                 st.caption("🔌 Connect Gmail in the sidebar.")
@@ -999,22 +1583,12 @@ if page == "🏠 Dashboard":
                               "score only those + emit top-3 brief. "
                               "Cheap (~$0.03), ~25 min. Needs API key.")
             if st.button("🌅 Nightly refresh", width='stretch',
-                          disabled=(not _dash_can_run_llm),
+                          disabled=(not _dash_can_run_llm) or bool(any_work_active),
                           help=_help_nightly, key="dash_qa_nightly"):
-                if sys.platform == "win32":
-                    nightly_cmd_list = [
-                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                        "-File", str(ROOT / "automation" / "nightly_refresh.ps1"),
-                    ]
-                else:
-                    chained = (
-                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion --gmail && "
-                        f"{sys.executable} {ROOT / 'automation' / 'scan_delta.py'} && "
-                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5 --auto-add 3 --auto-tailor"
-                    )
-                    nightly_cmd_list = ["bash", "-c", chained]
+                nightly_cmd_list = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
-                st.success(f"Nightly refresh started (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Nightly refresh"}
+                st.toast("🌅 Nightly refresh launched!", icon="🚀")
                 st.rerun()
             if not _dash_key_ok:
                 st.caption("🔑 Set API key in the sidebar.")
@@ -1475,9 +2049,8 @@ if page == "🏠 Dashboard":
         st.markdown("---")
 
     # ---------- Morning brief widget — today's 2-3 fresh matches ----------
-    # Wrap the whole block in a single outer expander. When the brief is
-    # today's, open by default; when it's stale, stay collapsed so the user
-    # isn't forced to scroll past old matches on every page load.
+    # Today's brief is always-visible (no expander). Stale briefs (>0 days)
+    # are collapsed into a small expander to save space.
     brief = load_morning_brief()
     if brief:
         brief_date_raw = brief.get("brief_date", "")
@@ -1487,13 +2060,19 @@ if page == "🏠 Dashboard":
             brief_date_parsed = None
         top = brief.get("top") or []
         is_stale = brief_date_parsed and (date.today() - brief_date_parsed).days >= 1
-        _brief_title = f"🌅 Today's fresh matches" + ("" if not brief_date_parsed
-            else f" · {(date.today() - brief_date_parsed).days}d old"
-            if is_stale else " · today")
-        _brief_outer = st.expander(
-            _brief_title + f" ({len(top)} match(es))",
-            expanded=not is_stale,
-        )
+
+        if is_stale:
+            # Stale: collapsed expander so it doesn't crowd the page
+            _days_old = (date.today() - brief_date_parsed).days if brief_date_parsed else "?"
+            _brief_outer = st.expander(
+                f"🌅 Fresh matches · {_days_old}d old — run nightly refresh to update"
+                f" ({len(top)} match(es))",
+                expanded=False,
+            )
+        else:
+            # Today's brief: always-visible card header, no click required
+            st.markdown("#### 🌅 Today's fresh matches")
+            _brief_outer = st.container()
     else:
         _brief_outer = None
 
@@ -2248,18 +2827,31 @@ elif page == "🎯 Pipeline":
 
         _big_number(cols[0], "🛰️", "Scraped", scrape_raw if scrape_raw else scrape_count,
                     sub=f"across {len(per_company_diag)} cos" if per_company_diag else "")
-        _arrow(cols[1], f"-{(dedup_dropped_url or 0) + (dedup_dropped_near or 0)} dupe"
-                        if dedup_dropped_url is not None else "")
+        # Dedup pass rate
+        _dedup_in = scrape_raw or scrape_count or 0
+        _dedup_out = scrape_count or 0
+        _dedup_pct = (f"{int(100*_dedup_out/_dedup_in)}% kept"
+                      if _dedup_in else f"-{(dedup_dropped_url or 0) + (dedup_dropped_near or 0)} dupe"
+                      if dedup_dropped_url is not None else "")
+        _arrow(cols[1], _dedup_pct)
         _big_number(cols[2], "✂️", "Unique", scrape_count,
                     sub=f"-{dedup_dropped_url} URL, -{dedup_dropped_near} near"
                         if dedup_dropped_url is not None else "")
-        _arrow(cols[3], f"-{(score_input or scrape_count or 0) - (score_pass or 0)} off-profile"
-                        if score_input and score_pass else "")
+        # Triage pass rate
+        _triage_in = score_input or scrape_count or 0
+        _triage_out = score_pass or 0
+        _triage_pct = (f"{int(100*_triage_out/_triage_in)}% pass"
+                       if _triage_in else f"-{_triage_in - _triage_out} off-profile"
+                       if score_input and score_pass else "")
+        _arrow(cols[3], _triage_pct)
         _big_number(cols[4], "🎯", "Triaged", score_pass,
                     sub="stage-1 pass" if score_pass else
                         ("not scored yet" if scan_f and not scored_f else ""))
-        _arrow(cols[5], f"-{(score_pass or 0) - (score_count or 0)} err"
-                        if score_pass is not None and score_count is not None and score_pass != score_count else "")
+        # Triaged → scored: show coverage rate
+        _sc_pct = (f"{int(100*(score_count or 0)/(score_pass or 1))}% LLM-scored"
+                   if score_pass else "")
+        _arrow(cols[5], _sc_pct or (f"-{(score_pass or 0) - (score_count or 0)} err"
+                        if score_pass is not None and score_count is not None and score_pass != score_count else ""))
 
         # Scored column: explain WHY it's blank if it is
         _scored_sub = ""
@@ -2311,7 +2903,7 @@ elif page == "🎯 Pipeline":
         # expander below for power-user tuning.
         key_ok_here = api_key.is_key_valid()
         _gmail_ok = gmail_ui.is_connected()
-        _can_run = not pipeline_running
+        _can_run = not any_work_active
 
         # Show a clear blocker banner BEFORE the buttons so user knows why
         # things are disabled, with a direct fix action.
@@ -2337,7 +2929,8 @@ elif page == "🎯 Pipeline":
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                     "--scrape-mode", "core", "--skip-score", "--skip-promote",
                 ])
-                st.success(f"Scrape started (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
+                st.toast("🛰 Core scrape launched!", icon="🚀")
                 st.rerun()
         with qa2:
             _score_label = "🤖 Score latest scan" if scan_f else "🤖 Score (no scan)"
@@ -2351,7 +2944,8 @@ elif page == "🎯 Pipeline":
                     "--skip-scrape", "--skip-promote",
                     "--score-concurrency", "6",
                 ])
-                st.success(f"Scoring started on `{scan_f.name}` (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Score latest scan"}
+                st.toast("🤖 Scorer launched!", icon="🚀")
                 st.rerun()
         with qa3:
             if st.button("📬 Gmail alerts", width='stretch',
@@ -2361,7 +2955,8 @@ elif page == "🎯 Pipeline":
                     sys.executable,
                     str(ROOT / "automation" / "gmail_fetch.py"), "--days", "14",
                 ])
-                st.success(f"Gmail fetch started (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Gmail fetch"}
+                st.toast("📬 Gmail fetch launched!", icon="🚀")
                 st.rerun()
             if not _gmail_ok:
                 st.caption("🔌 Connect Gmail in sidebar")
@@ -2370,42 +2965,18 @@ elif page == "🎯 Pipeline":
                          disabled=(not key_ok_here or not _can_run),
                          help="Scrape + score new roles + morning brief. "
                               "~25 min, ~$0.03. Requires API key."):
-                if sys.platform == "win32":
-                    nightly_cmd_list = [
-                        "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
-                        "-File", str(ROOT / "automation" / "nightly_refresh.ps1"),
-                    ]
-                else:
-                    chained = (
-                        f"{sys.executable} {ROOT / 'automation' / 'jd_scraper.py'} --expansion --gmail && "
-                        f"{sys.executable} {ROOT / 'automation' / 'scan_delta.py'} && "
-                        f"{sys.executable} {ROOT / 'automation' / 'morning_brief.py'} --top 5 --auto-add 3 --auto-tailor"
-                    )
-                    nightly_cmd_list = ["bash", "-c", chained]
+                nightly_cmd_list = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
-                st.success(f"Nightly refresh started (`{rec.run_id}`).")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full refresh"}
+                st.toast("🌅 Full refresh launched!", icon="🚀")
                 st.rerun()
 
-        # --- Live progress (only when something is running) ---
-        scorer_running = render_scorer_progress()
-
-        if pipeline_running or active_runs:
-            st.markdown("---")
-            st.markdown("#### 📜 Live output")
-            current = [r for r in active_runs if r["label"].startswith("pipeline")]
-            current = current[0] if current else (active_runs[0] if active_runs else None)
-            if current:
-                with st.expander(f"Tailing `{current['run_id']}` — pid {current['pid']}",
-                                 expanded=True):
-                    st.code(scan_runner.tail_log(current["log_path"]) or "(no output yet)",
-                            language="text")
-                    if st.button("⏹ Stop", key="stop_pipe"):
-                        scan_runner.stop_run(current["run_id"])
-                        st.warning("Stop signal sent.")
-                        st.rerun()
-                st.caption("↻ auto-refreshes every 5s while work is active")
-        elif scorer_running:
-            st.caption("↻ auto-refreshes every 5s while scorer is active")
+        # --- Live progress panel (fragment or fallback) ---
+        # _pipeline_live_panel() is defined before this page block and is
+        # decorated with @st.fragment(run_every=3) when Streamlit ≥1.33.
+        # With fragments: only this widget refreshes — zero full-page flash.
+        # Without fragments: page-wide autorefresh handles the 5s polling.
+        _pipeline_live_panel()
 
         # --- Recent runs: what actually happened ---
         st.markdown("---")
@@ -2861,7 +3432,25 @@ elif page == "🎯 Pipeline":
 # ============================================================================
 elif page == "📋 Jobs Kanban":
     st.title("📋 Jobs Tracker")
-    st.caption("Your promoted-to-tracker roles. This is Stage 4's output — update status here.")
+
+    # ── Kanban summary strip ──────────────────────────────────────────────────
+    _kan_statuses = {}
+    _STATUS_ORDER = [
+        ("Found","🔍"), ("Watch","👀"), ("Tailoring","✍️"), ("Applied","📤"),
+        ("Recruiter_Screen","📞"), ("Phone_Screen","📱"), ("Take_Home","💻"),
+        ("Onsite","🏢"), ("Offer","🎉"), ("Rejected","❌"), ("Withdrawn","⚪"),
+    ]
+    for _jj in jobs:
+        _ss = _jj.get("status", "?")
+        _kan_statuses[_ss] = _kan_statuses.get(_ss, 0) + 1
+    _active_stages = [s for s, _ in _STATUS_ORDER if s in _kan_statuses]
+    if _active_stages:
+        _ks_cols = st.columns(min(len(_active_stages), 8))
+        for _kci, (_ks, _ke) in enumerate([(s, e) for s, e in _STATUS_ORDER if s in _kan_statuses]):
+            _kci_mod = _kci % 8
+            _ks_cols[_kci_mod].metric(f"{_ke} {_ks.replace('_', ' ')}", _kan_statuses[_ks])
+    st.caption("Your promoted-to-tracker roles — update status, add notes, launch tailor.")
+    st.markdown("---")
 
     if jobs_df.empty:
         st.warning("Tracker is empty.")
@@ -2998,18 +3587,77 @@ elif page == "📋 Jobs Kanban":
         if job:
             c1, c2 = st.columns(2)
             with c1:
-                st.markdown(f"**{job['company']} — {job['title']}**")
+                # ── Header with tier badge ──────────────────────────────────
+                _tier_colors = {1: "#10b981", 2: "#3b82f6", 3: "#f59e0b", 4: "#6b7280"}
+                _job_tier = int(job.get("tier") or 4)
+                _tier_color = _tier_colors.get(_job_tier, "#6b7280")
+                _fit_num = int(job.get("fit_score_numeric") or 0)
+                _score_color = "#10b981" if _fit_num >= 8 else "#f59e0b" if _fit_num >= 6 else "#ef4444" if _fit_num > 0 else "#6b7280"
+                st.markdown(
+                    f"<div style='margin-bottom:6px'>"
+                    f"<span style='font-size:1.1em;font-weight:700'>{job['company']} — {job['title']}</span>"
+                    f"<span style='margin-left:8px;padding:2px 8px;border-radius:10px;"
+                    f"background:{_tier_color}22;color:{_tier_color};"
+                    f"font-size:0.78em;font-weight:700'>T{_job_tier}</span>"
+                    f"<span style='margin-left:4px;padding:2px 8px;border-radius:10px;"
+                    f"background:{_score_color}22;color:{_score_color};"
+                    f"font-size:0.78em;font-weight:700'>{_fit_num}/10</span>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
                 variants = job.get("resume_variants") or ([job["primary_variant"]]
                     if job.get("primary_variant") else [])
                 variant_str = " · ".join(variants) if variants else "—"
                 st.caption(
-                    f"{job.get('sector')} · Tier {job.get('tier')} · "
-                    f"fit {job.get('fit_score')} ({job.get('fit_score_numeric', '?')}/10) · "
-                    f"📄 {variant_str}"
+                    f"{job.get('sector')} · {job.get('status','?')} · "
+                    f"fit {job.get('fit_score')} · 📄 {variant_str}"
                 )
-                st.markdown(f"[Open posting]({job.get('url')})")
-                st.write(job.get("fit_notes", ""))
-                st.write("**Next action:** " + (job.get("next_action") or ""))
+                _jurl = job.get('url', '')
+                if _jurl:
+                    st.link_button("🔗 Open posting", _jurl)
+                _fit_notes = job.get("fit_notes", "")
+                if _fit_notes:
+                    with st.expander("📊 Fit notes", expanded=False):
+                        st.write(_fit_notes)
+                _nxt = job.get("next_action") or ""
+                if _nxt:
+                    st.info(f"**Next action:** {_nxt}", icon="🎯")
+                # ── Outreach / activity timeline ───────────────────────────
+                _olog = job.get("outreach_log") or []
+                _fsched = job.get("followup_schedule") or {}
+                _date_app = parse_date(job.get("date_applied"))
+                _date_found = parse_date(job.get("date_found"))
+                _timeline_events = []
+                if _date_found:
+                    _timeline_events.append((_date_found, "🔍", "Found"))
+                if _date_app:
+                    _timeline_events.append((_date_app, "📤", "Applied"))
+                for _oe in _olog:
+                    _ed = parse_date(_oe.get("date"))
+                    if _ed:
+                        _ekind = _oe.get("kind") or _oe.get("channel") or "message"
+                        _timeline_events.append((_ed, "📨", f"Outreach: {_ekind}"))
+                _next_due = parse_date(_fsched.get("next_due"))
+                if _next_due:
+                    _overdue = _next_due < date.today()
+                    _fu_icon = "🔴" if _overdue else "🔔"
+                    _timeline_events.append((_next_due, _fu_icon,
+                        f"Follow-up {'OVERDUE' if _overdue else 'due'}"))
+                if _timeline_events:
+                    _timeline_events.sort(key=lambda x: x[0])
+                    with st.expander("🕐 Activity timeline", expanded=bool(_olog or _date_app)):
+                        for _td, _ti, _tl in _timeline_events:
+                            _is_future = _td > date.today()
+                            _style = "opacity:0.55;" if _is_future else ""
+                            st.markdown(
+                                f"<div style='display:flex;gap:8px;padding:4px 0;{_style}'>"
+                                f"<span style='font-size:1em'>{_ti}</span>"
+                                f"<span style='font-size:0.82em;opacity:0.7;min-width:80px'>"
+                                f"{_td.strftime('%b %d')}</span>"
+                                f"<span style='font-size:0.88em'>{_tl}</span>"
+                                f"</div>",
+                                unsafe_allow_html=True,
+                            )
 
                 # CRM cross-reference — "you have N contacts at this company"
                 _crm_hits = crm_contacts_at_company(crm, job.get("company", ""))
@@ -3200,12 +3848,58 @@ elif page == "🤝 Recruiter CRM":
             cols = [c for c in ["id", "firm", "firm_type", "location", "priority",
                                 "status", "last_touchpoint", "next_action"] if c in rdf.columns]
             st.dataframe(rdf[cols], hide_index=True, width='stretch')
-            sel = st.selectbox("Pick firm id", rdf["id"].tolist())
+            # ── Quick-log row: mark any recruiter as contacted today ─────────
+            with st.expander("⚡ Quick-log: mark contacted today", expanded=False):
+                _quick_ids = [r["id"] for r in recs
+                               if r.get("status") in ("Not_Contacted", "Outreach_Sent", "Active")]
+                if _quick_ids:
+                    _qlog_pick = st.selectbox("Recruiter", _quick_ids, key="crm_qlog_pick")
+                    _qlog_note = st.text_input("Note (optional)", key="crm_qlog_note",
+                                               placeholder="LinkedIn DM / email / call …")
+                    if st.button("✅ Log as contacted today", key="crm_qlog_btn", type="primary"):
+                        for _rx in crm.get("recruiters", []):
+                            if _rx["id"] == _qlog_pick:
+                                _rx["last_touchpoint"] = date.today().isoformat()
+                                if _rx.get("status") == "Not_Contacted":
+                                    _rx["status"] = "Outreach_Sent"
+                                break
+                        crm.setdefault("outreach_log", []).append({
+                            "date": date.today().isoformat(),
+                            "contact_id": _qlog_pick,
+                            "note": _qlog_note,
+                            "channel": "manual",
+                        })
+                        save_crm(crm)
+                        st.success(f"Logged contact with {_qlog_pick} today.")
+                        st.rerun()
+                else:
+                    st.caption("All recruiters already contacted. 🎉")
+            sel = st.selectbox("Pick firm id to inspect/edit", rdf["id"].tolist())
             r = next((x for x in recs if x["id"] == sel), None)
             if r:
-                st.markdown(f"### {r['firm']}")
-                st.caption(f"{r.get('firm_type')} · {r.get('location')}")
-                st.write(r.get("notes", ""))
+                # Status pill
+                _crm_s_colors = {
+                    "Not_Contacted": "#6b7280", "Outreach_Sent": "#3b82f6",
+                    "Active": "#10b981", "Paused": "#f59e0b", "Closed": "#ef4444",
+                }
+                _crm_sc = _crm_s_colors.get(r.get("status",""), "#6b7280")
+                _crm_pri_colors = {"High": "#ef4444", "Medium": "#f59e0b", "Low": "#6b7280"}
+                _crm_pc = _crm_pri_colors.get(r.get("priority",""), "#6b7280")
+                st.markdown(
+                    f"<div style='margin:6px 0'>"
+                    f"<span style='font-size:1.1em;font-weight:700'>{r['firm']}</span>"
+                    f"<span style='margin-left:8px;padding:2px 10px;border-radius:10px;"
+                    f"background:{_crm_sc}22;color:{_crm_sc};font-size:0.8em;font-weight:600'>"
+                    f"{r.get('status','?')}</span>"
+                    f"<span style='margin-left:4px;padding:2px 10px;border-radius:10px;"
+                    f"background:{_crm_pc}22;color:{_crm_pc};font-size:0.8em;font-weight:600'>"
+                    f"{r.get('priority','?')}</span>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+                st.caption(f"{r.get('firm_type')} · {r.get('location')} · Last touch: {r.get('last_touchpoint','never')}")
+                if r.get("notes"):
+                    st.write(r.get("notes", ""))
                 st.markdown(f"**Coverage:** {r.get('coverage','')}")
                 st.markdown(f"**Next action:** {r.get('next_action','')}")
                 with st.form(f"rec_{sel}"):
@@ -3263,17 +3957,238 @@ elif page == "📅 Weekly Plan":
 # ============================================================================
 elif page == "📝 Content & Memory":
     st.title("📝 Content & Memory")
-    t1, t2, t3, t4 = st.tabs(["LinkedIn calendar", "Engagement log", "Master repo", "Campaign memory"])
-    with t1:
+
+    t_crit, t_repo, t_linkedin, t_engagement, t_campaign = st.tabs([
+        "🎯 Targeting Criteria",
+        "📚 Master Repository",
+        "📅 LinkedIn Calendar",
+        "📋 Engagement Log",
+        "🧠 Campaign Memory",
+    ])
+
+    # ── Tab 1: Targeting Criteria ────────────────────────────────────────────
+    with t_crit:
+        st.markdown("### 🎯 Role Targeting Criteria")
+        st.caption("Live rules governing which roles to pursue, how to angle the application, and where to direct outreach energy.")
+
+        # ── Key identity tags — the 6 phrases that open doors ────────────────
+        _tags = [
+            ("ALM / IRRBB", "#3b82f6"),
+            ("Model Risk & Governance", "#6366f1"),
+            ("Balance Sheet Analytics", "#0891b2"),
+            ("Stochastic Scenario Engine", "#0284c7"),
+            ("Institutional Platform Delivery", "#7c3aed"),
+            ("Director / VP level", "#059669"),
+        ]
+        _tag_html = "".join(
+            f"<span style='display:inline-block;padding:4px 12px;margin:3px 4px;"
+            f"border-radius:14px;background:{c}20;border:1px solid {c}55;"
+            f"color:{c};font-size:0.82em;font-weight:600'>{t}</span>"
+            for t, c in _tags
+        )
+        st.markdown(
+            f"<div style='margin:4px 0 12px 0'>{_tag_html}</div>",
+            unsafe_allow_html=True,
+        )
+        st.divider()
+
+        crit_col1, crit_col2 = st.columns([1, 1], gap="large")
+
+        with crit_col1:
+            st.markdown("#### 🔵 PRIMARY Lane — ALM / IRRBB / Model Governance")
+            st.markdown(
+                "**Best-fit titles:**  \n"
+                "Director — ALM & Balance Sheet Risk  \n"
+                "Director — IRRBB Modelling  \n"
+                "Senior Manager / Director — Model Risk & Validation  \n"
+                "Head of ALM Analytics  \n"
+                "Director — Treasury Risk  \n"
+                "VP — Balance Sheet Risk"
+            )
+            st.markdown(
+                "**Evidence stack:**  \n"
+                "• Sign-off authority on multi-asset institutional portfolios (Moody's)  \n"
+                "• Cash flow projection engine design & delivery (Moody's)  \n"
+                "• IRRBB-analogous shock analytics & curve calibration (Moody's)  \n"
+                "• LDI and stochastic scenario generators (Ortec)  \n"
+                "• Model governance framework operation (Moody's)"
+            )
+            st.info(
+                "**Target employers:** Scotiabank · RBC · BMO · CIBC · TD · National Bank · Equitable Bank  \n"
+                "CPP · OTPP · OMERS · HOOPP · PSP · OPTrust · CAAT · IMCO  \n"
+                "Manulife · Sun Life · Canada Life · Intact · iA · RGA"
+            )
+
+            st.markdown("#### 🟡 SECONDARY Lane — Vendor-Platform / Client Solutions")
+            st.markdown(
+                "**Best-fit titles:**  \n"
+                "Director — Aladdin Client Engagement  \n"
+                "Senior Analytics Specialist  \n"
+                "Director — Risk Solutions  \n"
+                "Product Manager (Risk/ALM platforms)  \n"
+                "Director — Client Advisory"
+            )
+            st.markdown(
+                "**Evidence stack:**  \n"
+                "• Institutional platform delivery at Moody's (direct parallel to Aladdin, S&P, MSCI)  \n"
+                "• Calypso → PFaroe migration leadership  \n"
+                "• Client-translation across investment teams and dev  \n"
+                "• Agentic-AI workflow design (Claude Code, Cursor)"
+            )
+            st.info(
+                "**Target employers:** BlackRock (Aladdin) · Bloomberg · MSCI · S&P Global  \n"
+                "FactSet · Morningstar DBRS · SS&C Algorithmics · Numerix · Prometeia"
+            )
+
+        with crit_col2:
+            st.markdown("#### 💰 Compensation Targets")
+            comp_data = [
+                {"Band": "Director / VP — Big 6 Banks", "Base (CAD)": "$195–260K", "Total Comp": "$300–420K"},
+                {"Band": "Director — Maple 8 Pension", "Base (CAD)": "$200–310K", "Total Comp": "$320–500K"},
+                {"Band": "Director — US/Global AM", "Base (CAD)": "$195–310K", "Total Comp": "$330–550K"},
+                {"Band": "Director — Vendor (Bloomberg, MSCI)", "Base (CAD)": "$175–250K", "Total Comp": "$260–400K"},
+                {"Band": "Sr. Manager — Insurer / Mid-bank", "Base (CAD)": "$165–230K", "Total Comp": "$220–310K"},
+                {"Band": "Sr. Manager — Big 4 Risk Advisory", "Base (CAD)": "$170–230K", "Total Comp": "$220–300K"},
+            ]
+            st.dataframe(pd.DataFrame(comp_data), hide_index=True, width="stretch")
+            st.caption("Floor: $160K base for Sr. Manager. Negotiate off **total comp**, not base alone.")
+
+            st.markdown("#### 🏛️ Active OSFI Regulatory Hooks")
+            osfi_hooks = [
+                ("E-23 Model Risk Management", "Effective 2027-05-01", "🔴 High"),
+                ("B-12 IRRBB Revision", "Q1 2026 consultations", "🔴 High"),
+                ("LAR 2026 Liquidity Adequacy", "2026 deadline", "🟡 Medium"),
+                ("IFRS 17 (insurers)", "Ongoing", "🟡 Medium"),
+                ("IFRS 9 ECL (banks)", "Ongoing", "🟡 Medium"),
+            ]
+            for hook, timeline, urgency in osfi_hooks:
+                st.markdown(f"{urgency} **{hook}** — {timeline}")
+
+            st.markdown("#### 📐 Application Rules")
+            st.markdown(
+                "✅ **Warm intros over cold** for Director+ roles — ~70% referral-driven in Toronto finance  \n"
+                "✅ Open every Big 6 / pension cover letter with a **concrete capability tied to the team**, not generic regulatory framing  \n"
+                "✅ Open every vendor cover letter with the **platform practitioner hook** (know your buyers)  \n"
+                "✅ Confirm work authorization wording **before first application**  \n"
+                "🚫 Do not self-describe as '8+ years' or '10+ years' — **~7 years** is correct  \n"
+                "🚫 Do not actively search retired angles (PM, Portfolio Manager, Project Mgr) — ad-hoc only"
+            )
+
+            st.markdown("#### 📋 Weekly KPI Targets")
+            kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+            try:
+                _tracker_kpi = json.loads((ROOT / "data" / "job_tracker_data.json").read_text(encoding="utf-8"))
+                _kpis = _tracker_kpi.get("meta", {}).get("weekly_kpi_targets", {})
+                kpi_col1.metric("Applications / wk", _kpis.get("tailored_applications", 8))
+                kpi_col2.metric("Outreach / wk", _kpis.get("outreach_messages", 10))
+                kpi_col3.metric("Coffees / wk", _kpis.get("coffee_chats", 3))
+            except Exception:
+                kpi_col1.metric("Applications / wk", 8)
+                kpi_col2.metric("Outreach / wk", 10)
+                kpi_col3.metric("Coffees / wk", 3)
+
+    # ── Tab 2: Master Repository ─────────────────────────────────────────────
+    with t_repo:
+        _repo_path = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
+        if not _repo_path.exists():
+            st.warning("Master repository not found at `docs/Saber_Ayatollahi_Master_Repository.md`.")
+        else:
+            _repo_text = _repo_path.read_text(encoding="utf-8")
+
+            # Quick-nav section links
+            _sections = [
+                ("1. Identity & Contact", "## 1. IDENTITY"),
+                ("2. Education", "## 2. EDUCATION"),
+                ("3. Experience", "## 3. PROFESSIONAL"),
+                ("4. Skills", "## 4. SKILLS"),
+                ("5. Bullet Library", "## 5. TAGGED"),
+                ("6. STAR Stories", "## 6. STAR"),
+                ("7. Positioning", "## 7. TARGET"),
+                ("8. Summary Bank", "## 8. SUMMARY"),
+                ("9. Logistics", "## 9. LOGISTICS"),
+                ("10. Resume Variants", "## 10. RESUME"),
+                ("11. Strategy", "## 11. JOB-SEARCH"),
+            ]
+
+            st.caption(f"Source: `{_repo_path.relative_to(ROOT)}` · {len(_repo_text.split(chr(10)))} lines · Last modified: {datetime.fromtimestamp(_repo_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M')}")
+
+            # Section filter
+            _sec_names = ["(full document)"] + [s[0] for s in _sections]
+            _picked_sec = st.selectbox("Jump to section", _sec_names, key="repo_section_jump")
+
+            if _picked_sec == "(full document)":
+                _display_text = _repo_text
+            else:
+                # Find the matching section header in the text
+                _sec_marker = next((s[1] for s in _sections if s[0] == _picked_sec), None)
+                if _sec_marker:
+                    _sec_idx = _repo_text.find(_sec_marker)
+                    # Find next top-level section
+                    _next_sec_idx = len(_repo_text)
+                    for _, _m in _sections:
+                        _ni = _repo_text.find(_m, _sec_idx + 10)
+                        if _ni > _sec_idx and _ni < _next_sec_idx:
+                            _next_sec_idx = _ni
+                    _display_text = _repo_text[_sec_idx:_next_sec_idx]
+                else:
+                    _display_text = _repo_text
+
+            # Search filter — with ±2 lines of context
+            _repo_search = st.text_input("🔍 Search in repository", key="repo_search",
+                                          placeholder="e.g. IRRBB, cash flow, sign-off")
+            if _repo_search:
+                _lines = _display_text.split("\n")
+                _q_lo = _repo_search.lower()
+                _hit_indices = [i for i, l in enumerate(_lines) if _q_lo in l.lower()]
+                if _hit_indices:
+                    # Collapse overlapping context windows into contiguous blocks
+                    _ctx = 2
+                    _blocks = []
+                    _cur_start = _cur_end = None
+                    for _hi in _hit_indices:
+                        _ws = max(0, _hi - _ctx)
+                        _we = min(len(_lines) - 1, _hi + _ctx)
+                        if _cur_start is None:
+                            _cur_start, _cur_end = _ws, _we
+                        elif _ws <= _cur_end + 1:
+                            _cur_end = max(_cur_end, _we)
+                        else:
+                            _blocks.append((_cur_start, _cur_end, _hit_indices))
+                            _cur_start, _cur_end = _ws, _we
+                    if _cur_start is not None:
+                        _blocks.append((_cur_start, _cur_end, _hit_indices))
+                    st.success(f"Found **{len(_hit_indices)}** match(es) across {len(_blocks)} block(s):")
+                    _shown = 0
+                    for _bs, _be, _ in _blocks[:8]:
+                        _block_lines = []
+                        for _li in range(_bs, _be + 1):
+                            _ll = _lines[_li]
+                            if _q_lo in _ll.lower():
+                                _block_lines.append(f"▶ {_ll}")
+                            else:
+                                _block_lines.append(f"  {_ll}")
+                            _shown += 1
+                        st.code("\n".join(_block_lines), language="markdown")
+                    if len(_blocks) > 8:
+                        st.caption(f"… +{len(_blocks)-8} more context blocks")
+                else:
+                    st.warning(f"No matches for '{_repo_search}' in {'this section' if _picked_sec != '(full document)' else 'the repository'}")
+
+            with st.expander("📄 Repository Content", expanded=(_picked_sec != "(full document)")):
+                st.markdown(_display_text)
+
+    # ── Tab 3: LinkedIn Calendar ─────────────────────────────────────────────
+    with t_linkedin:
         p = ROOT / "docs" / "linkedin_content_engine.md"
-        st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
-    with t2:
+        st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no linkedin_content_engine.md)_")
+
+    # ── Tab 4: Engagement Log ────────────────────────────────────────────────
+    with t_engagement:
         p = ROOT / "docs" / "linkedin_engagement_log.md"
-        st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
-    with t3:
-        p = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
-        st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no file)_")
-    with t4:
+        st.markdown(p.read_text(encoding="utf-8") if p.exists() else "_(no linkedin_engagement_log.md)_")
+
+    # ── Tab 5: Campaign Memory ───────────────────────────────────────────────
+    with t_campaign:
         candidates = [
             Path.home() / ".claude" / "projects" / "C--Dev-ApplyAgent" / "memory",
             Path.home() / ".claude" / "projects" / "C--Users-ayatollS-Downloads-deep-research-report" / "memory",
@@ -3286,7 +4201,6 @@ elif page == "📝 Content & Memory":
                     st.markdown(f.read_text(encoding="utf-8"))
         else:
             st.info("No Claude memory directory found.")
-
 
 # ============================================================================
 # 📜 SCAN HISTORY — cumulative record of every scan + pipeline run
@@ -3433,6 +4347,30 @@ elif page == "⚙️ Admin":
     st.title("⚙️ Admin")
     st.caption("The 🎯 Pipeline page is the main entry point. This page is for running individual "
                "agents directly, or browsing raw outputs.")
+
+    # Quick-jump notice for month-end
+    _admin_data_file = ROOT / "data" / "job_tracker_data.json"
+    _admin_archive_dir = ROOT / "data" / "archives"
+    _admin_tracker_jobs = 0
+    try:
+        _admin_tracker_jobs = len(json.loads(_admin_data_file.read_text(encoding="utf-8")).get("jobs", []))
+    except Exception:
+        pass
+    _admin_archives = list(_admin_archive_dir.glob("job_tracker_*.json")) if _admin_archive_dir.exists() else []
+
+    _admin_a1, _admin_a2 = st.columns([3, 1])
+    with _admin_a1:
+        st.info(
+            f"**Month-end reset:** {_admin_tracker_jobs} jobs in live tracker · "
+            f"{len(_admin_archives)} archive(s) on disk. "
+            "Use **🗄️ Month-End Archive & Reset** below to archive and start fresh.",
+            icon="🗄️",
+        )
+    with _admin_a2:
+        if st.button("🗄️ Jump to Reset", width="stretch", key="admin_jump_reset"):
+            st.markdown('<a href="#month-end-archive-reset" style="display:none"></a>',
+                        unsafe_allow_html=True)
+            st.toast("Scroll down to 🗄️ Month-End Archive & Reset section.", icon="📢")
 
     # ---------- Cost ledger ----------
     st.subheader("💰 Cost ledger (lifetime)")
@@ -3620,6 +4558,277 @@ elif page == "⚙️ Admin":
                 "`errors.archived_<stamp>.jsonl`. The current log goes back "
                 "to empty; the archive file stays in `logs/` for forensics."
             )
+    st.markdown("---")
+
+    # ---------- Weekly Maintenance ----------
+    st.subheader("📅 Weekly Maintenance")
+    st.caption(
+        "Run these once a week to keep the search fresh. "
+        "The nightly refresh does the URL rotation automatically, but you can "
+        "trigger it manually here too."
+    )
+
+    _url_hist_path = OUT_DIR / "url_history.json"
+    _url_archives  = sorted(OUT_DIR.glob("url_history_*.json"), reverse=True)
+
+    # --- Metrics row ---
+    wm_c1, wm_c2, wm_c3, wm_c4 = st.columns(4)
+
+    if _url_hist_path.exists():
+        _uh_age_s   = datetime.now().timestamp() - _url_hist_path.stat().st_mtime
+        _uh_age_d   = _uh_age_s / 86400
+        _uh_size_kb = _url_hist_path.stat().st_size / 1024
+        try:
+            _uh_count = len(json.loads(_url_hist_path.read_text(encoding="utf-8")))
+        except Exception:
+            _uh_count = "?"
+        _uh_age_label = f"{_uh_age_d:.1f}d"
+        _uh_delta     = ("🟢 fresh" if _uh_age_d < 3
+                         else "🟡 aging" if _uh_age_d < 7
+                         else "🔴 stale — rotate!")
+        wm_c1.metric("URL history age", _uh_age_label, _uh_delta)
+        wm_c2.metric("Seen URLs", f"{_uh_count:,}" if isinstance(_uh_count, int) else _uh_count)
+        wm_c3.metric("History size", f"{_uh_size_kb:.0f} KB")
+        wm_c4.metric("Archives on disk", len(_url_archives))
+    else:
+        wm_c1.metric("URL history age", "—")
+        wm_c2.metric("Seen URLs", "—")
+        wm_c3.metric("History size", "—")
+        wm_c4.metric("Archives on disk", len(_url_archives))
+        st.info("No url_history.json yet — it will be created on the first scrape.")
+
+    st.markdown("")  # breathing room
+
+    wm_btn_col, wm_info_col = st.columns([1, 3])
+
+    with wm_btn_col:
+        _rotate_disabled = bool(any_work_active) or not _url_hist_path.exists()
+        if st.button("🔄 Rotate URL history now",
+                     width='stretch',
+                     disabled=_rotate_disabled,
+                     help=("Rotates url_history.json immediately — same logic as "
+                           "the auto-rotation in nightly refresh (archives the old "
+                           "file, fresh db for next scrape).")):
+            # Perform the rotation inline (same logic as nightly_refresh.py)
+            try:
+                _uh_age_s2  = datetime.now().timestamp() - _url_hist_path.stat().st_mtime
+                _stamp      = datetime.now().strftime("%Y%m%d_%H%M%S")
+                _archive    = _url_hist_path.with_name(f"url_history_{_stamp}.json")
+                _url_hist_path.rename(_archive)
+                st.success(
+                    f"✅ Rotated! `url_history.json` → `{_archive.name}` "
+                    f"({_uh_age_s2/86400:.1f}d old). "
+                    "Next nightly refresh starts with a clean dedup database."
+                )
+                st.rerun()
+            except Exception as _re:
+                st.error(f"Rotation failed: {_re}")
+
+    with wm_info_col:
+        if _url_hist_path.exists():
+            if _uh_age_d >= 7:
+                st.warning(
+                    "⚠️ URL history is **stale** (≥7 days). "
+                    "Old job links are being filtered out of every scrape. "
+                    "Rotate now — or run nightly refresh (it auto-rotates)."
+                )
+            elif _uh_age_d >= 3:
+                st.info(
+                    "🟡 URL history is aging. Nightly refresh will rotate it "
+                    "automatically when it hits 7 days."
+                )
+            else:
+                st.success("🟢 URL history is fresh — no action needed.")
+        if _rotate_disabled and any_work_active:
+            st.caption("⏳ Button available when no jobs are running.")
+
+    # --- Old run logs cleanup ---
+    st.markdown("")
+    _runs_dir  = OUT_DIR / "runs"
+    _old_logs  = []
+    if _runs_dir.exists():
+        _cutoff = datetime.now().timestamp() - 7 * 86400
+        _old_logs = [p for p in _runs_dir.glob("*.log")
+                     if p.stat().st_mtime < _cutoff]
+    _total_log_kb = sum(p.stat().st_size for p in _old_logs) / 1024 if _old_logs else 0
+
+    with st.expander(
+        f"🧹 Old run logs — {len(_old_logs)} logs older than 7d "
+        f"({_total_log_kb:.0f} KB)",
+        expanded=False,
+    ):
+        if not _old_logs:
+            st.success("No old run logs to clean up.")
+        else:
+            st.caption(
+                f"These {len(_old_logs)} log files are >7 days old and safe to delete. "
+                "JSON status files are kept so run history remains intact."
+            )
+            _log_rows = [{
+                "file": p.name,
+                "size_kb": round(p.stat().st_size / 1024, 1),
+                "age_days": round((datetime.now().timestamp() - p.stat().st_mtime) / 86400, 1),
+            } for p in sorted(_old_logs, key=lambda x: x.stat().st_mtime)]
+            st.dataframe(pd.DataFrame(_log_rows), hide_index=True, use_container_width=True)
+
+            if st.button(
+                f"🗑 Delete {len(_old_logs)} old log files ({_total_log_kb:.0f} KB)",
+                type="secondary",
+                key="wm_delete_old_logs",
+            ):
+                _errs = []
+                for _lp in _old_logs:
+                    try:
+                        _lp.unlink()
+                    except Exception as _le:
+                        _errs.append(f"{_lp.name}: {_le}")
+                if _errs:
+                    st.error("Some files could not be deleted:\n" + "\n".join(_errs))
+                else:
+                    st.success(f"✅ Deleted {len(_old_logs)} old log files.")
+                st.rerun()
+
+
+    # ---------- Month-End Archive & Reset ----------
+    st.subheader("🗄️ Month-End Archive & Reset")
+    st.caption(
+        "At the end of each search month, archive your full tracker to a dated snapshot "
+        "and start fresh. All active jobs, outreach history, and follow-up schedules are "
+        "preserved in the archive — the live tracker resets to zero new leads."
+    )
+
+    _data_file = ROOT / "data" / "job_tracker_data.json"
+    _archive_dir = ROOT / "data" / "archives"
+    _url_hist = ROOT / "automation" / "url_history.json"
+    _now = datetime.now()
+    _archive_month = _now.strftime("%Y%m")
+    _archive_name = f"job_tracker_{_archive_month}.json"
+    _archive_path = _archive_dir / _archive_name
+
+    # Load current tracker for preview
+    try:
+        _tracker_raw = json.loads(_data_file.read_text(encoding="utf-8")) if _data_file.exists() else {}
+        _all_jobs = _tracker_raw.get("jobs", [])
+        _meta = _tracker_raw.get("meta", {})
+        _applied_jobs  = [j for j in _all_jobs if j.get("status") in ("Applied","Recruiter_Screen","Phone_Screen","Take_Home","Onsite","Offer")]
+        _active_jobs   = [j for j in _all_jobs if j.get("status") in ("Found","JD_Verified","Tailoring","Watch")]
+        _closed_jobs   = [j for j in _all_jobs if j.get("status") in ("Rejected","Ghosted","Withdrawn","Expired")]
+        _tracker_ok = True
+    except Exception as _te:
+        _tracker_ok = False
+        _all_jobs = []; _applied_jobs = []; _active_jobs = []; _closed_jobs = []
+        _meta = {}
+
+    # Status banner
+    if _archive_path.exists():
+        st.info(f"📋 Archive **{_archive_name}** already exists in `data/archives/`. Running again will overwrite it.")
+
+    # Preview columns
+    me_col1, me_col2, me_col3, me_col4 = st.columns(4)
+    me_col1.metric("Total jobs in tracker", len(_all_jobs))
+    me_col2.metric("In pipeline (Applied+)", len(_applied_jobs), help="Applied, Recruiter Screen, Phone Screen, Take Home, Onsite, Offer")
+    me_col3.metric("Active leads", len(_active_jobs), help="Found, JD Verified, Tailoring, Watch")
+    me_col4.metric("Closed", len(_closed_jobs), help="Rejected, Ghosted, Withdrawn, Expired")
+
+    st.markdown(
+        "▶️ **What will happen:**  \n"
+        "1️⃣ Archive `data/job_tracker_data.json` → `data/archives/` (dated snapshot)  \n"
+        "2️⃣ Reset the live tracker to **0 jobs** (meta / status enum / tier definitions preserved)  \n"
+        "3️⃣ Update `campaign_start` to today and clear `changelog`"
+    )
+
+    _reset_url_hist = st.checkbox(
+        "Also archive `url_history.json` (lets the scraper revisit all URLs next month)",
+        value=True,
+        key="me_reset_url_hist",
+    )
+
+    _me_confirm = st.text_input(
+        "Type **NEW MONTH** to confirm",
+        value="",
+        key="me_confirm_phrase",
+        placeholder="NEW MONTH",
+    )
+
+    _me_ready = _me_confirm.strip() == "NEW MONTH" and _tracker_ok
+
+    if st.button(
+        "🗄️ Archive & Reset for New Month",
+        type="primary",
+        width="stretch",
+        disabled=not _me_ready,
+        key="me_archive_go",
+        help="Type NEW MONTH above to enable" if not _me_ready else None,
+    ):
+        try:
+            # 1. Create archive dir
+            _archive_dir.mkdir(parents=True, exist_ok=True)
+
+            # 2. Write archive snapshot
+            _archive_path.write_text(
+                _data_file.read_text(encoding="utf-8"), encoding="utf-8"
+            )
+
+            # 3. Build fresh tracker (preserve meta fields, wipe jobs/changelog)
+            _fresh_meta = dict(_meta)
+            _fresh_meta["last_reset"] = _now.strftime("%Y-%m-%d")
+            _fresh_meta["campaign_start"] = _now.strftime("%Y-%m-%d")
+            _fresh_meta["scan_count"] = 0
+            _fresh_meta["total_roles"] = 0
+            _fresh_meta["changelog"] = [
+                {
+                    "date": _now.strftime("%Y-%m-%d"),
+                    "event": f"Month-end reset. Archived {len(_all_jobs)} jobs to {_archive_name}.",
+                }
+            ]
+            _fresh_tracker = {
+                "meta": _fresh_meta,
+                "jobs": [],
+            }
+            _data_file.write_text(
+                json.dumps(_fresh_tracker, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+
+            # 4. Optionally archive url_history
+            if _reset_url_hist and _url_hist.exists():
+                _uh_dest = _url_hist.parent / f"url_history_{_archive_month}.json"
+                _uh_dest.write_text(_url_hist.read_text(encoding="utf-8"), encoding="utf-8")
+                _url_hist.write_text(json.dumps({"urls": [], "archived_on": _now.strftime("%Y-%m-%d")}, indent=2))
+                _url_msg = "  \n✅ URL history archived to `" + _uh_dest.name + "` and reset."
+            else:
+                _url_msg = ""
+
+            _success_msg = (
+                "✅ **Month-end reset complete!**  \n"
+                + f"🗄️ {len(_all_jobs)} jobs archived → `data/archives/{_archive_name}`  \n"
+                + f"🔄 Live tracker reset to 0 jobs." + _url_msg
+            )
+            st.success(_success_msg)
+            st.cache_data.clear()
+            st.rerun()
+
+        except Exception as _me_err:
+            st.error(f"❌ Reset failed: {_me_err}")
+
+    if not _tracker_ok:
+        st.warning("Could not read tracker file — check `data/job_tracker_data.json`.")
+
+    # Show existing archives
+    if _archive_dir.exists():
+        _existing_archives = sorted(_archive_dir.glob("job_tracker_*.json"), reverse=True)
+        if _existing_archives:
+            with st.expander(f"📚 Past archives ({len(_existing_archives)} found)", expanded=False):
+                for _af in _existing_archives:
+                    try:
+                        _af_data = json.loads(_af.read_text(encoding="utf-8"))
+                        _af_jobs = len(_af_data.get("jobs", []))
+                        _af_size = _af.stat().st_size // 1024
+                        _af_mtime = datetime.fromtimestamp(_af.stat().st_mtime).strftime("%Y-%m-%d")
+                        st.caption(f"📄 `{_af.name}` — {_af_jobs} jobs, {_af_size} KB, archived {_af_mtime}")
+                    except Exception:
+                        st.caption(f"📄 `{_af.name}`")
+
     st.markdown("---")
 
     # ---------- Reset & cleanup ----------
@@ -3873,14 +5082,17 @@ elif page == "⚙️ Admin":
             "schtasks /delete /tn ApplyAgent_NightlyRefresh /f",
             language="powershell",
         )
-    if st.button("🌅 Run nightly refresh now (background)", width='content'):
-        ps = ROOT / "automation" / "nightly_refresh.ps1"
-        rec = scan_runner.start_run(
-            "nightly_refresh",
-            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps)],
-        )
-        st.success(f"Nightly refresh launched (`{rec.run_id}`). Dashboard will show "
-                   f"fresh matches when it finishes (~25 min).")
+    if st.button("🌅 Run nightly refresh now (background)",
+                 width='content',
+                 disabled=bool(any_work_active),
+                 help="Disabled while another job is running." if any_work_active else None):
+        _nr_cmd = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
+        _nr_rec = scan_runner.start_run("nightly_refresh", _nr_cmd)
+        st.session_state["_last_launch"] = {"run_id": _nr_rec.run_id, "label": "Nightly refresh"}
+        st.toast("🌅 Nightly refresh launched!", icon="🚀")
+        st.rerun()
+    if any_work_active:
+        st.caption("⏳ A job is already running — button re-enables when it finishes.")
 
     st.markdown("---")
 
@@ -3931,3 +5143,814 @@ elif page == "⚙️ Admin":
                 if latest:
                     with st.expander(f"Output: {latest[0].name}", expanded=True):
                         st.markdown(latest[0].read_text(encoding="utf-8"))
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 📊 ANALYTICS PAGE
+# ═══════════════════════════════════════════════════════════════════════════
+elif page == "📊 Analytics":
+    import altair as alt
+
+    st.title("📊 Analytics")
+    st.caption("Search pipeline at a glance — funnel, fit distribution, sector coverage, and scrape trends.")
+
+    # ── Load data ──────────────────────────────────────────────────────────
+    _an_tracker = load_tracker()
+    _an_jobs    = _an_tracker.get("jobs", [])
+
+    # Scan files for trend
+    _an_scan_files = sorted(OUT_DIR.glob("scan_*.json"))
+    _an_scans = []
+    for _sf in _an_scan_files:
+        try:
+            _sd = json.loads(_sf.read_text(encoding="utf-8"))
+            _an_scans.append(_sd)
+        except Exception:
+            pass
+
+    # ── TOP KPI ROW ────────────────────────────────────────────────────────
+    _an_scraped  = _an_scans[-1]["total_new_candidates"] if _an_scans else 0
+    _an_tracked  = len(_an_jobs)
+    _an_high_fit = sum(1 for j in _an_jobs if (j.get("fit_score_numeric") or 0) >= 4)
+    _an_applied  = sum(1 for j in _an_jobs if j.get("date_applied"))
+    _an_response = sum(1 for j in _an_jobs
+                       if j.get("rejection_date") or j.get("status") in ("Offer", "Interview"))
+
+    _ak1, _ak2, _ak3, _ak4, _ak5 = st.columns(5)
+    _ak1.metric("Latest scrape",  f"{_an_scraped:,}",  help="New candidates from most recent scrape (post-dedup)")
+    _ak2.metric("Tracked jobs",   str(_an_tracked),    help="Total jobs in your tracker")
+    _ak3.metric("High-fit (4–5)", str(_an_high_fit),   help="fit_score_numeric ≥ 4")
+    _ak4.metric("Applied",        str(_an_applied),    help="date_applied is set")
+    _ak5.metric("Responses",      str(_an_response),   help="Rejection logged or Interview/Offer status")
+
+    st.markdown("---")
+
+    # ── ROW 1: Funnel + Score Distribution ────────────────────────────────
+    _an_col_l, _an_col_r = st.columns(2)
+
+    with _an_col_l:
+        st.markdown("#### 🔽 Application funnel")
+        _an_funnel_df = pd.DataFrame({
+            "Stage": ["Scraped", "Tracked", "High-fit", "Applied", "Response"],
+            "Count": [_an_scraped, _an_tracked, _an_high_fit, _an_applied, _an_response],
+        })
+        _an_funnel_chart = (
+            alt.Chart(_an_funnel_df)
+            .mark_bar(color="#6366f1", cornerRadiusEnd=4)
+            .encode(
+                x=alt.X("Count:Q", title="Jobs"),
+                y=alt.Y("Stage:N",
+                        sort=["Scraped", "Tracked", "High-fit", "Applied", "Response"],
+                        title=None),
+                tooltip=["Stage:N", "Count:Q"],
+            )
+            .properties(height=220)
+        )
+        st.altair_chart(_an_funnel_chart, use_container_width=True)
+        if _an_scraped:
+            st.caption(
+                f"Scraped → Tracked conversion: "
+                f"**{_an_tracked / _an_scraped * 100:.1f}%**"
+            )
+
+    with _an_col_r:
+        st.markdown("#### ⭐ Fit score distribution")
+        _an_score_counts: dict = {}
+        for _j in _an_jobs:
+            _s = _j.get("fit_score_numeric")
+            if _s is not None:
+                _an_score_counts[int(_s)] = _an_score_counts.get(int(_s), 0) + 1
+        if _an_score_counts:
+            _an_score_df = pd.DataFrame([
+                {"Score": f"{int(k)} ({'⭐' * int(k)})", "Count": v, "_k": int(k)}
+                for k, v in _an_score_counts.items()
+            ]).sort_values("_k")
+            _an_score_chart = (
+                alt.Chart(_an_score_df)
+                .mark_bar(cornerRadiusEnd=4)
+                .encode(
+                    x=alt.X("Score:N", sort=alt.SortField("_k"), title="Fit Score"),
+                    y=alt.Y("Count:Q", title="Jobs"),
+                    color=alt.Color(
+                        "_k:Q",
+                        scale=alt.Scale(domain=[3, 4, 5],
+                                        range=["#f59e0b", "#10b981", "#6366f1"]),
+                        legend=None,
+                    ),
+                    tooltip=["Score:N", "Count:Q"],
+                )
+                .properties(height=220)
+            )
+            st.altair_chart(_an_score_chart, use_container_width=True)
+            st.caption("  ·  ".join(
+                f"**{lbl}**: {_an_score_counts.get(k, 0)}"
+                for lbl, k in [("High (5)", 5), ("Strong (4)", 4), ("Medium (3)", 3)]
+                if _an_score_counts.get(k)
+            ))
+        else:
+            st.info("No scored jobs yet — run the scoring stage in Pipeline.")
+
+    st.markdown("---")
+
+    # ── ROW 2: Sector breakdown + Urgency donut ───────────────────────────
+    _an_col2_l, _an_col2_r = st.columns([3, 2])
+
+    with _an_col2_l:
+        st.markdown("#### 🏢 Sector breakdown")
+        _an_sector_counts: dict = {}
+        for _j in _an_jobs:
+            _sec = (_j.get("sector") or "Unknown")
+            _an_sector_counts[_sec] = _an_sector_counts.get(_sec, 0) + 1
+        _an_sector_df = pd.DataFrame([
+            {"Sector": k, "Jobs": v}
+            for k, v in _an_sector_counts.items()
+        ]).sort_values("Jobs", ascending=False)
+        _an_sector_chart = (
+            alt.Chart(_an_sector_df)
+            .mark_bar(color="#0ea5e9", cornerRadiusEnd=4)
+            .encode(
+                x=alt.X("Jobs:Q"),
+                y=alt.Y("Sector:N", sort="-x", title=None),
+                tooltip=["Sector:N", "Jobs:Q"],
+            )
+            .properties(height=max(220, len(_an_sector_df) * 26))
+        )
+        st.altair_chart(_an_sector_chart, use_container_width=True)
+
+    with _an_col2_r:
+        st.markdown("#### 🚦 Urgency breakdown")
+        _an_urg_order  = ["High", "Medium", "Low", "Unknown"]
+        _an_urg_colors = {"High": "#ef4444", "Medium": "#f59e0b",
+                          "Low": "#10b981", "Unknown": "#94a3b8"}
+        _an_urg_counts: dict = {}
+        for _j in _an_jobs:
+            _u = _j.get("urgency") or "Unknown"
+            _an_urg_counts[_u] = _an_urg_counts.get(_u, 0) + 1
+        _an_urg_df = pd.DataFrame([
+            {"Urgency": k, "Jobs": _an_urg_counts.get(k, 0),
+             "Color": _an_urg_colors.get(k, "#94a3b8")}
+            for k in _an_urg_order if _an_urg_counts.get(k, 0) > 0
+        ])
+        if not _an_urg_df.empty:
+            _an_urg_chart = (
+                alt.Chart(_an_urg_df)
+                .mark_arc(innerRadius=50)
+                .encode(
+                    theta=alt.Theta("Jobs:Q"),
+                    color=alt.Color(
+                        "Urgency:N",
+                        scale=alt.Scale(
+                            domain=list(_an_urg_df["Urgency"]),
+                            range=list(_an_urg_df["Color"]),
+                        ),
+                    ),
+                    tooltip=["Urgency:N", "Jobs:Q"],
+                )
+                .properties(height=220)
+            )
+            st.altair_chart(_an_urg_chart, use_container_width=True)
+        for _u in _an_urg_order:
+            _cnt = _an_urg_counts.get(_u, 0)
+            if _cnt:
+                _ic = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(_u, "⚪")
+                st.caption(f"{_ic} **{_u}**: {_cnt}")
+
+    st.markdown("---")
+
+    # ── ROW 3: Scrape trend ───────────────────────────────────────────────
+    st.markdown("#### 📈 Scrape volume trend")
+    if len(_an_scans) >= 2:
+        _an_trend_rows = []
+        for _sd in _an_scans:
+            _raw = str(_sd.get("scan_date", ""))
+            try:
+                _lbl = datetime.strptime(_raw, "%Y%m%d").strftime("%b %d")
+            except Exception:
+                _lbl = _raw
+            _dd = _sd.get("dedup_stats", {})
+            _an_trend_rows.append({
+                "Date":              _lbl,
+                "Input (raw)":       _dd.get("input", 0),
+                "Dropped (URL dup)": _dd.get("dropped_url", 0),
+                "Dropped (near-dup)":_dd.get("dropped_near", 0),
+                "Scraped (kept)":    _sd.get("total_new_candidates", 0),
+            })
+        _an_trend_long = pd.DataFrame(_an_trend_rows).melt(
+            id_vars=["Date"],
+            value_vars=["Input (raw)", "Dropped (URL dup)", "Dropped (near-dup)", "Scraped (kept)"],
+            var_name="Metric",
+            value_name="Count",
+        )
+        _an_trend_chart = (
+            alt.Chart(_an_trend_long)
+            .mark_line(point=True, strokeWidth=2)
+            .encode(
+                x=alt.X("Date:N", title="Scan date"),
+                y=alt.Y("Count:Q", title="Jobs"),
+                color=alt.Color(
+                    "Metric:N",
+                    scale=alt.Scale(
+                        domain=["Input (raw)", "Dropped (URL dup)",
+                                "Dropped (near-dup)", "Scraped (kept)"],
+                        range=["#94a3b8", "#f59e0b", "#ef4444", "#6366f1"],
+                    ),
+                ),
+                tooltip=["Date:N", "Metric:N", "Count:Q"],
+            )
+            .properties(height=260)
+        )
+        st.altair_chart(_an_trend_chart, use_container_width=True)
+        _an_last  = _an_scans[-1]
+        _an_in    = (_an_last.get("dedup_stats", {}).get("input") or 1)
+        _an_out   = (_an_last.get("total_new_candidates") or 0)
+        st.caption(
+            f"Latest dedup efficiency: **{_an_out / _an_in * 100:.0f}%** kept "
+            f"({_an_out:,} of {_an_in:,} raw candidates). "
+            f"{len(_an_scans)} scan{'s' if len(_an_scans) != 1 else ''} on record."
+        )
+    else:
+        st.info("Need ≥ 2 scans to show a trend. Run the nightly pipeline to accumulate data.")
+        if _an_scans:
+            _an_one = _an_scans[0]
+            _sc1, _sc2, _sc3 = st.columns(3)
+            _sc1.metric("Input (raw)", _an_one.get("dedup_stats", {}).get("input", 0))
+            _sc2.metric("After dedup", _an_one.get("total_new_candidates", 0))
+            _sc3.metric("Companies",   _an_one.get("companies_scanned", 0))
+
+    st.markdown("---")
+
+    # ── ROW 4: Sector scan coverage (latest scrape) ───────────────────────
+    st.markdown("#### 🗺️ Sector scan coverage (latest scrape)")
+    if _an_scans:
+        _an_by_sector = _an_scans[-1].get("by_sector", {})
+        if _an_by_sector:
+            _an_cov_df = pd.DataFrame([
+                {"Sector": k, "Open roles": v}
+                for k, v in sorted(_an_by_sector.items(), key=lambda x: -x[1])
+            ])
+            _an_cov_chart = (
+                alt.Chart(_an_cov_df)
+                .mark_bar(color="#818cf8", cornerRadiusEnd=4)
+                .encode(
+                    x=alt.X("Open roles:Q"),
+                    y=alt.Y("Sector:N", sort="-x", title=None),
+                    tooltip=["Sector:N", "Open roles:Q"],
+                )
+                .properties(height=max(220, len(_an_cov_df) * 24))
+            )
+            st.altair_chart(_an_cov_chart, use_container_width=True)
+            _an_total_open = sum(_an_by_sector.values())
+            st.caption(
+                f"**{_an_total_open:,}** total open roles across "
+                f"**{len(_an_by_sector)}** sectors "
+                f"(scan {_an_scans[-1].get('scan_date', 'unknown')})."
+            )
+    else:
+        st.info("No scan files found. Run the nightly pipeline to generate scan data.")
+
+
+# ===========================================================================
+# REVIEW QUEUE PAGE
+# One-at-a-time card workflow for triaging "Found" jobs.
+# ===========================================================================
+elif page == "📬 Review Queue":
+    st.title("📬 Review Queue")
+    st.caption(
+        "Work through new matches one card at a time. "
+        "Each card shows fit, keywords, and the suggested next action. "
+        "Promote to Watch, Shortlist, or Expire your choice."
+    )
+
+    # Pull jobs needing review (Found, highest fit first)
+    _rq_all   = load_tracker()
+    _rq_jobs  = _rq_all.get("jobs", [])
+    _rq_queue = sorted(
+        [j for j in _rq_jobs if j.get("status") == "Found"],
+        key=lambda j: (
+            -(j.get("fit_score_numeric") or 0),
+            -({"High": 3, "Medium": 2, "Low": 1}.get(j.get("urgency", ""), 0)),
+        ),
+    )
+    _rq_total = len(_rq_queue)
+
+    if _rq_total == 0:
+        st.success("All caught up no Found jobs left to review!", icon="✅")
+        st.info(
+            "New jobs appear here after the nightly pipeline runs. "
+            "Check the Pipeline page to run a fresh scrape."
+        )
+        st.stop()
+
+    # Session state: current card index + session tally
+    if "_rq_idx" not in st.session_state:
+        st.session_state["_rq_idx"] = 0
+    if "_rq_session_acted" not in st.session_state:
+        st.session_state["_rq_session_acted"] = 0
+
+    _rq_idx = min(int(st.session_state["_rq_idx"]), _rq_total - 1)
+
+    # Progress bar
+    _rq_pct = _rq_idx / _rq_total if _rq_total else 1.0
+    _rq_h1, _rq_h2 = st.columns([5, 1])
+    _rq_h1.progress(
+        _rq_pct,
+        text=f"Card {_rq_idx + 1} of {_rq_total} · {_rq_total - _rq_idx} remaining",
+    )
+    _rq_h2.metric("Actioned today", st.session_state["_rq_session_acted"])
+    st.markdown("")
+
+    # Current card
+    _rq_job       = _rq_queue[_rq_idx]
+    _rq_score_num = _rq_job.get("fit_score_numeric") or 0
+    _rq_score_txt = _rq_job.get("fit_score") or "n/a"
+    _rq_urgency   = _rq_job.get("urgency") or "n/a"
+    _rq_tier      = _rq_job.get("tier")
+    _rq_level     = _rq_job.get("level") or "n/a"
+    _rq_sector    = _rq_job.get("sector") or "n/a"
+    _rq_comp      = _rq_job.get("expected_comp_band_cad") or ""
+    _rq_kw        = _rq_job.get("keywords") or []
+    _rq_fit_notes = _rq_job.get("fit_notes") or ""
+    _rq_next_act  = _rq_job.get("next_action") or ""
+    _rq_osfi      = _rq_job.get("osfi_hook") or ""
+    _rq_url       = _rq_job.get("url") or _rq_job.get("portal_url") or ""
+    _rq_job_id    = _rq_job.get("id", "")
+
+    _rq_score_color = {"5": "#6366f1", "4": "#10b981", "3": "#f59e0b"}.get(
+        str(int(_rq_score_num)), "#94a3b8"
+    )
+    _rq_urg_color = {"High": "#ef4444", "Medium": "#f59e0b", "Low": "#10b981"}.get(
+        _rq_urgency, "#94a3b8"
+    )
+
+    with st.container(border=True):
+        # Title row
+        _rq_t1, _rq_t2 = st.columns([5, 1])
+        with _rq_t1:
+            st.markdown(
+                f"### {_rq_job.get('company', 'Unknown')} "
+                f"— {_rq_job.get('title', 'Unknown role')}"
+            )
+        with _rq_t2:
+            st.markdown(
+                f"<div style='text-align:center;padding:10px 6px;"
+                f"background:{_rq_score_color}22;border:2px solid {_rq_score_color};"
+                f"border-radius:10px;'>"
+                f"<div style='font-size:22px;font-weight:700;color:{_rq_score_color}'>"
+                f"{'&#11088;' * int(_rq_score_num)}</div>"
+                f"<div style='font-size:11px;color:{_rq_score_color};font-weight:600'>"
+                f"Fit {int(_rq_score_num)}/5 · {_rq_score_txt}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+        # Tag row
+        _rq_tags = []
+        if _rq_tier:
+            _rq_tags.append(f"\U0001f3c5 Tier {_rq_tier}")
+        _rq_tags.append(f"\U0001f4c2 {_rq_sector}")
+        _rq_tags.append(f"\U0001f464 {_rq_level}")
+        _rq_tags.append(
+            f"<span style='color:{_rq_urg_color};font-weight:600'>"
+            f"⚡ {_rq_urgency} urgency</span>"
+        )
+        if _rq_comp:
+            _rq_tags.append(f"\U0001f4b0 {_rq_comp}")
+        st.markdown("  ·  ".join(_rq_tags), unsafe_allow_html=True)
+        st.markdown("")
+
+        # Body columns
+        _rq_b1, _rq_b2 = st.columns([3, 2])
+        with _rq_b1:
+            if _rq_fit_notes:
+                st.markdown("**\U0001f4dd Fit notes**")
+                _preview = _rq_fit_notes[:500]
+                st.markdown(_preview + (" ..." if len(_rq_fit_notes) > 500 else ""))
+                if len(_rq_fit_notes) > 500:
+                    with st.expander("Read full fit notes"):
+                        st.markdown(_rq_fit_notes)
+            if _rq_osfi:
+                st.markdown(f"\U0001f3db **OSFI hook:** {_rq_osfi}")
+
+        with _rq_b2:
+            if _rq_kw:
+                st.markdown("**\U0001f3f7 Keywords**")
+                _kw_html = " ".join(
+                    f"<span style='display:inline-block;margin:2px;padding:2px 8px;"
+                    f"background:#6366f122;border:1px solid #6366f144;"
+                    f"border-radius:12px;font-size:12px'>{kw}</span>"
+                    for kw in _rq_kw[:12]
+                )
+                st.markdown(_kw_html, unsafe_allow_html=True)
+                if len(_rq_kw) > 12:
+                    st.caption(f"... +{len(_rq_kw) - 12} more")
+            if _rq_next_act:
+                st.markdown("")
+                st.markdown("**\U0001f3af Suggested next action**")
+                _trunc = _rq_next_act[:280] + (" ..." if len(_rq_next_act) > 280 else "")
+                st.info(_trunc, icon="\U0001f4a1")
+
+        st.markdown("")
+        st.markdown("---")
+
+        # Tailored docs badge on Review Queue card
+        _rq_docs = _find_tailor_docs(_rq_job)
+        if _rq_docs:
+            with st.expander(f"📄 Tailored docs ({len(_rq_docs)}) — preview"):
+                for _rdoc in _rq_docs:
+                    st.caption(f"**{_rdoc.name}**")
+                    _rt = _rdoc.read_text(encoding="utf-8", errors="replace")
+                    _rt_suffix = " *(truncated)*" if len(_rt) > 2000 else ""
+                    st.markdown(_rt[:2000] + _rt_suffix)
+                    st.markdown("---")
+
+        # Action buttons
+        _rq_a1, _rq_a2, _rq_a3, _rq_a4, _rq_a5 = st.columns([2, 2, 2, 2, 1])
+
+        def _rq_apply_action(new_status, new_urgency=None):
+            _td = json.loads(TRACKER.read_text(encoding="utf-8"))
+            for _j2 in _td.get("jobs", []):
+                if _j2.get("id") == _rq_job_id:
+                    if new_status:
+                        _j2["status"] = new_status
+                    if new_urgency:
+                        _j2["urgency"] = new_urgency
+                    break
+            save_tracker(_td)
+            st.session_state["_rq_idx"] = _rq_idx + 1
+            st.session_state["_rq_session_acted"] = (
+                st.session_state.get("_rq_session_acted", 0) + 1
+            )
+
+        if _rq_a1.button(
+            "\U0001f4cc Watch", use_container_width=True,
+            help="Move to Watch - monitor without committing to apply"
+        ):
+            _rq_apply_action("Watch")
+            st.rerun()
+
+        if _rq_a2.button(
+            "✅ Apply", type="primary", use_container_width=True,
+            help="Record application — sets date_applied and seeds follow-up schedule"
+        ):
+            st.session_state["_rq_apply_open"] = _rq_job_id
+            st.rerun()
+
+        if _rq_a3.button(
+            "❌ Expire", use_container_width=True,
+            help="Mark as Expired - not pursuing"
+        ):
+            _rq_apply_action("Expired")
+            st.rerun()
+
+        if _rq_url:
+            if _rq_url:
+                _rq_a4.link_button("🔗 Open JD", _rq_url, use_container_width=True)
+
+        if _rq_a5.button("⏭", use_container_width=True, help="Skip - come back later"):
+            st.session_state["_rq_idx"] = _rq_idx + 1
+            st.rerun()
+
+    # Inline Apply form — shown when user clicks Apply on a card
+    if st.session_state.get("_rq_apply_open") == _rq_job_id:
+        with st.container(border=True):
+            st.markdown(f"#### ✅ Confirm application — {_rq_job.get('company')} · {_rq_job.get('title')}")
+            with st.form(key=f"rq_apply_form_{_rq_job_id}"):
+                _ap_col1, _ap_col2 = st.columns(2)
+                _ap_date = _ap_col1.date_input(
+                    "Date applied", value=date.today(), help="When did you submit the application?"
+                )
+                _ap_channel = _ap_col2.selectbox(
+                    "Applied via", ["Company portal", "LinkedIn", "Email", "Referral", "Recruiter", "Other"]
+                )
+                _ap_notes = st.text_area(
+                    "Notes (optional)", placeholder="E.g. referral from Jane, used tailored resume v2, ...",
+                    height=80
+                )
+                _ap_tailor = st.checkbox(
+                    "🤖 Launch jd_tailor in background (tailors resume + cover letter)",
+                    value=False,
+                    help="Requires API key. Runs jd_tailor.py for this job ID."
+                )
+                _ap_c1, _ap_c2 = st.columns(2)
+                _ap_submit = _ap_c1.form_submit_button("✅ Confirm application", type="primary", use_container_width=True)
+                _ap_cancel = _ap_c2.form_submit_button("Cancel", use_container_width=True)
+
+            if _ap_submit:
+                _td = json.loads(TRACKER.read_text(encoding="utf-8"))
+                for _j2 in _td.get("jobs", []):
+                    if _j2.get("id") == _rq_job_id:
+                        _j2["status"] = "Applied"
+                        seed_followup(_j2, _ap_date)
+                        _log_entry = {
+                            "date": _ap_date.isoformat(),
+                            "type": "applied",
+                            "channel": _ap_channel,
+                            "notes": _ap_notes or "",
+                        }
+                        if not isinstance(_j2.get("outreach_log"), list):
+                            _j2["outreach_log"] = []
+                        _j2["outreach_log"].append(_log_entry)
+                        break
+                save_tracker(_td)
+                if _ap_tailor and _rq_job_id and api_key.is_key_valid():
+                    _tailor_cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"), "--job-id", _rq_job_id]
+                    scan_runner.start_run(f"tailor_{_rq_job_id}", _tailor_cmd)
+                    st.toast(f"🤖 jd_tailor launched for {_rq_job_id}", icon="🚀")
+                del st.session_state["_rq_apply_open"]
+                st.session_state["_rq_idx"] = _rq_idx + 1
+                st.session_state["_rq_session_acted"] = st.session_state.get("_rq_session_acted", 0) + 1
+                st.toast(f"✅ Application recorded for {_rq_job.get('company')}!", icon="📨")
+                st.rerun()
+
+            if _ap_cancel:
+                del st.session_state["_rq_apply_open"]
+                st.rerun()
+
+        # Navigation strip
+    st.markdown("")
+    _rq_n1, _rq_n2, _rq_n3 = st.columns([1, 3, 1])
+    if _rq_n1.button("◄ Prev", disabled=(_rq_idx == 0)):
+        st.session_state["_rq_idx"] = max(0, _rq_idx - 1)
+        st.rerun()
+    _rq_n2.caption(
+        f"**{_rq_job.get('company')}** · {_rq_job.get('title')} · "
+        f"ID `{_rq_job_id}` · found {_rq_job.get('date_found', 'n/a')}"
+    )
+    if _rq_n3.button("Next ►", disabled=(_rq_idx >= _rq_total - 1)):
+        st.session_state["_rq_idx"] = min(_rq_total - 1, _rq_idx + 1)
+        st.rerun()
+
+    with st.expander("⚙️ Queue options"):
+        st.caption(
+            f"Queue contains **{_rq_total}** Found jobs sorted by fit score then urgency."
+        )
+        if st.button("\U0001f504 Restart from card 1"):
+            st.session_state["_rq_idx"] = 0
+            st.session_state["_rq_session_acted"] = 0
+            st.rerun()
+        st.caption(
+            "Actioning a card (Watch / Shortlist / Expire) saves immediately to the tracker. "
+            "Skip leaves the job unchanged for next session."
+        )
+
+# ===========================================================================
+# FOLLOW-UPS PAGE
+# Triage applied jobs by follow-up due date — overdue, today, this week.
+# ===========================================================================
+elif page == "🔔 Follow-ups":
+    st.title("🔔 Follow-ups")
+    st.caption(
+        "Track every application after you hit submit. "
+        "Log each outreach touch so the cadence advances automatically. "
+        "Overdue items are sorted most-overdue first."
+    )
+
+    _fu_all   = load_tracker()
+    _fu_jobs  = _fu_all.get("jobs", [])
+    _fu_bkts  = followup_buckets(_fu_jobs)
+
+    _fu_overdue      = _fu_bkts["overdue"]        # [(days_overdue, job), ...]
+    _fu_due_today    = _fu_bkts["due_today"]       # [job, ...]
+    _fu_this_week    = _fu_bkts["due_this_week"]   # [(days_until, job), ...]
+    _fu_upcoming     = _fu_bkts["upcoming"]         # [(days_until, job), ...]
+    _fu_no_sched     = _fu_bkts["no_schedule"]     # [job, ...]
+
+    _fu_total_due = len(_fu_overdue) + len(_fu_due_today)
+
+    # KPI row
+    _fk1, _fk2, _fk3, _fk4 = st.columns(4)
+    _fk1.metric("Overdue",     len(_fu_overdue),   delta="past due" if _fu_overdue else None, delta_color="inverse")
+    _fk2.metric("Due today",   len(_fu_due_today))
+    _fk3.metric("This week",   len(_fu_this_week))
+    _fk4.metric("No schedule", len(_fu_no_sched),  help="Applied but follow-up date not set")
+
+    if _fu_total_due == 0 and not _fu_no_sched:
+        st.success("🎉 All follow-ups are current — nothing overdue or due today!", icon="✅")
+
+    st.markdown("---")
+
+    def _fu_render_card(job, days_label, border_color):
+        """Render a single follow-up card with log-outreach action."""
+        _fj_job_obj = job  # keep full dict for AI helpers
+        _fj_id      = job.get("id", "")
+        _fj_co      = job.get("company", "?")
+        _fj_title   = job.get("title", "?")
+        _fj_applied = job.get("date_applied", "?")
+        _fj_sched   = job.get("followup_schedule") or {}
+        _fj_next    = _fj_sched.get("next_due", "?")
+        _fj_log     = job.get("outreach_log") or []
+        _fj_url     = job.get("url") or job.get("portal_url") or ""
+        _fj_contact = (job.get("contact") or {})
+        _fj_rec     = _fj_contact.get("recruiter_name") or ""
+
+        with st.container(border=True):
+            _fc1, _fc2 = st.columns([5, 1])
+            with _fc1:
+                st.markdown(
+                    f"<span style='border-left:4px solid {border_color};"
+                    f"padding-left:8px'>"
+                    f"**{_fj_co}** — {_fj_title}</span>",
+                    unsafe_allow_html=True
+                )
+                _fu_meta = f"Applied {_fj_applied}"
+                if _fj_rec:
+                    _fu_meta += f" · Recruiter: {_fj_rec}"
+                st.caption(_fu_meta)
+            with _fc2:
+                st.markdown(
+                    f"<div style='text-align:center;padding:6px;"
+                    f"background:{border_color}22;border:1px solid {border_color};"
+                    f"border-radius:8px;font-size:11px;color:{border_color};"
+                    f"font-weight:700'>{days_label}</div>",
+                    unsafe_allow_html=True
+                )
+
+            # Outreach history (compact)
+            if _fj_log:
+                with st.expander(f"📋 {len(_fj_log)} outreach touch{'es' if len(_fj_log)!=1 else ''} logged", expanded=False):
+                    for _entry in reversed(_fj_log[-5:]):
+                        _etype = _entry.get("type", "touch")
+                        _edate = _entry.get("date", "?")
+                        _enote = _entry.get("notes", "")
+                        st.caption(f"**{_edate}** · {_etype}" + (f" — {_enote[:120]}" if _enote else ""))
+
+            # Action row
+            _fa1, _fa2, _fa3, _fa4 = st.columns([3, 3, 3, 2])
+
+            # AI email drafter
+            with _fa1.expander("✉️ Draft email"):
+                _draft_touch = len(_fj_log) + 1
+                _draft_key   = f"draft_{_fj_id}_{_draft_touch}"
+                _draft_type  = st.selectbox(
+                    "Tone", ["Standard follow-up", "Warm / brief nudge", "Value-add angle"],
+                    key=f"dt_{_fj_id}"
+                )
+                if st.button("✨ Generate draft", key=f"gen_{_fj_id}",
+                             disabled=not api_key.is_key_valid(),
+                             help="Uses Claude Haiku (~$0.001)"):
+                    with st.spinner("Drafting…"):
+                        _prompt = _email_draft_prompt(_fj_job_obj, _draft_touch)
+                        _generated = _ai_draft(_draft_key + _draft_type, _prompt)
+                    st.session_state[_draft_key] = _generated
+                _draft_text = st.session_state.get(_draft_key, "")
+                if _draft_text:
+                    _editable = st.text_area(
+                        "Edit before sending", _draft_text,
+                        height=220, key=f"dedit_{_fj_id}"
+                    )
+                    if st.button("💾 Save to outreach log", key=f"dsave_{_fj_id}"):
+                        _td_d = json.loads(TRACKER.read_text(encoding="utf-8"))
+                        for _jd2 in _td_d.get("jobs", []):
+                            if _jd2.get("id") == _fj_id:
+                                if not isinstance(_jd2.get("outreach_log"), list):
+                                    _jd2["outreach_log"] = []
+                                _jd2["outreach_log"].append({
+                                    "date": date.today().isoformat(),
+                                    "type": "email_draft",
+                                    "notes": _editable[:500],
+                                })
+                                advance_followup(_jd2)
+                                break
+                        save_tracker(_td_d)
+                        del st.session_state[_draft_key]
+                        st.toast("💾 Draft saved and follow-up advanced!", icon="✅")
+                        st.rerun()
+                elif not api_key.is_key_valid():
+                    st.caption("Set API key in the sidebar to enable AI drafts.")
+
+            # Log outreach expander
+            with _fa2.expander("✅ Log outreach"):
+                with st.form(key=f"fu_log_{_fj_id}_{_fj_next}"):
+                    _log_date  = st.date_input("Date", value=date.today(), key=f"fu_d_{_fj_id}")
+                    _log_type  = st.selectbox("Type", ["email", "linkedin_message", "phone", "referral_nudge", "other"], key=f"fu_t_{_fj_id}")
+                    _log_notes = st.text_input("Notes", placeholder="Brief message sent, follow-up in X days...", key=f"fu_n_{_fj_id}")
+                    if st.form_submit_button("Save", type="primary"):
+                        _td2 = json.loads(TRACKER.read_text(encoding="utf-8"))
+                        for _j3 in _td2.get("jobs", []):
+                            if _j3.get("id") == _fj_id:
+                                if not isinstance(_j3.get("outreach_log"), list):
+                                    _j3["outreach_log"] = []
+                                _j3["outreach_log"].append({
+                                    "date":  _log_date.isoformat(),
+                                    "type":  _log_type,
+                                    "notes": _log_notes,
+                                })
+                                advance_followup(_j3, _log_date)
+                                break
+                        save_tracker(_td2)
+                        st.toast(f"✅ Outreach logged for {_fj_co}!", icon="📨")
+                        st.rerun()
+
+            # Got response
+            with _fa3.expander("📨 Response"):
+                with st.form(key=f"fu_resp_{_fj_id}"):
+                    _resp_type = st.selectbox(
+                        "Outcome",
+                        ["Interview scheduled", "Rejected", "Offer received", "Ghosted / withdrawn"],
+                        key=f"fu_r_{_fj_id}"
+                    )
+                    _resp_note = st.text_input("Notes", key=f"fu_rn_{_fj_id}")
+                    if st.form_submit_button("Save", type="primary"):
+                        _status_map = {
+                            "Interview scheduled": "Interview",
+                            "Rejected":            "Rejected",
+                            "Offer received":      "Offer",
+                            "Ghosted / withdrawn": "Withdrawn",
+                        }
+                        _td3 = json.loads(TRACKER.read_text(encoding="utf-8"))
+                        for _j4 in _td3.get("jobs", []):
+                            if _j4.get("id") == _fj_id:
+                                _j4["status"] = _status_map.get(_resp_type, "Watch")
+                                if not isinstance(_j4.get("outreach_log"), list):
+                                    _j4["outreach_log"] = []
+                                _j4["outreach_log"].append({
+                                    "date":  date.today().isoformat(),
+                                    "type":  "response",
+                                    "notes": f"{_resp_type}" + (f" — {_resp_note}" if _resp_note else ""),
+                                })
+                                _j4.setdefault("followup_schedule", {})["next_due"] = None
+                                break
+                        save_tracker(_td3)
+                        st.toast(f"📨 Response recorded: {_resp_type}", icon="✅")
+                        st.rerun()
+
+            if _fj_url:
+                with _fa4:
+                    st.link_button("🔗 Open JD", _fj_url, use_container_width=True)
+
+            # Tailored docs — show if jd_tailor has run for this job
+            _fj_docs = _find_tailor_docs(job)
+            if _fj_docs:
+                with st.expander(f"📄 Tailored docs ({len(_fj_docs)})"):
+                    for _doc in _fj_docs:
+                        st.markdown(f"**{_doc.name}**")
+                        _doc_text = _doc.read_text(encoding="utf-8", errors="replace")
+                        _trunc_suffix = "\n\n*(truncated)*" if len(_doc_text) > 1500 else ""
+                        st.markdown(_doc_text[:1500] + _trunc_suffix)
+                        st.markdown("---")
+
+            # Interview prep — available for any applied job, surfaced prominently for Interview status
+            _fj_status = job.get("status", "")
+            _prep_label = "🎯 Interview prep" if _fj_status == "Interview" else "📋 Prep notes"
+            _prep_key   = f"prep_{_fj_id}"
+            with st.expander(_prep_label, expanded=(_fj_status == "Interview")):
+                if st.button("✨ Generate prep brief", key=f"prepbtn_{_fj_id}",
+                             disabled=not api_key.is_key_valid(),
+                             help="Uses Claude Haiku. Covers technical Qs, behavioural Qs, selling points."):
+                    with st.spinner("Building prep brief…"):
+                        _prep_prompt   = _interview_prep_prompt(job)
+                        _prep_result   = _ai_draft(_prep_key, _prep_prompt)
+                    st.session_state[_prep_key] = _prep_result
+                _prep_text = st.session_state.get(_prep_key, "")
+                if _prep_text:
+                    st.markdown(_prep_text)
+                    if st.button("💾 Save to job notes", key=f"prepsave_{_fj_id}"):
+                        _td_p = json.loads(TRACKER.read_text(encoding="utf-8"))
+                        for _jp in _td_p.get("jobs", []):
+                            if _jp.get("id") == _fj_id:
+                                _existing = (_jp.get("notes") or "")
+                                _prep_header = f"### Interview Prep ({date.today().isoformat()})\n\n"
+                                _jp["notes"] = _prep_header + _prep_text + "\n\n---\n\n" + _existing
+                                break
+                        save_tracker(_td_p)
+                        st.toast("💾 Prep notes saved to job!", icon="✅")
+                        st.rerun()
+                elif not api_key.is_key_valid():
+                    st.caption("Set API key in sidebar to generate prep notes.")
+
+    # ── OVERDUE ───────────────────────────────────────────────────────────
+    if _fu_overdue:
+        st.markdown(f"### 🔴 Overdue ({len(_fu_overdue)})")
+        for _days_over, _job in _fu_overdue:
+            _fu_render_card(_job, f"{_days_over}d overdue", "#ef4444")
+
+    # ── DUE TODAY ─────────────────────────────────────────────────────────
+    if _fu_due_today:
+        st.markdown(f"### 🟡 Due today ({len(_fu_due_today)})")
+        for _job in _fu_due_today:
+            _fu_render_card(_job, "Due today", "#f59e0b")
+
+    # ── NO SCHEDULE ───────────────────────────────────────────────────────
+    if _fu_no_sched:
+        st.markdown(f"### ⚠️ No schedule ({len(_fu_no_sched)})")
+        st.caption("These jobs are Applied but have no next follow-up date — seed one now.")
+        for _job in _fu_no_sched:
+            _fu_render_card(_job, "Needs schedule", "#94a3b8")
+
+    # ── DUE THIS WEEK ─────────────────────────────────────────────────────
+    if _fu_this_week:
+        with st.expander(f"🟢 Due this week ({len(_fu_this_week)})", expanded=False):
+            for _days_left, _job in _fu_this_week:
+                _fu_render_card(_job, f"In {_days_left}d", "#10b981")
+
+    # ── UPCOMING ─────────────────────────────────────────────────────────
+    if _fu_upcoming:
+        with st.expander(f"📅 Upcoming ({len(_fu_upcoming)})", expanded=False):
+            for _days_left, _job in _fu_upcoming:
+                _fu_render_card(_job, f"In {_days_left}d", "#6366f1")
+
+    if not any([_fu_overdue, _fu_due_today, _fu_no_sched, _fu_this_week, _fu_upcoming]):
+        st.info(
+            "No applied jobs in the follow-up loop yet. "
+            "Use the 📬 Review Queue to triage Found jobs and click ✅ Apply "
+            "to start tracking applications."
+        )

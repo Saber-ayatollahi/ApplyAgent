@@ -1,10 +1,10 @@
-# nightly_refresh.ps1 — End-to-end nightly job-hunt refresh.
+# nightly_refresh.ps1 - End-to-end nightly job-hunt refresh.
 #
 # What it does (in order):
 #   1. Activates the project venv (if present) or falls back to system Python.
-#   2. Runs jd_scraper.py --expansion → writes scan_<today>.json.
-#   3. Runs scan_delta.py → writes delta_<today>.json.
-#   4. Runs morning_brief.py --top 5 → writes brief_<today>.md.
+#   2. Runs jd_scraper.py --expansion - writes scan_<today>.json.
+#   3. Runs scan_delta.py - writes delta_<today>.json.
+#   4. Runs morning_brief.py --top 5 - writes brief_<today>.md.
 #
 # Output lands in automation/outputs/ and the Streamlit UI reads it on next load.
 #
@@ -15,9 +15,9 @@
 # Manual run:
 #   powershell -ExecutionPolicy Bypass -File automation\nightly_refresh.ps1
 #
-# Install as a scheduled task — see install_schedule.ps1 (same folder).
+# Install as a scheduled task - see install_schedule.ps1 (same folder).
 
-$ErrorActionPreference = "Continue"  # best-effort: don't bail on the first warning
+$ErrorActionPreference = "Continue"
 $repoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Definition)
 Set-Location $repoRoot
 
@@ -41,57 +41,51 @@ if (-not $env:ANTHROPIC_API_KEY) {
     }
 }
 
-$logDir = Join-Path $repoRoot "automation\outputs\runs"
-if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
-$stamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$log = Join-Path $logDir "nightly_refresh_$stamp.log"
-
+# Log function - Write-Output goes to stdout, which scan_runner captures.
+# ForEach-Object { "$_" } on all python pipelines converts ErrorRecord objects
+# (PowerShell wraps native stderr as errors) back to plain strings so the
+# pipeline never aborts and NativeCommandError noise is suppressed.
 function Log($msg) {
     $line = "[{0:yyyy-MM-dd HH:mm:ss}] $msg" -f (Get-Date)
-    Add-Content -Path $log -Value $line
-    Write-Host $line
+    Write-Output $line
 }
 
 Log "=== nightly_refresh starting ==="
 Log "repo: $repoRoot"
 Log "python: $python"
 
-# Stage 1 — scrape (web + Gmail alerts folded in)
+# Stage 1 - scrape
 Log "[1/3] Scraping (web + Gmail alerts)..."
-& $python "automation\jd_scraper.py" --expansion --gmail 2>&1 | Tee-Object -FilePath $log -Append
+& $python "automation\jd_scraper.py" --expansion --gmail 2>&1 | ForEach-Object { "$_" }
 if ($LASTEXITCODE -ne 0) {
-    Log "Scraper failed with exit code $LASTEXITCODE — aborting."
+    Log "Scraper failed with exit code $LASTEXITCODE - aborting."
     exit 1
 }
 
-# Stage 2 — delta
+# Stage 2 - delta
 Log "[2/3] Computing delta..."
-& $python "automation\scan_delta.py" 2>&1 | Tee-Object -FilePath $log -Append
+& $python "automation\scan_delta.py" 2>&1 | ForEach-Object { "$_" }
 $deltaExit = $LASTEXITCODE
 if ($deltaExit -ne 0) {
     Log "scan_delta failed with exit code $deltaExit"
 }
 
-# Guard: verify today's delta file exists and is non-trivial before invoking
-# morning_brief. If scan_delta silently wrote nothing (or the file is stale
-# from a previous day), morning_brief would either score yesterday's delta
-# again (double-charging on cached roles) or score an empty set (no brief
-# emitted, auto-tailor runs on nothing, the dashboard shows stale data).
+# Guard: verify today's delta file exists and is non-trivial
 $today = Get-Date -Format "yyyyMMdd"
 $deltaPath = Join-Path $repoRoot "automation\outputs\delta_$today.json"
 if (-not (Test-Path $deltaPath)) {
-    Log "ABORT: expected $deltaPath not found — morning_brief would run on stale data. Skipping stage 3."
+    Log "ABORT: $deltaPath not found - skipping morning_brief."
     exit 1
 }
 $deltaSize = (Get-Item $deltaPath).Length
 if ($deltaSize -lt 100) {
-    Log "ABORT: $deltaPath is suspiciously small ($deltaSize bytes). Skipping stage 3."
+    Log "ABORT: delta file is only $deltaSize bytes - too small, skipping."
     exit 1
 }
 
-# Stage 3 — brief (auto-add top 3 + auto-tailor drafts)
-Log "[3/3] Generating morning brief (auto-add + auto-tailor top 3)..."
-& $python "automation\morning_brief.py" --top 5 --auto-add 3 --auto-tailor 2>&1 | Tee-Object -FilePath $log -Append
+# Stage 3 - brief
+Log "[3/3] Generating morning brief..."
+& $python "automation\morning_brief.py" --top 5 --auto-add 3 --auto-tailor 2>&1 | ForEach-Object { "$_" }
 if ($LASTEXITCODE -ne 0) {
     Log "morning_brief failed with exit code $LASTEXITCODE"
     exit 1

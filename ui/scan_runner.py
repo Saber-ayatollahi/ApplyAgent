@@ -60,6 +60,7 @@ def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None) -> RunReco
     kwargs = dict(
         stdout=log_f,
         stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
         cwd=str(cwd or ROOT),
         env={**os.environ, "PYTHONUNBUFFERED": "1"},
     )

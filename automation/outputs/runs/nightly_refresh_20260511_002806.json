@@ -1,0 +1,19 @@
+{
+  "run_id": "nightly_refresh_20260511_002806",
+  "label": "nightly_refresh",
+  "cmd": [
+    "powershell.exe",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-Command",
+    "try { & 'C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\nightly_refresh.ps1' } catch { Write-Host ('ERROR: ' + $_.Exception.Message) -ForegroundColor Red }; Write-Host '' ; Write-Host 'Script finished \u2014 press any key to close.' -ForegroundColor Cyan ; $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')"
+  ],
+  "pid": 17964,
+  "started_at": "2026-05-11T00:28:06",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260511_002806.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260511_002806.json",
+  "state": "finished",
+  "finished_at": "2026-05-11T00:31:47",
+  "returncode": null
+}
