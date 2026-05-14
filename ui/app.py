@@ -4785,15 +4785,21 @@ elif page == "⚙️ Admin":
                 "meta": _fresh_meta,
                 "jobs": [],
             }
-            _data_file.write_text(
-                json.dumps(_fresh_tracker, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
+            # Route through save_tracker so we get the .bak.<timestamp>.json
+            # safety copy in addition to the dated archive above. If the
+            # write crashes mid-JSON, the .bak file is untouched.
+            save_tracker(_fresh_tracker)
 
-            # 4. Optionally archive url_history
+            # 4. Optionally archive url_history. Same belt-and-braces:
+            # write a .bak alongside the dated archive before the reset
+            # write, so a crash mid-write doesn't leave the file empty.
             if _reset_url_hist and _url_hist.exists():
                 _uh_dest = _url_hist.parent / f"url_history_{_archive_month}.json"
                 _uh_dest.write_text(_url_hist.read_text(encoding="utf-8"), encoding="utf-8")
+                _uh_bak = _url_hist.with_suffix(
+                    f".bak.{_now.strftime('%Y%m%d-%H%M%S')}.json"
+                )
+                _uh_bak.write_text(_url_hist.read_text(encoding="utf-8"), encoding="utf-8")
                 _url_hist.write_text(json.dumps({"urls": [], "archived_on": _now.strftime("%Y-%m-%d")}, indent=2))
                 _url_msg = "  \n✅ URL history archived to `" + _uh_dest.name + "` and reset."
             else:

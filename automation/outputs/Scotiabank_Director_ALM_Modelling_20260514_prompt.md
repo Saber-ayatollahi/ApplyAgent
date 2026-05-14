@@ -17,144 +17,8 @@ Rules:
 
 Output format: always return a single markdown document with three sections — PARSE LOG, RESUME, COVER LETTER, INTERVIEW BRIEF — in that order.
 
----
+# Master Repository (single source of truth for all claims)
 
-# USER PROMPT
-
-# TASK
-
-Generate tailored application materials for the following role.
-
-IMPORTANT: Read the `## Deterministic JD analysis` and `## Pre-ranked bullet shortlist` blocks below FIRST. They are computed deterministically from the Master Repository YAMLs — trust them. Prefer bullets from the shortlist (in rank order) when assembling the resume. Cite bullet IDs in your PARSE LOG. You may still pull additional bullets from §5 of the Master Repository if a narrative gap requires it, but NEVER invent new bullets.
-
-## Target company
-Scotiabank
-
-## Target role
-Director, ALM Modelling
-
-## Tracker entry (for context)
-```json
-{
-  "id": "scot-001",
-  "company": "Scotiabank",
-  "sector": "Canadian Big 6 Banks",
-  "tier": 1,
-  "title": "Director, ALM Modelling",
-  "level": "Director",
-  "url": "https://jobs.scotiabank.com/go/Asset-Liability-Management/10638117/",
-  "portal_url": "https://jobs.scotiabank.com/",
-  "date_found": "2026-04-28",
-  "date_jd_verified": null,
-  "date_applied": null,
-  "date_last_followup": null,
-  "source": "research",
-  "status": "Found",
-  "fit_score": "High",
-  "fit_score_numeric": 5,
-  "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
-  "urgency": "High",
-  "expected_comp_band_cad": "$180K-$230K base + 30-50% bonus + LTIP",
-  "fit_notes": "Near-verbatim JD match: leads team of 7 quant modelers on IRRBB; design/develop ALM models. Direct overlap with Moody's cash flow engine + model governance.",
-  "keywords": [
-    "IRRBB",
-    "ALM modelling",
-    "EVE",
-    "NII",
-    "quantitative modeler",
-    "banking book",
-    "OSFI B-12"
-  ],
-  "resume_file": null,
-  "cover_letter_file": null,
-  "contact": {
-    "recruiter_name": null,
-    "recruiter_email": null,
-    "hiring_manager_name": null,
-    "hiring_manager_linkedin": null,
-    "warm_intro_candidate": null,
-    "moodys_alumni_at_target": null
-  },
-  "outreach_log": [],
-  "followup_schedule": {
-    "next_due": null,
-    "cadence_days": [
-      3,
-      10,
-      21
-    ]
-  },
-  "rejection_reason": null,
-  "rejection_date": null,
-  "next_action": "APPLY THIS WEEK \u2014 verify still open on jobs.scotiabank.com (search 'ALM'); use jd_tailor agent with Master Repo to generate ALM_Scotia_Director.docx; find 1 Scotia Moody's alum for warm intro BEFORE submitting.",
-  "notes": "Highest near-term fit based on JD language match. JD text near-verbatim maps to Moody's responsibilities."
-}
-```
-
-## Deterministic JD analysis (pre-computed, do not re-derive)
-- coverage: **0%** (0 skill hits, 0 gap hits)
-- lane-probe negatives (not in JD, informational): IRRBB, ALM, LDI, model validation, model governance, model risk, treasury, balance sheet
-
-(no bullets matched — tailor must select from full §5 library)
-
-## Job description
-```
-Skip to main content
-
- Featured Jobs 
-
-Commercial Banking 
-
-Student & New Grad
-
-Technology
-
-Finance
-
-Global Operations
-
-Retail Banking
-
-Financial Planner
-
-Locations
-
-Join our Talent Community
-
- Featured Jobs 
-
-Commercial Banking 
-
-Student & New Grad
-
-Technology
-
-Finance
-
-Global Operations
-
-Retail Banking
-
-Financial Planner
-
-Locations
-
-Join our Talent Community
-
-Language 
-
-English (United States)
-
-Español (España)
-
-Français (Canada)
-
-View Profile
-
-© 2021 Scotiabank.com All Rights Reserved
-```
-
-## Master Repository (single source of truth for all claims)
 ```markdown
 # Saber Ayatollahi — Master Career Repository (v2)
 
@@ -594,7 +458,8 @@ Retired variants (no longer in rotation): Portfolio Manager (`_PM.docx`), Produc
 
 ```
 
-## Cover letter templates
+# Cover letter templates
+
 ```markdown
 # Cover Letter Templates
 
@@ -732,6 +597,144 @@ Saber Ayatollahi, CFA
 
 *Last updated: 2026-05-06 — removed regulatory-hook openings; capability-led openers only.*
 
+```
+
+
+---
+
+# USER PROMPT
+
+# TASK
+
+Generate tailored application materials for the following role.
+
+IMPORTANT: Read the `## Deterministic JD analysis` and `## Pre-ranked bullet shortlist` blocks below FIRST. They are computed deterministically from the Master Repository YAMLs — trust them. Prefer bullets from the shortlist (in rank order) when assembling the resume. Cite bullet IDs in your PARSE LOG. You may still pull additional bullets from §5 of the Master Repository if a narrative gap requires it, but NEVER invent new bullets.
+
+## Target company
+Scotiabank
+
+## Target role
+Director, ALM Modelling
+
+## Tracker entry (for context)
+```json
+{
+  "id": "scot-001",
+  "company": "Scotiabank",
+  "sector": "Canadian Big 6 Banks",
+  "tier": 1,
+  "title": "Director, ALM Modelling",
+  "level": "Director",
+  "url": "https://jobs.scotiabank.com/go/Asset-Liability-Management/10638117/",
+  "portal_url": "https://jobs.scotiabank.com/",
+  "date_found": "2026-04-28",
+  "date_jd_verified": null,
+  "date_applied": null,
+  "date_last_followup": null,
+  "source": "research",
+  "status": "Found",
+  "fit_score": "High",
+  "fit_score_numeric": 5,
+  "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
+  "urgency": "High",
+  "expected_comp_band_cad": "$180K-$230K base + 30-50% bonus + LTIP",
+  "fit_notes": "Near-verbatim JD match: leads team of 7 quant modelers on IRRBB; design/develop ALM models. Direct overlap with Moody's cash flow engine + model governance.",
+  "keywords": [
+    "IRRBB",
+    "ALM modelling",
+    "EVE",
+    "NII",
+    "quantitative modeler",
+    "banking book",
+    "OSFI B-12"
+  ],
+  "resume_file": null,
+  "cover_letter_file": null,
+  "contact": {
+    "recruiter_name": null,
+    "recruiter_email": null,
+    "hiring_manager_name": null,
+    "hiring_manager_linkedin": null,
+    "warm_intro_candidate": null,
+    "moodys_alumni_at_target": null
+  },
+  "outreach_log": [],
+  "followup_schedule": {
+    "next_due": null,
+    "cadence_days": [
+      3,
+      10,
+      21
+    ]
+  },
+  "rejection_reason": null,
+  "rejection_date": null,
+  "next_action": "APPLY THIS WEEK \u2014 verify still open on jobs.scotiabank.com (search 'ALM'); use jd_tailor agent with Master Repo to generate ALM_Scotia_Director.docx; find 1 Scotia Moody's alum for warm intro BEFORE submitting.",
+  "notes": "Highest near-term fit based on JD language match. JD text near-verbatim maps to Moody's responsibilities."
+}
+```
+
+## Deterministic JD analysis (pre-computed, do not re-derive)
+- coverage: **0%** (0 skill hits, 0 gap hits)
+- lane-probe negatives (not in JD, informational): IRRBB, ALM, LDI, model validation, model governance, model risk, treasury, balance sheet
+
+(no bullets matched — tailor must select from full §5 library)
+
+## Job description
+```
+Skip to main content
+
+ Featured Jobs 
+
+Commercial Banking 
+
+Student & New Grad
+
+Technology
+
+Finance
+
+Global Operations
+
+Retail Banking
+
+Financial Planner
+
+Locations
+
+Join our Talent Community
+
+ Featured Jobs 
+
+Commercial Banking 
+
+Student & New Grad
+
+Technology
+
+Finance
+
+Global Operations
+
+Retail Banking
+
+Financial Planner
+
+Locations
+
+Join our Talent Community
+
+Language 
+
+English (United States)
+
+Español (España)
+
+Français (Canada)
+
+View Profile
+
+© 2021 Scotiabank.com All Rights Reserved
 ```
 
 # DELIVERABLES

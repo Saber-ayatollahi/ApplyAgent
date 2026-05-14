@@ -135,7 +135,17 @@ def fetch_jd_from_url(url: str) -> str:
 
 
 def build_system_prompt() -> str:
-    return (
+    """Build the tailor system prompt.
+
+    The Master Repository (~35KB) and cover-letter templates live in the
+    SYSTEM message, not the user message, so prompt caching reuses them
+    across every tailor call within the cache TTL. Before this change,
+    each call paid full Master-Repo input tokens — measurable spend for
+    sessions with multiple tailors.
+    """
+    master_repo = slurp(MASTER_REPO)
+    cover_templates = slurp(COVER_TEMPLATES)
+    rules = (
         "You are a senior finance career strategist tailoring application materials for Saber Ayatollahi "
         "— CFA, dual MSc, 7+ years ALM/IRRBB/Moody's Analytics. You are disciplined about his narrative:\n"
         "- PRIMARY positioning: ALM / IRRBB / Model Governance.\n"
@@ -156,6 +166,13 @@ def build_system_prompt() -> str:
         "   Address obliquely via adjacent skills.\n\n"
         "Output format: always return a single markdown document with three sections — PARSE LOG, "
         "RESUME, COVER LETTER, INTERVIEW BRIEF — in that order."
+    )
+    return (
+        f"{rules}\n\n"
+        "# Master Repository (single source of truth for all claims)\n\n"
+        f"```markdown\n{master_repo}\n```\n\n"
+        "# Cover letter templates\n\n"
+        f"```markdown\n{cover_templates}\n```\n"
     )
 
 
@@ -185,8 +202,8 @@ def _deterministic_preamble(jd: str) -> str:
 
 
 def build_user_prompt(jd: str, company: str, role: str, tracker_entry: Optional[dict]) -> str:
-    master_repo = slurp(MASTER_REPO)
-    cover_templates = slurp(COVER_TEMPLATES)
+    # Master Repo and cover-letter templates live in the SYSTEM prompt
+    # (cached) — do not duplicate them here.
     tracker_context = json.dumps(tracker_entry, indent=2) if tracker_entry else "(no tracker entry)"
     det_preamble = _deterministic_preamble(jd)
 
@@ -225,16 +242,6 @@ Generate tailored application materials for the following role.{det_instructions
 ## Job description
 ```
 {jd}
-```
-
-## Master Repository (single source of truth for all claims)
-```markdown
-{master_repo}
-```
-
-## Cover letter templates
-```markdown
-{cover_templates}
 ```
 
 # DELIVERABLES

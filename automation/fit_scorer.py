@@ -138,6 +138,26 @@ FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6"
 
 
 # ---------------------------------------------------------------------------
+# Per-cache-path lock dict. Without this, two worker threads scoring the same
+# URL in parallel each see a cache miss, both call the LLM, and the second
+# writer clobbers the first — wasting one whole API call. Acquire the
+# per-path lock around the read-check + write critical section.
+# ---------------------------------------------------------------------------
+_fit_cache_locks_guard = Lock()
+_fit_cache_locks: dict[str, Lock] = {}
+
+
+def _fit_cache_lock(path: Path) -> Lock:
+    key = str(path)
+    with _fit_cache_locks_guard:
+        lock = _fit_cache_locks.get(key)
+        if lock is None:
+            lock = Lock()
+            _fit_cache_locks[key] = lock
+        return lock
+
+
+# ---------------------------------------------------------------------------
 # Live progress — writes outputs/fit_scorer_progress.json after each candidate
 # so the Streamlit UI can show a progress bar, ETA, and the last-N results.
 # ---------------------------------------------------------------------------
@@ -1120,7 +1140,19 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 if det:
                     persisted = {k: v for k, v in det.items() if not k.startswith("_")}
                     parsed["deterministic"] = persisted
-                cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
+                # Double-checked locking on the cache write. Two threads
+                # could have both seen a cache miss above and both raced to
+                # the LLM; whichever finishes first wins the lock and
+                # writes. The second thread re-reads the cache rather than
+                # clobbering it, so we keep one canonical result instead
+                # of a last-writer-wins corruption window.
+                with _fit_cache_lock(cache):
+                    if cache.exists():
+                        try:
+                            return json.loads(cache.read_text(encoding="utf-8"))
+                        except Exception:
+                            pass  # fall through and overwrite the bad file
+                    cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
                 return parsed
             except Exception as e:
                 err_str = str(e)
@@ -1158,8 +1190,9 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
 # ---------------------------------------------------------------------------
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--scan", default="scan_v4.json",
-                    help="Filename in automation/outputs/ of the scraper output to score.")
+    ap.add_argument("--scan", default=None,
+                    help="Filename in automation/outputs/ of the scraper output to score. "
+                         "If omitted, picks the freshest scan_YYYYMMDD.json.")
     ap.add_argument("--limit", type=int, default=0,
                     help="Limit to N roles after stage 1 triage (0=all).")
     ap.add_argument("--only", action="append", default=[],
@@ -1175,6 +1208,22 @@ def main() -> int:
                          "deliberately want a large run (e.g. full rescore).")
     args = ap.parse_args()
 
+    if not args.scan:
+        # Pick the freshest scan_YYYYMMDD.json. Old default was scan_v4.json
+        # which was retired when the weekly pipeline started writing dated
+        # scans; running standalone with no --scan now Just Works.
+        candidates = sorted(
+            (p for p in OUT_DIR.glob("scan_*.json")
+             if p.stem.replace("scan_", "").isdigit() and len(p.stem) == 13),
+            reverse=True,
+        )
+        if not candidates:
+            print("ERROR: no scan_YYYYMMDD.json in outputs/. Pass --scan or run the scraper.",
+                  file=sys.stderr)
+            return 1
+        args.scan = candidates[0].name
+        print(f"[fit_scorer] No --scan supplied; using latest: {args.scan}",
+              file=sys.stderr)
     scan_path = OUT_DIR / args.scan
     if not scan_path.exists():
         print(f"ERROR: {scan_path} not found", file=sys.stderr)

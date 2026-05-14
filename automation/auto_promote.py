@@ -138,7 +138,9 @@ def make_entry(r: dict) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--scan", default="scan_v4_scored.json")
+    ap.add_argument("--scan", default=None,
+                    help="Filename in automation/outputs/ of the scored scan to promote. "
+                         "If omitted, picks the freshest scan_YYYYMMDD_scored.json.")
     ap.add_argument("--commit", action="store_true", help="Actually write the tracker")
     ap.add_argument("--min-score", type=int, default=7,
                     help="Only promote roles with fit_score >= this (default 7)")
@@ -152,6 +154,21 @@ def main() -> int:
                          "Ignored in dry-run.")
     args = ap.parse_args()
 
+    if not args.scan:
+        # Old default was scan_v4_scored.json — retired. Pick the freshest
+        # scan_YYYYMMDD_scored.json so running standalone Just Works.
+        candidates = sorted(
+            (p for p in OUT_DIR.glob("scan_*_scored.json")
+             if p.stem.replace("scan_", "").replace("_scored", "").isdigit()),
+            reverse=True,
+        )
+        if not candidates:
+            print("ERROR: no scan_YYYYMMDD_scored.json in outputs/. Run fit_scorer.py first.",
+                  file=sys.stderr)
+            return 1
+        args.scan = candidates[0].name
+        print(f"[auto_promote] No --scan supplied; using latest: {args.scan}",
+              file=sys.stderr)
     scored_path = OUT_DIR / args.scan
     if not scored_path.exists():
         print(f"ERROR: {scored_path} not found. Run fit_scorer.py first.", file=sys.stderr)

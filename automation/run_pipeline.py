@@ -263,7 +263,23 @@ def _run(args, status: dict, pipeline_id: str) -> int:
         print("[stage 3] SKIPPED", flush=True)
         status["stages"]["promote"] = {"state": "skipped"}
     else:
-        target_scored = scored_file or OUT_DIR / "scan_v4_scored.json"
+        # If the score stage didn't produce a fresh scored file (e.g.
+        # --skip-score with stale outputs), fall back to the latest
+        # scan_YYYYMMDD_scored.json — never the retired scan_v4_scored.
+        target_scored = scored_file
+        if target_scored is None:
+            candidates = sorted(
+                (p for p in OUT_DIR.glob("scan_*_scored.json")
+                 if p.stem.replace("scan_", "").replace("_scored", "").isdigit()),
+                reverse=True,
+            )
+            if not candidates:
+                print("[stage 3] FAILED — no scored scan available to promote.",
+                      flush=True)
+                status["state"] = "failed"
+                _write_status(status)
+                return 1
+            target_scored = candidates[0]
         cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
                "--scan", target_scored.name,
                "--min-score", str(args.min_score)]
