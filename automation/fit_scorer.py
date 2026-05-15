@@ -138,10 +138,14 @@ FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6"
 
 
 # ---------------------------------------------------------------------------
-# Per-cache-path lock dict. Without this, two worker threads scoring the same
-# URL in parallel each see a cache miss, both call the LLM, and the second
-# writer clobbers the first — wasting one whole API call. Acquire the
-# per-path lock around the read-check + write critical section.
+# Per-cache-path lock dict. The lock is acquired ONLY around the cache write
+# (see the double-checked-locking block in score_with_llm). Two concurrent
+# workers scoring the same URL still both make the LLM call — we don't hold
+# the lock through the call (would head-of-line-block sibling threads on a
+# 5-30s API round-trip). The lock just guarantees that whichever response
+# lands first wins the cache file, and the second writer reads-and-returns
+# rather than overwriting. Cost impact: in the rare case of duplicate URLs
+# in the scan input, one extra Haiku call per duplicate (~$0.001).
 # ---------------------------------------------------------------------------
 _fit_cache_locks_guard = Lock()
 _fit_cache_locks: dict[str, Lock] = {}
@@ -191,23 +195,42 @@ _progress_state: dict = {
 
 
 def _write_progress():
-    """Snapshot under _progress_lock then write outside it.
+    """Snapshot under _progress_lock then write atomically outside it.
 
     The previous implementation held _progress_lock during the file write,
     so every progress_tick / _cost_tick serialized on disk IO. With 6-worker
     concurrency this throttles scoring on slow disks (especially Windows
-    machines with antivirus scanning the JSON file). Snapshot is cheap;
-    the write doesn't need the lock since each write contains a complete
-    self-consistent snapshot.
+    machines with antivirus scanning the JSON file).
+
+    Snapshotting is cheap and stays under the lock. The disk write itself
+    happens outside the lock — but uses tempfile + os.replace so two
+    concurrent writers can't truncate-tear the same file (which a raw
+    write_text WOULD do, since 'w' mode truncates).
     """
     try:
         OUT_DIR.mkdir(parents=True, exist_ok=True)
         with _progress_lock:
             serializable = dict(_progress_state)
             serializable["recent"] = list(_progress_state["recent"])
-        # Write outside the lock — workers can keep mutating state freely
-        # while disk IO completes.
-        PROGRESS_PATH.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
+        # Atomic write: tempfile in same directory + os.replace. Multiple
+        # workers may call this concurrently; each write is self-consistent
+        # and os.replace is atomic on POSIX + Win32, so a reader never sees
+        # a partial JSON. Last-writer-wins for the contents — fine since
+        # each snapshot is complete.
+        import tempfile
+        fd, tmp = tempfile.mkstemp(
+            dir=str(PROGRESS_PATH.parent),
+            prefix=PROGRESS_PATH.name + ".",
+            suffix=".tmp",
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(serializable, f, indent=2)
+            os.replace(tmp, PROGRESS_PATH)
+        except Exception:
+            try: os.unlink(tmp)
+            except OSError: pass
+            raise
     except Exception as e:
         if _log_error is not None:
             _log_error("progress_write", e, module="fit_scorer")

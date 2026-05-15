@@ -364,8 +364,13 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
                 system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                 messages=[{"role": "user", "content": user}],
             )
-            # Ledger + cost-guard accounting BEFORE returning so a downstream
-            # parser failure doesn't drop the spend on the floor.
+            # Cost accounting BEFORE returning so a downstream parser failure
+            # doesn't drop spend on the floor. Order matters: cost_guard.record
+            # FIRST, then ledger. CostGuard.exceeded() reads `ledger_today +
+            # run_spend_usd`; if we ledger first, the new cost is already in
+            # `ledger_today` — adding it again to `run_spend_usd` would double-
+            # count and trip the daily cap at half its threshold. fit_scorer
+            # uses the same order for the same reason.
             try:
                 usage = resp.usage
                 in_t = getattr(usage, "input_tokens", 0) or 0
@@ -373,6 +378,8 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
                 cache_create = getattr(usage, "cache_creation_input_tokens", 0) or 0
                 cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
                 cost = _estimate_cost_usd(model, in_t, out_t)
+                if cost_guard is not None and cost > 0:
+                    cost_guard.record(cost)
                 if _ledger_record is not None:
                     try:
                         _ledger_record(
@@ -383,8 +390,6 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
                     except Exception as _le:
                         if _log_error is not None:
                             _log_error("ledger_record", _le, module="jd_tailor")
-                if cost_guard is not None and cost > 0:
-                    cost_guard.record(cost)
                 print(f"  [tailor] {model} cost ${cost:.3f} "
                       f"(in={in_t}, out={out_t}, cache_read={cache_read})",
                       file=sys.stderr)
@@ -463,9 +468,10 @@ def main() -> int:
 
     # API preflight: catch revoked keys + exhausted credits BEFORE building
     # the prompt and burning a 50KB upload. Bypass with APPLYAGENT_SKIP_PREFLIGHT=1.
+    # The billing preflight inside check() always uses Haiku (cheap), so we
+    # don't need to override the model here.
     if _cli_preflight is not None:
-        _cli_preflight(module="jd_tailor",
-                        preflight_model="claude-haiku-4-5-20251001")
+        _cli_preflight(module="jd_tailor")
 
     # Cost guard: tailor runs Opus by default — a single call can be ~$1.
     # Without this, a runaway batch (e.g. auto-promote spawning many tailors)

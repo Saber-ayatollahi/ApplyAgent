@@ -186,8 +186,11 @@ def count_recent(since_minutes: int = 60) -> int:
             try:
                 rec = json.loads(ln)
                 ts = rec.get("timestamp", "")
-                # Parse ISO-Z timestamp
-                dt = datetime.strptime(ts.rstrip("Z"), "%Y-%m-%dT%H:%M:%S")
+                # Parse ISO-Z timestamp as UTC. strptime alone produces a naive
+                # datetime, and .timestamp() then treats it as local — on a
+                # non-UTC machine that misses recent errors by the local offset.
+                dt = datetime.strptime(ts.rstrip("Z"), "%Y-%m-%dT%H:%M:%S") \
+                    .replace(tzinfo=timezone.utc)
                 if dt.timestamp() >= cutoff:
                     n += 1
             except Exception:

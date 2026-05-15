@@ -198,7 +198,7 @@ def check_weekly_report(o: Outcome):
         o.fail_(f"could not run weekly_report.py: {e}")
 
 
-def check_jd_tailor_dry(o: Outcome):
+def check_jd_tailor_dry(o: Outcome, with_llm: bool = False):
     print("\n[10] jd_tailor.py --dry-run")
     try:
         tr = json.loads((ROOT / "data" / "job_tracker_data.json").read_text(encoding="utf-8"))
@@ -214,8 +214,38 @@ def check_jd_tailor_dry(o: Outcome):
             o.pass_(f"jd_tailor dry-run OK for {job_id}")
         else:
             o.fail_(f"jd_tailor dry-run exited {r.returncode}: {combined[:300]}")
+            return
     except Exception as e:
         o.fail_(f"could not run jd_tailor.py: {e}")
+        return
+
+    # Real-LLM smoke for the tailor's full path: api_preflight → cost_guard →
+    # call_claude → ledger record → file write. The dry-run skips ALL of these,
+    # which is how a kwarg-mismatch in api_preflight survived a clean verify
+    # for a whole release. Costs ~$0.30-1 at Opus; gated on --with-llm.
+    if not with_llm:
+        return
+    print("\n[10b] jd_tailor.py real-LLM smoke")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        o.warn_("ANTHROPIC_API_KEY not set; skipping tailor real-LLM smoke")
+        return
+    # Minimal JD inline so we don't need network. The tailor still calls
+    # the Anthropic API, which is the part we want to exercise.
+    try:
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
+             "--job-id", job_id,
+             "--jd-text", "Director, ALM Modelling. Lead IRRBB modelling, "
+                          "EVE/NII risk, capital and liquidity stress testing."],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=240,
+        )
+        combined = r.stdout + r.stderr
+        if r.returncode == 0 and "Wrote" in combined:
+            o.pass_(f"jd_tailor real-LLM smoke OK for {job_id}")
+        else:
+            o.fail_(f"jd_tailor real-LLM smoke exited {r.returncode}: {combined[-400:]}")
+    except Exception as e:
+        o.fail_(f"could not run jd_tailor real-LLM smoke: {e}")
 
 
 def check_fit_scorer_dry(o: Outcome, with_llm: bool = False):
@@ -328,7 +358,7 @@ def main() -> int:
     check_streamlit(o)
     if not args.fast:
         check_weekly_report(o)
-        check_jd_tailor_dry(o)
+        check_jd_tailor_dry(o, with_llm=args.with_llm)
         check_fit_scorer_dry(o, with_llm=args.with_llm)
         check_pages_render(o)
 
