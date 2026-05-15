@@ -285,6 +285,20 @@ def main() -> int:
             cache.unlink()
             print("[score_url] Cleared existing fit cache entry.", file=sys.stderr)
 
+    # API preflight + cost guard. Same daily-cap protection fit_scorer gets.
+    try:
+        from api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+        _cli_preflight(module="score_url")
+    except Exception:
+        pass
+    try:
+        from cost_guard import CostGuard as _CostGuard  # type: ignore
+        if fit_scorer._cost_guard is None:
+            fit_scorer._cost_guard = _CostGuard.from_env()
+            fit_scorer._cost_guard.preflight_or_exit()
+    except Exception:
+        pass
+
     # Score
     from anthropic import Anthropic
     client = Anthropic()

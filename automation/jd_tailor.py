@@ -365,12 +365,10 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
                 messages=[{"role": "user", "content": user}],
             )
             # Cost accounting BEFORE returning so a downstream parser failure
-            # doesn't drop spend on the floor. Order matters: cost_guard.record
-            # FIRST, then ledger. CostGuard.exceeded() reads `ledger_today +
-            # run_spend_usd`; if we ledger first, the new cost is already in
-            # `ledger_today` — adding it again to `run_spend_usd` would double-
-            # count and trip the daily cap at half its threshold. fit_scorer
-            # uses the same order for the same reason.
+            # doesn't drop spend on the floor. cost_guard.record runs first
+            # because it's the in-process bound; ledger.record is the
+            # cross-process record. Either order works now that
+            # CostGuard.exceeded uses max(ledger, run_spend) instead of summing.
             try:
                 usage = resp.usage
                 in_t = getattr(usage, "input_tokens", 0) or 0

@@ -3,7 +3,7 @@
 auto_promote.py — Promote scored scan results to tracker; expire stale URLs.
 
 Reads:
-    automation/outputs/scan_v4_scored.json  (fit_scorer output)
+    automation/outputs/scan_<date>_scored.json  (fit_scorer output)
     job_tracker_data.json
 Writes:
     job_tracker_data.json (backed up to .bak.YYYY-MM-DD first)
@@ -23,7 +23,7 @@ Usage:
     python auto_promote.py --commit             # write the tracker
     python auto_promote.py --commit --min-score 8
     python auto_promote.py --commit --include-watch --min-score 6
-    python auto_promote.py --scan scan_v4.json  # alternative source
+    python auto_promote.py --scan scan_20260512_scored.json  # alternative source
 """
 from __future__ import annotations
 import argparse
@@ -273,9 +273,12 @@ def main() -> int:
         bak = TRACKER.with_suffix(f".bak.{stamp}.json")
         shutil.copy2(TRACKER, bak)
         tr["jobs"].extend(new_entries)
+        tr.setdefault("meta", {})
         tr["meta"]["total_roles"] = len(tr["jobs"])
         tr["meta"]["last_scan"] = date.today().isoformat()
-        tr["meta"]["changelog"].append({
+        # changelog may be absent on a freshly-reset tracker (safe_json default
+        # is {"jobs": [], "meta": {}}). Seed an empty list rather than crash.
+        tr["meta"].setdefault("changelog", []).append({
             "date": date.today().isoformat(),
             "event": f"auto_promote: +{added} new, {updated} upgraded, {expired} expired (min_score={args.min_score})",
             "roles": len(tr["jobs"]),

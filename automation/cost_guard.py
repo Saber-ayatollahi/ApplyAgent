@@ -112,14 +112,22 @@ class CostGuard:
                 self.run_spend_usd += float(usd)
 
     def exceeded(self) -> bool:
-        """True if either cap is breached. Evaluates run-cap from accumulated
-        spend and daily-cap from ledger + accumulated spend.
+        """True if either cap is breached.
 
-        NOTE: the daily check re-reads the ledger each call; inside a tight
-        scoring loop this is fine (the ledger is local disk), and it means
-        the guard also responds to a PARALLEL job's spend within the same
-        day. If cost becomes a concern, this can be moved to a periodic
-        check (every N calls)."""
+        Per-run check: compares accumulated `run_spend_usd` to per_run_cap_usd.
+
+        Daily check: reads `ledger_today` from the cost ledger. Since callers
+        record EVERY paid LLM call into both this guard (via record()) AND
+        the ledger (via cost_ledger.record), ledger_today already contains
+        everything run_spend_usd contains — adding them double-counts and
+        effectively halves the daily cap. So the daily check uses the max of
+        the two views: ledger_today is authoritative if the caller wired up
+        the ledger; otherwise run_spend_usd is the only signal we have.
+
+        NOTE: re-reads the ledger each call. Inside a tight scoring loop
+        this is fine (local disk read), and it means the guard responds to
+        a PARALLEL process's spend within the same day too. If cost becomes
+        a concern this can move to a periodic check (every N calls)."""
         with self._lock:
             run_spend = self.run_spend_usd
             if run_spend >= self.per_run_cap_usd:
@@ -133,11 +141,15 @@ class CostGuard:
         ledger_today = self.today_spend_usd()
         with self._lock:
             run_spend = self.run_spend_usd
-            total_today = ledger_today + max(0.0, run_spend)
+            # max(), not sum: callers record into both buckets, so summing
+            # double-counts. Use whichever is larger as the day's spend
+            # estimate. Ledger is authoritative when the ledger is wired up
+            # (callers invoke cost_ledger.record after CostGuard.record).
+            total_today = max(ledger_today, run_spend)
             if total_today >= self.daily_cap_usd:
                 self._triggered_reason = (
-                    f"daily cap exceeded: ledger=${ledger_today:.3f} + "
-                    f"run=${run_spend:.3f} >= cap=${self.daily_cap_usd:.2f}"
+                    f"daily cap exceeded: max(ledger=${ledger_today:.3f}, "
+                    f"run=${run_spend:.3f}) >= cap=${self.daily_cap_usd:.2f}"
                 )
                 return True
         return False

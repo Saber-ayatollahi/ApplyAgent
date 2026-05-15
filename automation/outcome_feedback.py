@@ -28,7 +28,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from pathlib import Path

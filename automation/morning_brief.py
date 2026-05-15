@@ -71,6 +71,27 @@ def _score_delta_inline(delta_jobs: list[dict], concurrency: int = 4,
               file=sys.stderr)
         return triaged
 
+    # API preflight: same fail-fast contract as fit_scorer/jd_tailor. Without
+    # this, a revoked key lets the brief loop through every triaged role,
+    # producing a full sweep of error verdicts before reporting.
+    try:
+        from api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+        _cli_preflight(module="morning_brief")
+    except Exception:
+        pass
+
+    # Wire cost_guard into the scorer's module-global so score_with_llm
+    # honors the daily/per-run caps. Without this, a runaway brief loop
+    # could dodge the daily cap that fit_scorer enforces.
+    try:
+        from cost_guard import CostGuard as _CostGuard  # type: ignore
+        if fs._cost_guard is None:
+            fs._cost_guard = _CostGuard.from_env()
+            fs._cost_guard.preflight_or_exit()
+            print(f"[morning_brief] {fs._cost_guard.summary()}", file=sys.stderr)
+    except Exception:
+        pass
+
     client = anthropic.Anthropic()
 
     # Score each triaged role. Reuse fit_cache, so previously-scored roles are free.

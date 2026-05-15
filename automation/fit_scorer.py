@@ -2,8 +2,8 @@
 """
 fit_scorer.py — Smart fit-scoring for scan results.
 
-Takes a scraper-output JSON (scan_v4.json) and scores every candidate against Saber's
-Master Repository profile. Outputs a scored JSON with per-role:
+Takes a scraper-output JSON (scan_YYYYMMDD.json) and scores every candidate against
+Saber's Master Repository profile. Outputs a scored JSON with per-role:
 
   - fit_score (1-10)
   - fit_verdict ("apply_now" | "tailor_and_apply" | "watch" | "skip")
@@ -20,15 +20,15 @@ JD fetch is cached to disk (jd_cache/) so re-runs on the same scan are free.
 
 Usage:
     python fit_scorer.py                              # score latest scan
-    python fit_scorer.py --scan scan_v4.json
-    python fit_scorer.py --scan scan_v4.json --limit 50
+    python fit_scorer.py --scan scan_20260512.json
+    python fit_scorer.py --scan scan_20260512.json --limit 50
     python fit_scorer.py --dry-run                    # rule-stage only, no API calls
     python fit_scorer.py --only "Director" --only "VP"  # regex filter titles
     python fit_scorer.py --rescore                    # ignore cache, re-call LLM
 
 Outputs:
-    automation/outputs/scan_v4_scored.json            # full scored list
-    automation/outputs/scan_v4_scored.md              # human-readable report
+    automation/outputs/scan_<date>_scored.json        # full scored list
+    automation/outputs/scan_<date>_scored.md          # human-readable report
     automation/outputs/jd_cache/<url-hash>.txt        # cached JD text (persistent)
     automation/outputs/fit_cache/<url-hash>.json      # cached fit scores (persistent)
 """
@@ -135,6 +135,28 @@ MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")
 # Sonnet is a stronger model that a rare Haiku parse-failure on a weird JD is
 # very unlikely to repeat on. Cost impact is ~$0.01 per fallback, rare.
 FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6")
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text to `path` via tempfile + os.replace.
+
+    A raw write_text() opens with 'w' which truncates immediately — a crash
+    or external-reader between truncate and write sees an empty/partial file.
+    fit_cache and jd_cache use this helper so the cache files are always
+    either old-and-complete or new-and-complete, never mid-write."""
+    import tempfile
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent),
+                                prefix=path.name + ".",
+                                suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except Exception:
+        try: os.unlink(tmp)
+        except OSError: pass
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -828,7 +850,7 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
             except Exception as e:
                 if _log_error is not None:
                     _log_error("jd_cache_legacy_unlink", e, module="fit_scorer")
-        cache_path.write_text(cleaned, encoding="utf-8")
+        _atomic_write_text(cache_path, cleaned)
         return _extract_sections(cleaned, max_chars)
     except Exception as e:
         if _log_error is not None:
@@ -1225,7 +1247,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                             return json.loads(cache.read_text(encoding="utf-8"))
                         except Exception:
                             pass  # fall through and overwrite the bad file
-                    cache.write_text(json.dumps(parsed, indent=2), encoding="utf-8")
+                    _atomic_write_text(cache, json.dumps(parsed, indent=2))
                 return parsed
             except Exception as e:
                 err_str = str(e)
