@@ -283,7 +283,22 @@ def main() -> int:
         if _sj_write is not None:
             _sj_write(TRACKER, tr)
         else:
-            TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+            # Inline atomic fallback — same shape as safe_json._atomic_write
+            # but without the cross-process lock. Better than a raw write_text
+            # which truncates on crash.
+            import os as _os, tempfile as _tf
+            fd, tmp = _tf.mkstemp(prefix=TRACKER.name + ".", suffix=".tmp",
+                                   dir=str(TRACKER.parent))
+            try:
+                with _os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(tr, f, indent=2)
+                    f.flush()
+                    _os.fsync(f.fileno())
+                _os.replace(tmp, TRACKER)
+            except Exception:
+                try: _os.unlink(tmp)
+                except OSError: pass
+                raise
         print(f"[auto_promote] COMMIT: added {added}, upgraded {updated}, expired {expired}")
         print(f"[auto_promote] Tracker backed up to {bak.name}")
 
@@ -302,12 +317,17 @@ def main() -> int:
                     cmd = [sys.executable, str(tailor_py), "--job-id", e["id"]]
                     try:
                         # Detach so we don't block — tailor can take ~60s per role
-                        subprocess.Popen(
-                            cmd,
-                            stdout=open(OUT_DIR / f"tailor_{e['id']}_stdout.log", "wb"),
-                            stderr=subprocess.STDOUT,
-                            cwd=str(Path(__file__).parent.parent),
-                        )
+                        _lf = open(OUT_DIR / f"tailor_{e['id']}_stdout.log", "wb")
+                        try:
+                            subprocess.Popen(
+                                cmd,
+                                stdout=_lf,
+                                stderr=subprocess.STDOUT,
+                                cwd=str(Path(__file__).parent.parent),
+                            )
+                        finally:
+                            try: _lf.close()
+                            except Exception: pass
                         print(f"  [tailor] spawned for {e['id']} ({e['company']})")
                     except Exception as ex:
                         print(f"  [tailor] failed to spawn for {e['id']}: {ex}",

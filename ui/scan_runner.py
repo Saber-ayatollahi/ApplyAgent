@@ -54,22 +54,31 @@ def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None) -> RunReco
     status_path = RUNS_DIR / f"{run_id}.json"
 
     log_f = open(log_path, "wb")
-    log_f.write(f"# {label}\n# cmd: {' '.join(cmd)}\n# started: {datetime.now().isoformat()}\n\n".encode())
-    log_f.flush()
+    try:
+        log_f.write(f"# {label}\n# cmd: {' '.join(cmd)}\n# started: {datetime.now().isoformat()}\n\n".encode())
+        log_f.flush()
 
-    kwargs = dict(
-        stdout=log_f,
-        stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL,
-        cwd=str(cwd or ROOT),
-        env={**os.environ, "PYTHONUNBUFFERED": "1"},
-    )
-    if sys.platform == "win32":
-        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
-    else:
-        kwargs["start_new_session"] = True
+        kwargs = dict(
+            stdout=log_f,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            cwd=str(cwd or ROOT),
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+        if sys.platform == "win32":
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+        else:
+            kwargs["start_new_session"] = True
 
-    proc = subprocess.Popen(cmd, **kwargs)
+        proc = subprocess.Popen(cmd, **kwargs)
+    finally:
+        # Subprocess.Popen has duplicated the fd into the child; the parent's
+        # handle is now redundant. Without this close, Streamlit (long-lived
+        # parent) leaks one fd per launch — eventually OS-limit out.
+        try:
+            log_f.close()
+        except Exception:
+            pass
 
     rec = RunRecord(
         run_id=run_id,
@@ -89,17 +98,25 @@ def _pid_alive(pid: int) -> bool:
         return False
     try:
         if sys.platform == "win32":
-            # tasklist is slow; use OpenProcess via ctypes instead
+            # GetExitCodeProcess returning STILL_ACTIVE (259) is unreliable —
+            # 259 is also a perfectly legal exit code, so a real exited
+            # process that happened to return 259 reads as "alive" forever.
+            # WaitForSingleObject(handle, 0) returns WAIT_TIMEOUT (258) when
+            # the process is still running, and WAIT_OBJECT_0 (0) once it's
+            # signaled (exited). That's an unambiguous answer.
             import ctypes
             PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-            h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            SYNCHRONIZE = 0x00100000
+            h = ctypes.windll.kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, False, pid)
             if not h:
                 return False
-            exit_code = ctypes.c_ulong()
-            still_active = 259  # STILL_ACTIVE
-            ok = ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(exit_code))
-            ctypes.windll.kernel32.CloseHandle(h)
-            return bool(ok) and exit_code.value == still_active
+            try:
+                WAIT_TIMEOUT = 0x00000102
+                rc = ctypes.windll.kernel32.WaitForSingleObject(h, 0)
+                return rc == WAIT_TIMEOUT
+            finally:
+                ctypes.windll.kernel32.CloseHandle(h)
         else:
             os.kill(pid, 0)
             return True

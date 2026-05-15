@@ -32,7 +32,7 @@ import json
 import re
 import sys
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -524,7 +524,7 @@ def fetch_lever_jobs(slug: str) -> list[dict]:
             created_at = j.get("createdAt")
             if isinstance(created_at, (int, float)) and created_at > 0:
                 try:
-                    posted = datetime.utcfromtimestamp(created_at / 1000).date().isoformat()
+                    posted = datetime.fromtimestamp(created_at / 1000, timezone.utc).date().isoformat()
                 except Exception:
                     posted = None
             jobs.append({
@@ -1096,6 +1096,11 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
 
     seen = load_tracker_urls()
     paused = False
+    # TARGETS has shared Workday tenants (TD Bank + TD Asset Management both
+    # use ("td","wd3","TD_Bank_Careers"); same for BMO). Without memoization
+    # we issue every keyword query twice. Key on the validated 3-tuple form
+    # so legacy 2-tuple specs don't accidentally collide.
+    _wd_cache: dict[tuple, list[dict]] = {}
     for i, c in enumerate(companies, 1):
         # Skip already-completed companies on resume
         if c["name"] in completed:
@@ -1114,9 +1119,18 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         wd_count = 0
         if c.get("workday") and not linkedin_only:
             wd_before = len(found)
-            for j in fetch_workday_jobs(c["workday"]):
-                if j["link"] in seen or _is_negative(j["title"]):
+            wd_key = tuple(c["workday"]) if isinstance(c["workday"], (list, tuple)) else c["workday"]
+            wd_jobs = _wd_cache.get(wd_key)
+            if wd_jobs is None:
+                wd_jobs = fetch_workday_jobs(c["workday"])
+                _wd_cache[wd_key] = wd_jobs
+            for src_j in wd_jobs:
+                if src_j["link"] in seen or _is_negative(src_j["title"]):
                     continue
+                # Shallow-copy so mutating company/sector for THIS company
+                # doesn't overwrite the same fields when a sibling brand
+                # (TD Bank vs TD Asset Management) reuses the same tenant.
+                j = dict(src_j)
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
             wd_count = len(found) - wd_before

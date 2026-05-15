@@ -238,7 +238,22 @@ def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
             import shutil
             bak = tracker_path.with_suffix(f".bak.auto_brief_{stamp}.json")
             shutil.copy2(tracker_path, bak)
-            tracker_path.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+            # Inline atomic fallback — same shape as safe_json._atomic_write
+            # but without the cross-process lock. Better than a raw write_text
+            # which truncates on crash.
+            import os as _os, tempfile as _tf
+            fd, tmp = _tf.mkstemp(prefix=tracker_path.name + ".", suffix=".tmp",
+                                   dir=str(tracker_path.parent))
+            try:
+                with _os.fdopen(fd, "w", encoding="utf-8") as f:
+                    json.dump(tr, f, indent=2)
+                    f.flush()
+                    _os.fsync(f.fileno())
+                _os.replace(tmp, tracker_path)
+            except Exception:
+                try: _os.unlink(tmp)
+                except OSError: pass
+                raise
     return added_ids
 
 
@@ -252,12 +267,17 @@ def _spawn_tailors(job_ids: list[str]) -> None:
         log_path = OUT_DIR / f"tailor_{jid}_stdout.log"
         cmd = [sys.executable, str(tailor_py), "--job-id", jid]
         try:
-            subprocess.Popen(
-                cmd,
-                stdout=open(log_path, "wb"),
-                stderr=subprocess.STDOUT,
-                cwd=str(ROOT),
-            )
+            _lf = open(log_path, "wb")
+            try:
+                subprocess.Popen(
+                    cmd,
+                    stdout=_lf,
+                    stderr=subprocess.STDOUT,
+                    cwd=str(ROOT),
+                )
+            finally:
+                try: _lf.close()
+                except Exception: pass
             print(f"  [brief->tailor] spawned for {jid}", file=sys.stderr)
         except Exception as e:
             print(f"  [brief->tailor] failed for {jid}: {e}", file=sys.stderr)

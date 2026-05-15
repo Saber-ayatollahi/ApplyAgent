@@ -146,12 +146,24 @@ FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6"
 _fit_cache_locks_guard = Lock()
 _fit_cache_locks: dict[str, Lock] = {}
 
+_FIT_CACHE_LOCK_CAP = 1024
+
 
 def _fit_cache_lock(path: Path) -> Lock:
+    """Get-or-create the per-cache-path lock. Capped to prevent unbounded
+    growth in long-running processes (Streamlit-hosted scorer over many
+    sessions). When the dict exceeds the cap, evict the oldest insertion —
+    the worst case is a single redundant LLM call for a path whose lock
+    we forgot, which is the same blast radius as the bug this lock was
+    added to fix in the first place."""
     key = str(path)
     with _fit_cache_locks_guard:
         lock = _fit_cache_locks.get(key)
         if lock is None:
+            if len(_fit_cache_locks) >= _FIT_CACHE_LOCK_CAP:
+                # Drop oldest. Python 3.7+ dicts preserve insertion order.
+                _oldest_key = next(iter(_fit_cache_locks))
+                _fit_cache_locks.pop(_oldest_key, None)
             lock = Lock()
             _fit_cache_locks[key] = lock
         return lock
@@ -179,15 +191,24 @@ _progress_state: dict = {
 
 
 def _write_progress():
+    """Snapshot under _progress_lock then write outside it.
+
+    The previous implementation held _progress_lock during the file write,
+    so every progress_tick / _cost_tick serialized on disk IO. With 6-worker
+    concurrency this throttles scoring on slow disks (especially Windows
+    machines with antivirus scanning the JSON file). Snapshot is cheap;
+    the write doesn't need the lock since each write contains a complete
+    self-consistent snapshot.
+    """
     try:
         OUT_DIR.mkdir(parents=True, exist_ok=True)
-        serializable = dict(_progress_state)
-        serializable["recent"] = list(_progress_state["recent"])
+        with _progress_lock:
+            serializable = dict(_progress_state)
+            serializable["recent"] = list(_progress_state["recent"])
+        # Write outside the lock — workers can keep mutating state freely
+        # while disk IO completes.
         PROGRESS_PATH.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
     except Exception as e:
-        # Progress is best-effort; never break scoring on an IO hiccup. Log
-        # so a recurring hiccup (stale lockfile, disk full) becomes visible
-        # instead of degrading the UI silently.
         if _log_error is not None:
             _log_error("progress_write", e, module="fit_scorer")
 
@@ -208,7 +229,7 @@ def progress_begin(scan_name: str, total: int):
             "verdict_counts": {},
             "recent": deque(maxlen=8),
         })
-        _write_progress()
+    _write_progress()
 
 
 def progress_tick(candidate: dict, from_cache: bool, error: bool, t0: float):
@@ -239,14 +260,14 @@ def progress_tick(candidate: dict, from_cache: bool, error: bool, t0: float):
             "from_cache": from_cache,
             "error": error,
         })
-        _write_progress()
+    _write_progress()
 
 
 def progress_end(state: str = "finished"):
     with _progress_lock:
         _progress_state["state"] = state
         _progress_state["finished_at"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
-        _write_progress()
+    _write_progress()
 
 
 # ---------------------------------------------------------------------------
@@ -287,7 +308,7 @@ def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0
             m["cost_usd"] += cost
         # Mirror to progress state so the UI sees it
         _progress_state["cost"] = dict(_cost_state)
-        _write_progress()
+    _write_progress()
 
     # Cost guardrail: record this call and trip the abort event if either
     # cap is exceeded. Outside the progress lock so the ledger-based daily
@@ -746,6 +767,20 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
         # http_retry already logged the failure reason + URL to the error log.
         return ""
 
+    # Defense against pathological JD pages (CMS bugs, infinite scroll
+    # mirrors, malware-injected megapages). 5 MB is far beyond any real
+    # job description; anything larger is an alarm.
+    if len(r.text) > 5_000_000:
+        if _log_error is not None:
+            try:
+                raise ValueError(f"JD response too large: {len(r.text)} bytes")
+            except Exception as _e:
+                _log_error("fetch_jd_oversize", _e, module="fit_scorer",
+                           extra={"url": url, "size": len(r.text)})
+        print(f"  [fetch_jd] response {len(r.text)} bytes for {url} "
+              f"— skipping (over 5 MB cap)", file=sys.stderr)
+        return ""
+
     try:
         soup = BeautifulSoup(r.text, "html.parser")
         for tag in soup(["script", "style", "nav", "footer", "header", "button", "form",
@@ -1104,8 +1139,23 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
                 m = re.search(r"\{.*\}", text, flags=re.S)
                 if not m:
-                    # Parse miss — try next attempt
-                    continue
+                    # Parse miss — model returned text but no JSON. Log it
+                    # (so a recurring pattern is visible) and break out of
+                    # this model's retry loop to fall through to the
+                    # fallback model. Retrying the same model on parse-miss
+                    # almost never helps; the prompt is the issue.
+                    if _log_error is not None:
+                        try:
+                            raise ValueError("LLM returned no JSON")
+                        except Exception as _pme:
+                            _log_error("score_parse_miss", _pme,
+                                       module="fit_scorer",
+                                       extra={"model": model,
+                                              "url": role.get("link"),
+                                              "preview": text[:200]})
+                    print(f"  [score_llm] {model} parse miss — falling through "
+                          f"to fallback model", file=sys.stderr)
+                    break  # exit attempt loop, try next model
                 parsed = json.loads(m.group(0))
                 parsed.setdefault("fit_score", 1)
                 parsed.setdefault("fit_verdict", "skip")

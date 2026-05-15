@@ -28,6 +28,23 @@ CONFIG_DIR = Path.home() / ".applyagent"
 CONFIG_PATH = CONFIG_DIR / "config.json"
 ENV_VAR = "ANTHROPIC_API_KEY"
 
+# Re-validation cadence — mirrors gmail_ui. Without this, a key that worked
+# at session start stays "OK" in the sidebar even after revocation or credit
+# exhaustion, until the user clicks 🔄 Re-validate manually.
+_VALIDATE_TTL_OK_S = 15 * 60
+_VALIDATE_TTL_FAIL_S = 5 * 60
+
+
+def _validation_age_s(v: "ValidationResult | None") -> "float | None":
+    if v is None or not v.checked_at:
+        return None
+    try:
+        import time as _t
+        ts = datetime.fromisoformat(v.checked_at).timestamp()
+        return max(_t.time() - ts, 0.0)
+    except Exception:
+        return None
+
 
 # ---------------------------------------------------------------------------
 # Persistence
@@ -224,10 +241,19 @@ def render_sidebar():
     key = load_key()
     validation: ValidationResult | None = st.session_state.get("_anth_validation")
 
-    # Auto-validate once per session if we have a key and no result yet
-    if key and validation is None:
-        validation = validate(key)
-        st.session_state["_anth_validation"] = validation
+    # Auto-validate when either:
+    #   - we have no result yet (first paint after key saved), or
+    #   - the cached result is past its TTL (success: 15m, failure: 5m).
+    # Without the TTL, a key that worked at session start kept showing
+    # green even after revocation or credit exhaustion mid-session.
+    if key:
+        age = _validation_age_s(validation)
+        ttl = (_VALIDATE_TTL_OK_S
+               if (validation and validation.ok and validation.preflight_ok)
+               else _VALIDATE_TTL_FAIL_S)
+        if validation is None or (age is not None and age > ttl):
+            validation = validate(key)
+            st.session_state["_anth_validation"] = validation
 
     # Header badge — category-aware. "Not set" is a normal first-run state,
     # not an error — only AUTH/CREDIT/INVALID warrant the red banner. The

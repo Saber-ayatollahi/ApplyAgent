@@ -64,6 +64,60 @@ try:
 except ImportError:
     HAVE_SCRAPING = False
 
+# Cost guard + ledger + central error log + API preflight. All optional —
+# tailor still runs without them (legacy behavior) but with them we get:
+#   - daily/per-run USD cap → no $20 surprise from a runaway tailor
+#   - lifetime ledger entries → sidebar "lifetime spend" reflects tailor cost
+#   - api_preflight → fail fast on revoked key / exhausted credits
+#   - error_log → silent SDK exceptions become visible
+try:
+    from cost_guard import CostGuard as _CostGuard  # type: ignore
+except ImportError:
+    try:
+        from .cost_guard import CostGuard as _CostGuard  # type: ignore
+    except Exception:
+        _CostGuard = None  # type: ignore
+
+try:
+    from cost_ledger import record as _ledger_record  # type: ignore
+except ImportError:
+    try:
+        from .cost_ledger import record as _ledger_record  # type: ignore
+    except Exception:
+        _ledger_record = None  # type: ignore
+
+try:
+    from api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+except ImportError:
+    try:
+        from .api_preflight import preflight_or_exit as _cli_preflight  # type: ignore
+    except Exception:
+        _cli_preflight = None  # type: ignore
+
+try:
+    from error_log import log_error as _log_error  # type: ignore
+except ImportError:
+    try:
+        from .error_log import log_error as _log_error  # type: ignore
+    except Exception:
+        _log_error = None  # type: ignore
+
+# Per-1M-token prices (USD) — same source as fit_scorer._MODEL_PRICES.
+# Tailor uses Opus by default, which is the most expensive model available.
+_MODEL_PRICES = {
+    "claude-opus-4-7":           {"input": 15.0, "output": 75.0},
+    "claude-sonnet-4-6":         {"input": 3.0,  "output": 15.0},
+    "claude-haiku-4-5-20251001": {"input": 1.0,  "output": 5.0},
+    "claude-haiku-4-5":          {"input": 1.0,  "output": 5.0},
+}
+
+
+def _estimate_cost_usd(model: str, in_tokens: int, out_tokens: int) -> float:
+    p = _MODEL_PRICES.get(model) or _MODEL_PRICES.get(model.split("-2025")[0])
+    if not p:
+        return 0.0
+    return (in_tokens * p["input"] + out_tokens * p["output"]) / 1_000_000
+
 
 def preflight_or_exit() -> None:
     missing = []
@@ -286,9 +340,23 @@ Keep it a 1-2 page equivalent. No fake metrics. No bullets outside the library.
 """
 
 
-def call_claude(system: str, user: str, max_tokens: int = 16000) -> str:
+def call_claude(system: str, user: str, max_tokens: int = 16000,
+                cost_guard=None) -> str:
+    """Call Claude with cost telemetry, ledger recording, and optional cost guard.
+
+    Tailor runs at Opus pricing (default) — a single call is up to ~$1
+    worst-case. Without ledger recording, the sidebar 'lifetime spend'
+    widget would silently undercount. Without a cost guard, a misbehaving
+    tracker entry could trigger several tailors via auto-tailor and burn
+    real money. Both wrappers are optional so legacy importers still work.
+    """
     client = anthropic.Anthropic()
+    last_err: Exception | None = None
     for model in (MODEL, FALLBACK_MODEL):
+        if cost_guard is not None and cost_guard.exceeded():
+            print(f"  [tailor] cost_guard tripped before {model}: "
+                  f"{cost_guard.reason}", file=sys.stderr)
+            raise RuntimeError(f"cost_guard: {cost_guard.reason}")
         try:
             resp = client.messages.create(
                 model=model,
@@ -296,11 +364,42 @@ def call_claude(system: str, user: str, max_tokens: int = 16000) -> str:
                 system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                 messages=[{"role": "user", "content": user}],
             )
+            # Ledger + cost-guard accounting BEFORE returning so a downstream
+            # parser failure doesn't drop the spend on the floor.
+            try:
+                usage = resp.usage
+                in_t = getattr(usage, "input_tokens", 0) or 0
+                out_t = getattr(usage, "output_tokens", 0) or 0
+                cache_create = getattr(usage, "cache_creation_input_tokens", 0) or 0
+                cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+                cost = _estimate_cost_usd(model, in_t, out_t)
+                if _ledger_record is not None:
+                    try:
+                        _ledger_record(
+                            model=model, in_tokens=in_t, out_tokens=out_t,
+                            cost_usd=cost, cache_create=cache_create,
+                            cache_read=cache_read, cache_hit=False,
+                        )
+                    except Exception as _le:
+                        if _log_error is not None:
+                            _log_error("ledger_record", _le, module="jd_tailor")
+                if cost_guard is not None and cost > 0:
+                    cost_guard.record(cost)
+                print(f"  [tailor] {model} cost ${cost:.3f} "
+                      f"(in={in_t}, out={out_t}, cache_read={cache_read})",
+                      file=sys.stderr)
+            except Exception:
+                # Telemetry is best-effort; never lose the response over it.
+                pass
             return "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
         except Exception as e:
+            last_err = e
+            if _log_error is not None:
+                _log_error("tailor_llm", e, module="jd_tailor",
+                           extra={"model": model})
             print(f"WARN: model {model} failed: {e}", file=sys.stderr)
             continue
-    raise RuntimeError("All models failed")
+    raise RuntimeError(f"All models failed. Last error: {last_err}")
 
 
 def main() -> int:
@@ -362,8 +461,24 @@ def main() -> int:
     # Real run — NOW we need the SDK + API key.
     preflight_or_exit()
 
+    # API preflight: catch revoked keys + exhausted credits BEFORE building
+    # the prompt and burning a 50KB upload. Bypass with APPLYAGENT_SKIP_PREFLIGHT=1.
+    if _cli_preflight is not None:
+        _cli_preflight(module="jd_tailor",
+                        preflight_model="claude-haiku-4-5-20251001")
+
+    # Cost guard: tailor runs Opus by default — a single call can be ~$1.
+    # Without this, a runaway batch (e.g. auto-promote spawning many tailors)
+    # could burn real money before anyone notices. Honors the same env caps
+    # as fit_scorer (COST_GUARD_DAILY_CAP_USD / COST_GUARD_PER_RUN_CAP_USD).
+    guard = None
+    if _CostGuard is not None:
+        guard = _CostGuard.from_env()
+        print(f"[cost_guard] {guard.summary()}", file=sys.stderr)
+        guard.preflight_or_exit()
+
     print(f"[jd_tailor] Tailoring for {company} / {role} ...", file=sys.stderr)
-    result = call_claude(system, user)
+    result = call_claude(system, user, cost_guard=guard)
 
     out_path = OUT_DIR / f"{safe_company}_{safe_role}_{stamp}.md"
     out_path.write_text(result, encoding="utf-8")

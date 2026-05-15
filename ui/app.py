@@ -76,7 +76,14 @@ def save_tracker(d: dict):
     bak = TRACKER.with_suffix(f".bak.{stamp}.json")
     if TRACKER.exists():
         bak.write_text(TRACKER.read_text(encoding="utf-8"), encoding="utf-8")
-    TRACKER.write_text(json.dumps(d, indent=2), encoding="utf-8")
+    # Atomic write under portalocker lock — protects against concurrent
+    # writers (auto_promote CLI, score_url CLI) and against truncation if
+    # the process dies mid-write.
+    try:
+        from safe_json import write_json as _sj_write
+        _sj_write(TRACKER, d)
+    except ImportError:
+        TRACKER.write_text(json.dumps(d, indent=2), encoding="utf-8")
     st.cache_data.clear()
 
 
@@ -85,7 +92,13 @@ def save_crm(d: dict):
     bak = CRM.with_suffix(f".bak.{stamp}.json")
     if CRM.exists():
         bak.write_text(CRM.read_text(encoding="utf-8"), encoding="utf-8")
-    CRM.write_text(json.dumps(d, indent=2), encoding="utf-8")
+    # Atomic write under portalocker lock — protects against concurrent
+    # writers and against truncation if the process dies mid-write.
+    try:
+        from safe_json import write_json as _sj_write
+        _sj_write(CRM, d)
+    except ImportError:
+        CRM.write_text(json.dumps(d, indent=2), encoding="utf-8")
     st.cache_data.clear()
 
 
@@ -461,7 +474,12 @@ def human_elapsed(started_iso: str | None, end_iso: str | None = None) -> str:
 
 def hours_since_posted(posted_date: str | None) -> float | None:
     """Return hours elapsed since posted_date. None if unparseable.
-    Accepts 'YYYY-MM-DD' or any ISO8601 string."""
+    Accepts 'YYYY-MM-DD' (treated as UTC midnight) or any ISO8601 string.
+
+    Both sides of the subtraction are kept tz-aware. Earlier this naively
+    stripped tz and compared to local-naive datetime.now() — on a Toronto
+    laptop that shifted every elapsed-hours value by 4-5 hours, breaking
+    the 48-hour urgent-role threshold."""
     if not posted_date:
         return None
     s = str(posted_date).replace("Z", "+00:00")
@@ -472,10 +490,11 @@ def hours_since_posted(posted_date: str | None) -> float | None:
             dt = datetime.strptime(s[:10], "%Y-%m-%d")
         except Exception:
             return None
-    # Drop tz for uniform comparison; we only need hour-level precision.
-    if dt.tzinfo is not None:
-        dt = dt.replace(tzinfo=None)
-    delta = datetime.now() - dt
+    # Date-only or naive ISO — treat as UTC. Don't silently coerce to local;
+    # job-board timestamps are almost always UTC.
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    delta = datetime.now(timezone.utc) - dt
     return max(0.0, delta.total_seconds() / 3600.0)
 
 

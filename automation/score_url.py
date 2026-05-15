@@ -195,7 +195,22 @@ def _add_to_tracker(url: str, role: dict, fit: dict) -> str | None:
     except ImportError:
         tr = json.loads(TRACKER.read_text(encoding="utf-8"))
         _mutator(tr)
-        TRACKER.write_text(json.dumps(tr, indent=2), encoding="utf-8")
+        # Inline atomic fallback — same shape as safe_json._atomic_write
+        # but without the cross-process lock. Better than a raw write_text
+        # which truncates on crash.
+        import os as _os, tempfile as _tf
+        fd, tmp = _tf.mkstemp(prefix=TRACKER.name + ".", suffix=".tmp",
+                               dir=str(TRACKER.parent))
+        try:
+            with _os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(tr, f, indent=2)
+                f.flush()
+                _os.fsync(f.fileno())
+            _os.replace(tmp, TRACKER)
+        except Exception:
+            try: _os.unlink(tmp)
+            except OSError: pass
+            raise
 
     if added_id[0]:
         print(f"[score_url] Added {added_id[0]} to tracker. Backup at {bak.name}",
