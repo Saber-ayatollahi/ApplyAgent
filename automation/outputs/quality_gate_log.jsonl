@@ -1,0 +1,5 @@
+{"ts": "2026-05-15T19:49:54Z", "file": "automation\\outputs\\Scotiabank_Director_ALM_Modelling_20260515.md", "violations": [], "action": "clean", "cost": 0.0}
+{"ts": "2026-05-15T19:50:23Z", "file": "automation\\outputs\\_test_violation_synth.md", "violations": ["B-12", "Basel", "IFRS 17", "LAR", "OSFI", "regulatory calendar"], "action": "warned", "cost": 0.0, "dry_run": false}
+{"ts": "2026-05-15T19:50:45Z", "file": "automation\\outputs\\_test_violation_synth.md", "violations": ["B-12", "Basel", "IFRS 17", "LAR", "OSFI", "regulatory calendar"], "action": "warned", "cost": 0.0, "dry_run": true}
+{"ts": "2026-05-15T19:52:17Z", "file": "automation\\outputs\\_test_rescue_small.md", "violations": ["B-12", "IFRS 17", "OSFI", "regulatory calendar"], "action": "rescued", "cost": 0.004071, "backup": "automation\\outputs\\_test_rescue_small.md.bak.20260515", "model": "claude-sonnet-4-6"}
+{"ts": "2026-05-15T19:52:37Z", "file": "automation\\outputs\\_test_rescue_small.md", "violations": [], "action": "clean", "cost": 0.0}
