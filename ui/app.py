@@ -3787,7 +3787,9 @@ elif page == "🎯 Pipeline":
                         "dropped": d,
                         "pass_rate": f"{(100*p/tot):.0f}%" if tot else "—",
                     })
-                by_co_df = pd.DataFrame(by_co).sort_values("scraped", ascending=False)
+                by_co_df = pd.DataFrame(by_co)
+                if "scraped" in by_co_df.columns:
+                    by_co_df = by_co_df.sort_values("scraped", ascending=False)
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
     # ================== TAB: History ==================
