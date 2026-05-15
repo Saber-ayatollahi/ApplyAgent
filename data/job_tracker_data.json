@@ -54,7 +54,7 @@
       },
       {
         "date": "2026-05-03",
-        "event": "Research pass \u2014 22 more target companies added",
+        "event": "Research pass — 22 more target companies added",
         "roles": 44
       },
       {
@@ -190,7 +190,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 verify still open on jobs.scotiabank.com (search 'ALM'); use jd_tailor agent with Master Repo to generate ALM_Scotia_Director.docx; find 1 Scotia Moody's alum for warm intro BEFORE submitting.",
+      "next_action": "APPLY THIS WEEK — verify still open on jobs.scotiabank.com (search 'ALM'); use jd_tailor agent with Master Repo to generate ALM_Scotia_Director.docx; find 1 Scotia Moody's alum for warm intro BEFORE submitting.",
       "notes": "Highest near-term fit based on JD language match. JD text near-verbatim maps to Moody's responsibilities."
     },
     {
@@ -213,7 +213,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "High",
       "expected_comp_band_cad": "$145K-$180K base + 25-40% bonus",
-      "fit_notes": "ALM Modeling Team in Treasury \u2014 models all assets/liabilities, ensures IRRBB properly modeled so risk can be transferred to Group Treasury and hedged.",
+      "fit_notes": "ALM Modeling Team in Treasury — models all assets/liabilities, ensures IRRBB properly modeled so risk can be transferred to Group Treasury and hedged.",
       "keywords": [
         "ALM",
         "IRRBB",
@@ -242,8 +242,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 LinkedIn job ID 4323830435. One level below Director \u2014 apply alongside scot-001 (slight level-flex to widen funnel).",
-      "notes": "Confirmed active on LinkedIn. Consider applying to BOTH scot-001 and scot-002 \u2014 different hiring managers likely; dual shots at same team."
+      "next_action": "APPLY THIS WEEK — LinkedIn job ID 4323830435. One level below Director — apply alongside scot-001 (slight level-flex to widen funnel).",
+      "notes": "Confirmed active on LinkedIn. Consider applying to BOTH scot-001 and scot-002 — different hiring managers likely; dual shots at same team."
     },
     {
       "id": "scot-003",
@@ -265,7 +265,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$140K-$175K base + 20-35% bonus",
-      "fit_notes": "Independent model validation \u2014 treasury, ALM, liquidity, cash flow management models. Formal sign-off experience at Moody's is a direct match. E-23 tailwind.",
+      "fit_notes": "Independent model validation — treasury, ALM, liquidity, cash flow management models. Formal sign-off experience at Moody's is a direct match. E-23 tailwind.",
       "keywords": [
         "model validation",
         "model governance",
@@ -297,7 +297,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 use model-validation variant of ALM cover letter. Lead with E-23 governance framing.",
+      "next_action": "APPLY THIS WEEK — use model-validation variant of ALM cover letter. Lead with E-23 governance framing.",
       "notes": "Global Model Risk Management function. Complements scot-001/scot-002 as third Scotia shot."
     },
     {
@@ -349,7 +349,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Posted Feb 9 2026; deadline Feb 27 \u2014 assume closed. Replace with rbc-002 (Director-level ALM search) and rbc-003 (Model Validation search).",
+      "next_action": "Posted Feb 9 2026; deadline Feb 27 — assume closed. Replace with rbc-002 (Director-level ALM search) and rbc-003 (Model Validation search).",
       "notes": "Verify expired status via portal. Role likely closed. Watch jobs.rbc.com for re-post or next Director-level equivalent."
     },
     {
@@ -357,7 +357,7 @@
       "company": "RBC",
       "sector": "Canadian Big 6 Banks",
       "tier": 1,
-      "title": "Director/VP \u2014 ALM & Balance Sheet Risk (Toronto)",
+      "title": "Director/VP — ALM & Balance Sheet Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://jobs.rbc.com/ca/en/",
       "portal_url": "https://jobs.rbc.com/ca/en/",
@@ -372,7 +372,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$200K-$260K base + 40-60% bonus + LTIP",
-      "fit_notes": "RBC Group Treasury ALM team \u2014 one of largest in Canada. RBC-HSBC integration completing 2026 = balance-sheet/ALM hiring wave. Target Director level.",
+      "fit_notes": "RBC Group Treasury ALM team — one of largest in Canada. RBC-HSBC integration completing 2026 = balance-sheet/ALM hiring wave. Target Director level.",
       "keywords": [
         "ALM",
         "IRRBB",
@@ -402,7 +402,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan on jobs.rbc.com \u2192 keyword 'ALM' or 'balance sheet' + Toronto + Director/VP level. Also check for RBC Group Risk Management Model Validation roles.",
+      "next_action": "Weekly scan on jobs.rbc.com → keyword 'ALM' or 'balance sheet' + Toronto + Director/VP level. Also check for RBC Group Risk Management Model Validation roles.",
       "notes": "Placeholder for RBC Director-level equivalent after rbc-001 expired. RBC-HSBC Canada retail integration completion in 2026 should drive incremental hiring."
     },
     {
@@ -410,7 +410,7 @@
       "company": "RBC",
       "sector": "Canadian Big 6 Banks",
       "tier": 1,
-      "title": "Director \u2014 Model Risk & Validation (RBC Group Risk Management)",
+      "title": "Director — Model Risk & Validation (RBC Group Risk Management)",
       "level": "Director",
       "url": "https://jobs.rbc.com/ca/en/",
       "portal_url": "https://jobs.rbc.com/ca/en/",
@@ -463,7 +463,7 @@
       "company": "Bloomberg",
       "sector": "Analytics & Risk Vendors",
       "tier": 1,
-      "title": "Senior Quantitative Analyst \u2014 Interest Rate Modeling & Risk Analytics",
+      "title": "Senior Quantitative Analyst — Interest Rate Modeling & Risk Analytics",
       "level": "Senior",
       "url": "https://bloomberg.avature.net/careers/JobDetail/Senior-Quantitative-Analyst-Interest-Rate-Modeling-Risk-Analytics/13711",
       "portal_url": "https://bloomberg.avature.net/careers",
@@ -478,7 +478,7 @@
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$230K base + bonus + equity",
-      "fit_notes": "Title = near-exact match for core competency. Bloomberg Financial Solutions team. IR modeling + risk analytics maps directly to Moody's Analytics background \u2014 vendor-to-vendor lateral is strongest secondary narrative.",
+      "fit_notes": "Title = near-exact match for core competency. Bloomberg Financial Solutions team. IR modeling + risk analytics maps directly to Moody's Analytics background — vendor-to-vendor lateral is strongest secondary narrative.",
       "keywords": [
         "interest rate modeling",
         "risk analytics",
@@ -508,7 +508,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 use Vendor-Platform cover letter template. Verify role #13711 still open. Search for Moody's \u2192 Bloomberg alumni on LinkedIn for warm intro.",
+      "next_action": "APPLY THIS WEEK — use Vendor-Platform cover letter template. Verify role #13711 still open. Search for Moody's → Bloomberg alumni on LinkedIn for warm intro.",
       "notes": "Role #13711 on Bloomberg Avature. Confirmed active at time of research. Vendor-to-vendor lateral = strongest secondary-narrative application."
     },
     {
@@ -531,7 +531,7 @@
       "osfi_hook": "None",
       "urgency": "Low",
       "expected_comp_band_cad": "$190K-$230K base + bonus",
-      "fit_notes": "DOWNGRADED from High\u2192Medium 2026-05-03. This is a BUY-SIDE TRADING seat (credit derivatives indices, index tranches, credit options, EM portfolio trading) \u2014 not risk/ALM. Saber's background is risk/validation/ALM modelling, not sell-side trading or buy-side PM. Would need to retrain the story aggressively. HOOPP as an employer still Tier 1 via LDI fit \u2014 but via hoopp-002 (Risk/ALM), not via this role.",
+      "fit_notes": "DOWNGRADED from High→Medium 2026-05-03. This is a BUY-SIDE TRADING seat (credit derivatives indices, index tranches, credit options, EM portfolio trading) — not risk/ALM. Saber's background is risk/validation/ALM modelling, not sell-side trading or buy-side PM. Would need to retrain the story aggressively. HOOPP as an employer still Tier 1 via LDI fit — but via hoopp-002 (Risk/ALM), not via this role.",
       "keywords": [
         "derivatives",
         "fixed income",
@@ -561,14 +561,14 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "DO NOT apply to this posting. Replace with hoopp-002 (Risk/ALM placeholder).",
-      "notes": "Post vanished on last check. Downgraded \u2014 wrong role family. HOOPP is still Tier 1 via LDI fit \u2014 pursue hoopp-002 instead."
+      "notes": "Post vanished on last check. Downgraded — wrong role family. HOOPP is still Tier 1 via LDI fit — pursue hoopp-002 instead."
     },
     {
       "id": "hoopp-002",
       "company": "HOOPP",
       "sector": "Canadian Pension Funds",
       "tier": 1,
-      "title": "Director/VP \u2014 Investment Risk, ALM, or Liability-Driven Investment (Toronto)",
+      "title": "Director/VP — Investment Risk, ALM, or Liability-Driven Investment (Toronto)",
       "level": "Director/VP",
       "url": "https://hoopp.wd10.myworkdayjobs.com/en-US/HOOPP",
       "portal_url": "https://hoopp.wd10.myworkdayjobs.com/en-US/HOOPP",
@@ -583,7 +583,7 @@
       "osfi_hook": "None",
       "urgency": "Medium",
       "expected_comp_band_cad": "$210K-$275K base + bonus",
-      "fit_notes": "HOOPP runs the most pure LDI mandate in Canada \u2014 direct match for Ortec Finance LDI background. Investment Risk / ALM / LDI / Total Portfolio Risk are target teams.",
+      "fit_notes": "HOOPP runs the most pure LDI mandate in Canada — direct match for Ortec Finance LDI background. Investment Risk / ALM / LDI / Total Portfolio Risk are target teams.",
       "keywords": [
         "LDI",
         "ALM",
@@ -614,8 +614,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan HOOPP Workday. Also target networking: Ortec Finance \u2192 HOOPP pathways (Ortec served HOOPP historically).",
-      "notes": "Replaces hoopp-001 as HOOPP placeholder. LDI narrative is strongest angle \u2014 lead cover letter with Ortec client-to-colleague framing."
+      "next_action": "Weekly scan HOOPP Workday. Also target networking: Ortec Finance → HOOPP pathways (Ortec served HOOPP historically).",
+      "notes": "Replaces hoopp-001 as HOOPP placeholder. LDI narrative is strongest angle — lead cover letter with Ortec client-to-colleague framing."
     },
     {
       "id": "bmo-001",
@@ -637,7 +637,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$190K-$245K base + 35-50% bonus + LTIP",
-      "fit_notes": "Director-level model validation at BMO Toronto. Independent validation mandate aligns perfectly with formal sign-off authority at Moody's and OSFI E-23 governance experience. Posted Apr 17 2026 \u2014 fresh.",
+      "fit_notes": "Director-level model validation at BMO Toronto. Independent validation mandate aligns perfectly with formal sign-off authority at Moody's and OSFI E-23 governance experience. Posted Apr 17 2026 — fresh.",
       "keywords": [
         "model validation",
         "model risk",
@@ -667,8 +667,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 highest priority. LinkedIn job ID 4401561117. Filter Moody's alumni \u2192 BMO to find warm intro BEFORE submitting. Use Validation cover letter with E-23 opening.",
-      "notes": "Found via LinkedIn alert Apr 18. 15 BMO alumni connections on LinkedIn \u2014 exploit before cold-applying."
+      "next_action": "APPLY THIS WEEK — highest priority. LinkedIn job ID 4401561117. Filter Moody's alumni → BMO to find warm intro BEFORE submitting. Use Validation cover letter with E-23 opening.",
+      "notes": "Found via LinkedIn alert Apr 18. 15 BMO alumni connections on LinkedIn — exploit before cold-applying."
     },
     {
       "id": "cib-001",
@@ -719,8 +719,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 LinkedIn 'Top applicant' flag is high-signal. Also apply to Manager Portfolio Construction (LinkedIn 4402742019) at same org.",
-      "notes": "Job ID 4402733127. Federal Crown corp \u2014 interview process tends to be multi-stage but decision-makers are accessible."
+      "next_action": "APPLY THIS WEEK — LinkedIn 'Top applicant' flag is high-signal. Also apply to Manager Portfolio Construction (LinkedIn 4402742019) at same org.",
+      "notes": "Job ID 4402733127. Federal Crown corp — interview process tends to be multi-stage but decision-makers are accessible."
     },
     {
       "id": "nbc-001",
@@ -742,7 +742,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$140K-$180K base + 25-35% bonus",
-      "fit_notes": "FX Risk Management Solutions is adjacent \u2014 rates/FX derivatives overlap with IRR expertise. Primary story is ALM/IRRBB, this requires story-bending. Leave on watch unless ALM-first roles dry up.",
+      "fit_notes": "FX Risk Management Solutions is adjacent — rates/FX derivatives overlap with IRR expertise. Primary story is ALM/IRRBB, this requires story-bending. Leave on watch unless ALM-first roles dry up.",
       "keywords": [
         "FX risk",
         "derivatives",
@@ -771,8 +771,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Review JD to confirm scope before investing tailoring time. 54 school alumni \u2014 exploit for warm intro if pursued.",
-      "notes": "Posted Apr 25. National Bank acquiring Laurentian \u2014 integration activity may create more openings."
+      "next_action": "Review JD to confirm scope before investing tailoring time. 54 school alumni — exploit for warm intro if pursued.",
+      "notes": "Posted Apr 25. National Bank acquiring Laurentian — integration activity may create more openings."
     },
     {
       "id": "td-001",
@@ -794,7 +794,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "Low",
       "expected_comp_band_cad": "$115K-$145K base + 20-30% bonus",
-      "fit_notes": "Supporting TDS IRRBB Project \u2014 directly on-profile. BUT Manager-level (below target seniority). Would be a step down in title.",
+      "fit_notes": "Supporting TDS IRRBB Project — directly on-profile. BUT Manager-level (below target seniority). Would be a step down in title.",
       "keywords": [
         "ALM",
         "IRRBB",
@@ -823,15 +823,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "DO NOT apply cold \u2014 level step-down. BUT use JD as networking conversation starter with TD Treasury hiring managers. Monitor for Senior Manager / Director equivalent above it.",
-      "notes": "Useful intel: TDS IRRBB Project is live \u2014 Director-level lead likely exists above this Manager. Find and target the Director."
+      "next_action": "DO NOT apply cold — level step-down. BUT use JD as networking conversation starter with TD Treasury hiring managers. Monitor for Senior Manager / Director equivalent above it.",
+      "notes": "Useful intel: TDS IRRBB Project is live — Director-level lead likely exists above this Manager. Find and target the Director."
     },
     {
       "id": "td-002",
       "company": "TD Bank",
       "sector": "Canadian Big 6 Banks",
       "tier": 2,
-      "title": "Director \u2014 Enterprise Treasury ALM / IRRBB Modelling (Toronto)",
+      "title": "Director — Enterprise Treasury ALM / IRRBB Modelling (Toronto)",
       "level": "Director",
       "url": "https://jobs.td.com/en/",
       "portal_url": "https://jobs.td.com/en/",
@@ -875,7 +875,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan jobs.td.com \u2192 'ALM' OR 'IRRBB' + Director level.",
+      "next_action": "Weekly scan jobs.td.com → 'ALM' OR 'IRRBB' + Director level.",
       "notes": "Replaces td-001 as target level. TD AML-remediation hiring driven Risk Management organization-wide growth in 2025-2026."
     },
     {
@@ -883,7 +883,7 @@
       "company": "TD Bank",
       "sector": "Canadian Big 6 Banks",
       "tier": 2,
-      "title": "Director/Senior Manager \u2014 Model Risk Management / Validation (Toronto)",
+      "title": "Director/Senior Manager — Model Risk Management / Validation (Toronto)",
       "level": "Director/Senior Manager",
       "url": "https://jobs.td.com/en/",
       "portal_url": "https://jobs.td.com/en/",
@@ -927,8 +927,8 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan jobs.td.com \u2192 'model risk' OR 'model validation' + Director.",
-      "notes": "Placeholder. Pair application strategy with td-002 \u2014 different teams, different hiring managers."
+      "next_action": "Weekly scan jobs.td.com → 'model risk' OR 'model validation' + Director.",
+      "notes": "Placeholder. Pair application strategy with td-002 — different teams, different hiring managers."
     },
     {
       "id": "br-001",
@@ -950,7 +950,7 @@
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$195K-$265K CAD base + bonus + RSU",
-      "fit_notes": "Aladdin = direct competitor to Moody's platform Saber helped build/operate. Trusted-consultant-to-institutional-clients role maps exactly to Moody's Client Service Specialist \u2192 Modelling Services arc. #1 vendor-platform target.",
+      "fit_notes": "Aladdin = direct competitor to Moody's platform Saber helped build/operate. Trusted-consultant-to-institutional-clients role maps exactly to Moody's Client Service Specialist → Modelling Services arc. #1 vendor-platform target.",
       "keywords": [
         "Aladdin",
         "risk analytics",
@@ -980,15 +980,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK \u2014 highest-fit vendor-platform target. Use Vendor-Platform cover letter. Search Moody's \u2192 BlackRock alumni network \u2014 aggressive warm-intro attempt before submit.",
-      "notes": "Confirmed active Feb 24 2026 at $195K-$265K CAD. Aladdin competes with Moody's \u2014 institutional platform delivery background is the hook. Pitch: 'I spent 4 years helping institutional clients migrate onto and get value from a multi-asset risk platform \u2014 I can walk into your role and deliver on day one.'"
+      "next_action": "APPLY THIS WEEK — highest-fit vendor-platform target. Use Vendor-Platform cover letter. Search Moody's → BlackRock alumni network — aggressive warm-intro attempt before submit.",
+      "notes": "Confirmed active Feb 24 2026 at $195K-$265K CAD. Aladdin competes with Moody's — institutional platform delivery background is the hook. Pitch: 'I spent 4 years helping institutional clients migrate onto and get value from a multi-asset risk platform — I can walk into your role and deliver on day one.'"
     },
     {
       "id": "jpm-001",
       "company": "JPMorgan Chase",
       "sector": "US Banks (Toronto)",
       "tier": 2,
-      "title": "Director/VP \u2014 Model Risk or ALM Analytics (Toronto)",
+      "title": "Director/VP — Model Risk or ALM Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.jpmorgan.com/global/en/about-us/locations/toronto",
       "portal_url": "https://careers.jpmorgan.com/global/en/about-us/locations/toronto",
@@ -1003,7 +1003,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$225K-$300K CAD base + bonus + equity",
-      "fit_notes": "JPMorgan's Canadian entity is a federally regulated bank with real ALM/treasury. Model Risk Management group globally is one of the most developed in the industry. 16 Toronto roles active on LinkedIn \u2014 search for 'model risk' and 'interest rate risk' VP/Director.",
+      "fit_notes": "JPMorgan's Canadian entity is a federally regulated bank with real ALM/treasury. Model Risk Management group globally is one of the most developed in the industry. 16 Toronto roles active on LinkedIn — search for 'model risk' and 'interest rate risk' VP/Director.",
       "keywords": [
         "model risk",
         "ALM",
@@ -1033,7 +1033,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Search careers.jpmorgan.com \u2192 Toronto \u2192 Risk Management \u2192 filter Director/VP. LinkedIn shows 16-25 active Toronto roles.",
+      "next_action": "Search careers.jpmorgan.com → Toronto → Risk Management → filter Director/VP. LinkedIn shows 16-25 active Toronto roles.",
       "notes": "Tier 1 US bank target. T/CIO ALM Analytics VP roles appear periodically in New York; watch for Toronto equivalent."
     },
     {
@@ -1041,7 +1041,7 @@
       "company": "Goldman Sachs",
       "sector": "US Banks (Toronto)",
       "tier": 3,
-      "title": "Strats/Risk Engineer \u2014 Rates & Fixed Income (Toronto)",
+      "title": "Strats/Risk Engineer — Rates & Fixed Income (Toronto)",
       "level": "VP/Associate",
       "url": "https://higher.gs.com/roles",
       "portal_url": "https://higher.gs.com/roles",
@@ -1056,7 +1056,7 @@
       "osfi_hook": "None",
       "urgency": "Low",
       "expected_comp_band_cad": "$200K-$350K CAD base + material bonus",
-      "fit_notes": "DOWNGRADED from High\u2192Medium 2026-05-03. GS Strats is typically PhD-quant / sub-35 hiring profile. Saber's dual MSc + CFA + 8yrs is profile-adjacent but not primary-pipeline. Highest comp ceiling but lowest hit rate.",
+      "fit_notes": "DOWNGRADED from High→Medium 2026-05-03. GS Strats is typically PhD-quant / sub-35 hiring profile. Saber's dual MSc + CFA + 8yrs is profile-adjacent but not primary-pipeline. Highest comp ceiling but lowest hit rate.",
       "keywords": [
         "strats",
         "quantitative",
@@ -1086,15 +1086,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Watch only. Apply opportunistically if a role matches specifically (Treasury/Finance Strats, not pure Securities Strats). Do not invest heavy outreach \u2014 low conversion.",
-      "notes": "22 GS Toronto roles on LinkedIn. Finance and Risk Quantitative Strats is the target \u2014 but realistic conversion is low. Calibrate effort accordingly."
+      "next_action": "Watch only. Apply opportunistically if a role matches specifically (Treasury/Finance Strats, not pure Securities Strats). Do not invest heavy outreach — low conversion.",
+      "notes": "22 GS Toronto roles on LinkedIn. Finance and Risk Quantitative Strats is the target — but realistic conversion is low. Calibrate effort accordingly."
     },
     {
       "id": "citi-001",
       "company": "Citi",
       "sector": "US Banks (Toronto)",
       "tier": 3,
-      "title": "Director/VP \u2014 Balance Sheet Risk or ALM (Toronto)",
+      "title": "Director/VP — Balance Sheet Risk or ALM (Toronto)",
       "level": "Director/VP",
       "url": "https://jobs.citi.com/location/toronto-ontario-canada-jobs/287-34934/6251999-6093943-6167865/4",
       "portal_url": "https://jobs.citi.com/location/toronto-ontario-canada-jobs/287-34934/6251999-6093943-6167865/4",
@@ -1109,7 +1109,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$200K-$270K CAD base + bonus + equity",
-      "fit_notes": "Citibank Canada is Schedule II federally regulated bank \u2014 real standalone ALM/treasury function. 51 Toronto roles active. Citi's Fraser restructure is increasing demand for balance sheet risk transparency.",
+      "fit_notes": "Citibank Canada is Schedule II federally regulated bank — real standalone ALM/treasury function. 51 Toronto roles active. Citi's Fraser restructure is increasing demand for balance sheet risk transparency.",
       "keywords": [
         "balance sheet risk",
         "ALM",
@@ -1138,15 +1138,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Search jobs.citi.com Toronto \u2192 Risk Audit & Compliance \u2192 filter Director/VP ALM or Balance Sheet.",
-      "notes": "51 active Citi Toronto roles. Non-Trading Market Risk Management Sr. Group Manager-Director posted Apr 28 2026 in Charlotte \u2014 watch for Toronto equivalent. Citi uses QRM as enterprise ALM platform."
+      "next_action": "Search jobs.citi.com Toronto → Risk Audit & Compliance → filter Director/VP ALM or Balance Sheet.",
+      "notes": "51 active Citi Toronto roles. Non-Trading Market Risk Management Sr. Group Manager-Director posted Apr 28 2026 in Charlotte — watch for Toronto equivalent. Citi uses QRM as enterprise ALM platform."
     },
     {
       "id": "cpp-001",
       "company": "CPP Investments",
       "sector": "Canadian Pension Funds",
       "tier": 1,
-      "title": "Director/Senior Analyst \u2014 Investment Risk or Quantitative (Toronto)",
+      "title": "Director/Senior Analyst — Investment Risk or Quantitative (Toronto)",
       "level": "Director/Senior Analyst",
       "url": "https://cppib.wd10.myworkdayjobs.com/cppinvestments",
       "portal_url": "https://cppib.wd10.myworkdayjobs.com/cppinvestments",
@@ -1190,7 +1190,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Check cppib.wd10.myworkdayjobs.com \u2192 Investment Risk, Quantitative \u2192 Director or Senior Analyst.",
+      "next_action": "Check cppib.wd10.myworkdayjobs.com → Investment Risk, Quantitative → Director or Senior Analyst.",
       "notes": "Highly selective. Analyst Quantitative Developer active (744000071579387). Look for senior/director level equiv."
     },
     {
@@ -1198,7 +1198,7 @@
       "company": "Ontario Teachers' Pension Plan",
       "sector": "Canadian Pension Funds",
       "tier": 1,
-      "title": "Director/VP \u2014 Investment Risk or Fixed Income (Toronto)",
+      "title": "Director/VP — Investment Risk or Fixed Income (Toronto)",
       "level": "Director/VP",
       "url": "https://otppb.wd3.myworkdayjobs.com/OntarioTeachers_Careers",
       "portal_url": "https://otppb.wd3.myworkdayjobs.com/OntarioTeachers_Careers",
@@ -1243,7 +1243,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Check otppb.wd3.myworkdayjobs.com \u2192 Investment, Risk \u2192 Director/VP/Principal level.",
+      "next_action": "Check otppb.wd3.myworkdayjobs.com → Investment, Risk → Director/VP/Principal level.",
       "notes": "Risk Principals + Fixed Income Portfolio Management are the target roles. Watch for Q2/Q3 2026 postings."
     },
     {
@@ -1251,7 +1251,7 @@
       "company": "Manulife Investment Management",
       "sector": "Canadian Asset Managers / Insurers",
       "tier": 2,
-      "title": "Director/VP \u2014 Investment Risk or ALM Analytics (Toronto)",
+      "title": "Director/VP — Investment Risk or ALM Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://manulife.wd3.myworkdayjobs.com/MFCJH_Jobs",
       "portal_url": "https://manulife.wd3.myworkdayjobs.com/MFCJH_Jobs",
@@ -1296,15 +1296,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan manulife.wd3.myworkdayjobs.com \u2192 Wealth and Asset Management \u2192 Investment Risk/Fixed Income Director. Also search parent Manulife insurer for ALM roles.",
-      "notes": "93 Toronto jobs on Glassdoor. Previous Director Risk Management role removed Jun 2025 \u2014 watch for replacement. Lead with IFRS 17 angle."
+      "next_action": "Weekly scan manulife.wd3.myworkdayjobs.com → Wealth and Asset Management → Investment Risk/Fixed Income Director. Also search parent Manulife insurer for ALM roles.",
+      "notes": "93 Toronto jobs on Glassdoor. Previous Director Risk Management role removed Jun 2025 — watch for replacement. Lead with IFRS 17 angle."
     },
     {
       "id": "cibc-001",
       "company": "CIBC",
       "sector": "Canadian Big 6 Banks",
       "tier": 2,
-      "title": "Director/VP \u2014 ALM, Structural Rate Risk, or Model Risk (Toronto)",
+      "title": "Director/VP — ALM, Structural Rate Risk, or Model Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://cibc.wd3.myworkdayjobs.com/en-US/CIBC-External",
       "portal_url": "https://cibc.wd3.myworkdayjobs.com/en-US/CIBC-External",
@@ -1351,7 +1351,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan cibc.wd3.myworkdayjobs.com \u2192 keyword: ALM OR 'model risk' OR 'interest rate' \u2192 filter Toronto.",
+      "next_action": "Weekly scan cibc.wd3.myworkdayjobs.com → keyword: ALM OR 'model risk' OR 'interest rate' → filter Toronto.",
       "notes": "Broader individual scope than RBC/TD at same level. OSFI E-23 driving model risk build-out."
     },
     {
@@ -1359,7 +1359,7 @@
       "company": "CIBC",
       "sector": "Canadian Big 6 Banks",
       "tier": 2,
-      "title": "Director \u2014 Model Risk Management / Validation (Toronto)",
+      "title": "Director — Model Risk Management / Validation (Toronto)",
       "level": "Director",
       "url": "https://cibc.wd3.myworkdayjobs.com/en-US/CIBC-External",
       "portal_url": "https://cibc.wd3.myworkdayjobs.com/en-US/CIBC-External",
@@ -1404,15 +1404,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan cibc.wd3.myworkdayjobs.com \u2192 'model risk' OR 'model validation' \u2192 Director.",
-      "notes": "Apply alongside cibc-001. Different hiring managers, different teams \u2014 dual shot."
+      "next_action": "Weekly scan cibc.wd3.myworkdayjobs.com → 'model risk' OR 'model validation' → Director.",
+      "notes": "Apply alongside cibc-001. Different hiring managers, different teams — dual shot."
     },
     {
       "id": "omers-001",
       "company": "OMERS",
       "sector": "Canadian Pension Funds",
       "tier": 1,
-      "title": "Director/VP \u2014 Investment Risk, Fixed Income, or ALM (Toronto)",
+      "title": "Director/VP — Investment Risk, Fixed Income, or ALM (Toronto)",
       "level": "Director/VP",
       "url": "https://omers.wd3.myworkdayjobs.com/OMERS_External",
       "portal_url": "https://omers.wd3.myworkdayjobs.com/OMERS_External",
@@ -1427,7 +1427,7 @@
       "osfi_hook": "None",
       "urgency": "Medium",
       "expected_comp_band_cad": "$215K-$305K CAD base + bonus + LTIP",
-      "fit_notes": "C$145.5bn AUM. OMERS Capital Markets runs fixed income, derivatives, overlay strategies in-house. Strong LDI mandate. Historically hires from analytics vendors and pension consultants \u2014 Ortec + Moody's is a direct match.",
+      "fit_notes": "C$145.5bn AUM. OMERS Capital Markets runs fixed income, derivatives, overlay strategies in-house. Strong LDI mandate. Historically hires from analytics vendors and pension consultants — Ortec + Moody's is a direct match.",
       "keywords": [
         "investment risk",
         "fixed income",
@@ -1459,7 +1459,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan omers.wd3.myworkdayjobs.com \u2192 'investment risk' OR 'fixed income' OR 'derivatives' OR 'ALM'.",
+      "next_action": "Weekly scan omers.wd3.myworkdayjobs.com → 'investment risk' OR 'fixed income' OR 'derivatives' OR 'ALM'.",
       "notes": "Target teams: OMERS Capital Markets, Investment Risk, Enterprise Risk."
     },
     {
@@ -1467,7 +1467,7 @@
       "company": "PSP Investments",
       "sector": "Canadian Pension Funds",
       "tier": 3,
-      "title": "Director/VP \u2014 Portfolio Risk, Fixed Income, or Quantitative (Toronto)",
+      "title": "Director/VP — Portfolio Risk, Fixed Income, or Quantitative (Toronto)",
       "level": "Director/VP",
       "url": "https://psp.wd3.myworkdayjobs.com/PSP_Investments",
       "portal_url": "https://psp.wd3.myworkdayjobs.com/PSP_Investments",
@@ -1512,7 +1512,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan psp.wd3.myworkdayjobs.com \u2192 'risk' OR 'fixed income' OR 'quantitative' \u2192 Toronto or Ottawa.",
+      "next_action": "Weekly scan psp.wd3.myworkdayjobs.com → 'risk' OR 'fixed income' OR 'quantitative' → Toronto or Ottawa.",
       "notes": "Target teams: Portfolio Risk, Fixed Income & Rates, Quantitative Research."
     },
     {
@@ -1520,7 +1520,7 @@
       "company": "OPTrust",
       "sector": "Canadian Pension Funds",
       "tier": 3,
-      "title": "Director/VP \u2014 Investment Risk or ALM Analytics (Toronto)",
+      "title": "Director/VP — Investment Risk or ALM Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://optrust.wd3.myworkdayjobs.com/OPTrust",
       "portal_url": "https://optrust.wd3.myworkdayjobs.com/OPTrust",
@@ -1564,7 +1564,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan optrust.wd3.myworkdayjobs.com \u2192 'risk' OR 'investment' \u2192 Director/VP.",
+      "next_action": "Weekly scan optrust.wd3.myworkdayjobs.com → 'risk' OR 'investment' → Director/VP.",
       "notes": "Good fit if Maple 8 applications are pending."
     },
     {
@@ -1572,7 +1572,7 @@
       "company": "CAAT Pension Plan",
       "sector": "Canadian Pension Funds",
       "tier": 4,
-      "title": "Director/VP \u2014 Investment Risk or ALM (Toronto)",
+      "title": "Director/VP — Investment Risk or ALM (Toronto)",
       "level": "Director/VP",
       "url": "https://caat.wd3.myworkdayjobs.com/CAAT_Careers",
       "portal_url": "https://caat.wd3.myworkdayjobs.com/CAAT_Careers",
@@ -1616,7 +1616,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan caat.wd3.myworkdayjobs.com \u2192 'risk' OR 'investment' \u2192 any Director/VP.",
+      "next_action": "Weekly scan caat.wd3.myworkdayjobs.com → 'risk' OR 'investment' → any Director/VP.",
       "notes": "Fast-growing via DBplus; expect scaling of investment team through 2026-2027."
     },
     {
@@ -1624,7 +1624,7 @@
       "company": "CDPQ",
       "sector": "Canadian Pension Funds",
       "tier": 3,
-      "title": "Director/VP \u2014 Fixed Income, Rates, or Portfolio Risk (Toronto)",
+      "title": "Director/VP — Fixed Income, Rates, or Portfolio Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://cdpq.com/en/careers",
       "portal_url": "https://cdpq.com/en/careers",
@@ -1668,15 +1668,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Check cdpq.com/en/careers \u2192 filter Toronto \u2192 Fixed Income, Risk, or Capital Markets.",
-      "notes": "Lower volume of Toronto postings \u2014 check quarterly."
+      "next_action": "Check cdpq.com/en/careers → filter Toronto → Fixed Income, Risk, or Capital Markets.",
+      "notes": "Lower volume of Toronto postings — check quarterly."
     },
     {
       "id": "slim-001",
       "company": "Sun Life Investment Management",
       "sector": "Canadian Asset Managers / Insurers",
       "tier": 2,
-      "title": "Director/VP \u2014 Investment Risk, ALM, or Fixed Income (Toronto)",
+      "title": "Director/VP — Investment Risk, ALM, or Fixed Income (Toronto)",
       "level": "Director/VP",
       "url": "https://sunlife.wd3.myworkdayjobs.com/Experienced",
       "portal_url": "https://sunlife.wd3.myworkdayjobs.com/Experienced",
@@ -1691,7 +1691,7 @@
       "osfi_hook": "IFRS 17 (insurers)",
       "urgency": "High",
       "expected_comp_band_cad": "$195K-$260K CAD base + bonus + LTIP",
-      "fit_notes": "C$1T+ group AUM. Toronto-based. Strong LDI capabilities. Parent insurer's IFRS 17 program is ongoing \u2014 EY IFRS 17 + ALM + derivatives combo is differentiated.",
+      "fit_notes": "C$1T+ group AUM. Toronto-based. Strong LDI capabilities. Parent insurer's IFRS 17 program is ongoing — EY IFRS 17 + ALM + derivatives combo is differentiated.",
       "keywords": [
         "investment risk",
         "ALM",
@@ -1722,7 +1722,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan sunlife.wd3.myworkdayjobs.com \u2192 'ALM' OR 'risk' OR 'fixed income' OR 'IFRS' \u2192 filter Experienced \u2192 Toronto.",
+      "next_action": "Weekly scan sunlife.wd3.myworkdayjobs.com → 'ALM' OR 'risk' OR 'fixed income' OR 'IFRS' → filter Experienced → Toronto.",
       "notes": "Similar search strategy as Manulife. IFRS 17 angle is the differentiator."
     },
     {
@@ -1730,7 +1730,7 @@
       "company": "RBC Global Asset Management",
       "sector": "Canadian Asset Managers",
       "tier": 3,
-      "title": "Director/VP \u2014 Portfolio Risk, Fixed Income Analytics (Toronto)",
+      "title": "Director/VP — Portfolio Risk, Fixed Income Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://jobs.rbc.com/ca/en/",
       "portal_url": "https://jobs.rbc.com/ca/en/",
@@ -1776,15 +1776,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan jobs.rbc.com \u2192 'asset management' OR 'GAM' plus 'risk' OR 'fixed income' \u2192 Toronto.",
-      "notes": "Same portal as RBC Bank \u2014 filter by 'asset management' keyword."
+      "next_action": "Weekly scan jobs.rbc.com → 'asset management' OR 'GAM' plus 'risk' OR 'fixed income' → Toronto.",
+      "notes": "Same portal as RBC Bank — filter by 'asset management' keyword."
     },
     {
       "id": "tdam-001",
       "company": "TD Asset Management",
       "sector": "Canadian Asset Managers",
       "tier": 3,
-      "title": "Director/VP \u2014 Portfolio Risk or Fixed Income Analytics (Toronto)",
+      "title": "Director/VP — Portfolio Risk or Fixed Income Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://jobs.td.com/en/",
       "portal_url": "https://jobs.td.com/en/",
@@ -1828,7 +1828,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan jobs.td.com \u2192 'asset management' OR 'TDAM' plus 'risk' OR 'fixed income' \u2192 Toronto.",
+      "next_action": "Weekly scan jobs.td.com → 'asset management' OR 'TDAM' plus 'risk' OR 'fixed income' → Toronto.",
       "notes": "Filter by 'TD Asset Management' in job description."
     },
     {
@@ -1836,7 +1836,7 @@
       "company": "Brookfield Asset Management",
       "sector": "Canadian Asset Managers",
       "tier": 3,
-      "title": "Senior Analyst/Associate \u2014 GMAS Rates, Fixed Income, or Portfolio Risk (Toronto)",
+      "title": "Senior Analyst/Associate — GMAS Rates, Fixed Income, or Portfolio Risk (Toronto)",
       "level": "Senior Analyst/Associate",
       "url": "https://brookfield.wd1.myworkdayjobs.com/Careers",
       "portal_url": "https://brookfield.wd1.myworkdayjobs.com/Careers",
@@ -1882,7 +1882,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan brookfield.wd1.myworkdayjobs.com \u2192 'rates' OR 'fixed income' OR 'risk' OR 'quantitative' \u2192 Toronto.",
+      "next_action": "Weekly scan brookfield.wd1.myworkdayjobs.com → 'rates' OR 'fixed income' OR 'risk' OR 'quantitative' → Toronto.",
       "notes": "High-volume employer. Check frequently."
     },
     {
@@ -1890,7 +1890,7 @@
       "company": "BMO Asset Management",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Fixed Income Risk or Portfolio Analytics (Toronto)",
+      "title": "Director/VP — Fixed Income Risk or Portfolio Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://bmo.wd3.myworkdayjobs.com/External",
       "portal_url": "https://bmo.wd3.myworkdayjobs.com/External",
@@ -1933,7 +1933,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan bmo.wd3.myworkdayjobs.com \u2192 'asset management' plus 'risk' OR 'fixed income'.",
+      "next_action": "Weekly scan bmo.wd3.myworkdayjobs.com → 'asset management' plus 'risk' OR 'fixed income'.",
       "notes": "Filter by 'asset management' to find BMO AM specific roles."
     },
     {
@@ -1941,7 +1941,7 @@
       "company": "CI Financial",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Investment Risk or Portfolio Analytics (Toronto)",
+      "title": "Director/VP — Investment Risk or Portfolio Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://ci.wd3.myworkdayjobs.com/CI_Investments",
       "portal_url": "https://ci.wd3.myworkdayjobs.com/CI_Investments",
@@ -1956,7 +1956,7 @@
       "osfi_hook": "None",
       "urgency": "Low",
       "expected_comp_band_cad": "$165K-$220K CAD base + bonus",
-      "fit_notes": "~C$500bn global AUM. Taken private via Mubadala 2025 \u2014 structural/organizational change may create openings or freeze hiring. Monitor.",
+      "fit_notes": "~C$500bn global AUM. Taken private via Mubadala 2025 — structural/organizational change may create openings or freeze hiring. Monitor.",
       "keywords": [
         "investment risk",
         "portfolio analytics",
@@ -1985,15 +1985,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan ci.wd3.myworkdayjobs.com \u2192 'risk' OR 'fixed income' OR 'quantitative' \u2192 Toronto, Director/VP.",
-      "notes": "Post Mubadala take-private \u2014 watch for either new scope or scope reductions."
+      "next_action": "Monthly scan ci.wd3.myworkdayjobs.com → 'risk' OR 'fixed income' OR 'quantitative' → Toronto, Director/VP.",
+      "notes": "Post Mubadala take-private — watch for either new scope or scope reductions."
     },
     {
       "id": "mac-001",
       "company": "Mackenzie Investments",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Fixed Income Risk or Investment Analytics (Toronto)",
+      "title": "Director/VP — Fixed Income Risk or Investment Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://igm.wd3.myworkdayjobs.com/en-US/MackenzieCareers",
       "portal_url": "https://igm.wd3.myworkdayjobs.com/en-US/MackenzieCareers",
@@ -2037,7 +2037,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan igm.wd3.myworkdayjobs.com \u2192 MackenzieCareers \u2192 'risk' OR 'fixed income' \u2192 Toronto.",
+      "next_action": "Monthly scan igm.wd3.myworkdayjobs.com → MackenzieCareers → 'risk' OR 'fixed income' → Toronto.",
       "notes": "Use MackenzieCareers sub-portal on IGM Workday."
     },
     {
@@ -2045,7 +2045,7 @@
       "company": "AGF Management",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Risk Analytics or Fixed Income (Toronto)",
+      "title": "Director/VP — Risk Analytics or Fixed Income (Toronto)",
       "level": "Director/VP",
       "url": "https://agf.com/en/careers",
       "portal_url": "https://agf.com/en/careers",
@@ -2096,7 +2096,7 @@
       "company": "Fidelity Canada",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Risk Analytics or Institutional Fixed Income (Toronto)",
+      "title": "Director/VP — Risk Analytics or Institutional Fixed Income (Toronto)",
       "level": "Director/VP",
       "url": "https://fidelitycanada.wd1.myworkdayjobs.com/Careers",
       "portal_url": "https://fidelitycanada.wd1.myworkdayjobs.com/Careers",
@@ -2139,7 +2139,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan fidelitycanada.wd1.myworkdayjobs.com \u2192 'risk' OR 'fixed income' \u2192 Toronto.",
+      "next_action": "Monthly scan fidelitycanada.wd1.myworkdayjobs.com → 'risk' OR 'fixed income' → Toronto.",
       "notes": "Treat as separate search from Fidelity US."
     },
     {
@@ -2147,7 +2147,7 @@
       "company": "HSBC Canada",
       "sector": "US Banks (Toronto)",
       "tier": 3,
-      "title": "Director/VP \u2014 Balance Sheet Risk, ALM, or Market Risk (Toronto)",
+      "title": "Director/VP — Balance Sheet Risk, ALM, or Market Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://mycareer.hsbc.com/en_GB/external/SearchJobs",
       "portal_url": "https://mycareer.hsbc.com/en_GB/external/SearchJobs",
@@ -2192,15 +2192,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan mycareer.hsbc.com \u2192 Canada/Toronto \u2192 'ALM' OR 'balance sheet' OR 'market risk'.",
-      "notes": "Monitor quarterly. RBC integration of HSBC retail is completing 2026 \u2014 watch RBC for incremental ALM hires."
+      "next_action": "Monthly scan mycareer.hsbc.com → Canada/Toronto → 'ALM' OR 'balance sheet' OR 'market risk'.",
+      "notes": "Monitor quarterly. RBC integration of HSBC retail is completing 2026 — watch RBC for incremental ALM hires."
     },
     {
       "id": "ms-001",
       "company": "Morgan Stanley",
       "sector": "US Banks (Toronto)",
       "tier": 4,
-      "title": "Director/VP \u2014 Market Risk, Fixed Income Risk (Toronto)",
+      "title": "Director/VP — Market Risk, Fixed Income Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://morganstanley.com/careers/",
       "portal_url": "https://morganstanley.com/careers/",
@@ -2252,7 +2252,7 @@
       "company": "Deutsche Bank",
       "sector": "US Banks (Toronto)",
       "tier": 4,
-      "title": "Director/VP \u2014 Market Risk, Quant Analytics (Toronto)",
+      "title": "Director/VP — Market Risk, Quant Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.db.com/",
       "portal_url": "https://careers.db.com/",
@@ -2303,7 +2303,7 @@
       "company": "BNY Mellon",
       "sector": "US Banks (Toronto)",
       "tier": 4,
-      "title": "Director/VP \u2014 Risk Analytics, Model Risk, or Investment Analytics (Toronto)",
+      "title": "Director/VP — Risk Analytics, Model Risk, or Investment Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://bnymellon.com/us/en/careers.html",
       "portal_url": "https://bnymellon.com/us/en/careers.html",
@@ -2347,7 +2347,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan bnymellon.com/careers \u2192 Toronto \u2192 'risk' OR 'model' OR 'analytics'.",
+      "next_action": "Monthly scan bnymellon.com/careers → Toronto → 'risk' OR 'model' OR 'analytics'.",
       "notes": "Model governance angle (OSFI E-23 story) applies here too."
     },
     {
@@ -2355,7 +2355,7 @@
       "company": "State Street",
       "sector": "US Banks (Toronto)",
       "tier": 4,
-      "title": "Director/VP \u2014 Enterprise Risk Analytics or Portfolio Risk (Toronto)",
+      "title": "Director/VP — Enterprise Risk Analytics or Portfolio Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.statestreet.com/",
       "portal_url": "https://careers.statestreet.com/",
@@ -2407,7 +2407,7 @@
       "company": "Northern Trust",
       "sector": "US Banks (Toronto)",
       "tier": 4,
-      "title": "Director/VP \u2014 ALM, Fixed Income Analytics, or Institutional Risk (Toronto)",
+      "title": "Director/VP — ALM, Fixed Income Analytics, or Institutional Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.northerntrust.com/",
       "portal_url": "https://careers.northerntrust.com/",
@@ -2452,14 +2452,14 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Quarterly check careers.northerntrust.com.",
-      "notes": "Smaller applicant pool \u2014 higher chance at Director level."
+      "notes": "Smaller applicant pool — higher chance at Director level."
     },
     {
       "id": "pimco-001",
       "company": "PIMCO",
       "sector": "US & Global Asset Managers",
       "tier": 3,
-      "title": "Director/VP \u2014 Portfolio Risk, Fixed Income Analytics (Toronto)",
+      "title": "Director/VP — Portfolio Risk, Fixed Income Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.pimco.com/jobs",
       "portal_url": "https://careers.pimco.com/jobs",
@@ -2512,7 +2512,7 @@
       "company": "Invesco Canada",
       "sector": "US & Global Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Risk Analytics or Multi-Asset (Toronto)",
+      "title": "Director/VP — Risk Analytics or Multi-Asset (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.invesco.com/en/",
       "portal_url": "https://careers.invesco.com/en/",
@@ -2563,7 +2563,7 @@
       "company": "Vanguard Canada",
       "sector": "US & Global Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Portfolio Risk or Fixed Income (Toronto)",
+      "title": "Director/VP — Portfolio Risk or Fixed Income (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.vanguard.com/",
       "portal_url": "https://careers.vanguard.com/",
@@ -2578,7 +2578,7 @@
       "osfi_hook": "None",
       "urgency": "Low",
       "expected_comp_band_cad": "$170K-$225K CAD base + bonus",
-      "fit_notes": "Growing Canadian ETF franchise. Small Toronto footprint \u2014 note: mostly distribution.",
+      "fit_notes": "Growing Canadian ETF franchise. Small Toronto footprint — note: mostly distribution.",
       "keywords": [
         "portfolio risk",
         "fixed income",
@@ -2606,14 +2606,14 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Quarterly check careers.vanguard.com.",
-      "notes": "Toronto is primarily distribution \u2014 few analytics/risk seats."
+      "notes": "Toronto is primarily distribution — few analytics/risk seats."
     },
     {
       "id": "wgtn-001",
       "company": "Wellington Management",
       "sector": "US & Global Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Quantitative Research or Portfolio Risk (Toronto)",
+      "title": "Director/VP — Quantitative Research or Portfolio Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://wellington.com/en/about/careers/",
       "portal_url": "https://wellington.com/en/about/careers/",
@@ -2664,7 +2664,7 @@
       "company": "Schroders",
       "sector": "US & Global Asset Managers",
       "tier": 4,
-      "title": "Director/VP \u2014 Multi-Asset Risk or ALM Advisory (Toronto)",
+      "title": "Director/VP — Multi-Asset Risk or ALM Advisory (Toronto)",
       "level": "Director/VP",
       "url": "https://jobs.schroders.com/",
       "portal_url": "https://jobs.schroders.com/",
@@ -2715,7 +2715,7 @@
       "company": "S&P Global",
       "sector": "Analytics & Risk Vendors",
       "tier": 2,
-      "title": "Director/VP \u2014 Risk Solutions, Client Advisory, or Analytics (Toronto)",
+      "title": "Director/VP — Risk Solutions, Client Advisory, or Analytics (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.spglobal.com/jobs",
       "portal_url": "https://careers.spglobal.com/jobs",
@@ -2730,7 +2730,7 @@
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$190K-$255K CAD base + bonus + RSU",
-      "fit_notes": "Direct Moody's Analytics competitor \u2014 Risk Solutions division. Institutional client delivery experience from Moody's translates immediately. Toronto office at Bay Adelaide Centre. Strongest immediate lateral from current role.",
+      "fit_notes": "Direct Moody's Analytics competitor — Risk Solutions division. Institutional client delivery experience from Moody's translates immediately. Toronto office at Bay Adelaide Centre. Strongest immediate lateral from current role.",
       "keywords": [
         "risk solutions",
         "client advisory",
@@ -2748,7 +2748,7 @@
         "hiring_manager_name": null,
         "hiring_manager_linkedin": null,
         "warm_intro_candidate": null,
-        "moodys_alumni_at_target": "Likely 20-40 Moody's\u2192S&P alumni on LinkedIn"
+        "moodys_alumni_at_target": "Likely 20-40 Moody's→S&P alumni on LinkedIn"
       },
       "outreach_log": [],
       "followup_schedule": {
@@ -2761,15 +2761,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "APPLY THIS WEEK if a live role exists. Weekly scan careers.spglobal.com \u2192 Toronto \u2192 'risk solutions' OR 'analytics' OR 'advisory' OR 'ALM'. OUTREACH: find Moody's\u2192S&P alumni; LinkedIn InMail Risk Solutions hiring managers.",
-      "notes": "Most direct lateral from Moody's Analytics \u2014 same clients, competing product. Strong pitch: 'I know your buyers because they're my current clients.'"
+      "next_action": "APPLY THIS WEEK if a live role exists. Weekly scan careers.spglobal.com → Toronto → 'risk solutions' OR 'analytics' OR 'advisory' OR 'ALM'. OUTREACH: find Moody's→S&P alumni; LinkedIn InMail Risk Solutions hiring managers.",
+      "notes": "Most direct lateral from Moody's Analytics — same clients, competing product. Strong pitch: 'I know your buyers because they're my current clients.'"
     },
     {
       "id": "msci-001",
       "company": "MSCI",
       "sector": "Analytics & Risk Vendors",
       "tier": 2,
-      "title": "Director/VP \u2014 Risk Analytics, Client Solutions, or Factor Models (Toronto)",
+      "title": "Director/VP — Risk Analytics, Client Solutions, or Factor Models (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.msci.com/search",
       "portal_url": "https://careers.msci.com/search",
@@ -2815,7 +2815,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan careers.msci.com \u2192 Toronto \u2192 'risk analytics' OR 'client solutions' OR 'IRRBB' OR 'fixed income' \u2192 Director/VP.",
+      "next_action": "Weekly scan careers.msci.com → Toronto → 'risk analytics' OR 'client solutions' OR 'IRRBB' OR 'fixed income' → Director/VP.",
       "notes": "Growing banking risk analytics product = new hiring demand. Strong Moody's parallel."
     },
     {
@@ -2823,7 +2823,7 @@
       "company": "FactSet",
       "sector": "Analytics & Risk Vendors",
       "tier": 4,
-      "title": "Director/VP \u2014 Portfolio Analytics, Risk Solutions (Toronto)",
+      "title": "Director/VP — Portfolio Analytics, Risk Solutions (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.factset.com/",
       "portal_url": "https://careers.factset.com/",
@@ -2874,7 +2874,7 @@
       "company": "Morningstar DBRS",
       "sector": "Analytics & Risk Vendors",
       "tier": 4,
-      "title": "Director/VP \u2014 Financial Institutions Analytics or Structured Finance Risk (Toronto)",
+      "title": "Director/VP — Financial Institutions Analytics or Structured Finance Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://dbrs.morningstar.com/about-us/careers",
       "portal_url": "https://dbrs.morningstar.com/about-us/careers",
@@ -2926,7 +2926,7 @@
       "company": "IMCO (Investment Management Corporation of Ontario)",
       "sector": "Canadian Pension Funds",
       "tier": 1,
-      "title": "Director/VP \u2014 Total Portfolio Risk, Fixed Income, or ALM/LDI (Toronto)",
+      "title": "Director/VP — Total Portfolio Risk, Fixed Income, or ALM/LDI (Toronto)",
       "level": "Director/VP",
       "url": "https://www.imcoinvest.com/careers",
       "portal_url": "https://www.imcoinvest.com/careers",
@@ -2972,7 +2972,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "THIS WEEK \u2014 verify live roles on imcoinvest.com/careers. Reach out to IMCO risk/ALM leaders via LinkedIn cold message with ALM-narrative cover letter. Also check if Ortec Finance had IMCO as a client \u2014 warm pathway.",
+      "next_action": "THIS WEEK — verify live roles on imcoinvest.com/careers. Reach out to IMCO risk/ALM leaders via LinkedIn cold message with ALM-narrative cover letter. Also check if Ortec Finance had IMCO as a client — warm pathway.",
       "notes": "Single most obvious omission from original shortlist. Toronto, LDI, pension, actively scaling."
     },
     {
@@ -2980,7 +2980,7 @@
       "company": "Canada Life / Great-West Lifeco",
       "sector": "Canadian Insurers",
       "tier": 2,
-      "title": "Director/VP \u2014 ALM, Investment Risk, or Fixed Income (Toronto/London ON)",
+      "title": "Director/VP — ALM, Investment Risk, or Fixed Income (Toronto/London ON)",
       "level": "Director/VP",
       "url": "https://www.canadalife.com/about-us/careers.html",
       "portal_url": "https://www.canadalife.com/about-us/careers.html",
@@ -3033,7 +3033,7 @@
       "company": "Intact Financial",
       "sector": "Canadian Insurers",
       "tier": 2,
-      "title": "Director/VP \u2014 Investment Risk, ALM, or Actuarial Reserving (Toronto)",
+      "title": "Director/VP — Investment Risk, ALM, or Actuarial Reserving (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.intactfc.com/",
       "portal_url": "https://careers.intactfc.com/",
@@ -3048,7 +3048,7 @@
       "osfi_hook": "IFRS 17 (insurers)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$175K-$230K CAD base + bonus + LTIP",
-      "fit_notes": "Canada's largest P&C insurer. Toronto presence for investments and risk. IFRS 17 relevant for reserving/capital. P&C investment focus is more credit/short-dated than life \u2014 ALM angle is still real but different flavor.",
+      "fit_notes": "Canada's largest P&C insurer. Toronto presence for investments and risk. IFRS 17 relevant for reserving/capital. P&C investment focus is more credit/short-dated than life — ALM angle is still real but different flavor.",
       "keywords": [
         "investment risk",
         "ALM",
@@ -3078,14 +3078,14 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monthly scan careers.intactfc.com.",
-      "notes": "P&C not life \u2014 lower ALM intensity but still relevant."
+      "notes": "P&C not life — lower ALM intensity but still relevant."
     },
     {
       "id": "mercer-001",
       "company": "Mercer (Marsh McLennan)",
       "sector": "Pension / ALM Consulting",
       "tier": 3,
-      "title": "Principal/Partner \u2014 LDI/ALM Advisory, Pension Investment Consulting (Toronto)",
+      "title": "Principal/Partner — LDI/ALM Advisory, Pension Investment Consulting (Toronto)",
       "level": "Principal/Partner",
       "url": "https://careers.mmc.com/global/en/mercer",
       "portal_url": "https://careers.mmc.com/global/en/mercer",
@@ -3115,7 +3115,7 @@
         "recruiter_email": null,
         "hiring_manager_name": null,
         "hiring_manager_linkedin": null,
-        "warm_intro_candidate": "Ortec\u2192Mercer alumni common",
+        "warm_intro_candidate": "Ortec→Mercer alumni common",
         "moodys_alumni_at_target": null
       },
       "outreach_log": [],
@@ -3129,7 +3129,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan careers.mmc.com/mercer \u2192 Toronto \u2192 'pension' OR 'LDI' OR 'ALM'. Research Ortec\u2192Mercer alumni.",
+      "next_action": "Weekly scan careers.mmc.com/mercer → Toronto → 'pension' OR 'LDI' OR 'ALM'. Research Ortec→Mercer alumni.",
       "notes": "Missed from original shortlist. Strong fit given Ortec advisory background. Also cross-apply to Marsh/Oliver Wyman sister brands."
     },
     {
@@ -3137,7 +3137,7 @@
       "company": "WTW (Willis Towers Watson)",
       "sector": "Pension / ALM Consulting",
       "tier": 3,
-      "title": "Director/Senior Director \u2014 LDI/ALM Advisory, Investments (Toronto)",
+      "title": "Director/Senior Director — LDI/ALM Advisory, Investments (Toronto)",
       "level": "Director/Senior Director",
       "url": "https://careers.wtwco.com/",
       "portal_url": "https://careers.wtwco.com/",
@@ -3181,7 +3181,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan careers.wtwco.com \u2192 Toronto \u2192 'pension' OR 'LDI' OR 'ALM'.",
+      "next_action": "Weekly scan careers.wtwco.com → Toronto → 'pension' OR 'LDI' OR 'ALM'.",
       "notes": "Missed from original shortlist. Ortec + EY transformation = strong consulting profile."
     },
     {
@@ -3189,7 +3189,7 @@
       "company": "Aon",
       "sector": "Pension / ALM Consulting",
       "tier": 3,
-      "title": "Director/Partner \u2014 Pension Investment, LDI Advisory (Toronto)",
+      "title": "Director/Partner — Pension Investment, LDI Advisory (Toronto)",
       "level": "Director/Partner",
       "url": "https://careers.aon.com/",
       "portal_url": "https://careers.aon.com/",
@@ -3232,7 +3232,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Monthly scan careers.aon.com \u2192 Toronto \u2192 'pension' OR 'LDI'.",
+      "next_action": "Monthly scan careers.aon.com → Toronto → 'pension' OR 'LDI'.",
       "notes": "Missed from original shortlist."
     },
     {
@@ -3240,7 +3240,7 @@
       "company": "SS&C Algorithmics",
       "sector": "Analytics & Risk Vendors",
       "tier": 2,
-      "title": "Director/VP \u2014 Risk Solutions, Product, or Client Advisory (Toronto)",
+      "title": "Director/VP — Risk Solutions, Product, or Client Advisory (Toronto)",
       "level": "Director/VP",
       "url": "https://www.ssctech.com/careers",
       "portal_url": "https://www.ssctech.com/careers",
@@ -3255,7 +3255,7 @@
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$240K CAD base + bonus",
-      "fit_notes": "CRITICAL addition \u2014 direct Toronto-local competitor to Moody's RiskFrontier. Algorithmics (SS&C) is THE local risk-vendor equivalent of Moody's. Engineering and client solutions teams are Toronto-based.",
+      "fit_notes": "CRITICAL addition — direct Toronto-local competitor to Moody's RiskFrontier. Algorithmics (SS&C) is THE local risk-vendor equivalent of Moody's. Engineering and client solutions teams are Toronto-based.",
       "keywords": [
         "Algorithmics",
         "risk solutions",
@@ -3271,7 +3271,7 @@
         "recruiter_email": null,
         "hiring_manager_name": null,
         "hiring_manager_linkedin": null,
-        "warm_intro_candidate": "Likely 50+ Moody's\u2192Algorithmics alumni on LinkedIn",
+        "warm_intro_candidate": "Likely 50+ Moody's→Algorithmics alumni on LinkedIn",
         "moodys_alumni_at_target": null
       },
       "outreach_log": [],
@@ -3285,7 +3285,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "THIS WEEK \u2014 search ssctech.com/careers \u2192 Toronto \u2192 'risk' OR 'Algorithmics'. Aggressive Moody's\u2192Algorithmics alumni outreach on LinkedIn.",
+      "next_action": "THIS WEEK — search ssctech.com/careers → Toronto → 'risk' OR 'Algorithmics'. Aggressive Moody's→Algorithmics alumni outreach on LinkedIn.",
       "notes": "Most obvious omission from original shortlist. Toronto HQ, local Moody's competitor, extensive alumni overlap."
     },
     {
@@ -3293,7 +3293,7 @@
       "company": "Deloitte Canada",
       "sector": "Big 4 FS Risk Advisory",
       "tier": 3,
-      "title": "Senior Manager/Director \u2014 Financial Services Risk & Regulatory (Toronto)",
+      "title": "Senior Manager/Director — Financial Services Risk & Regulatory (Toronto)",
       "level": "Senior Manager/Director",
       "url": "https://www.deloitte.com/ca/en/careers",
       "portal_url": "https://www.deloitte.com/ca/en/careers",
@@ -3308,7 +3308,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$170K-$230K CAD base + bonus",
-      "fit_notes": "Deloitte FSI Risk Advisory \u2014 canonical next step for EY FSRM alumni. OSFI E-23 implementation is driving advisory hiring waves. Moody's + EY + Ortec combined = multi-practice differentiator.",
+      "fit_notes": "Deloitte FSI Risk Advisory — canonical next step for EY FSRM alumni. OSFI E-23 implementation is driving advisory hiring waves. Moody's + EY + Ortec combined = multi-practice differentiator.",
       "keywords": [
         "FSI",
         "risk advisory",
@@ -3326,7 +3326,7 @@
         "recruiter_email": null,
         "hiring_manager_name": null,
         "hiring_manager_linkedin": null,
-        "warm_intro_candidate": "Likely 20+ EY\u2192Deloitte alumni on LinkedIn",
+        "warm_intro_candidate": "Likely 20+ EY→Deloitte alumni on LinkedIn",
         "moodys_alumni_at_target": null
       },
       "outreach_log": [],
@@ -3340,7 +3340,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan deloitte.com/ca/en/careers \u2192 Toronto \u2192 'FSI risk' OR 'model risk' OR 'regulatory' \u2192 Senior Manager/Director.",
+      "next_action": "Weekly scan deloitte.com/ca/en/careers → Toronto → 'FSI risk' OR 'model risk' OR 'regulatory' → Senior Manager/Director.",
       "notes": "Missed from original shortlist. Natural EY alum pathway."
     },
     {
@@ -3348,7 +3348,7 @@
       "company": "KPMG Canada",
       "sector": "Big 4 FS Risk Advisory",
       "tier": 3,
-      "title": "Senior Manager/Director \u2014 FS Regulatory & Risk Management (Toronto)",
+      "title": "Senior Manager/Director — FS Regulatory & Risk Management (Toronto)",
       "level": "Senior Manager/Director",
       "url": "https://kpmgcareers.ca/",
       "portal_url": "https://kpmgcareers.ca/",
@@ -3394,7 +3394,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan kpmgcareers.ca \u2192 Toronto \u2192 'risk' OR 'regulatory' OR 'model'.",
+      "next_action": "Weekly scan kpmgcareers.ca → Toronto → 'risk' OR 'regulatory' OR 'model'.",
       "notes": "Missed from original shortlist."
     },
     {
@@ -3402,7 +3402,7 @@
       "company": "EY Canada",
       "sector": "Big 4 FS Risk Advisory",
       "tier": 3,
-      "title": "Senior Manager/Director \u2014 FSRM (Financial Services Risk Management, Toronto)",
+      "title": "Senior Manager/Director — FSRM (Financial Services Risk Management, Toronto)",
       "level": "Senior Manager/Director",
       "url": "https://www.ey.com/en_ca/careers",
       "portal_url": "https://www.ey.com/en_ca/careers",
@@ -3417,7 +3417,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$170K-$230K CAD base + bonus",
-      "fit_notes": "Saber is EY alumnus (2021-2022) \u2014 boomerang at Senior Manager/Director level. IFRS 17 + Moody's credentialed practitioner experience = highly credible re-hire.",
+      "fit_notes": "Saber is EY alumnus (2021-2022) — boomerang at Senior Manager/Director level. IFRS 17 + Moody's credentialed practitioner experience = highly credible re-hire.",
       "keywords": [
         "FSRM",
         "IFRS 17",
@@ -3448,7 +3448,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "THIS WEEK \u2014 direct outreach to 2021-2022 EY managers. Ask about current FSRM team needs. Boomerang is highest-probability path.",
+      "next_action": "THIS WEEK — direct outreach to 2021-2022 EY managers. Ask about current FSRM team needs. Boomerang is highest-probability path.",
       "notes": "Strong warm-network play. EY alumnus = qualified boomerang."
     },
     {
@@ -3456,7 +3456,7 @@
       "company": "PwC Canada",
       "sector": "Big 4 FS Risk Advisory",
       "tier": 3,
-      "title": "Senior Manager/Director \u2014 FS Risk & Regulatory (Toronto)",
+      "title": "Senior Manager/Director — FS Risk & Regulatory (Toronto)",
       "level": "Senior Manager/Director",
       "url": "https://www.pwc.com/ca/en/careers.html",
       "portal_url": "https://www.pwc.com/ca/en/careers.html",
@@ -3509,7 +3509,7 @@
       "company": "Oliver Wyman",
       "sector": "FS Strategy & Risk Consulting",
       "tier": 3,
-      "title": "Principal/Partner \u2014 Financial Services / Risk Management (Toronto)",
+      "title": "Principal/Partner — Financial Services / Risk Management (Toronto)",
       "level": "Principal/Partner",
       "url": "https://www.oliverwyman.com/careers.html",
       "portal_url": "https://www.oliverwyman.com/careers.html",
@@ -3562,7 +3562,7 @@
       "company": "Equitable Bank / EQB Inc.",
       "sector": "Canadian Schedule I Banks (Mid)",
       "tier": 2,
-      "title": "Director/VP \u2014 Treasury, ALM, or Model Risk (Toronto)",
+      "title": "Director/VP — Treasury, ALM, or Model Risk (Toronto)",
       "level": "Director/VP",
       "url": "https://careers.eqbank.ca/",
       "portal_url": "https://careers.eqbank.ca/",
@@ -3577,7 +3577,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$230K CAD base + bonus + LTIP",
-      "fit_notes": "Toronto HQ challenger Schedule I bank. Active in Treasury/ALM/Model Risk roles \u2014 less applicant competition than Big 6. Broader individual scope at Director level.",
+      "fit_notes": "Toronto HQ challenger Schedule I bank. Active in Treasury/ALM/Model Risk roles — less applicant competition than Big 6. Broader individual scope at Director level.",
       "keywords": [
         "ALM",
         "IRRBB",
@@ -3607,15 +3607,15 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Weekly scan careers.eqbank.ca \u2192 'ALM' OR 'treasury' OR 'model risk' \u2192 Director.",
-      "notes": "Missed from original shortlist. High-leverage Tier 2 target \u2014 lower competition than Big 6."
+      "next_action": "Weekly scan careers.eqbank.ca → 'ALM' OR 'treasury' OR 'model risk' → Director.",
+      "notes": "Missed from original shortlist. High-leverage Tier 2 target — lower competition than Big 6."
     },
     {
       "id": "definity-001",
       "company": "Definity Financial (Economical, Sonnet)",
       "sector": "Canadian Insurers",
       "tier": 4,
-      "title": "Director \u2014 Investment Risk / ALM (Toronto/Waterloo)",
+      "title": "Director — Investment Risk / ALM (Toronto/Waterloo)",
       "level": "Director",
       "url": "https://careers.definityfinancial.com/",
       "portal_url": "https://careers.definityfinancial.com/",
@@ -3666,7 +3666,7 @@
       "company": "iA Financial Group",
       "sector": "Canadian Insurers",
       "tier": 4,
-      "title": "Director \u2014 ALM, Investment Risk, Fixed Income (Toronto/Quebec City)",
+      "title": "Director — ALM, Investment Risk, Fixed Income (Toronto/Quebec City)",
       "level": "Director",
       "url": "https://ia.ca/careers",
       "portal_url": "https://ia.ca/careers",
@@ -3718,7 +3718,7 @@
       "company": "RGA Canada (Reinsurance Group of America)",
       "sector": "Canadian Insurers / Reinsurance",
       "tier": 4,
-      "title": "Director \u2014 ALM Analytics / Valuation (Toronto/Montreal)",
+      "title": "Director — ALM Analytics / Valuation (Toronto/Montreal)",
       "level": "Director",
       "url": "https://careers.rgare.com/",
       "portal_url": "https://careers.rgare.com/",
@@ -3770,7 +3770,7 @@
       "company": "Numerix",
       "sector": "Analytics & Risk Vendors",
       "tier": 4,
-      "title": "Director \u2014 Client Solutions / Quant Advisory (Toronto/Remote)",
+      "title": "Director — Client Solutions / Quant Advisory (Toronto/Remote)",
       "level": "Director",
       "url": "https://www.numerix.com/careers",
       "portal_url": "https://www.numerix.com/careers",
@@ -3814,14 +3814,14 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Quarterly check numerix.com/careers.",
-      "notes": "Missed from original shortlist. Smaller vendor \u2014 potentially higher individual scope."
+      "notes": "Missed from original shortlist. Smaller vendor — potentially higher individual scope."
     },
     {
       "id": "prometeia-001",
       "company": "Prometeia",
       "sector": "Analytics & Risk Vendors",
       "tier": 4,
-      "title": "Senior Consultant/Manager \u2014 ALM/Risk Consulting (Toronto/Remote)",
+      "title": "Senior Consultant/Manager — ALM/Risk Consulting (Toronto/Remote)",
       "level": "Senior Consultant/Manager",
       "url": "https://www.prometeia.com/en/careers",
       "portal_url": "https://www.prometeia.com/en/careers",
@@ -3873,7 +3873,7 @@
       "company": "Connor, Clark & Lunn Financial Group",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director \u2014 Portfolio Risk, Fixed Income, or Quantitative (Toronto)",
+      "title": "Director — Portfolio Risk, Fixed Income, or Quantitative (Toronto)",
       "level": "Director",
       "url": "https://cclgroup.com/careers/",
       "portal_url": "https://cclgroup.com/careers/",
@@ -3924,7 +3924,7 @@
       "company": "Guardian Capital Group",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director \u2014 Portfolio Risk, Fixed Income Analytics (Toronto)",
+      "title": "Director — Portfolio Risk, Fixed Income Analytics (Toronto)",
       "level": "Director",
       "url": "https://www.guardiancapital.com/careers",
       "portal_url": "https://www.guardiancapital.com/careers",
@@ -3974,7 +3974,7 @@
       "company": "Picton Mahoney Asset Management",
       "sector": "Canadian Asset Managers",
       "tier": 4,
-      "title": "Director \u2014 Portfolio Risk / Fixed Income Research (Toronto)",
+      "title": "Director — Portfolio Risk / Fixed Income Research (Toronto)",
       "level": "Director",
       "url": "https://www.pictonmahoney.com/about/careers",
       "portal_url": "https://www.pictonmahoney.com/about/careers",
@@ -4034,13 +4034,13 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "scraper_v2+v3_tier1",
-      "status": "Found",
+      "status": "Tailoring",
       "fit_score": "High",
       "fit_score_numeric": 5,
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "High",
       "expected_comp_band_cad": "$210K-$270K CAD base + 40-55% bonus + LTIP",
-      "fit_notes": "CRITICAL find \u2014 near-verbatim match for Saber's profile. IRRBB AND FTP AND Model Risk at Director level. B-12 tailwind directly applies. Apply this week.",
+      "fit_notes": "CRITICAL find — near-verbatim match for Saber's profile. IRRBB AND FTP AND Model Risk at Director level. B-12 tailwind directly applies. Apply this week.",
       "keywords": [
         "IRRBB",
         "FTP",
@@ -4071,7 +4071,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4094,7 +4094,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$230K CAD base + 35-50% bonus + LTIP",
-      "fit_notes": "RBC Group Risk Management \u2014 one of largest MRM orgs in Canada. E-23 build-out hiring wave.",
+      "fit_notes": "RBC Group Risk Management — one of largest MRM orgs in Canada. E-23 build-out hiring wave.",
       "keywords": [
         "model risk",
         "Associate Director",
@@ -4124,7 +4124,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4147,7 +4147,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$230K CAD base + bonus + LTIP",
-      "fit_notes": "Wholesale FTP oversight \u2014 exact fit for ALM/Treasury risk profile.",
+      "fit_notes": "Wholesale FTP oversight — exact fit for ALM/Treasury risk profile.",
       "keywords": [
         "FTP",
         "funds transfer pricing",
@@ -4177,7 +4177,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4200,7 +4200,7 @@
       "osfi_hook": "LAR 2026 Liquidity Adequacy",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$230K CAD base + bonus + LTIP",
-      "fit_notes": "Liquidity Risk Measurement \u2014 LAR 2026 tailwind. Direct fit.",
+      "fit_notes": "Liquidity Risk Measurement — LAR 2026 tailwind. Direct fit.",
       "keywords": [
         "liquidity risk",
         "Associate Director",
@@ -4229,7 +4229,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4280,7 +4280,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4303,7 +4303,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$190K-$245K CAD base + 35-50% bonus + LTIP",
-      "fit_notes": "Parallel to bmo-001 \u2014 likely a second team within MRM. Apply to both; different hiring managers.",
+      "fit_notes": "Parallel to bmo-001 — likely a second team within MRM. Apply to both; different hiring managers.",
       "keywords": [
         "model validation",
         "Director",
@@ -4331,7 +4331,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4354,7 +4354,7 @@
       "osfi_hook": "LAR 2026 Liquidity Adequacy",
       "urgency": "Medium",
       "expected_comp_band_cad": "$190K-$245K CAD base + 35-50% bonus + LTIP",
-      "fit_notes": "BMO Corporate Treasury \u2014 generic 'Business Management' title but Treasury content.",
+      "fit_notes": "BMO Corporate Treasury — generic 'Business Management' title but Treasury content.",
       "keywords": [
         "Corporate Treasury",
         "Director",
@@ -4382,7 +4382,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03. | URL upgraded to canonical Workday 2026-05-04"
     },
     {
@@ -4435,7 +4435,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03. | URL upgraded to canonical Workday 2026-05-04"
     },
     {
@@ -4487,7 +4487,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4510,7 +4510,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$225K CAD base + 30-45% bonus",
-      "fit_notes": "Treasury Platforms & Transformation \u2014 Saber's Moody's/Calypso-to-PFaroe migration is near-perfect fit. Vendor-platform meets ALM.",
+      "fit_notes": "Treasury Platforms & Transformation — Saber's Moody's/Calypso-to-PFaroe migration is near-perfect fit. Vendor-platform meets ALM.",
       "keywords": [
         "Treasury",
         "platform",
@@ -4541,7 +4541,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4594,7 +4594,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4617,7 +4617,7 @@
       "osfi_hook": "B-12 IRRBB revision (Q1 2026 consultations)",
       "urgency": "Medium",
       "expected_comp_band_cad": "$135K-$170K CAD base + 25-35% bonus",
-      "fit_notes": "Direct ALM Manager role. Below target level but exact content fit \u2014 broadening move if ideal Director roles stall.",
+      "fit_notes": "Direct ALM Manager role. Below target level but exact content fit — broadening move if ideal Director roles stall.",
       "keywords": [
         "ALM",
         "Manager",
@@ -4645,7 +4645,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4662,13 +4662,13 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "scraper_v2+v3_tier1",
-      "status": "Found",
+      "status": "Tailoring",
       "fit_score": "High",
       "fit_score_numeric": 5,
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$225K-$290K CAD base + bonus + LTIP",
-      "fit_notes": "HOOPP Senior Director Model Validation \u2014 pure LDI shop + validation seat = combined-profile win. Upgrades hoopp-002 placeholder.",
+      "fit_notes": "HOOPP Senior Director Model Validation — pure LDI shop + validation seat = combined-profile win. Upgrades hoopp-002 placeholder.",
       "keywords": [
         "Model Validation",
         "Senior Director",
@@ -4698,7 +4698,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03. | URL upgraded to canonical Workday 2026-05-04"
     },
     {
@@ -4750,7 +4750,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4773,7 +4773,7 @@
       "osfi_hook": "None",
       "urgency": "Medium",
       "expected_comp_band_cad": "$245K-$320K CAD base + bonus + LTIP",
-      "fit_notes": "HOOPP VP Private Markets Finance & Valuations. Valuation angle from Moody's is relevant; PE/real-asset flavor \u2014 stretch to primary.",
+      "fit_notes": "HOOPP VP Private Markets Finance & Valuations. Valuation angle from Moody's is relevant; PE/real-asset flavor — stretch to primary.",
       "keywords": [
         "VP",
         "Private Markets",
@@ -4802,7 +4802,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03. | URL upgraded to canonical Workday 2026-05-04"
     },
     {
@@ -4853,7 +4853,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03. | URL upgraded to canonical Workday 2026-05-04"
     },
     {
@@ -4876,7 +4876,7 @@
       "osfi_hook": "IFRS 17 (insurers)",
       "urgency": "High",
       "expected_comp_band_cad": "$185K-$230K CAD base + bonus + LTIP",
-      "fit_notes": "ivari Canada AVP ALM \u2014 net-new company from agent research. Mid-size life insurer, full ALM mandate, less applicant competition than Manulife/Sun Life.",
+      "fit_notes": "ivari Canada AVP ALM — net-new company from agent research. Mid-size life insurer, full ALM mandate, less applicant competition than Manulife/Sun Life.",
       "keywords": [
         "AVP",
         "ALM",
@@ -4906,7 +4906,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4929,7 +4929,7 @@
       "osfi_hook": "E-23 Model Risk Management (eff. 2027-05-01)",
       "urgency": "High",
       "expected_comp_band_cad": "$175K-$240K CAD base + bonus + LTIP",
-      "fit_notes": "Manulife MRM \u2014 IFRS 17 + Moody's + ALM + E-23 combined profile differentiator.",
+      "fit_notes": "Manulife MRM — IFRS 17 + Moody's + ALM + E-23 combined profile differentiator.",
       "keywords": [
         "Model Risk",
         "Manulife",
@@ -4958,7 +4958,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -4981,7 +4981,7 @@
       "osfi_hook": "None",
       "urgency": "Medium",
       "expected_comp_band_cad": "$225K-$290K CAD base + bonus",
-      "fit_notes": "Canada Guaranty VP ERM \u2014 mortgage insurer, net-new company. Mortgage/credit-risk ALM adjacency.",
+      "fit_notes": "Canada Guaranty VP ERM — mortgage insurer, net-new company. Mortgage/credit-risk ALM adjacency.",
       "keywords": [
         "VP",
         "Enterprise Risk",
@@ -5009,7 +5009,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -5032,7 +5032,7 @@
       "osfi_hook": "None",
       "urgency": "High",
       "expected_comp_band_cad": "$200K-$280K CAD base + bonus + RSU",
-      "fit_notes": "BlackRock Aladdin Business Development Director \u2014 parallel path to existing br-001 (Client Engagement). Vendor-platform secondary narrative win.",
+      "fit_notes": "BlackRock Aladdin Business Development Director — parallel path to existing br-001 (Client Engagement). Vendor-platform secondary narrative win.",
       "keywords": [
         "Aladdin",
         "Business Development",
@@ -5061,7 +5061,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -5113,7 +5113,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     },
     {
@@ -5136,7 +5136,7 @@
       "osfi_hook": "None",
       "urgency": "Medium",
       "expected_comp_band_cad": "$175K-$220K CAD base + bonus",
-      "fit_notes": "Infrastructure Ontario Director Treasury \u2014 net-new company. Provincial Crown agency with debt/treasury mandate.",
+      "fit_notes": "Infrastructure Ontario Director Treasury — net-new company. Provincial Crown agency with debt/treasury mandate.",
       "keywords": [
         "Director",
         "Treasury",
@@ -5164,7 +5164,7 @@
       },
       "rejection_reason": null,
       "rejection_date": null,
-      "next_action": "Apply this week \u2014 draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
+      "next_action": "Apply this week — draft tailored resume + cover letter via jd_tailor; find warm intro before submit.",
       "notes": "Surfaced by scraper v2/v3 Tier-1 ranking 2026-05-03."
     }
   ]

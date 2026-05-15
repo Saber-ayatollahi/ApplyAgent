@@ -1,6 +1,6 @@
 # Scorer outcome feedback
 
-_Generated 2026-05-07T01:20:54Z. Pipeline size: 96 tracker entries._
+_Generated 2026-05-15T17:16:16Z. Pipeline size: 96 tracker entries._
 
 > **No outcome signal yet** — the tracker has tracker entries but no Applied/Interview transitions have been recorded, so there is no conversion data for the scorer to weight on. Once status moves to Applied/Recruiter_Screen/Interview/Offer/Rejected, this report will start carrying signal.
 

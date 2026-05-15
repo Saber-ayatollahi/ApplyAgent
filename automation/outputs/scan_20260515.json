@@ -1,0 +1,40 @@
+{
+  "scan_date": "20260515",
+  "companies_scanned": 1,
+  "total_new_candidates": 0,
+  "dedup_stats": {
+    "input": 0,
+    "dropped_url": 0,
+    "dropped_near": 0,
+    "output": 0
+  },
+  "by_sector": {},
+  "diagnostics": {
+    "per_company": [
+      {
+        "name": "HOOPP",
+        "sector": "Canadian Pension Funds",
+        "total": 0,
+        "workday": 0,
+        "greenhouse": 0,
+        "lever": 0,
+        "successfactors": 0,
+        "phenom": 0,
+        "linkedin": 0,
+        "has_workday_config": true,
+        "has_greenhouse_config": false,
+        "has_lever_config": false,
+        "has_successfactors_config": false,
+        "has_phenom_config": false
+      }
+    ],
+    "zero_result_companies": [
+      "HOOPP"
+    ],
+    "linkedin_throttled": false,
+    "paused": false,
+    "completed_count": 1,
+    "total_companies": 1
+  },
+  "results": []
+}
