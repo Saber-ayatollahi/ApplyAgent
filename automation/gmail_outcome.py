@@ -56,6 +56,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 from dataclasses import dataclass, asdict
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -242,25 +243,138 @@ class ProposalRow:
 # ---------------------------------------------------------------------------
 # Fuzzy company matching
 # ---------------------------------------------------------------------------
+# Bidirectional alias map. Each key is a CANONICAL form (lower-case, no
+# punctuation); the value is the set of phrasings recruiters / ATS systems
+# emit that should resolve to it. The map is consumed both ways:
+#   - extracted email name → canonical (so "Royal Bank of Canada" → "rbc")
+#   - tracker company name → canonical (so "RBC" tracker entry also → "rbc")
+# Two names match iff they collapse to the same canonical key. Pure jaccard
+# token overlap on `{royal, bank, canada}` vs `{rbc}` returns 0, which is
+# why the legacy code silently dropped Big-Six bank emails.
+#
+# Keep this list aligned with `automation/jd_scraper.py` TARGETS — same
+# companies, same canonical spellings.
+_COMPANY_ALIASES: dict[str, tuple[str, ...]] = {
+    # ── Canadian Big 6 Banks ──
+    "rbc":            ("rbc", "royal bank of canada", "royal bank",
+                       "rbc royal bank", "rbc capital markets"),
+    "bmo":            ("bmo", "bank of montreal", "bmo financial group",
+                       "bmo capital markets", "bmo harris"),
+    "scotiabank":     ("scotiabank", "scotia", "bank of nova scotia",
+                       "scotia bank", "the bank of nova scotia"),
+    "td bank":        ("td", "td bank", "toronto-dominion", "toronto dominion",
+                       "the toronto-dominion bank", "td bank group",
+                       "td canada trust", "td securities"),
+    "cibc":           ("cibc", "canadian imperial bank of commerce",
+                       "cibc capital markets"),
+    "national bank of canada": ("national bank", "national bank of canada",
+                       "banque nationale", "banque nationale du canada",
+                       "nbc", "banque nationale of canada"),
+    # ── Canadian Pension Funds ──
+    "hoopp":          ("hoopp", "healthcare of ontario pension plan",
+                       "healthcare of ontario pension"),
+    "omers":          ("omers", "ontario municipal employees retirement system",
+                       "ontario municipal employees retirement"),
+    "ontario teachers' pension plan": ("otpp", "ontario teachers",
+                       "ontario teachers pension plan",
+                       "ontario teachers' pension plan", "otppb"),
+    "cpp investments": ("cpp", "cppib", "cpp investments",
+                       "canada pension plan investment board",
+                       "canada pension plan"),
+    # ── Insurers ──
+    "manulife":       ("manulife", "manulife financial", "john hancock",
+                       "manulife investment management"),
+    "sun life":       ("sun life", "sun life financial",
+                       "sun life investment management",
+                       "sun life asset management"),
+    # ── Analytics / vendors ──
+    "bloomberg":      ("bloomberg", "bloomberg lp", "bloomberg l.p.",
+                       "bloomberg industry group"),
+    "blackrock":      ("blackrock", "blackrock inc",
+                       "blackrock asset management"),
+    "s&p global":     ("s&p", "s&p global", "standard & poor's",
+                       "standard and poor's", "spgi"),
+    "msci":           ("msci", "msci inc"),
+    "morningstar dbrs": ("morningstar dbrs", "dbrs morningstar", "dbrs"),
+    # ── US banks (Toronto presence) ──
+    "jpmorgan chase": ("jpmorgan", "jpmorgan chase", "jp morgan",
+                       "j.p. morgan", "chase"),
+    "goldman sachs":  ("goldman sachs", "goldman", "gs"),
+    "morgan stanley": ("morgan stanley", "ms"),
+}
+
+
+def _norm_text(s: str) -> str:
+    """Unicode-fold + lowercase + collapse punctuation to spaces. Used as
+    the canonicalization step before alias / containment lookups so e.g.
+    smart-quote 'Ontario Teachers' Pension Plan' matches plain ASCII."""
+    if not s:
+        return ""
+    # Strip combining marks (é → e), unify ligatures.
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = s.lower()
+    # Drop any apostrophe / quote variant entirely (don't insert a space —
+    # "teachers' plan" → "teachers plan", not "teachers  plan").
+    s = re.sub(r"['‘’ʼ“”`]", "", s)
+    # Replace remaining non-alphanumeric with single spaces.
+    s = re.sub(r"[^a-z0-9&]+", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+# Pre-compute reverse lookup: any normalized alias → canonical key. Built
+# at import time so match_company is O(1) per probe.
+def _build_alias_lookup() -> dict[str, str]:
+    out: dict[str, str] = {}
+    for canonical, aliases in _COMPANY_ALIASES.items():
+        c_norm = _norm_text(canonical)
+        out[c_norm] = c_norm
+        for a in aliases:
+            out[_norm_text(a)] = c_norm
+    return out
+
+
+_ALIAS_LOOKUP: dict[str, str] = _build_alias_lookup()
+
+
+def _canonicalize(name: str) -> str:
+    """Resolve a free-form company name to its canonical alias key. Falls
+    back to the normalized form when no alias is registered."""
+    n = _norm_text(name)
+    if not n:
+        return ""
+    return _ALIAS_LOOKUP.get(n, n)
+
+
 def _normalize_company(name: str) -> set[str]:
     """Return a set of meaningful tokens for fuzzy matching. Drops generic
     corporate-suffix words. Empty set for names that are entirely generic."""
-    raw = (name or "").lower()
-    raw = re.sub(r"[^a-z0-9 ]+", " ", raw)
+    raw = _norm_text(name)
     tokens = {t for t in raw.split() if t and t not in GENERIC_TOKENS and len(t) >= 2}
     return tokens
+
+
+def _strip_generic_tokens(name: str) -> str:
+    """Return the normalized form with generic tokens removed. Used by the
+    substring-containment check so e.g. 'Bloomberg LP' and 'Bloomberg' both
+    collapse to 'bloomberg' before testing containment."""
+    raw = _norm_text(name)
+    keep = [t for t in raw.split() if t not in GENERIC_TOKENS and len(t) >= 2]
+    return " ".join(keep).strip()
 
 
 def match_company(extracted: str, tracker_jobs: list[dict]) -> Optional[dict]:
     """Match an extracted company name to a tracker job. Strategy:
 
     1. Exact (case-insensitive) match on `company`.
-    2. Token overlap: for each tracker company, compute |A ∩ B| / |A ∪ B|.
-       Highest jaccard wins, but only if >= 0.5 AND at least one shared
-       non-generic token.
+    2. Alias-map canonicalization — collapse both sides to a canonical key
+       (e.g., 'Royal Bank of Canada' and 'RBC' both → 'rbc') and match.
+    3. Substring containment after stripping generic tokens — handles
+       cases like 'Scotia' ⊂ 'Scotiabank' that the alias map didn't catch.
+    4. Token-jaccard fallback — keeps the historical permissive behaviour
+       for genuinely fuzzy cases (e.g., long marketing names).
 
-    Returns the matched job dict (the FIRST one — caller can disambiguate
-    further if needed; in practice we usually have one entry per company).
+    Returns the matched job dict (the FIRST match — caller disambiguates).
     """
     if not extracted:
         return None
@@ -268,13 +382,47 @@ def match_company(extracted: str, tracker_jobs: list[dict]) -> Optional[dict]:
     if not e_low:
         return None
 
-    # 1. Exact match (case-insensitive).
+    # 1. Exact match (case-insensitive). Cheap and bullet-proof when the
+    # email subject literally repeats the tracker spelling.
     for j in tracker_jobs:
         c = (j.get("company") or "").strip().lower()
         if c and c == e_low:
             return j
 
-    # 2. Token-fuzzy match.
+    # 2. Alias-map lookup. Both sides go through _canonicalize so e.g.
+    # 'Royal Bank of Canada' (extracted) and 'RBC' (tracker) both collapse
+    # to 'rbc'. This is the step that fixes the Big-Six silent-drop bug.
+    e_canon = _canonicalize(extracted)
+    if e_canon:
+        for j in tracker_jobs:
+            c_canon = _canonicalize(j.get("company") or "")
+            if c_canon and c_canon == e_canon:
+                return j
+
+    # 3. Substring containment after generic-token strip. Catches short
+    # subsets ('Scotia' ⊂ 'Scotiabank') and short supersets. We require
+    # the shorter side to be at least 4 chars so single-token nouns like
+    # 'tdx' don't accidentally collide.
+    e_strip = _strip_generic_tokens(extracted)
+    if e_strip and len(e_strip) >= 4:
+        for j in tracker_jobs:
+            c_strip = _strip_generic_tokens(j.get("company") or "")
+            if not c_strip or len(c_strip) < 4:
+                continue
+            short, long = (e_strip, c_strip) if len(e_strip) <= len(c_strip) \
+                          else (c_strip, e_strip)
+            # Need a real substring match on a full-token boundary so
+            # 'risk' doesn't match 'asterisk'. We re-tokenize and demand
+            # one side's tokens be a subsequence prefix/suffix of the other.
+            if short == long:
+                return j
+            if (" " + short + " ") in (" " + long + " "):
+                return j
+            if long.startswith(short + " ") or long.endswith(" " + short):
+                return j
+
+    # 4. Token-jaccard fallback. Same threshold as before so we don't
+    # invent new matches; the alias map should cover the high-value cases.
     e_tokens = _normalize_company(extracted)
     if not e_tokens:
         return None
