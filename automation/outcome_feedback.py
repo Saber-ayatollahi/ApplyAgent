@@ -30,7 +30,7 @@ import json
 import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -168,7 +168,7 @@ def build_report(tracker_path: Path = TRACKER) -> FeedbackReport:
     the tracker, does NOT write anywhere; callers decide what to persist."""
     if not tracker_path.exists():
         return FeedbackReport(
-            generated_at=datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             total_in_tracker=0, sectors={}, tiers={}, variants={},
         )
     data = json.loads(tracker_path.read_text(encoding="utf-8"))
@@ -198,7 +198,7 @@ def build_report(tracker_path: Path = TRACKER) -> FeedbackReport:
                 cold_lanes.append(s.summarize())
 
     return FeedbackReport(
-        generated_at=datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         total_in_tracker=len(jobs),
         sectors=sectors, tiers=tiers, variants=variants,
         hot_lanes=hot_lanes, cold_lanes=cold_lanes,

@@ -36,7 +36,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -59,7 +59,7 @@ def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
     """Wrap Gmail rows in the same envelope fit_scorer / auto_promote expect."""
     return {
         "scan_date": datetime.now().strftime("%Y-%m-%d"),
-        "scan_timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": source_label,
         "dedup_stats": {
             "input": len(rows),

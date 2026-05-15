@@ -27,7 +27,8 @@ from __future__ import annotations
 
 import os
 import sys
-from dataclasses import dataclass
+import threading
+from dataclasses import dataclass, field
 from datetime import date
 
 try:
@@ -57,6 +58,7 @@ class CostGuard:
     per_run_cap_usd: float = 2.0
     run_spend_usd: float = 0.0
     _triggered_reason: str = ""
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False, compare=False)
 
     @classmethod
     def from_env(cls) -> "CostGuard":
@@ -102,9 +104,12 @@ class CostGuard:
             sys.exit(4)
 
     def record(self, usd: float) -> None:
-        """Accumulate in-process run spend."""
+        """Accumulate in-process run spend. Thread-safe: scorer threads
+        record costs concurrently, and a non-atomic += would lose updates
+        under contention."""
         if usd and usd > 0:
-            self.run_spend_usd += float(usd)
+            with self._lock:
+                self.run_spend_usd += float(usd)
 
     def exceeded(self) -> bool:
         """True if either cap is breached. Evaluates run-cap from accumulated
@@ -115,20 +120,26 @@ class CostGuard:
         the guard also responds to a PARALLEL job's spend within the same
         day. If cost becomes a concern, this can be moved to a periodic
         check (every N calls)."""
-        if self.run_spend_usd >= self.per_run_cap_usd:
-            self._triggered_reason = (
-                f"per-run cap exceeded: ${self.run_spend_usd:.3f} >= "
-                f"${self.per_run_cap_usd:.2f}"
-            )
-            return True
+        with self._lock:
+            run_spend = self.run_spend_usd
+            if run_spend >= self.per_run_cap_usd:
+                self._triggered_reason = (
+                    f"per-run cap exceeded: ${run_spend:.3f} >= "
+                    f"${self.per_run_cap_usd:.2f}"
+                )
+                return True
+        # Ledger read is outside the lock — it does its own IO and we don't
+        # want to serialize disk reads behind the spend counter.
         ledger_today = self.today_spend_usd()
-        total_today = ledger_today + max(0.0, self.run_spend_usd)
-        if total_today >= self.daily_cap_usd:
-            self._triggered_reason = (
-                f"daily cap exceeded: ledger=${ledger_today:.3f} + "
-                f"run=${self.run_spend_usd:.3f} >= cap=${self.daily_cap_usd:.2f}"
-            )
-            return True
+        with self._lock:
+            run_spend = self.run_spend_usd
+            total_today = ledger_today + max(0.0, run_spend)
+            if total_today >= self.daily_cap_usd:
+                self._triggered_reason = (
+                    f"daily cap exceeded: ledger=${ledger_today:.3f} + "
+                    f"run=${run_spend:.3f} >= cap=${self.daily_cap_usd:.2f}"
+                )
+                return True
         return False
 
     @property
@@ -147,8 +158,10 @@ class CostGuard:
               file=sys.stderr)
 
     def summary(self) -> str:
+        with self._lock:
+            run_spend = self.run_spend_usd
         return (
-            f"run_spend=${self.run_spend_usd:.3f} / cap=${self.per_run_cap_usd:.2f}  "
+            f"run_spend=${run_spend:.3f} / cap=${self.per_run_cap_usd:.2f}  "
             f"today_spend=${self.today_spend_usd():.3f} / cap=${self.daily_cap_usd:.2f}"
         )
 

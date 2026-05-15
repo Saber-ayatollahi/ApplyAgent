@@ -51,7 +51,7 @@ import os
 import sys
 import tempfile
 import threading
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 # Cross-process lock + atomic writes. If safe_json isn't importable (e.g.
@@ -78,7 +78,7 @@ SCHEMA_VERSION = 1
 
 
 def _empty_ledger() -> dict:
-    now = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {
         "schema_version": SCHEMA_VERSION,
         "created_at": now,
@@ -167,7 +167,7 @@ def record(
     a paid LLM call) -- kept cheap so it never blocks scoring. A cache hit
     records no tokens but increments the counter for observability.
     """
-    now_iso = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     today = date.today().isoformat()
 
     def _mutator(data):

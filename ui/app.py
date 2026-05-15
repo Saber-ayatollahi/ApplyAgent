@@ -11,7 +11,7 @@ import json
 import re
 import subprocess
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -571,8 +571,9 @@ def load_scorer_progress() -> dict | None:
                 # Stored as ISO with trailing 'Z'; strip it for fromisoformat.
                 u = updated.rstrip("Z")
                 dt = datetime.fromisoformat(u)
-                # updated_at is UTC; use utcnow for the comparison.
-                if (datetime.utcnow() - dt).total_seconds() > 300:
+                # updated_at is UTC; compare in UTC.
+                now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+                if (now_utc - dt).total_seconds() > 300:
                     stale = True
             except Exception:
                 stale = True
@@ -589,7 +590,7 @@ def load_scorer_progress() -> dict | None:
                 _active = []
             if not _active:
                 data["state"] = "stale"
-                data["finished_at"] = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+                data["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
                 try:
                     p.write_text(json.dumps(data, indent=2), encoding="utf-8")
                 except Exception:

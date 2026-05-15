@@ -22,6 +22,7 @@ Usage:
     python verify.py
     python verify.py --verbose
     python verify.py --fast    # skip end-to-end smoke tests
+    python verify.py --with-llm  # also run a 1-role real-LLM smoke (~$0.01)
 """
 from __future__ import annotations
 import argparse
@@ -217,7 +218,7 @@ def check_jd_tailor_dry(o: Outcome):
         o.fail_(f"could not run jd_tailor.py: {e}")
 
 
-def check_fit_scorer_dry(o: Outcome):
+def check_fit_scorer_dry(o: Outcome, with_llm: bool = False):
     print("\n[11] fit_scorer.py --dry-run")
     # Pick the freshest dated scan_YYYYMMDD.json. v4 was retired when the
     # weekly pipeline started writing date-stamped scans.
@@ -243,6 +244,28 @@ def check_fit_scorer_dry(o: Outcome):
             o.fail_(f"fit_scorer exited {r.returncode}: {combined[:300]}")
     except Exception as e:
         o.fail_(f"could not run fit_scorer.py: {e}")
+        return
+
+    # Real-LLM smoke (opt-in). One role through the full scoring path —
+    # catches breakage in the API client, prompt assembly, JSON parsing,
+    # cost ledger writes, and progress IO that --dry-run can't reach.
+    if not with_llm:
+        return
+    print("\n[11b] fit_scorer.py --limit 1 (real LLM)")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        o.warn_("ANTHROPIC_API_KEY not set; skipping real-LLM smoke")
+        return
+    try:
+        r = subprocess.run([sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
+                            "--scan", scan.name, "--limit", "1"],
+                           capture_output=True, text=True, cwd=str(ROOT), timeout=180)
+        combined = r.stdout + r.stderr
+        if r.returncode == 0:
+            o.pass_(f"fit_scorer real-LLM smoke OK ({scan.name}, 1 role)")
+        else:
+            o.fail_(f"fit_scorer real-LLM smoke exited {r.returncode}: {combined[-400:]}")
+    except Exception as e:
+        o.fail_(f"could not run fit_scorer real-LLM smoke: {e}")
 
 
 def check_streamlit(o: Outcome):
@@ -283,6 +306,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fast", action="store_true",
                     help="Skip end-to-end smoke tests (9, 10, 11)")
+    ap.add_argument("--with-llm", action="store_true",
+                    help="Also run a real-LLM smoke through fit_scorer "
+                         "(--limit 1, requires ANTHROPIC_API_KEY, costs ~$0.01)")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
@@ -303,7 +329,7 @@ def main() -> int:
     if not args.fast:
         check_weekly_report(o)
         check_jd_tailor_dry(o)
-        check_fit_scorer_dry(o)
+        check_fit_scorer_dry(o, with_llm=args.with_llm)
         check_pages_render(o)
 
     print()

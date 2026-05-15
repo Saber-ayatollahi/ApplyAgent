@@ -38,9 +38,10 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 from typing import Optional
@@ -53,11 +54,43 @@ MAX_TRACEBACK_CHARS = 2000
 
 _write_lock = Lock()
 
+# Secret patterns to scrub from messages and tracebacks before writing them
+# to disk. Anthropic SDK 401 responses include the offending key; HTTP libs
+# may include Authorization headers in retry messages. Order matters — the
+# explicit-prefix patterns run before the env-key fallback so we don't
+# double-redact.
+_SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"sk-ant-[A-Za-z0-9_\-]{8,}"), "sk-ant-***REDACTED***"),
+    (re.compile(r"sk-proj-[A-Za-z0-9_\-]{8,}"), "sk-proj-***REDACTED***"),
+    (re.compile(r"(?i)bearer\s+[A-Za-z0-9._\-]{8,}"), "Bearer ***REDACTED***"),
+    (re.compile(r"(?i)(authorization\s*[:=]\s*)['\"]?[^\s'\"]+"),
+     r"\1***REDACTED***"),
+    (re.compile(r"(?i)(api[_-]?key\s*[:=]\s*)['\"]?[A-Za-z0-9._\-]{8,}"),
+     r"\1***REDACTED***"),
+)
+# Env vars whose VALUES we should also scrub if they happen to appear
+# verbatim in a message — catches custom keys we don't pattern-match above.
+_SECRET_ENV_VARS = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GMAIL_APP_PASSWORD")
+
+
+def _scrub(text: str) -> str:
+    """Redact known secret shapes from a string before persisting it."""
+    if not text:
+        return text
+    out = text
+    for pat, repl in _SECRET_PATTERNS:
+        out = pat.sub(repl, out)
+    for var in _SECRET_ENV_VARS:
+        val = os.environ.get(var)
+        if val and len(val) >= 8 and val in out:
+            out = out.replace(val, f"***{var}_REDACTED***")
+    return out
+
 
 def _rotate_if_needed() -> None:
     try:
         if LOG_PATH.exists() and LOG_PATH.stat().st_size > MAX_SIZE_BYTES:
-            stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
             LOG_PATH.rename(LOG_DIR / f"errors.{stamp}.jsonl")
     except Exception:
         # Rotation is best-effort; never block the caller over it.
@@ -85,18 +118,21 @@ def log_error(
             pass
 
         record = {
-            "timestamp": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "module": module or "?",
             "context": context,
             "error_type": type(exc).__name__,
-            "message": str(exc)[:500],
-            "traceback": tb,
+            "message": _scrub(str(exc)[:500]),
+            "traceback": _scrub(tb),
         }
         if extra:
-            # Don't override our fixed fields
+            # Don't override our fixed fields. Scrub string values too — extra
+            # often carries request bodies or response payloads that may
+            # contain secrets.
             for k, v in extra.items():
-                if k not in record:
-                    record[k] = v
+                if k in record:
+                    continue
+                record[k] = _scrub(v) if isinstance(v, str) else v
 
         line = json.dumps(record, ensure_ascii=False)
         with _write_lock:
@@ -141,7 +177,7 @@ def count_recent(since_minutes: int = 60) -> int:
     """Count errors in the last `since_minutes` — useful for a UI badge."""
     if not LOG_PATH.exists():
         return 0
-    cutoff = datetime.utcnow().timestamp() - since_minutes * 60
+    cutoff = datetime.now(timezone.utc).timestamp() - since_minutes * 60
     n = 0
     try:
         for ln in LOG_PATH.read_text(encoding="utf-8").splitlines():

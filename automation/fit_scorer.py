@@ -42,7 +42,7 @@ import sys
 import time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock, Event
 from typing import Optional
@@ -201,8 +201,8 @@ def progress_begin(scan_name: str, total: int):
             "current": 0,
             "cache_hits": 0,
             "errors": 0,
-            "started_at": datetime.utcnow().isoformat() + "Z",
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "started_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
+            "updated_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
             "elapsed_sec": 0.0,
             "eta_sec": None,
             "verdict_counts": {},
@@ -225,7 +225,7 @@ def progress_tick(candidate: dict, from_cache: bool, error: bool, t0: float):
         remaining = total - cur
         rate = cur / elapsed if elapsed > 0 else 0
         _progress_state["eta_sec"] = round(remaining / rate, 1) if rate > 0 else None
-        _progress_state["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        _progress_state["updated_at"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
         f = candidate.get("fit") or {}
         verdict = f.get("fit_verdict", "?")
         _progress_state["verdict_counts"][verdict] = (
@@ -245,7 +245,7 @@ def progress_tick(candidate: dict, from_cache: bool, error: bool, t0: float):
 def progress_end(state: str = "finished"):
     with _progress_lock:
         _progress_state["state"] = state
-        _progress_state["finished_at"] = datetime.utcnow().isoformat() + "Z"
+        _progress_state["finished_at"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z"
         _write_progress()
 
 
@@ -1372,7 +1372,7 @@ def main() -> int:
     api_error = _abort_reason[0] if _abort_reason else None
     out = {
         "scan_date": scan.get("scan_date"),
-        "scored_at": datetime.utcnow().isoformat() + "Z",
+        "scored_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
         "total_input": len(roles),
         "stage1_passed": len(triaged),
         "stage1_dropped": len(triage_drops),
