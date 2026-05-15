@@ -813,6 +813,7 @@ st.set_page_config(
 PAGES = [
     "🏠 Dashboard",
     "🎯 Pipeline",
+    "📥 Outcome Inbox",
     "📋 Jobs Kanban",
     "🤝 Recruiter CRM",
     "📅 Weekly Plan",
@@ -908,6 +909,7 @@ _NAV_OPTIONS = [
     _SEP_WORK,
     "🏠 Dashboard",
     "🎯 Pipeline",
+    "📥 Outcome Inbox",
     "📊 Analytics",
     _SEP_TRACKER,
     "🔔 Follow-ups",
@@ -2491,6 +2493,400 @@ if page == "🏠 Dashboard":
 
 
 # ============================================================================
+# 📥 OUTCOME INBOX  — recruiter-email + dead-URL proposals → tracker
+# ============================================================================
+# Surfaces every pending outcome_proposals.json entry (from gmail_outcome.py
+# AND url_check.py — both write the same file under safe_json locks) so the
+# user can accept / reject status transitions in one place. Turns the
+# tracker from write-only into a learning loop: replies become Phone_Screen,
+# dead URLs become Expired, all without manual JSON editing.
+elif page == "📥 Outcome Inbox":
+    st.title("📥 Outcome Inbox")
+    st.caption(
+        "Pending status-transition proposals from Gmail (recruiter replies) "
+        "and URL-liveness checks. Accept individually, accept all "
+        "high-confidence in bulk, or reject the noise."
+    )
+
+    _OI_PROPOSALS_PATH = OUT_DIR / "outcome_proposals.json"
+
+    # --- Load proposals (reads via safe_json lock so a concurrent gmail
+    # ---  fetch doesn't tear the file under us). ---
+    try:
+        from safe_json import read_json as _oi_read, mutate_json as _oi_mutate
+    except ImportError:
+        # Fallback to plain read if safe_json missing — file may still be
+        # readable but we surrender concurrent-safety. Make that visible.
+        st.warning("safe_json not importable — proposals may race with the "
+                   "scanner. `pip install portalocker`.", icon="⚠️")
+        _oi_read = lambda p, default=None: (
+            json.loads(Path(p).read_text(encoding="utf-8"))
+            if Path(p).exists() and Path(p).read_text(encoding="utf-8").strip()
+            else default
+        )
+        _oi_mutate = None  # type: ignore
+
+    _oi_proposals = _oi_read(_OI_PROPOSALS_PATH, default=[]) or []
+    if not isinstance(_oi_proposals, list):
+        _oi_proposals = []
+
+    # --- Last-run header ---
+    _oi_h1, _oi_h2, _oi_h3 = st.columns([2, 2, 1])
+    with _oi_h1:
+        if _OI_PROPOSALS_PATH.exists():
+            _oi_age = datetime.now().timestamp() - _OI_PROPOSALS_PATH.stat().st_mtime
+            if _oi_age < 60:
+                _oi_age_lbl = f"{int(_oi_age)}s ago"
+            elif _oi_age < 3600:
+                _oi_age_lbl = f"{int(_oi_age / 60)}m ago"
+            elif _oi_age < 86400:
+                _oi_age_lbl = f"{int(_oi_age / 3600)}h ago"
+            else:
+                _oi_age_lbl = f"{int(_oi_age / 86400)}d ago"
+            st.metric("Pending proposals", len(_oi_proposals),
+                      help=f"File: {_OI_PROPOSALS_PATH.name}")
+            st.caption(f"Last update: {_oi_age_lbl}")
+        else:
+            st.metric("Pending proposals", 0)
+            st.caption("No file yet — pull latest to create it")
+
+    # --- Pull-latest button (Gmail outcome) ---
+    _oi_gmail_ok = gmail_ui.is_connected()
+    _oi_key_ok = api_key.is_key_valid()
+    _oi_can_run = _oi_gmail_ok and _oi_key_ok
+    with _oi_h2:
+        if st.button(
+            "📥 Pull latest from Gmail",
+            type="primary" if _oi_can_run else "secondary",
+            disabled=not _oi_can_run,
+            width='stretch',
+            help=(
+                "Runs `automation/gmail_outcome.py --days 7` in the "
+                "background. Pulls recruiter emails, classifies via "
+                "Haiku, appends new proposals to this list. "
+                "~$0.001 per email; capped at $0.20/run."
+            ),
+        ):
+            _oi_cmd = [sys.executable,
+                       str(ROOT / "automation" / "gmail_outcome.py"),
+                       "--days", "7"]
+            _oi_rec = scan_runner.start_run("gmail_outcome", _oi_cmd)
+            st.toast("📥 gmail_outcome launched!", icon="🚀")
+            st.session_state["_oi_last_launch"] = _oi_rec.run_id
+            st.rerun()
+
+        if not _oi_gmail_ok and not _oi_key_ok:
+            st.caption("🔌 Connect Gmail + API key in sidebar")
+        elif not _oi_gmail_ok:
+            st.caption("🔌 Connect Gmail in sidebar")
+        elif not _oi_key_ok:
+            st.caption("🔑 Set API key in sidebar")
+
+    with _oi_h3:
+        if st.button("🔄 Refresh", width='stretch',
+                      help="Re-read the proposals file. Useful right after "
+                           "a Gmail pull or url_check finishes."):
+            st.rerun()
+
+    # --- If a recent run was launched, tail its log ---
+    _oi_last_run_id = st.session_state.get("_oi_last_launch")
+    if _oi_last_run_id:
+        _oi_status_path = ROOT / "automation" / "outputs" / "runs" / f"{_oi_last_run_id}.json"
+        if _oi_status_path.exists():
+            try:
+                _oi_rec = scan_runner.refresh_state(_oi_status_path)
+                _oi_state = _oi_rec.get("state", "?")
+                _oi_state_emoji = {"running": "🟡", "finished": "✅",
+                                    "failed": "❌", "stopped": "⏹"}.get(_oi_state, "❓")
+                with st.expander(
+                    f"{_oi_state_emoji} Recent run `{_oi_last_run_id}` · {_oi_state}",
+                    expanded=(_oi_state == "running"),
+                ):
+                    _oi_log = scan_runner.tail_log(_oi_rec.get("log_path", ""), 6000)
+                    st.code(_oi_log or "(no output yet)", language="text")
+                    if _oi_state == "running":
+                        st.caption("↻ refreshing while running")
+                        # Light auto-refresh while the job is in flight
+                        st_autorefresh(interval=3000, key="_oi_log_autorefresh")
+            except Exception:
+                pass
+
+    if not _oi_can_run:
+        if not _oi_gmail_ok:
+            st.info(
+                "**Gmail not configured.** Open the sidebar Gmail panel "
+                "and save your address + Google app password. The "
+                "tracker stays read-only until then; existing proposals "
+                "below remain actionable.",
+                icon="📬",
+            )
+
+    st.markdown("---")
+
+    # --- Empty state ---
+    if not _oi_proposals:
+        st.success("Inbox is empty — no pending proposals.", icon="📭")
+        st.caption(
+            "When `gmail_outcome.py` or `url_check.py` runs, new "
+            "transition proposals will appear here. Click **Pull latest** "
+            "above to scan Gmail now."
+        )
+        st.stop()
+
+    # --- Bulk actions ---
+    _oi_b1, _oi_b2, _oi_b3 = st.columns([2, 2, 2])
+    _oi_high_conf = [
+        p for p in _oi_proposals
+        if int((p.get("evidence") or {}).get("confidence", 0)) >= 8
+    ]
+    _oi_low_conf = [
+        p for p in _oi_proposals
+        if int((p.get("evidence") or {}).get("confidence", 0)) < 6
+    ]
+
+    with _oi_b1:
+        if st.button(
+            f"✅ Accept all ≥8 confidence ({len(_oi_high_conf)})",
+            disabled=not _oi_high_conf,
+            width='stretch',
+            help="Apply every proposal whose evidence.confidence >= 8 to "
+                 "the tracker. Each transition is backed up + atomic.",
+        ):
+            from safe_json import mutate_json as _oi_mut2
+            stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            bak = TRACKER.with_suffix(f".bak.{stamp}.json")
+            if TRACKER.exists():
+                bak.write_text(TRACKER.read_text(encoding="utf-8"),
+                                encoding="utf-8")
+            _oi_by_id = {p["job_id"]: p for p in _oi_high_conf if p.get("job_id")}
+            _oi_terminal = {"Hired", "Withdrawn", "Declined"}
+            _oi_changed: list[str] = []
+
+            def _oi_apply(tracker):
+                if not isinstance(tracker, dict) or "jobs" not in tracker:
+                    return tracker
+                for j in tracker["jobs"]:
+                    jid = j.get("id")
+                    if jid not in _oi_by_id:
+                        continue
+                    if j.get("status") in _oi_terminal:
+                        continue
+                    j["status"] = _oi_by_id[jid]["proposed_status"]
+                    j["status_changed_by"] = "outcome_inbox_bulk"
+                    j["status_changed_on"] = date.today().isoformat()
+                    _oi_changed.append(jid)
+                return tracker
+
+            _oi_mut2(TRACKER, _oi_apply, default={"jobs": []})
+
+            # Remove accepted proposals from the file
+            _oi_accepted_keys = {(p.get("job_id"),
+                                  p.get("proposed_status"),
+                                  (p.get("evidence") or {}).get("source", ""),
+                                  (p.get("evidence") or {}).get("email_id", ""))
+                                 for p in _oi_high_conf}
+            _oi_mut2(_OI_PROPOSALS_PATH,
+                      lambda cur: [
+                          p for p in (cur or [])
+                          if (p.get("job_id"), p.get("proposed_status"),
+                              (p.get("evidence") or {}).get("source", ""),
+                              (p.get("evidence") or {}).get("email_id", ""))
+                          not in _oi_accepted_keys
+                      ],
+                      default=[])
+            st.cache_data.clear()
+            st.toast(f"✅ Accepted {len(_oi_changed)} transition(s)", icon="📨")
+            st.rerun()
+
+    with _oi_b2:
+        if st.button(
+            f"🧹 Clear low-confidence noise ({len(_oi_low_conf)})",
+            disabled=not _oi_low_conf,
+            width='stretch',
+            help="Remove proposals with confidence < 6. Marks them as "
+                 "reviewed-and-ignored without touching the tracker.",
+        ):
+            from safe_json import mutate_json as _oi_mut3
+            _oi_keep = [p for p in _oi_proposals
+                         if int((p.get("evidence") or {}).get("confidence", 0))
+                            >= 6]
+            _oi_mut3(_OI_PROPOSALS_PATH, lambda cur: _oi_keep, default=[])
+            st.toast(f"🧹 Cleared {len(_oi_low_conf)} low-conf proposal(s)",
+                      icon="🧼")
+            st.rerun()
+
+    with _oi_b3:
+        st.metric("Total pending", len(_oi_proposals),
+                  help="Includes ALL sources — Gmail + URL check.")
+
+    st.markdown("---")
+
+    # --- Per-row table with action buttons ---
+    # We render rows manually rather than st.dataframe so the action
+    # buttons sit inline. Capped at 50 rows for render speed; the
+    # bulk-accept covers the rest.
+    _oi_rows = list(_oi_proposals)
+    # Sort: highest confidence first, then most recent evidence.
+    _oi_rows.sort(
+        key=lambda p: (
+            -int((p.get("evidence") or {}).get("confidence", 0)),
+            -(0 if not (p.get("evidence") or {}).get("checked_at")
+              else hash((p.get("evidence") or {}).get("checked_at", ""))),
+        )
+    )
+    _oi_visible = _oi_rows[:50]
+    if len(_oi_rows) > 50:
+        st.caption(f"Showing top 50 of {len(_oi_rows)} — use bulk accept "
+                    f"to clear the long tail.")
+
+    # Build a tracker-jobs lookup for company name display
+    _oi_jobs = (load_tracker() or {}).get("jobs", []) or []
+    _oi_job_by_id = {j.get("id"): j for j in _oi_jobs}
+
+    for _oi_idx, _oi_p in enumerate(_oi_visible):
+        _oi_jid = _oi_p.get("job_id", "")
+        _oi_ev = _oi_p.get("evidence") or {}
+        _oi_src_raw = _oi_ev.get("source", "")
+        _oi_src = "📥 Gmail" if "gmail_outcome" in _oi_src_raw else (
+            "🔗 URL check" if "url_check" in _oi_src_raw else _oi_src_raw or "?"
+        )
+        _oi_conf = _oi_ev.get("confidence")
+        _oi_cur = _oi_p.get("current_status", "?")
+        _oi_prop = _oi_p.get("proposed_status", "?")
+        _oi_company = (
+            _oi_p.get("company")
+            or (_oi_job_by_id.get(_oi_jid) or {}).get("company", "")
+            or _oi_ev.get("extracted_company", "?")
+        )
+        _oi_role = (
+            _oi_ev.get("extracted_role")
+            or (_oi_job_by_id.get(_oi_jid) or {}).get("title", "")
+            or "(unknown role)"
+        )
+        _oi_when = _oi_ev.get("date") or _oi_ev.get("checked_at", "")[:10] or "—"
+
+        with st.container(border=True):
+            _oi_c1, _oi_c2, _oi_c3, _oi_c4 = st.columns([4, 3, 1, 2])
+            with _oi_c1:
+                st.markdown(f"**{_oi_company}** — _{_oi_role[:80]}_")
+                _oi_meta_bits = [_oi_src]
+                if _oi_when:
+                    _oi_meta_bits.append(_oi_when)
+                if _oi_conf is not None:
+                    _oi_meta_bits.append(f"conf {_oi_conf}/10")
+                if _oi_jid:
+                    _oi_meta_bits.append(f"`{_oi_jid}`")
+                st.caption(" · ".join(_oi_meta_bits))
+                if _oi_ev.get("quote"):
+                    st.markdown(
+                        f"<div style='font-size:12px;opacity:0.85;"
+                        f"padding:6px 10px;border-left:2px solid #6366f1;"
+                        f"background:rgba(99,102,241,0.08);"
+                        f"border-radius:3px;margin:4px 0'>"
+                        f"\"{_oi_ev['quote']}\"</div>",
+                        unsafe_allow_html=True,
+                    )
+                if _oi_ev.get("subject"):
+                    st.caption(f"📧 {_oi_ev['subject'][:120]}")
+                elif _oi_ev.get("url"):
+                    st.caption(f"🔗 {_oi_ev['url'][:120]}")
+            with _oi_c2:
+                st.markdown(f"**Status** `{_oi_cur}` → `{_oi_prop}`")
+                st.caption(_oi_p.get("reason", ""))
+            with _oi_c3:
+                _oi_acc_key = f"_oi_accept_{_oi_idx}_{_oi_jid}"
+                if st.button("✅", key=_oi_acc_key,
+                              help="Accept this transition — applies to "
+                                   "tracker + removes from inbox",
+                              use_container_width=True):
+                    from safe_json import mutate_json as _oi_mut4
+                    if not _oi_jid:
+                        st.error("Proposal has no job_id; cannot apply.")
+                    else:
+                        # Backup tracker before write
+                        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                        bak = TRACKER.with_suffix(f".bak.{stamp}.json")
+                        if TRACKER.exists():
+                            bak.write_text(TRACKER.read_text(encoding="utf-8"),
+                                            encoding="utf-8")
+
+                        def _oi_apply_one(tracker):
+                            if not isinstance(tracker, dict) or "jobs" not in tracker:
+                                return tracker
+                            for j in tracker["jobs"]:
+                                if j.get("id") != _oi_jid:
+                                    continue
+                                if j.get("status") in {"Hired", "Withdrawn",
+                                                         "Declined"}:
+                                    return tracker
+                                j["status"] = _oi_prop
+                                j["status_changed_by"] = "outcome_inbox"
+                                j["status_changed_on"] = date.today().isoformat()
+                                break
+                            return tracker
+
+                        _oi_mut4(TRACKER, _oi_apply_one, default={"jobs": []})
+
+                        # Remove this proposal from the file
+                        _oi_my_key = (_oi_jid, _oi_prop, _oi_src_raw,
+                                       _oi_ev.get("email_id", ""))
+
+                        def _oi_drop_one(cur):
+                            return [p for p in (cur or [])
+                                    if (p.get("job_id"),
+                                        p.get("proposed_status"),
+                                        (p.get("evidence") or {}).get("source", ""),
+                                        (p.get("evidence") or {}).get("email_id", ""))
+                                    != _oi_my_key]
+
+                        _oi_mut4(_OI_PROPOSALS_PATH, _oi_drop_one, default=[])
+                        st.cache_data.clear()
+                        st.toast(f"✅ {_oi_company}: {_oi_cur} → {_oi_prop}",
+                                  icon="📨")
+                        st.rerun()
+            with _oi_c4:
+                _oi_rej_key = f"_oi_reject_{_oi_idx}_{_oi_jid}"
+                if st.button("❌ Reject", key=_oi_rej_key,
+                              help="Drop this proposal. Tracker unchanged.",
+                              use_container_width=True):
+                    from safe_json import mutate_json as _oi_mut5
+                    _oi_my_key = (_oi_jid, _oi_prop, _oi_src_raw,
+                                   _oi_ev.get("email_id", ""))
+
+                    def _oi_drop_one(cur):
+                        return [p for p in (cur or [])
+                                if (p.get("job_id"),
+                                    p.get("proposed_status"),
+                                    (p.get("evidence") or {}).get("source", ""),
+                                    (p.get("evidence") or {}).get("email_id", ""))
+                                != _oi_my_key]
+
+                    _oi_mut5(_OI_PROPOSALS_PATH, _oi_drop_one, default=[])
+                    st.toast(f"❌ Rejected {_oi_company}", icon="🗑")
+                    st.rerun()
+
+    with st.expander("ℹ️  How this works"):
+        st.markdown(
+            "- **Sources.** Two scripts append to "
+            "`automation/outputs/outcome_proposals.json`:\n"
+            "  - `automation/gmail_outcome.py` — classifies recruiter "
+            "emails into status transitions.\n"
+            "  - `automation/url_check.py` — flags dead URLs as `Expired`.\n"
+            "  Both writes are atomic + cross-process safe via `safe_json.mutate_json`.\n"
+            "- **Accept.** Applies the proposed status, takes a tracker "
+            "backup, then removes the proposal from this list.\n"
+            "- **Reject.** Removes the proposal only. Tracker untouched.\n"
+            "- **Confidence.** Gmail proposals carry an LLM confidence "
+            "1-10. URL-check proposals are deterministic (no number; we "
+            "treat them as 8 by convention).\n"
+            "- **Auto-commit.** Run `gmail_outcome.py --commit` from the "
+            "CLI to auto-apply >=9 confidence non-terminal transitions "
+            "(Recruiter_Screen / Phone_Screen / Take_Home / Onsite). "
+            "Offers + Rejections always wait for your eyes."
+        )
+
+
+# ============================================================================
 # 🎯 PIPELINE  — the agentic flow, end-to-end
 # ============================================================================
 elif page == "🎯 Pipeline":
@@ -2912,7 +3308,7 @@ elif page == "🎯 Pipeline":
     # (1·Scrape / 2·Score / 4·Promote) were UI wrappers around CLIs that
     # the Run-chain button already invokes -- collapsed so the user sees
     # one page instead of juggling seven.
-    tabs = st.tabs(["🎯 Run", "👁 Inspect", "📜 History"])
+    tabs = st.tabs(["🎯 Run", "👁 Inspect", "📜 History", "🕒 Recent Runs"])
 
     # ================== TAB: Run ==================
     with tabs[0]:
@@ -3445,6 +3841,78 @@ elif page == "🎯 Pipeline":
                 st.code(scan_runner.tail_log(r["log_path"], max_bytes=60_000), language="text")
         else:
             st.caption("No background runs recorded.")
+
+    # ================== TAB: Recent Runs ==================
+    # Polished "what just happened" view: last 20 pipelines with state
+    # badge, wall time, per-stage line, total cost, and a JSON expander
+    # per run. Complements the dataframe-style History tab above with
+    # something more glanceable. Robust to old/half-written status JSONs
+    # — every field uses .get() with sensible defaults.
+    with tabs[3]:
+        st.subheader("🕒 Recent Pipeline Runs")
+        _runs = list_pipelines(20)
+        if not _runs:
+            st.info("No pipeline runs yet. Hit **Run pipeline** to start one.")
+        else:
+            _badge = {"finished": "✅ finished", "failed": "❌ failed",
+                      "crashed": "💥 crashed", "running": "🔄 running",
+                      "stale": "⚪ stale", "stopped": "⏹ stopped"}
+            _n = len(_runs)
+            _ok = sum(1 for r in _runs if r.get("state") == "finished")
+            _bad = sum(1 for r in _runs
+                       if r.get("state") in ("failed", "crashed", "stale"))
+            _costs = [r.get("total_cost") or r.get("cost_usd") or 0.0
+                      for r in _runs]
+            _costs = [c for c in _costs if isinstance(c, (int, float)) and c > 0]
+            _avg_cost = (sum(_costs) / len(_costs)) if _costs else 0.0
+
+            kc1, kc2, kc3, kc4 = st.columns(4)
+            kc1.metric("Runs", _n)
+            kc2.metric("Successful", _ok)
+            kc3.metric("Failed/crashed", _bad)
+            kc4.metric("Avg cost", f"${_avg_cost:.2f}" if _avg_cost else "—")
+            st.markdown("---")
+
+            for _r in _runs:
+                _pid = _r.get("pipeline_id") or _r.get("id") or "?"
+                _state = _r.get("state") or "?"
+                _stages = _r.get("stages") or {}
+                _started = _r.get("started_at")
+                _finished = _r.get("finished_at")
+                _wall = human_elapsed(_started, _finished)
+                _parts = []
+                for _name in ("scrape", "score", "promote", "tailor"):
+                    _s = _stages.get(_name) or {}
+                    _ss = _s.get("state", "—")
+                    if _ss == "skipped":
+                        _parts.append(f"{_name}: skipped")
+                    elif _s.get("elapsed_sec") is not None:
+                        _parts.append(f"{_name}: {int(_s['elapsed_sec'])}s")
+                    elif _ss != "—":
+                        _parts.append(f"{_name}: {_ss}")
+                _stage_line = " · ".join(_parts) if _parts else "no stages recorded"
+                _cost = _r.get("total_cost") or _r.get("cost_usd") or 0.0
+                _cost_str = f" · ${_cost:.2f}" if isinstance(_cost, (int, float)) and _cost > 0 else ""
+
+                with st.container(border=True):
+                    rc1, rc2, rc3 = st.columns([3, 4, 2])
+                    rc1.markdown(
+                        f"**{fmt_dt(_started)}**  \n"
+                        f"{_badge.get(_state, _state)} · `{_pid}`"
+                    )
+                    rc2.caption(f"⏱ {_wall}{_cost_str}")
+                    rc2.caption(_stage_line)
+                    with rc3:
+                        with st.expander("View details"):
+                            _scrape_f = (_stages.get("scrape") or {}).get("scan_file")
+                            _score_f = (_stages.get("score") or {}).get("scored_file")
+                            _prom_f = (_stages.get("promote") or {}).get("promote_report")
+                            for _label, _val in (("scan", _scrape_f),
+                                                 ("scored", _score_f),
+                                                 ("promote_report", _prom_f)):
+                                if _val:
+                                    st.caption(f"📁 {_label}: `{_val}`")
+                            st.json(_r, expanded=False)
 
 
 # ============================================================================

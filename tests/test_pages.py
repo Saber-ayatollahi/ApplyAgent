@@ -34,6 +34,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 PAGES = [
     "🏠 Dashboard",
     "🎯 Pipeline",
+    "📥 Outcome Inbox",
     "📊 Analytics",
     "🔔 Follow-ups",
     "📬 Review Queue",

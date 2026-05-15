@@ -488,6 +488,43 @@ def main() -> int:
     out_path.write_text(result, encoding="utf-8")
 
     print(f"[jd_tailor] Wrote: {out_path}")
+
+    # Quality gate: scan paragraph 1 of the cover letter for banned regulatory
+    # framing and rescue with one Sonnet call if needed. Advisory — never
+    # blocks the tailor's exit code. See automation/tailor_quality_gate.py.
+    try:
+        from tailor_quality_gate import gate_check, gate_rescue, _atomic_write_text, _backup_path, _append_log  # type: ignore
+        from datetime import timezone as _qg_tz
+        _qg_md = out_path.read_text(encoding="utf-8")
+        _qg_res = gate_check(_qg_md)
+        _qg_ts = datetime.now(_qg_tz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        if _qg_res.clean:
+            print("[gate] OK")
+            _append_log({"ts": _qg_ts, "file": str(out_path), "violations": [],
+                         "action": "clean", "cost": 0.0, "via": "jd_tailor"})
+        else:
+            print(f"[gate] VIOLATIONS: {', '.join(_qg_res.violations)}",
+                  file=sys.stderr)
+            try:
+                _qg_bak = _backup_path(out_path)
+                import shutil as _qg_shutil
+                _qg_shutil.copy2(out_path, _qg_bak)
+                _qg_new, _qg_cost = gate_rescue(_qg_md, _qg_res)
+                _atomic_write_text(out_path, _qg_new)
+                print(f"[gate] RESCUED — rewrote paragraph 1 (cost ${_qg_cost:.4f})")
+                _append_log({"ts": _qg_ts, "file": str(out_path),
+                             "violations": _qg_res.violations,
+                             "action": "rescued", "cost": round(_qg_cost, 6),
+                             "backup": str(_qg_bak), "via": "jd_tailor"})
+            except Exception as _qg_e:
+                print(f"[gate] WARN: rescue failed ({_qg_e}); original left in place",
+                      file=sys.stderr)
+                _append_log({"ts": _qg_ts, "file": str(out_path),
+                             "violations": _qg_res.violations,
+                             "action": "warned", "cost": 0.0,
+                             "warn": str(_qg_e)[:200], "via": "jd_tailor"})
+    except Exception as _qg_outer:
+        print(f"[gate] WARN: quality gate skipped ({_qg_outer})", file=sys.stderr)
     return 0
 
 

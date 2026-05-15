@@ -195,4 +195,17 @@ See `CHANGELOG.md` for full architecture and validated ATS endpoint list.
 
 ---
 
+## Git hooks
+
+Install the pre-commit hook (runs `verify.py --fast` before each commit, ~10s, blocks on failure):
+
+```bash
+bash scripts/install-hooks.sh        # Git Bash / macOS / Linux
+powershell -File scripts/install-hooks.ps1   # Windows PowerShell
+```
+
+Bypass for emergencies: `git commit --no-verify`. Canonical hook source lives at `scripts/pre-commit` — edit there, then re-run the installer.
+
+---
+
 *Last updated: 2026-05-04 · v1.0 ship release*

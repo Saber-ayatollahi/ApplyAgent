@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# ApplyAgent pre-commit hook.
+# Runs verify.py --fast (~10s) and blocks the commit on failure.
+# Bypass with: git commit --no-verify
+#
+# Constraints:
+#   - No LLM calls, no network, no file mutations.
+#   - Must work on Git Bash (Windows) and POSIX shells.
+
+set -u
+
+# Resolve repo root and cd there so verify.py runs with the correct cwd
+# regardless of where `git commit` was invoked from.
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "${REPO_ROOT}" ]; then
+  echo "[pre-commit] ERROR: not inside a git repository." >&2
+  exit 1
+fi
+
+cd "${REPO_ROOT}" || {
+  echo "[pre-commit] ERROR: failed to cd to repo root: ${REPO_ROOT}" >&2
+  exit 1
+}
+
+# Pick a python interpreter. On Windows + Git Bash, `python` is normally on PATH.
+# Fall back to `py -3` only if python is missing.
+PY_BIN=""
+if command -v python >/dev/null 2>&1; then
+  PY_BIN="python"
+elif command -v python3 >/dev/null 2>&1; then
+  PY_BIN="python3"
+elif command -v py >/dev/null 2>&1; then
+  PY_BIN="py -3"
+else
+  echo "[pre-commit] ERROR: no python interpreter found on PATH." >&2
+  echo "             Bypass with: git commit --no-verify" >&2
+  exit 1
+fi
+
+echo "[pre-commit] running: ${PY_BIN} verify.py --fast  (cwd=${REPO_ROOT})"
+
+# Capture wall time (seconds, integer) using a portable date trick.
+START_TS=$(date +%s 2>/dev/null || echo 0)
+
+# Run verify.py --fast. Stream output through so the user sees check results.
+${PY_BIN} verify.py --fast
+RC=$?
+
+END_TS=$(date +%s 2>/dev/null || echo 0)
+if [ "${START_TS}" != "0" ] && [ "${END_TS}" != "0" ]; then
+  ELAPSED=$(( END_TS - START_TS ))
+else
+  ELAPSED="?"
+fi
+
+if [ "${RC}" -ne 0 ]; then
+  echo ""
+  echo "[pre-commit] FAILED  (verify.py --fast exit=${RC}, ${ELAPSED}s)" >&2
+  echo "[pre-commit] commit blocked. Fix the failures above, or bypass with:" >&2
+  echo "             git commit --no-verify" >&2
+  exit "${RC}"
+fi
+
+echo "[pre-commit] OK  (verify.py --fast passed in ${ELAPSED}s)"
+exit 0
