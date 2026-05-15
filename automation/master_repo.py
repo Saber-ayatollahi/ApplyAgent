@@ -240,8 +240,8 @@ class MasterRepo:
                 "years": sk.years,
             })
 
-        total = max(len(list(jd_keywords)) if not isinstance(jd_keywords, list) else len(jd_keywords), 1)
-        # Recompute total accurately (jd_keywords may be a one-shot iterator)
+        # Total = matched + missed. We deliberately don't reuse jd_keywords
+        # since it may be a one-shot iterator already consumed by the loop above.
         n_matched = len(matched)
         n_missed = len(missed)
         total = n_matched + n_missed or 1

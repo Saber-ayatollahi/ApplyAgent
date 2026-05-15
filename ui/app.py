@@ -4814,13 +4814,33 @@ elif page == "⚙️ Admin":
             # write a .bak alongside the dated archive before the reset
             # write, so a crash mid-write doesn't leave the file empty.
             if _reset_url_hist and _url_hist.exists():
+                # Read once; reuse for both archive and bak so we don't risk
+                # the source file changing between reads.
+                _uh_src = _url_hist.read_text(encoding="utf-8")
                 _uh_dest = _url_hist.parent / f"url_history_{_archive_month}.json"
-                _uh_dest.write_text(_url_hist.read_text(encoding="utf-8"), encoding="utf-8")
+                _uh_dest.write_text(_uh_src, encoding="utf-8")
                 _uh_bak = _url_hist.with_suffix(
                     f".bak.{_now.strftime('%Y%m%d-%H%M%S')}.json"
                 )
-                _uh_bak.write_text(_url_hist.read_text(encoding="utf-8"), encoding="utf-8")
-                _url_hist.write_text(json.dumps({"urls": [], "archived_on": _now.strftime("%Y-%m-%d")}, indent=2))
+                _uh_bak.write_text(_uh_src, encoding="utf-8")
+                # Atomic reset: tempfile + os.replace so a crash between
+                # truncate and re-populate can't leave url_history empty.
+                import os as _os, tempfile as _tf
+                _fresh = json.dumps(
+                    {"urls": [], "archived_on": _now.strftime("%Y-%m-%d")},
+                    indent=2,
+                )
+                _fd, _tmp = _tf.mkstemp(prefix=_url_hist.name + ".",
+                                          suffix=".tmp",
+                                          dir=str(_url_hist.parent))
+                try:
+                    with _os.fdopen(_fd, "w", encoding="utf-8") as _f:
+                        _f.write(_fresh)
+                    _os.replace(_tmp, _url_hist)
+                except Exception:
+                    try: _os.unlink(_tmp)
+                    except OSError: pass
+                    raise
                 _url_msg = "  \n✅ URL history archived to `" + _uh_dest.name + "` and reset."
             else:
                 _url_msg = ""
