@@ -16,6 +16,7 @@ Output strategy:
   fd-sharing / TextIOWrapper-position issues that silently swallow subprocess
   output when stdout is a redirected file (as it is under scan_runner).
 """
+import argparse
 import json
 import os
 import subprocess
@@ -111,7 +112,33 @@ def rotate_url_history_if_weekly():
         )
 
 
+def _parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="nightly_refresh",
+        description=(
+            "Run the 3-stage nightly pipeline: jd_scraper (--expansion --gmail) "
+            "-> scan_delta -> morning_brief (--auto-tailor). "
+            "Takes ~40 min and spends ~$3-5 in LLM calls. "
+            "Run with no args to execute the full live pipeline."
+        ),
+        epilog="Logs: logs/nightly_*.log (captured by scan_runner).",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the stages that would run and exit 0 without executing anything.",
+    )
+    return parser.parse_args(argv)
+
+
 def main():
+    args = _parse_args()
+    if args.dry_run:
+        print("nightly_refresh --dry-run: would execute these stages:")
+        print("  [1/3] jd_scraper.py --expansion --gmail")
+        print("  [2/3] scan_delta.py")
+        print("  [3/3] morning_brief.py --top 5 --auto-add 3 --auto-tailor")
+        return
     log("=== nightly_refresh starting ===")
     log(f"repo: {ROOT}")
 
