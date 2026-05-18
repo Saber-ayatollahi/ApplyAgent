@@ -66,7 +66,12 @@ def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None) -> RunReco
             env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
         if sys.platform == "win32":
-            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+            # CREATE_NO_WINDOW (not DETACHED_PROCESS): we want the child to
+            # have no visible console, but still have a valid (hidden) one
+            # so its stdio works. DETACHED_PROCESS strips the console
+            # entirely, which on some Win11 configs flashes an empty
+            # terminal and can confuse children that expect stdio handles.
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
         else:
             kwargs["start_new_session"] = True
 
