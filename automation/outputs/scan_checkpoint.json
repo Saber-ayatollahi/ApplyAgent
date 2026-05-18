@@ -1,9 +1,10 @@
 {
   "targets_signature": "81788fc89949",
-  "updated_at": "2026-05-18T18:29:02",
+  "updated_at": "2026-05-18T18:31:05",
   "total_companies": 66,
   "completed": [
     "BMO",
+    "Brookfield Asset Management",
     "CAAT Pension Plan",
     "CDPQ",
     "CIBC",
@@ -19,7 +20,7 @@
     "Scotiabank",
     "TD Bank"
   ],
-  "completed_count": 15,
+  "completed_count": 16,
   "found": [
     {
       "title": "Senior Product Manager, CNAPP Product",
@@ -7711,6 +7712,479 @@
       "posted_date": "2026-05-15",
       "company": "IMCO",
       "sector": "Canadian Pension Funds"
+    },
+    {
+      "title": "Analyst, Derivatives",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Derivatives_R2050265",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model validation",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Business Systems Applications",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Manager--Business-Systems-Applications_R2048042",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model validation",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst, Business Systems Analysis",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst--Business-Systems-Analysis_R2049014",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model validation",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst, Application Integration",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst--Application-Engineering_R2048792",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model validation",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Sr. Sourcing Analyst",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Sr-Sourcing-Analyst_R2049945",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Sr. Sourcing Analyst",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Sr-Sourcing-Analyst_R2048966-1",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Associate, Investor Relations and FP&A",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Associate--Investor-Relations-and-FP-A_R2048750",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Sr. Financial Analyst, Portfolio Management",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Sr-Financial-Analyst--Portfolio-Management_R2049765",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "VP, Application Integration",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/VP--Application-Engineering_R2048905",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "model risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Treasury Operations",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Treasury-Operations_R2049638",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst_R2049090",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Tax Director",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Tax-Director_R2049942",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Vice President",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Vice-President_R2047917-1",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Finance",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Manager--Finance_R2047620",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Tax",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Manager--Tax_R2047857",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Tax Director",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Tax-Director_R2050192",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Finance Manager, Portfolio Management",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Finance-Manager--Portfolio-Management_R2049872",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Law Clerk",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Senior-Law-Clerk_R2050156-1",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "treasury",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Specialist, SPV Operations",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Senior-Specialist--SPV-Operations_R2048175",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "fixed income",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Risk & Insurance",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Manager--Risk---Insurance_R2050267",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "market risk",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Investor Relations",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Investor-Relations_R2050160",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "quantitative",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "IT Auditor",
+      "link": "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/IT-Auditor_R2049700",
+      "location": "Toronto, Ontario",
+      "posted_date": "",
+      "keyword_hit": "risk analytics",
+      "source": "workday:brookfield",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Financial Analyst",
+      "link": "https://ca.linkedin.com/jobs/view/financial-analyst-at-brookfield-4414924359",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Derivatives",
+      "link": "https://ca.linkedin.com/jobs/view/analyst-derivatives-at-brookfield-4414916484",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Financial Analyst, Private Funds",
+      "link": "https://ca.linkedin.com/jobs/view/financial-analyst-private-funds-at-brookfield-4414918495",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Investor Relations and Strategic Initiatives",
+      "link": "https://ca.linkedin.com/jobs/view/analyst-investor-relations-and-strategic-initiatives-at-brookfield-4414925324",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Investor Relations",
+      "link": "https://ca.linkedin.com/jobs/view/analyst-investor-relations-at-brookfield-4414922390",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Associate / Senior Associate, Investments, Infrastructure AI",
+      "link": "https://ca.linkedin.com/jobs/view/associate-senior-associate-investments-infrastructure-ai-at-brookfield-4414918496",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Associate, Investor Relations and FP&A",
+      "link": "https://ca.linkedin.com/jobs/view/associate-investor-relations-and-fp-a-at-brookfield-4414912821",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Associate, Human Resources",
+      "link": "https://ca.linkedin.com/jobs/view/associate-human-resources-at-brookfield-4414907864",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst",
+      "link": "https://ca.linkedin.com/jobs/view/senior-analyst-at-brookfield-4414908827",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Analyst, Treasury Operations",
+      "link": "https://ca.linkedin.com/jobs/view/analyst-treasury-operations-at-brookfield-4414920439",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Finance Manager, Portfolio Management",
+      "link": "https://ca.linkedin.com/jobs/view/finance-manager-portfolio-management-at-brookfield-4414921426",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Accounting Operations",
+      "link": "https://ca.linkedin.com/jobs/view/manager-accounting-operations-at-brookfield-4414922498",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Manager, Business Systems Applications",
+      "link": "https://ca.linkedin.com/jobs/view/manager-business-systems-applications-at-brookfield-4414920438",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst, Application Integration",
+      "link": "https://ca.linkedin.com/jobs/view/senior-analyst-application-integration-at-brookfield-4414917510",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Auditor",
+      "link": "https://ca.linkedin.com/jobs/view/senior-auditor-at-brookfield-4414916486",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Specialist, SPV Operations",
+      "link": "https://ca.linkedin.com/jobs/view/senior-specialist-spv-operations-at-brookfield-4414919499",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Sr. Sourcing Analyst",
+      "link": "https://ca.linkedin.com/jobs/view/sr-sourcing-analyst-at-brookfield-4414913638",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Sr. Sourcing Analyst",
+      "link": "https://ca.linkedin.com/jobs/view/sr-sourcing-analyst-at-brookfield-4414914796",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Associate, Investor Relations",
+      "link": "https://ca.linkedin.com/jobs/view/associate-investor-relations-at-brookfield-4414930357",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "IRRBB",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Vice President",
+      "link": "https://ca.linkedin.com/jobs/view/vice-president-at-brookfield-4414910772",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "IRRBB",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Finance Manager",
+      "link": "https://ca.linkedin.com/jobs/view/finance-manager-at-brookfield-4414909817",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "IRRBB",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "Senior Analyst, Business Systems Analysis",
+      "link": "https://ca.linkedin.com/jobs/view/senior-analyst-business-systems-analysis-at-brookfield-4414922392",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "IRRBB",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
+    },
+    {
+      "title": "AVP, Inside Sales Consultant",
+      "link": "https://ca.linkedin.com/jobs/view/avp-inside-sales-consultant-at-brookfield-4414915610",
+      "company_reported": "Brookfield",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "IRRBB",
+      "source": "linkedin",
+      "posted_date": "2026-05-14",
+      "company": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers"
     }
   ],
   "per_company": [
@@ -7948,6 +8422,22 @@
       "successfactors": 0,
       "phenom": 0,
       "linkedin": 0,
+      "has_workday_config": true,
+      "has_greenhouse_config": false,
+      "has_lever_config": false,
+      "has_successfactors_config": false,
+      "has_phenom_config": false
+    },
+    {
+      "name": "Brookfield Asset Management",
+      "sector": "Canadian Asset Managers",
+      "total": 45,
+      "workday": 22,
+      "greenhouse": 0,
+      "lever": 0,
+      "successfactors": 0,
+      "phenom": 0,
+      "linkedin": 23,
       "has_workday_config": true,
       "has_greenhouse_config": false,
       "has_lever_config": false,

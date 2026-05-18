@@ -36,3 +36,6 @@ Mode: scrape=core skip_scrape=False skip_score=True skip_promote=True
 [scrape] [scan 15/66] CDPQ (sector: Canadian Pension Funds)
 [scrape]   -> 0 new candidate(s) [none]
 [scrape] [scan 16/66] Brookfield Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 45 new candidate(s) [workday:22, linkedin:23]
+[scrape] [scan] Pause flag detected at company 17/66 (RBC Global Asset Management). Saving checkpoint and exiting.
+[scrape] [scan] PAUSED at 16/66 companies. Checkpoint written to scan_checkpoint.json. Re-run with --resume to continue; or clear scan_pause.flag first if you launched the next run without --resume.

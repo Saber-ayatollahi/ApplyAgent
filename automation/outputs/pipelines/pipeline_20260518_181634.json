@@ -16,7 +16,7 @@
     "include_watch": false,
     "commit_promote": false
   },
-  "state": "running",
+  "state": "failed",
   "stages": {
     "scrape": {
       "cmd": [
@@ -24,7 +24,11 @@
         "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py"
       ],
       "started_at": "2026-05-18T18:16:34",
-      "state": "running"
+      "state": "failed",
+      "finished_at": "2026-05-18T18:31:07",
+      "elapsed_sec": 873.5,
+      "returncode": 2,
+      "last_line": "[scan] PAUSED at 16/66 companies. Checkpoint written to scan_checkpoint.json. Re-run with --resume to continue; or clear scan_pause.flag first if you launched the next run without --resume."
     }
   }
 }
