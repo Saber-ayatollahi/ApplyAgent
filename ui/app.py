@@ -1229,7 +1229,11 @@ with st.sidebar.expander("🪵 Backend log", expanded=False):
                     _raw = b"...[truncated]\n" + _lf.read()
                 else:
                     _raw = _lf.read()
-            _txt = _raw.decode("utf-8", errors="replace")
+            # PowerShell writes logs as UTF-16 LE (BOM \xff\xfe); fall back to UTF-8
+            if _raw[:2] in (b'\xff\xfe', b'\xfe\xff'):
+                _txt = _raw.decode("utf-16", errors="replace")
+            else:
+                _txt = _raw.decode("utf-8", errors="replace")
             # Strip ANSI escape codes (colors, cursor moves, etc.)
             _txt = _re.sub(r'\x1b\[[0-9;]*[mGKHF]', '', _txt)
             # Strip carriage returns left by Windows line endings
