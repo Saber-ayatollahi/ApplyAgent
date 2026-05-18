@@ -96,6 +96,16 @@ def make_entry(r: dict) -> dict:
     variants = f.get("applicable_resume_variants") or []
     primary_variant = variants[0] if variants else ""
 
+    # Preserve provenance from the scan row. Without this, every promoted
+    # entry got tagged "scraper+fit_scorer" and we lost the ability to tell
+    # Gmail-alert rows from web-scraped rows in the tracker — which matters
+    # for UI badges and for "delete the alert email after we have the row".
+    raw_src = r.get("source") or ""
+    if raw_src.startswith("gmail_"):
+        entry_source = f"{raw_src}+fit_scorer"
+    else:
+        entry_source = "scraper+fit_scorer"
+
     return {
         "id": _id,
         "company": co,
@@ -110,7 +120,7 @@ def make_entry(r: dict) -> dict:
         "date_jd_verified": date.today().isoformat() if r.get("_jd_len", 0) > 200 else None,
         "date_applied": None,
         "date_last_followup": None,
-        "source": "scraper+fit_scorer",
+        "source": entry_source,
         "status": defaults.get("status", "Watch"),
         "fit_score": "High" if f.get("fit_score", 0) >= 8 else "Medium" if f.get("fit_score", 0) >= 6 else "Low",
         "fit_score_numeric": int(f.get("fit_score", 0)),

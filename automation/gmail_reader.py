@@ -418,9 +418,11 @@ def scrape_from_inbox(days: int = 14) -> list[dict]:
 
     Each returned row carries:
       - source: "gmail_linkedin_alert"
-      - found_at / posted_date: the email's arrival date (best proxy we have
-        for "when the recruiter surfaced this"). jd_scraper's stamp_found_at
+      - posted_date: the email's arrival date (best proxy we have for
+        "when the recruiter surfaced this"). jd_scraper's stamp_found_at
         will overwrite found_at if the URL was seen earlier.
+      - gmail_uid: IMAP UID of the source email, so the UI can later
+        request deletion of only the alerts that produced rows.
     """
     messages = fetch_inbox_signals(days=days, limit=200, include_body=True)
     rows: list[dict] = []
@@ -430,8 +432,130 @@ def scrape_from_inbox(days: int = 14) -> list[dict]:
         if "linkedin.com" not in msg.sender_email.lower():
             continue
         for row in parse_linkedin_alert(msg.snippet):
-            # Stamp email date so downstream freshness/triage have something
-            # useful even before url_history stamps found_at.
             row["posted_date"] = msg.date or None
+            row["gmail_uid"] = msg.uid
             rows.append(row)
     return rows
+
+
+# ---------------------------------------------------------------------------
+# Mailbox mutation — move alert emails to Trash after we've harvested them.
+# Read-only path stays the default everywhere else; this is the ONE function
+# that opens IMAP read-write.
+# ---------------------------------------------------------------------------
+@dataclass
+class TrashResult:
+    moved: int
+    failed: int
+    errors: list[str]
+
+
+# Gmail's localized-name Trash mailbox. The IMAP server advertises the
+# canonical name via the \Trash special-use flag, but for English accounts
+# this literal is the standard label and avoids a LIST round-trip.
+_GMAIL_TRASH = "[Gmail]/Trash"
+
+
+def _resolve_trash_mailbox(m: imaplib.IMAP4_SSL) -> str:
+    """Find the trash mailbox by \\Trash flag; fall back to [Gmail]/Trash.
+
+    Non-English Gmail accounts localize the label (e.g., [Gmail]/Papelera
+    in Spanish). Walking LIST and looking for the \\Trash flag is the
+    only reliable way to handle this without a config knob."""
+    try:
+        typ, data = m.list()
+        if typ == "OK" and data:
+            for line in data:
+                if not line:
+                    continue
+                txt = line.decode("utf-8", errors="replace") if isinstance(line, bytes) else str(line)
+                if "\\Trash" in txt:
+                    # Format: '(\HasNoChildren \Trash) "/" "[Gmail]/Trash"'
+                    # Split on quotes, take last quoted segment.
+                    parts = txt.split('"')
+                    if len(parts) >= 2:
+                        return parts[-2]
+    except Exception:
+        pass
+    return _GMAIL_TRASH
+
+
+def delete_messages(uids: Iterable[str]) -> TrashResult:
+    """Move the given IMAP UIDs to Gmail's Trash. Reversible (Gmail
+    auto-purges Trash after 30 days; user can also restore manually).
+
+    Uses UID MOVE (RFC 6851) when the server advertises it; falls back
+    to UID COPY + UID STORE +Deleted + EXPUNGE on older servers."""
+    uids = [str(u).strip() for u in uids if str(u).strip()]
+    if not uids:
+        return TrashResult(0, 0, [])
+    email_addr, pw = load_credentials()
+    if not email_addr or not pw:
+        return TrashResult(0, len(uids), ["No Gmail credentials saved."])
+
+    errors: list[str] = []
+    try:
+        m = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT, timeout=30)
+        m.login(email_addr, pw)
+    except Exception as e:
+        return TrashResult(0, len(uids), [f"IMAP login failed: {e}"])
+
+    moved = 0
+    failed = 0
+    try:
+        # MUST select read-write; default elsewhere in this module is readonly.
+        typ, _ = m.select("INBOX", readonly=False)
+        if typ != "OK":
+            return TrashResult(0, len(uids), ["INBOX SELECT failed"])
+
+        trash = _resolve_trash_mailbox(m)
+        # Capability check for UID MOVE
+        has_move = False
+        try:
+            typ, caps = m.capability()
+            if typ == "OK" and caps:
+                cap_text = b" ".join(caps).decode("ascii", errors="replace").upper()
+                has_move = "MOVE" in cap_text.split()
+        except Exception:
+            has_move = False
+
+        # Batch into comma-separated UID set (IMAP supports 1,2,3 syntax).
+        # Cap batches at 500 UIDs to stay well under server line-length limits.
+        for i in range(0, len(uids), 500):
+            chunk = uids[i:i + 500]
+            uid_set = ",".join(chunk)
+            try:
+                if has_move:
+                    typ, resp = m.uid("MOVE", uid_set, trash)
+                    if typ == "OK":
+                        moved += len(chunk)
+                    else:
+                        failed += len(chunk)
+                        errors.append(f"UID MOVE failed: {resp}")
+                else:
+                    typ, resp = m.uid("COPY", uid_set, trash)
+                    if typ != "OK":
+                        failed += len(chunk)
+                        errors.append(f"UID COPY failed: {resp}")
+                        continue
+                    typ, _ = m.uid("STORE", uid_set, "+FLAGS", r"(\Deleted)")
+                    if typ != "OK":
+                        failed += len(chunk)
+                        errors.append("UID STORE +Deleted failed")
+                        continue
+                    m.expunge()
+                    moved += len(chunk)
+            except Exception as e:
+                failed += len(chunk)
+                errors.append(f"chunk failed: {e}")
+    finally:
+        try:
+            m.close()
+        except Exception:
+            pass
+        try:
+            m.logout()
+        except Exception:
+            pass
+
+    return TrashResult(moved=moved, failed=failed, errors=errors)

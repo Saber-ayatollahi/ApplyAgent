@@ -56,7 +56,16 @@ def _load_tracker_urls() -> set[str]:
 
 
 def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
-    """Wrap Gmail rows in the same envelope fit_scorer / auto_promote expect."""
+    """Wrap Gmail rows in the same envelope fit_scorer / auto_promote expect.
+
+    Also stamps a `gmail_alerts` block listing the UIDs of every email that
+    contributed at least one row. The UI uses this list to ask the user
+    'move these N alerts to Gmail Trash?' — only emails that produced data
+    are eligible, so we never drop a lead we couldn't parse."""
+    contributing_uids = sorted({
+        str(r.get("gmail_uid")) for r in rows
+        if r.get("gmail_uid")
+    })
     return {
         "scan_date": datetime.now().strftime("%Y-%m-%d"),
         "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -72,6 +81,12 @@ def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
             "per_company": [],
             "note": "Produced by gmail_fetch.py — pure Gmail alert harvest, "
                     "no web scraping.",
+        },
+        "gmail_alerts": {
+            "contributing_uids": contributing_uids,
+            "deleted": False,
+            "deleted_at": None,
+            "delete_result": None,
         },
         "results": rows,
     }
@@ -164,6 +179,10 @@ def main() -> int:
                          encoding="utf-8")
     print(f"[gmail_fetch] ✓ wrote {out_path.name} with {len(rows)} "
           f"row(s).", file=sys.stderr)
+    n_uids = len(envelope.get("gmail_alerts", {}).get("contributing_uids", []))
+    if n_uids:
+        print(f"[gmail_fetch]   {n_uids} alert email(s) produced rows — "
+              f"the UI will offer to move them to Trash.", file=sys.stderr)
     print(f"[gmail_fetch]   Next: python automation/fit_scorer.py "
           f"--scan {fname}", file=sys.stderr)
     return 0

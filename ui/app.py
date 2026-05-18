@@ -776,6 +776,127 @@ def latest_pipeline_status() -> dict | None:
     return _resolve_pipeline_staleness(data, files[0])
 
 
+def render_gmail_trash_panel(container=None) -> bool:
+    """If the most recent scan_gmail_*.json has alert UIDs that haven't been
+    moved to Trash yet, render a confirm/delete panel. Returns True if it
+    rendered (UI shifted), False otherwise so the caller can collapse layout.
+
+    The panel only ever offers to delete alerts that produced rows. If a
+    parse returned 0 rows from a digest, the UID is not in
+    `gmail_alerts.contributing_uids` and survives — that protects unparsed
+    leads from being lost when we extend the parser later.
+    """
+    target = container or st
+    files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
+                    key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        return False
+    latest = files[0]
+    try:
+        env = json.loads(latest.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    alerts = env.get("gmail_alerts") or {}
+    uids = alerts.get("contributing_uids") or []
+    if not uids:
+        return False
+    if alerts.get("deleted"):
+        # One-time success caption so the user knows the previous click
+        # actually moved messages — but no big banner.
+        dr = alerts.get("delete_result") or {}
+        moved = dr.get("moved", 0)
+        when = alerts.get("deleted_at") or ""
+        target.caption(
+            f"🗑 {moved} Gmail alert(s) moved to Trash at {when} "
+            f"(from `{latest.name}`)."
+        )
+        return True
+
+    n_rows = len(env.get("results") or [])
+    with target.container(border=True):
+        st.markdown(
+            f"#### 🗑 Clean up Gmail · {len(uids)} alert email"
+            f"{'s' if len(uids) != 1 else ''} ready to delete"
+        )
+        st.caption(
+            f"`{latest.name}` extracted **{n_rows} job row"
+            f"{'s' if n_rows != 1 else ''}** from these alerts. "
+            "Moving them to Gmail Trash declutters your inbox; Gmail "
+            "auto-purges Trash after 30 days, and you can restore them "
+            "manually from there if needed. Read-only stays the default — "
+            "this is the only operation that mutates mail."
+        )
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            do_delete = st.button(
+                f"🗑 Move {len(uids)} to Trash",
+                width='stretch',
+                type="primary",
+                key=f"gmail_trash_{latest.stem}",
+                help="Opens a read-write IMAP session and moves the listed "
+                     "UIDs to [Gmail]/Trash. Reversible from Gmail UI.",
+            )
+        with col2:
+            if st.button(
+                "🙈 Hide for this scan",
+                width='stretch',
+                key=f"gmail_trash_hide_{latest.stem}",
+                help="Mark this scan as 'don't ask again' without deleting "
+                     "any mail. The next scan_gmail_ run will offer again.",
+            ):
+                env.setdefault("gmail_alerts", {})
+                env["gmail_alerts"]["deleted"] = True
+                env["gmail_alerts"]["delete_result"] = {
+                    "moved": 0, "failed": 0,
+                    "errors": ["User dismissed without deleting."],
+                }
+                env["gmail_alerts"]["deleted_at"] = datetime.now().isoformat(timespec="seconds")
+                latest.write_text(
+                    json.dumps(env, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                st.rerun()
+
+        if do_delete:
+            try:
+                # Lazy import — gmail_reader pulls in imaplib + bs4. Keep it
+                # off the page-load critical path.
+                sys.path.insert(0, str(ROOT / "automation"))
+                import gmail_reader as _gr  # type: ignore
+                with st.spinner(f"Moving {len(uids)} alert(s) to Trash…"):
+                    res = _gr.delete_messages(uids)
+            except Exception as e:
+                st.error(f"Delete failed before IMAP call: {e}")
+                return True
+            env.setdefault("gmail_alerts", {})
+            env["gmail_alerts"]["deleted"] = True
+            env["gmail_alerts"]["deleted_at"] = datetime.now().isoformat(timespec="seconds")
+            env["gmail_alerts"]["delete_result"] = {
+                "moved": res.moved,
+                "failed": res.failed,
+                "errors": list(res.errors or [])[:10],
+            }
+            try:
+                latest.write_text(
+                    json.dumps(env, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+            except Exception as e:
+                st.warning(f"Trash succeeded but persisting result failed: {e}")
+            if res.failed == 0:
+                st.success(
+                    f"✅ Moved {res.moved} alert(s) to Gmail Trash. "
+                    "They'll auto-purge after 30 days."
+                )
+            else:
+                st.warning(
+                    f"Moved {res.moved}, failed {res.failed}. "
+                    f"Errors: {res.errors[:3]}"
+                )
+            st.rerun()
+    return True
+
+
 def list_pipelines(limit: int = 20) -> list[dict]:
     if not PIPELINE_DIR.exists():
         return []
@@ -1649,6 +1770,12 @@ if page == "🏠 Dashboard":
             st.markdown(f"**Web scan:** {_age(_ds_web[0] if _ds_web else None)}")
             st.markdown(f"**Gmail pull:** {_age(_ds_gm[0] if _ds_gm else None)}")
     st.markdown("")
+
+    # Gmail trash panel: only renders if the most recent scan_gmail_*.json
+    # has UIDs that haven't been moved to Trash yet. Lives right under
+    # Quick Actions so a freshly-pulled scan surfaces the cleanup prompt
+    # at the natural next-step location.
+    render_gmail_trash_panel()
 
     # ---------- Compact status strip ----------
     # Previously three stacked banners. Now: one caption line if nothing is
@@ -3415,6 +3542,12 @@ elif page == "🎯 Pipeline":
         # Without fragments: page-wide autorefresh handles the 5s polling.
         _pipeline_live_panel()
 
+        # Gmail trash cleanup panel — only renders when there's an
+        # un-trashed scan_gmail_*.json. Same widget as the Dashboard,
+        # surfaced here too so users running the Gmail fetch from the
+        # Pipeline page see the prompt without bouncing back to home.
+        render_gmail_trash_panel()
+
         # --- Recent runs: what actually happened ---
         st.markdown("---")
         st.markdown("#### Recent runs")
@@ -4078,7 +4211,18 @@ elif page == "📋 Jobs Kanban":
     if "url" in view.columns:
         view = view.assign(freshness=view["url"].apply(_freshness))
 
-    cols = [c for c in ["id", "draft", "freshness", "company", "title", "gta_area",
+    # Provenance badge: rows promoted from a Gmail-alert scan get a 📬
+    # marker so it's visible at a glance which leads came from inbox
+    # alerts vs. scraped postings. auto_promote.py preserves the original
+    # gmail_* source as a "<source>+fit_scorer" composite.
+    if "source" in view.columns:
+        view = view.assign(
+            src=view["source"].apply(
+                lambda s: "📬" if isinstance(s, str) and s.startswith("gmail_") else ""
+            )
+        )
+
+    cols = [c for c in ["id", "draft", "freshness", "src", "company", "title", "gta_area",
                         "sector", "tier", "status", "fit_score", "fit_score_numeric",
                         "primary_variant", "urgency",
                         "date_found", "date_applied", "url"]
