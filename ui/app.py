@@ -1204,7 +1204,7 @@ _pointer = _LOGS_DIR / "current.log"
 _session_log = None
 if _pointer.exists():
     try:
-        _p = _pointer.read_text(encoding="utf-8").strip()
+        _p = _pointer.read_text(encoding="utf-8-sig").strip()  # utf-8-sig strips BOM
         if _p and Path(_p).exists():
             _session_log = Path(_p)
     except Exception:
