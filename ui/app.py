@@ -5801,7 +5801,9 @@ elif page == "📊 Analytics":
         _an_sector_df = pd.DataFrame([
             {"Sector": k, "Jobs": v}
             for k, v in _an_sector_counts.items()
-        ]).sort_values("Jobs", ascending=False)
+        ])
+        if "Jobs" in _an_sector_df.columns:
+            _an_sector_df = _an_sector_df.sort_values("Jobs", ascending=False)
         _an_sector_chart = (
             alt.Chart(_an_sector_df)
             .mark_bar(color="#0ea5e9", cornerRadiusEnd=4)
