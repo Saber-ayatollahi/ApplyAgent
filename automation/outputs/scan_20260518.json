@@ -1,0 +1,18 @@
+{
+  "scan_date": "20260518",
+  "companies_scanned": 159,
+  "total_new_candidates": 0,
+  "dedup_stats": {
+    "input": 0,
+    "dropped_url": 0,
+    "dropped_near": 0,
+    "output": 0
+  },
+  "by_sector": {},
+  "diagnostics": {
+    "error": "checkpoint_signature_mismatch",
+    "checkpoint_sig": "81788fc89949",
+    "current_sig": "167d74e09a03"
+  },
+  "results": []
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": "scrape_resume_20260518_182015",
+  "label": "scrape_resume",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+    "--resume",
+    "--expansion"
+  ],
+  "pid": 36064,
+  "started_at": "2026-05-18T18:20:15",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\scrape_resume_20260518_182015.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\scrape_resume_20260518_182015.json",
+  "state": "finished",
+  "finished_at": "2026-05-18T18:20:21",
+  "returncode": null
+}
