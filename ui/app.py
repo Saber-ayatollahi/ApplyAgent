@@ -3387,6 +3387,21 @@ elif page == "🎯 Pipeline":
                 st.toast("🌅 Full refresh launched!", icon="🚀")
                 st.rerun()
 
+        # Stop button — shown whenever any job is active (all launch buttons are
+        # disabled then, so this is the only way the user can unblock).
+        if any_work_active and active_runs:
+            _stop_run = active_runs[0]
+            st.warning(
+                f"⏳ **{_stop_run.get('label', 'job')}** is running "
+                f"({human_elapsed(_stop_run.get('started_at'))}) — "
+                "launch buttons are disabled until it finishes.",
+                icon="⚠️",
+            )
+            if st.button("⏹ Stop running job", type="primary", key="ql_stop_btn"):
+                scan_runner.stop_run(_stop_run["run_id"])
+                st.warning("⏹ Stop signal sent — job will exit after the current step.")
+                st.rerun()
+
         # --- Live progress panel (fragment or fallback) ---
         # _pipeline_live_panel() is defined before this page block and is
         # decorated with @st.fragment(run_every=3) when Streamlit ≥1.33.
