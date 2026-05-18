@@ -1220,16 +1220,21 @@ with st.sidebar.expander("🪵 Backend log", expanded=False):
     else:
         st.caption(f"`{_session_log.name}`")
         try:
+            import re as _re
             _size = _session_log.stat().st_size
             _cap = 12_000  # keep the sidebar render fast
             with open(_session_log, "rb") as _lf:
                 if _size > _cap:
                     _lf.seek(_size - _cap)
-                    _txt = b"...[truncated - full log on disk]...\n" + _lf.read()
+                    _raw = b"...[truncated]\n" + _lf.read()
                 else:
-                    _txt = _lf.read()
-            st.code(_txt.decode("utf-8", errors="replace") or "(empty)",
-                    language="text")
+                    _raw = _lf.read()
+            _txt = _raw.decode("utf-8", errors="replace")
+            # Strip ANSI escape codes (colors, cursor moves, etc.)
+            _txt = _re.sub(r'\x1b\[[0-9;]*[mGKHF]', '', _txt)
+            # Strip carriage returns left by Windows line endings
+            _txt = _txt.replace('\r', '')
+            st.code(_txt or "(empty)", language="text", height=300)
         except Exception as _e:
             st.caption(f"(read error: {_e})")
         if st.button("🔄 Refresh log", key="sidebar_log_refresh",
