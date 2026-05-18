@@ -3100,7 +3100,12 @@ elif page == "🎯 Pipeline":
                                    "same options as the checkpointed run."):
                     opts = (pc.get("options") or {})
                     cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py"),
-                           "--resume", "--expansion"]
+                           "--resume"]
+                    # Use the same scrape mode as the original run so the
+                    # checkpoint signature matches. Hardcoding --expansion here
+                    # caused a signature mismatch that wiped scraped results.
+                    _ckpt_mode = opts.get("scrape_mode") or opts.get("mode") or "expansion"
+                    cmd.append(f"--scrape-mode={_ckpt_mode}")
                     if opts.get("linkedin_only"):
                         cmd.append("--linkedin-only")
                     if opts.get("workday_only"):
