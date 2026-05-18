@@ -144,7 +144,7 @@ def list_runs(limit: int = 50) -> list[dict]:
     return [refresh_state(p) for p in files[:limit]]
 
 
-def tail_log(log_path: str, max_bytes: int = 20_000) -> str:
+def tail_log(log_path: str, max_bytes: int = 50_000) -> str:
     p = Path(log_path)
     if not p.exists():
         return ""

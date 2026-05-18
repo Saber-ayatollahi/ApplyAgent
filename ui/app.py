@@ -1190,6 +1190,7 @@ def _pipeline_live_panel_inner():
                 st.code(
                     _log_text if _log_text else "⏳ Starting — waiting for first output…",
                     language="text",
+                    height=400,
                 )
                 _refresh_note = (
                     "↻ live (every 3s — no page flash)"
