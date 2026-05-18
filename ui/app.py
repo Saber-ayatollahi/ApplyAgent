@@ -3176,19 +3176,27 @@ elif page == "🎯 Pipeline":
 
     _pause_requested = _pause_path.exists()
 
-    # Determine if a scraper is currently running
+    # Determine if a scraper is currently running.
+    # A "pipeline" job also runs jd_scraper internally, so treat pipeline_running
+    # as scraper-active too — otherwise the state shows "paused" while scraping.
     try:
-        _scraper_active = any(
+        _scraper_active = pipeline_running or any(
             "jd_scraper" in (r.get("label") or "") or
-            "scrape" in (r.get("label") or "")
+            "scrape" in (r.get("label") or "") or
+            "pipeline" in (r.get("label") or "")
             for r in scan_runner.active_runs()
         )
     except Exception:
-        _scraper_active = False
+        _scraper_active = pipeline_running
 
     if _ckpt or _pause_requested or _scraper_active:
         with st.container(border=True):
-            st.markdown("#### ⏸ Scrape pause / resume")
+            _section_title = (
+                "#### 🟢 Scrape in progress"
+                if _scraper_active
+                else "#### ⏸ Scrape paused — checkpoint saved"
+            )
+            st.markdown(_section_title)
             pc = _ckpt or {}
             done = pc.get("completed_count", 0)
             tot = pc.get("total_companies", 0) or 1
@@ -3220,7 +3228,7 @@ elif page == "🎯 Pipeline":
                     st.rerun()
             with bc2:
                 _key_ok_resume = api_key.is_key_valid()
-                _can_resume = bool(_ckpt) and not _scraper_active
+                _can_resume = bool(_ckpt) and not _scraper_active and not any_work_active
                 if st.button("▶ Resume scrape", disabled=not _can_resume,
                               width='stretch', type="primary",
                               key="scrape_resume_btn",
@@ -3374,8 +3382,17 @@ elif page == "🎯 Pipeline":
                          f"</div>",
                          unsafe_allow_html=True)
 
-        _big_number(cols[0], "🛰️", "Scraped", scrape_raw if scrape_raw else scrape_count,
-                    sub=f"across {len(per_company_diag)} cos" if per_company_diag else "")
+        # While a scrape is running the scan file isn't written yet — fall back
+        # to the checkpoint's live count so the funnel isn't stuck at 0.
+        _ckpt_live = None
+        if _scraper_active and _ckpt:
+            _ckpt_live = len(_ckpt.get("found", []))
+        _scraped_display = scrape_raw if scrape_raw else scrape_count if scrape_count else _ckpt_live
+        _scraped_sub = (f"across {len(per_company_diag)} cos" if per_company_diag
+                        else f"in progress — {_ckpt.get('completed_count',0)}/{_ckpt.get('total_companies','?')} cos"
+                        if _ckpt_live is not None else "")
+        _big_number(cols[0], "🛰️", "Scraped", _scraped_display,
+                    sub=_scraped_sub)
         # Dedup pass rate
         _dedup_in = scrape_raw or scrape_count or 0
         _dedup_out = scrape_count or 0
