@@ -1,0 +1,17 @@
+{
+  "run_id": "gmail_outcome_20260518_202523",
+  "label": "gmail_outcome",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\gmail_outcome.py",
+    "--days",
+    "7"
+  ],
+  "pid": 23848,
+  "started_at": "2026-05-18T20:25:23",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\gmail_outcome_20260518_202523.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\gmail_outcome_20260518_202523.json",
+  "state": "finished",
+  "finished_at": "2026-05-18T20:25:33",
+  "returncode": null
+}

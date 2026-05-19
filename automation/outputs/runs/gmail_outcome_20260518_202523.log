@@ -1,0 +1,8 @@
+# gmail_outcome
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_outcome.py --days 7
+# started: 2026-05-18T20:25:23.766429
+
+[safe_json] WARN: portalocker not installed — JSON writes are NOT cross-process safe. pip install portalocker
+[gmail_outcome] fetching last 7d of mail...
+[gmail_outcome] 0 candidate emails after filter
+[gmail_outcome] nothing to do — exit 0
