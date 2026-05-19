@@ -1022,9 +1022,19 @@ def render_gmail_trash_panel(container=None,
     alerts = env.get("gmail_alerts") or {}
     uids = alerts.get("contributing_uids") or []
 
-    # Have we already scored this scan? Look for the matching _scored.json.
-    scored_path = OUT_DIR / (latest.stem + "_scored.json")
-    already_scored = scored_path.exists()
+    # Has the worklist been scored AFTER this Gmail fetch landed?
+    # Old logic checked for a dedicated scan_gmail_<stamp>_scored.json,
+    # but post-worklist-redesign, scoring writes worklist_scored.json
+    # (the contract pool — what auto_promote and Today's queue read).
+    # If worklist_scored.json's mtime > this Gmail scan's mtime, the
+    # 6 new Gmail rows have ridden along into the scored pool.
+    worklist_scored_path = OUT_DIR / "worklist_scored.json"
+    if worklist_scored_path.exists():
+        already_scored = (
+            worklist_scored_path.stat().st_mtime > latest.stat().st_mtime
+        )
+    else:
+        already_scored = False
 
     age_min = int(age_s / 60)
     age_label = f"{age_min}m ago" if age_min < 60 else f"{age_min // 60}h ago"
@@ -1156,12 +1166,20 @@ def render_gmail_trash_panel(container=None,
         b1, b2, b3 = st.columns(3)
 
         # — Score now —
+        # Honors the worklist contract: scores worklist.json (the deduped
+        # union of latest scrape + recent Gmail), NOT the isolated
+        # scan_gmail_<stamp>.json. The 6 fresh Gmail rows ride along
+        # with the rest of the pool; cached rows hit the fit_cache and
+        # re-score for ~free. Verdicts land in worklist_scored.json,
+        # which auto_promote + the Today's queue actually read.
+        # The previous behavior wrote a dead-end scan_gmail_*_scored.json
+        # nobody downstream cared about.
         with b1:
             _key_ok = api_key.is_key_valid()
             _can_score = _key_ok and not already_scored
             score_label = (
-                f"🤖 Score these {n_rows}"
-                if not already_scored else "✅ Already scored"
+                f"🤖 Score worklist (+{n_rows} new)"
+                if not already_scored else "✅ Worklist already scored"
             )
             if st.button(
                 score_label,
@@ -1170,27 +1188,39 @@ def render_gmail_trash_panel(container=None,
                 disabled=not _can_score,
                 key=f"gmail_score_{latest.stem}",
                 help=(
-                    "Run fit_scorer on this scan_gmail file. ~30s for a small "
-                    "Gmail batch. Costs ≈ $0.001/row on Sonnet rule-stage."
+                    f"Score the full worklist (latest scrape + Gmail). "
+                    f"Cached rows reuse prior scores for free; the {n_rows} "
+                    "new Gmail rows ride along. Verdicts land in "
+                    "worklist_scored.json — that's the file auto_promote "
+                    "and your Today's queue read."
                     if _can_score else
-                    "Already scored — see the *_scored.json companion file."
+                    "Worklist scored after this Gmail fetch landed — "
+                    "the new rows are in worklist_scored.json. "
+                    "Check the Pipeline page for verdicts."
                     if already_scored else
                     "Needs Anthropic API key — set it in the sidebar."
                 ),
             ):
+                # Spawn fit_scorer with NO --scan so it auto-picks
+                # worklist.json (the contract). Same as clicking the
+                # main 🤖 Score worklist button on the Pipeline page.
                 rec = scan_runner.start_run(
-                    f"score_gmail_{latest.stem}",
+                    "pipeline",
                     [
                         sys.executable,
-                        str(ROOT / "automation" / "fit_scorer.py"),
-                        "--scan", latest.name,
+                        str(ROOT / "automation" / "run_pipeline.py"),
+                        "--skip-scrape", "--skip-promote",
+                        "--score-concurrency", "6",
                     ],
                 )
                 st.session_state["_last_launch"] = {
                     "run_id": rec.run_id,
-                    "label": f"Score Gmail ({n_rows} rows)",
+                    "label": f"Score worklist (+{n_rows} new Gmail)",
                 }
-                st.toast(f"🤖 Scoring {n_rows} Gmail row(s)…", icon="🚀")
+                st.toast(
+                    f"🤖 Scoring worklist — {n_rows} new Gmail rows ride along…",
+                    icon="🚀",
+                )
                 st.rerun()
 
         # — Trash —
