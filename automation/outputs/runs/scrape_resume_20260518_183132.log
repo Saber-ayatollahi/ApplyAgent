@@ -1,0 +1,11 @@
+# scrape_resume
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\jd_scraper.py --resume --expansion
+# started: 2026-05-18T18:31:32.506904
+
+[scan] Checkpoint signature mismatch (expected 167d74e09a03, got 81788fc89949). Target list changed since pause. Delete scan_checkpoint.json to start fresh, or revert target edits and retry.
+[scan] Dedup: 0 raw -> 0 unique (-0 dup URL, -0 near-dup)
+[scan] Freshness: 0 newly-seen URL(s), 0 previously seen.
+
+[scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260518.json
+[scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260518.md
+[scan] 0 new candidates across 0 sectors.

@@ -1,0 +1,19 @@
+{
+  "run_id": "pipeline_20260518_185614",
+  "label": "pipeline",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\run_pipeline.py",
+    "--scrape-mode",
+    "core",
+    "--skip-score",
+    "--skip-promote"
+  ],
+  "pid": 29956,
+  "started_at": "2026-05-18T18:56:14",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\pipeline_20260518_185614.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\pipeline_20260518_185614.json",
+  "state": "finished",
+  "finished_at": "2026-05-18T19:52:17",
+  "returncode": null
+}

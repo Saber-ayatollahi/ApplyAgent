@@ -1,0 +1,43 @@
+{
+  "pipeline_id": "20260518_185615",
+  "started_at": "2026-05-18T18:56:15",
+  "args": {
+    "scrape_mode": "core",
+    "sector": null,
+    "company": null,
+    "skip_scrape": false,
+    "skip_score": true,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py"
+      ],
+      "started_at": "2026-05-18T18:56:15",
+      "state": "finished",
+      "finished_at": "2026-05-18T19:47:09",
+      "elapsed_sec": 3053.9,
+      "returncode": 0,
+      "last_line": "[scan] 1137 new candidates across 10 sectors.",
+      "scan_file": "scan_20260518.json",
+      "candidate_count": 1137
+    },
+    "score": {
+      "state": "skipped"
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "finished_at": "2026-05-18T19:47:09"
+}

@@ -1,0 +1,9 @@
+# scrape_resume
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\jd_scraper.py --resume --scrape-mode=expansion
+# started: 2026-05-18T19:00:15.800294
+
+usage: jd_scraper.py [-h] [--company COMPANY] [--sector SECTOR]
+                     [--linkedin-only] [--workday-only] [--expansion]
+                     [--expansion-only] [--gmail] [--gmail-days GMAIL_DAYS]
+                     [--resume]
+jd_scraper.py: error: unrecognized arguments: --scrape-mode=expansion

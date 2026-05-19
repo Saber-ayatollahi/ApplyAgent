@@ -1,0 +1,163 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --scrape-mode core --skip-score --skip-promote
+# started: 2026-05-18T18:56:14.978054
+
+=== ApplyAgent pipeline 20260518_185615 ===
+Mode: scrape=core skip_scrape=False skip_score=True skip_promote=True
+[scrape] [scan 1/66] Scotiabank (sector: Canadian Big 6 Banks)
+[scrape]   -> 152 new candidate(s) [sf:53, linkedin:99]
+[scrape] [scan 2/66] RBC (sector: Canadian Big 6 Banks)
+[scrape]   -> 72 new candidate(s) [linkedin:72]
+[scrape] [scan 3/66] TD Bank (sector: Canadian Big 6 Banks)
+[scrape]   -> 59 new candidate(s) [workday:59]
+[scrape] [scan 4/66] BMO (sector: Canadian Big 6 Banks)
+[scrape]   -> 133 new candidate(s) [workday:67, linkedin:66]
+[scrape] [scan 5/66] CIBC (sector: Canadian Big 6 Banks)
+[scrape]   -> 83 new candidate(s) [workday:36, linkedin:47]
+[scrape] [scan 6/66] National Bank of Canada (sector: Canadian Big 6 Banks)
+[scrape]   [linkedin] GTA-west pass: +4 new for National Bank of Canada
+[scrape]   -> 26 new candidate(s) [linkedin:26]
+[scrape] [scan 7/66] HOOPP (sector: Canadian Pension Funds)
+[scrape]   -> 38 new candidate(s) [workday:17, linkedin:21]
+[scrape] [scan 8/66] OMERS (sector: Canadian Pension Funds)
+[scrape]   -> 40 new candidate(s) [workday:24, linkedin:16]
+[scrape] [scan 9/66] Ontario Teachers' Pension Plan (sector: Canadian Pension Funds)
+[scrape]   -> 62 new candidate(s) [workday:28, linkedin:34]
+[scrape] [scan 10/66] CPP Investments (sector: Canadian Pension Funds)
+[scrape]   -> 50 new candidate(s) [workday:27, linkedin:23]
+[scrape] [scan 11/66] PSP Investments (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 12/66] OPTrust (sector: Canadian Pension Funds)
+[scrape]   -> 5 new candidate(s) [workday:2, linkedin:3]
+[scrape] [scan 13/66] CAAT Pension Plan (sector: Canadian Pension Funds)
+[scrape]   -> 12 new candidate(s) [workday:4, linkedin:8]
+[scrape] [scan 14/66] IMCO (sector: Canadian Pension Funds)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 15/66] CDPQ (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 16/66] Brookfield Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 45 new candidate(s) [workday:22, linkedin:23]
+[scrape] [scan 17/66] RBC Global Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 7 new candidate(s) [linkedin:7]
+[scrape] [scan 18/66] TD Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 59 new candidate(s) [workday:59]
+[scrape] [scan 19/66] BMO Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 105 new candidate(s) [workday:67, linkedin:38]
+[scrape] [scan 20/66] CI Financial (sector: Canadian Asset Managers)
+[scrape]   -> 13 new candidate(s) [linkedin:13]
+[scrape] [scan 21/66] Mackenzie Investments (sector: Canadian Asset Managers)
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 22/66] AGF Management (sector: Canadian Asset Managers)
+[scrape]   -> 11 new candidate(s) [workday:5, linkedin:6]
+[scrape] [scan 23/66] Fidelity Canada (sector: Canadian Asset Managers)
+[scrape]   [linkedin] GTA-west pass: +2 new for Fidelity Canada
+[scrape]   -> 17 new candidate(s) [linkedin:17]
+[scrape] [scan 24/66] Connor Clark & Lunn (sector: Canadian Asset Managers)
+[scrape]   -> 22 new candidate(s) [linkedin:22]
+[scrape] [scan 25/66] Guardian Capital Group (sector: Canadian Asset Managers)
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 26/66] Picton Mahoney Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 27/66] Canada Infrastructure Bank (sector: Canadian Asset Managers)
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 28/66] BlackRock (sector: US & Global Asset Managers)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 29/66] PIMCO (sector: US & Global Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 30/66] Vanguard (sector: US & Global Asset Managers)
+[scrape]   -> 5 new candidate(s) [workday:2, linkedin:3]
+[scrape] [scan 31/66] Invesco (sector: US & Global Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 32/66] Wellington Management (sector: US & Global Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 33/66] Schroders (sector: US & Global Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 34/66] JPMorgan Chase (sector: US Banks (Toronto))
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 35/66] Goldman Sachs (sector: US Banks (Toronto))
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 36/66] Morgan Stanley (sector: US Banks (Toronto))
+[scrape]   -> 5 new candidate(s) [workday:5]
+[scrape] [scan 37/66] Citi (sector: US Banks (Toronto))
+[scrape]   -> 40 new candidate(s) [linkedin:40]
+[scrape] [scan 38/66] HSBC (sector: US Banks (Toronto))
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 39/66] Deutsche Bank (sector: US Banks (Toronto))
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 40/66] BNY Mellon (sector: US Banks (Toronto))
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 41/66] State Street (sector: US Banks (Toronto))
+[scrape]   -> 33 new candidate(s) [workday:8, linkedin:25]
+[scrape] [scan 42/66] Northern Trust (sector: US Banks (Toronto))
+[scrape]   -> 3 new candidate(s) [workday:1, linkedin:2]
+[scrape] [scan 43/66] Bloomberg (sector: Analytics & Risk Vendors)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 44/66] MSCI (sector: Analytics & Risk Vendors)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 45/66] S&P Global (sector: Analytics & Risk Vendors)
+[scrape]   -> 5 new candidate(s) [workday:1, linkedin:4]
+[scrape] [scan 46/66] FactSet (sector: Analytics & Risk Vendors)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 47/66] Morningstar DBRS (sector: Analytics & Risk Vendors)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 48/66] SS&C Technologies (sector: Analytics & Risk Vendors)
+[scrape]   -> 29 new candidate(s) [workday:7, linkedin:22]
+[scrape] [scan 49/66] Numerix (sector: Analytics & Risk Vendors)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 50/66] Prometeia (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 51/66] Manulife (sector: Canadian Insurers)
+[scrape]   -> 52 new candidate(s) [workday:12, linkedin:40]
+[scrape] [scan 52/66] Sun Life (sector: Canadian Insurers)
+[scrape]   -> 34 new candidate(s) [workday:8, linkedin:26]
+[scrape] [scan 53/66] Canada Life (sector: Canadian Insurers)
+[scrape]   -> 46 new candidate(s) [sf:16, linkedin:30]
+[scrape] [scan 54/66] Intact Financial (sector: Canadian Insurers)
+[scrape]   [linkedin] 429 on 'interest rate risk Intact Fina' page 0 — backing off 10s (attempt 1)
+[scrape]   [linkedin] GTA-west pass: +3 new for Intact Financial
+[scrape]   -> 21 new candidate(s) [linkedin:21]
+[scrape] [scan 55/66] Definity Financial (sector: Canadian Insurers)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 56/66] iA Financial Group (sector: Canadian Insurers)
+[scrape]   -> 13 new candidate(s) [workday:1, linkedin:12]
+[scrape] [scan 57/66] RGA (sector: Canadian Insurers)
+[scrape]   -> 4 new candidate(s) [workday:4]
+[scrape] [scan 58/66] EQB (sector: Mid Canadian Banks)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 59/66] Deloitte Canada (sector: Big 4 Risk Advisory)
+[scrape]   -> 112 new candidate(s) [sf:71, linkedin:41]
+[scrape] [scan 60/66] EY Canada (sector: Big 4 Risk Advisory)
+[scrape]   -> 1 new candidate(s) [sf:1]
+[scrape] [scan 61/66] KPMG Canada (sector: Big 4 Risk Advisory)
+[scrape]   -> 52 new candidate(s) [linkedin:52]
+[scrape] [scan 62/66] PwC Canada (sector: Big 4 Risk Advisory)
+[scrape]   -> 21 new candidate(s) [linkedin:21]
+[scrape] [scan 63/66] Mercer (sector: Pension/ALM Consulting)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 64/66] WTW (sector: Pension/ALM Consulting)
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 65/66] Aon (sector: Pension/ALM Consulting)
+[scrape]   -> 13 new candidate(s) [linkedin:13]
+[scrape] [scan 66/66] Oliver Wyman (sector: FS Strategy Consulting)
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan] Dedup: 1584 raw -> 1137 unique (-166 dup URL, -281 near-dup)
+[scrape] [scan] Freshness: 1137 newly-seen URL(s), 0 previously seen.
+[scrape] [scan] WARN: 10 companies returned 0 results (may need Workday config or LinkedIn fixes):
+[scrape]     - PSP Investments
+[scrape]     - CDPQ
+[scrape]     - PIMCO
+[scrape]     - Invesco
+[scrape]     - Wellington Management
+[scrape]     - Schroders
+[scrape]     - HSBC
+[scrape]     - Deutsche Bank
+[scrape]     - Prometeia
+[scrape]     - EQB
+[scrape] 
+[scrape] [scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260518.json
+[scrape] [scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260518.md
+[scrape] [scan] 1137 new candidates across 10 sectors.
+[stage 2] SKIPPED
+[stage 3] SKIPPED
+
+=== Pipeline 20260518_185615 complete ===
