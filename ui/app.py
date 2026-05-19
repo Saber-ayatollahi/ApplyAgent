@@ -3574,6 +3574,46 @@ elif page == "🎯 Pipeline":
         # Pipeline page see the prompt without bouncing back to home.
         render_gmail_trash_panel()
 
+        # --- Gmail fetch summary (shown after a completed gmail_fetch run) ---
+        _gf_runs = [r for r in scan_runner.list_runs(limit=10)
+                    if r.get("label") == "gmail_fetch" and r.get("state") == "finished"]
+        if _gf_runs:
+            _gf_last = _gf_runs[0]
+            _gf_log = scan_runner.tail_log(_gf_last.get("log_path", ""), 8000)
+            if _gf_log:
+                import re as _re2
+                def _extract(pattern, text, default=None):
+                    m = _re2.search(pattern, text)
+                    return int(m.group(1)) if m else default
+
+                _gf_harvested  = _extract(r"harvested (\d+) raw", _gf_log)
+                _gf_kept       = _extract(r"tracker dedup: (\d+) kept", _gf_log)
+                _gf_overlap    = _extract(r"-(\d+) already in tracker", _gf_log)
+                _gf_emails     = _extract(r"(\d+) alert email\(s\) produced", _gf_log)
+                _gf_wrote      = _extract(r"wrote .+ with (\d+) row", _gf_log)
+
+                st.markdown("---")
+                st.markdown("#### 📬 Last Gmail fetch summary")
+                st.caption(f"Run `{_gf_last.get('run_id','')}` · {fmt_dt(_gf_last.get('finished_at'))}")
+                _gc1, _gc2, _gc3, _gc4 = st.columns(4)
+                _gc1.metric("Emails scanned",  _gf_emails  if _gf_emails  is not None else "—",
+                            help="Alert emails that contained at least one job link")
+                _gc2.metric("Jobs parsed",     _gf_harvested if _gf_harvested is not None else "—",
+                            help="Raw job rows extracted from those emails")
+                _gc3.metric("Already in tracker", _gf_overlap if _gf_overlap is not None else "—",
+                            help="Skipped — URL already exists in your tracker")
+                _gc4.metric("New jobs added",  _gf_kept    if _gf_kept    is not None else "—",
+                            help="Written to scan_gmail_*.json, ready to score")
+
+                if _gf_kept == 0 and _gf_harvested == 0:
+                    st.info("No job links found in recent alert emails. "
+                            "Check that LinkedIn/Indeed alert emails are arriving in your inbox "
+                            "and that the sender addresses match known alert senders.", icon="ℹ️")
+                elif _gf_kept == 0 and _gf_harvested and _gf_harvested > 0:
+                    st.success(f"All {_gf_harvested} jobs already in your tracker — nothing new to add.", icon="✅")
+                elif _gf_wrote:
+                    st.success(f"{_gf_wrote} new jobs written — hit **Score latest scan** to rank them.", icon="✅")
+
         # --- Recent runs: what actually happened ---
         st.markdown("---")
         st.markdown("#### Recent runs")
