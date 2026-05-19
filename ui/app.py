@@ -882,20 +882,69 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
             bc4.metric("skip", skip_n)
             bc5.metric("errors", err_n, delta_color="inverse")
 
+        # Best-so-far vs most-recent tabs. The "recent" stream during a real
+        # run is overwhelmingly skips (the firehose feeding the scorer) — so
+        # showing it on its own falsely suggests the run is producing nothing.
+        # The Best-so-far tab reads worklist_scored.json mid-flight (it's
+        # written incrementally) and shows the top 5 by fit_score, which is
+        # what the user actually wants while watching the bar fill.
         recent = prog.get("recent") or []
-        if recent:
-            st.caption("**Most recent candidates** (newest last)")
-            rows = []
-            for r in recent:
-                rows.append({
-                    "company": r.get("company", ""),
-                    "title": r.get("title", ""),
-                    "verdict": r.get("verdict", ""),
-                    "score": r.get("score", ""),
-                    "cache": "💾" if r.get("from_cache") else "🌐",
-                })
-            st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch',
-                         height=min(40 + 36 * len(rows), 300))
+        _best_rows: list[dict] = []
+        try:
+            _wls_p = OUT_DIR / "worklist_scored.json"
+            if _wls_p.exists():
+                _wls_data = json.loads(_wls_p.read_text(encoding="utf-8"))
+                _scored_only = [
+                    r for r in (_wls_data.get("results") or [])
+                    if isinstance(r.get("fit"), dict)
+                    and r.get("fit", {}).get("fit_score") is not None
+                ]
+                _scored_only.sort(
+                    key=lambda r: r.get("fit", {}).get("fit_score") or 0,
+                    reverse=True,
+                )
+                for r in _scored_only[:5]:
+                    f = r.get("fit") or {}
+                    _best_rows.append({
+                        "company": r.get("company", ""),
+                        "title": (r.get("title") or "")[:80],
+                        "verdict": f.get("fit_verdict", ""),
+                        "score": f.get("fit_score", ""),
+                        "cache": "💾" if r.get("from_cache") else "🌐",
+                    })
+        except Exception:
+            _best_rows = []
+
+        if _best_rows or recent:
+            _t_best, _t_recent = st.tabs(["⭐ Best so far", "🕐 Most recent"])
+            with _t_best:
+                if _best_rows:
+                    st.caption("**Top 5 by fit_score** (live, from "
+                               "worklist_scored.json)")
+                    st.dataframe(
+                        pd.DataFrame(_best_rows),
+                        hide_index=True, width='stretch',
+                        height=min(40 + 36 * len(_best_rows), 300),
+                    )
+                else:
+                    st.caption("No scored rows yet — first batch lands shortly.")
+            with _t_recent:
+                if recent:
+                    st.caption("**Most recent candidates** (newest last)")
+                    rows = []
+                    for r in recent:
+                        rows.append({
+                            "company": r.get("company", ""),
+                            "title": r.get("title", ""),
+                            "verdict": r.get("verdict", ""),
+                            "score": r.get("score", ""),
+                            "cache": "💾" if r.get("from_cache") else "🌐",
+                        })
+                    st.dataframe(pd.DataFrame(rows), hide_index=True,
+                                 width='stretch',
+                                 height=min(40 + 36 * len(rows), 300))
+                else:
+                    st.caption("No recent candidates streamed yet.")
 
         # Per-model cost breakdown
         per_model = (cost or {}).get("per_model") or {}
@@ -985,6 +1034,297 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
         }.get(state, f"State: {state}")
         st.caption(status_caption)
     return state == "running"
+
+
+# =====================================================================
+# Action Plan panel — the single decision-oriented surface that renders
+# after a scoring run. Three bands (apply now / tailor first /
+# suspicious skips) + diff vs previous scored snapshot.
+# =====================================================================
+import hashlib as _ap_hashlib  # noqa: E402
+
+_VERDICT_RANK = {"skip": 0, "watch": 1, "tailor_and_apply": 2, "apply_now": 3}
+_PRIORITY_KEYWORDS = [
+    "ALM", "IRRBB", "balance sheet", "treasury risk", "ALCO",
+    "asset-liability", "liquidity risk", "funding risk", "interest rate risk",
+]
+
+
+def _ap_url(r: dict) -> str:
+    return r.get("link") or r.get("url") or ""
+
+
+def _ap_hash(url: str) -> str:
+    return _ap_hashlib.md5((url or "").encode("utf-8")).hexdigest()[:10]
+
+
+def _compute_diff(current_rows: list, prev_rows: list) -> dict:
+    """Map url -> 'new' | 'upgraded' | 'downgraded' | 'stable'.
+    Upgrade triggers on score delta >=1 OR verdict-ladder move."""
+    cur = {_ap_url(r): r for r in (current_rows or []) if _ap_url(r)}
+    prev = {_ap_url(r): r for r in (prev_rows or []) if _ap_url(r)}
+    out = {}
+    for url, r in cur.items():
+        pr = prev.get(url)
+        if not pr:
+            out[url] = "new"; continue
+        cf, pf = r.get("fit") or {}, pr.get("fit") or {}
+        cs, ps = cf.get("fit_score") or 0, pf.get("fit_score") or 0
+        cv = _VERDICT_RANK.get(cf.get("fit_verdict", ""), -1)
+        pv = _VERDICT_RANK.get(pf.get("fit_verdict", ""), -1)
+        if cs - ps >= 1 or (cv > pv and pv >= 0):
+            out[url] = "upgraded"
+        elif ps - cs >= 1 or (pv > cv and cv >= 0):
+            out[url] = "downgraded"
+        else:
+            out[url] = "stable"
+    return out
+
+
+def _ap_promote_supports_only_url() -> bool:
+    """Probe auto_promote.py --help once per session for the --only-url flag
+    (Agent A is adding it in parallel)."""
+    key = "_ap_promote_supports_only_url"
+    if key in st.session_state:
+        return st.session_state[key]
+    supports = False
+    try:
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "automation" / "auto_promote.py"), "--help"],
+            capture_output=True, text=True, timeout=5,
+        )
+        supports = "--only-url" in (r.stdout or "") + (r.stderr or "")
+    except Exception:
+        supports = False
+    st.session_state[key] = supports
+    return supports
+
+
+def _ap_render_card(row: dict, idx: int, band: str, diff_label: str,
+                    primary_action: str = "promote"):
+    fit = row.get("fit") or {}
+    url = _ap_url(row)
+    company, title = row.get("company", "—"), row.get("title", "—")
+    score, verdict = fit.get("fit_score", "?"), fit.get("fit_verdict", "?")
+    tier = fit.get("tier", "?")
+    variants = fit.get("applicable_resume_variants") or []
+    reasons = fit.get("top_3_reasons") or []
+    gaps = fit.get("skill_gaps") or []
+    summary = fit.get("summary") or ""
+    marker = "🟢" if band == "apply_now" else "🟡"
+    chip = {"new": " · 🆕 NEW",
+            "upgraded": " · ↗ upgraded vs last run",
+            "downgraded": " · ↘ downgraded vs last run"}.get(diff_label, "")
+    h = _ap_hash(url)
+    with st.container(border=True):
+        st.markdown(f"{marker} **#{idx}** · `{verdict}` · "
+                    f"**{score}/10** · Tier {tier}{chip}")
+        st.markdown(f"**{company} · {title}**")
+        if variants:
+            st.markdown(" ".join(f"`[{v}]`" for v in variants))
+        for r in reasons[:3]:
+            st.markdown(f"- {r}")
+        if gaps:
+            st.caption(f"Gaps: {', '.join(gaps)}")
+        if summary:
+            st.caption(f"_{summary}_")
+        b1, b2, b3, b4 = st.columns(4)
+        with b1:
+            if st.button("📋 Promote", key=f"_ap_promote_{band}_{h}",
+                         type="primary" if primary_action == "promote" else "secondary",
+                         width='stretch',
+                         help="Promote just this URL to the tracker."):
+                if _ap_promote_supports_only_url():
+                    rec = scan_runner.start_run("promote_one", [
+                        sys.executable,
+                        str(ROOT / "automation" / "auto_promote.py"),
+                        "--only-url", url, "--commit",
+                    ])
+                    st.session_state["_last_launch"] = {
+                        "run_id": rec.run_id, "label": f"Promote {company}"}
+                    st.toast(f"📋 Promoting {company}…", icon="🚀")
+                    st.rerun()
+                else:
+                    st.warning(
+                        "auto_promote.py doesn't have --only-url yet — use "
+                        "the bulk **Promote N apply_now** button above.",
+                        icon="⚠️")
+        with b2:
+            if st.button("✂️ Tailor", key=f"_ap_tailor_{band}_{h}",
+                         type="primary" if primary_action == "tailor" else "secondary",
+                         width='stretch',
+                         help="Generate tailored resume + cover letter prompt."):
+                rec = scan_runner.start_run(f"tailor_{h}", [
+                    sys.executable,
+                    str(ROOT / "automation" / "jd_tailor.py"),
+                    "--jd-url", url,
+                ])
+                st.session_state["_last_launch"] = {
+                    "run_id": rec.run_id, "label": f"Tailor {company}"}
+                st.toast(f"✂️ Tailoring {company}…", icon="🚀")
+                st.rerun()
+        with b3:
+            if url:
+                st.link_button("🔗 Open JD", url, width='stretch')
+        with b4:
+            if st.button("👁 Hide", key=f"_ap_hide_{band}_{h}",
+                         width='stretch',
+                         help="Dismiss this card until the next score run."):
+                st.session_state[f"_action_plan_hidden_{h}"] = True
+                st.rerun()
+
+
+def _ap_render_suspicious(row: dict, hit: str):
+    fit = row.get("fit") or {}
+    url = _ap_url(row)
+    h = _ap_hash(url)
+    with st.container(border=True):
+        st.markdown(
+            f"⚠️ **{row.get('company', '—')} · {row.get('title', '—')}** · "
+            f"score: {fit.get('fit_score', '?')}/10 · "
+            f"verdict: `{fit.get('fit_verdict', '?')}` · keyword hit: `{hit}`"
+        )
+        if fit.get("summary"):
+            st.caption(fit["summary"])
+        b1, b2, _ = st.columns([1, 1, 3])
+        with b1:
+            st.button("👀 Force re-score", key=f"_ap_resc_{h}",
+                      disabled=True, width='stretch',
+                      help="Coming soon — will re-score this URL with --rescore flag")
+        with b2:
+            if url:
+                st.link_button("🔗 Open JD", url, width='stretch')
+
+
+def _ap_render_band(rows: list, band: str, header: str, primary_action: str,
+                    diff: dict, limit: int = 5):
+    rows = sorted(
+        [r for r in rows
+         if (r.get("fit") or {}).get("fit_verdict") == band],
+        key=lambda r: (r.get("fit") or {}).get("fit_score") or 0, reverse=True)
+    if not rows:
+        return
+    st.markdown(header)
+    shown = 0
+    for r in rows:
+        if shown >= limit:
+            break
+        url = _ap_url(r)
+        if st.session_state.get(f"_action_plan_hidden_{_ap_hash(url)}"):
+            continue
+        shown += 1
+        _ap_render_card(r, shown, band, diff.get(url, "stable"),
+                        primary_action=primary_action)
+
+
+def _action_plan_panel():
+    """Render the Action Plan panel for the latest scored run.
+    No-op when worklist_scored.json doesn't exist. Hidden cards reset on
+    new scored-file mtime."""
+    wls_path = OUT_DIR / "worklist_scored.json"
+    if not wls_path.exists():
+        return
+    try:
+        wls = json.loads(wls_path.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    scored_rows = [r for r in (wls.get("results") or [])
+                   if isinstance(r.get("fit"), dict)]
+    if not scored_rows:
+        return
+
+    # Wipe hidden-card flags whenever a fresher scored file appears.
+    mtime = int(wls_path.stat().st_mtime)
+    if st.session_state.get("_action_plan_last_mtime") != mtime:
+        for k in [k for k in list(st.session_state.keys())
+                  if k.startswith("_action_plan_hidden_")]:
+            st.session_state.pop(k, None)
+        st.session_state["_action_plan_last_mtime"] = mtime
+
+    prev_path = OUT_DIR / "worklist_scored.prev.json"
+    prev_rows = []
+    if prev_path.exists():
+        try:
+            prev_rows = (json.loads(prev_path.read_text(encoding="utf-8"))
+                         .get("results") or [])
+        except Exception:
+            prev_rows = []
+    diff = _compute_diff(scored_rows, prev_rows)
+    cur_urls = {_ap_url(r) for r in scored_rows if _ap_url(r)}
+    dropped = sum(1 for r in prev_rows
+                  if _ap_url(r) and _ap_url(r) not in cur_urls)
+
+    counts = {"apply_now": 0, "tailor_and_apply": 0, "watch": 0, "skip": 0}
+    for r in scored_rows:
+        v = (r.get("fit") or {}).get("fit_verdict", "")
+        if v in counts:
+            counts[v] += 1
+    diff_counts = {"new": 0, "upgraded": 0, "downgraded": 0, "stable": 0}
+    for v in diff.values():
+        if v in diff_counts:
+            diff_counts[v] += 1
+
+    with st.container(border=True):
+        st.markdown("### 🎯 Action plan from this scoring run")
+        st.markdown(
+            f"scored **{len(scored_rows)}** · "
+            f"**{counts['apply_now']}** apply_now · "
+            f"**{counts['tailor_and_apply']}** tailor_and_apply · "
+            f"**{counts['watch']}** watch · **{counts['skip']}** skip"
+        )
+        if prev_rows:
+            st.caption(
+                f"vs last run: 🆕 {diff_counts['new']} new · "
+                f"↗ {diff_counts['upgraded']} upgraded · "
+                f"↘ {diff_counts['downgraded']} downgraded · "
+                f"✓ {diff_counts['stable']} stable · {dropped} dropped"
+            )
+        else:
+            st.caption("No previous scored snapshot on file — first run, "
+                       "all rows treated as stable.")
+        h1, h2, _ = st.columns([2, 2, 1])
+        with h1:
+            if counts["apply_now"] >= 1 and st.button(
+                f"📋 Promote {counts['apply_now']} apply_now",
+                key="_ap_header_promote", type="primary", width='stretch',
+            ):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable,
+                    str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-score", "--commit-promote",
+                ])
+                st.session_state["_last_launch"] = {
+                    "run_id": rec.run_id,
+                    "label": f"Promote {counts['apply_now']}"}
+                st.toast(f"📋 Promoting {counts['apply_now']} roles…",
+                         icon="🚀")
+                st.rerun()
+        with h2:
+            st.caption("→ Pipeline → Inspect tab for the full filterable table")
+
+        _ap_render_band(scored_rows, "apply_now",
+                        "#### 🟢 Apply this session",
+                        primary_action="promote", diff=diff)
+        _ap_render_band(scored_rows, "tailor_and_apply",
+                        "#### 🟡 Tailor first",
+                        primary_action="tailor", diff=diff)
+
+        # Band 3 — suspicious skips (skip + score>=5 + priority kw hit)
+        suspicious: list[tuple[dict, str]] = []
+        for r in scored_rows:
+            f = r.get("fit") or {}
+            if f.get("fit_verdict") != "skip" or (f.get("fit_score") or 0) < 5:
+                continue
+            haystack = ((r.get("title") or "") + " "
+                        + " ".join(f.get("top_3_reasons") or [])).lower()
+            for kw in _PRIORITY_KEYWORDS:
+                if kw.lower() in haystack:
+                    suspicious.append((r, kw))
+                    break
+        if suspicious:
+            st.markdown("#### ⚠️ Worth a second look")
+            for r, hit in suspicious[:3]:
+                _ap_render_suspicious(r, hit)
 
 
 def _resolve_pipeline_staleness(data: dict, path: Path) -> dict:
@@ -4255,6 +4595,13 @@ elif page == "🎯 Pipeline":
                     icon="🎯",
                 )
                 st.rerun()
+
+    # ---------- Action Plan panel ----------
+    # The decision-oriented surface for a fresh scoring run: top apply_now
+    # cards, top tailor_and_apply cards, suspicious skips, plus a diff
+    # against the previous scored snapshot. Renders nothing when
+    # worklist_scored.json is absent.
+    _action_plan_panel()
 
     # ---------- Ready-to-promote banner ----------
     # When worklist_scored exists with ≥1 apply_now/tailor verdicts AND
