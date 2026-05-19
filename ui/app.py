@@ -1407,16 +1407,20 @@ try:
     else:
         _today_emoji = "🟢"
 
+    # Escape $ as \$ in markdown text — Streamlit's renderer hands runs of
+    # text containing pairs of $ to KaTeX, which then chokes on emoji
+    # ('No character metrics for "🔴" in style "Main-Regular"'). Metric
+    # widgets render their values as text not markdown so they're safe.
     st.sidebar.markdown("---")
     st.sidebar.markdown(
-        f"### 💰 Spend · {_today_emoji} today **${_today_cost:.2f}** · "
-        f"week ${_week_cost:.2f}"
+        f"### 💰 Spend · {_today_emoji} today **\\${_today_cost:.2f}** · "
+        f"week \\${_week_cost:.2f}"
     )
     _lsc1, _lsc2 = st.sidebar.columns(2)
     _lsc1.metric("Lifetime", f"${_lt_cost:.2f}")
     _lsc2.metric("Calls", f"{_lt_calls:,}")
     st.sidebar.caption(
-        f"{_lt_tokens:,} tokens · 🟡 ≥$5/day · 🔴 ≥$10/day · "
+        f"{_lt_tokens:,} tokens · 🟡 ≥\\$5/day · 🔴 ≥\\$10/day · "
         f"see ⚙️ Admin → Cost ledger"
     )
 except Exception as _e:
