@@ -37,7 +37,6 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -156,27 +155,45 @@ def _today() -> str:
 # ---------------------------------------------------------------------------
 # Legacy file quarantine — runs on every rebuild, idempotent
 # ---------------------------------------------------------------------------
+def _collision_safe_move(src: Path, dst: Path) -> bool:
+    """Move src → dst, handling Windows' quirk that shutil.move raises
+    when dst already exists. Strategy: if dst exists, delete it first
+    (we already quarantined the older copy in a previous run, no value
+    in keeping two). Returns True if moved, False on failure."""
+    try:
+        if dst.exists():
+            dst.unlink()
+        # os.replace is atomic on the same filesystem and handles
+        # cross-platform behaviour better than shutil.move when paths
+        # are within the same volume.
+        import os
+        os.replace(str(src), str(dst))
+        return True
+    except Exception:
+        return False
+
+
 def quarantine_legacy() -> dict:
     """Move legacy artifacts (scan_base_*, _merged, gmail_pool, working_set,
-    pointer files) to outputs/_legacy/ so they don't shadow the new worklist.
-    Returns counts. Safe to call repeatedly — only moves what's still there."""
+    pointer files) to outputs/_legacy/ so they don't shadow the new
+    worklist. Returns counts. Safe to call repeatedly — only moves what's
+    still there.
+
+    Collision handling: if the legacy directory already contains a file
+    of the same name (e.g. from a prior rebuild), we replace it. The
+    "newer" stale file wins because the older one was already obsoleted.
+    """
     LEGACY_DIR.mkdir(parents=True, exist_ok=True)
     moved = []
     for name in _LEGACY_FILES:
         src = OUT_DIR / name
         if src.exists():
-            try:
-                shutil.move(str(src), str(LEGACY_DIR / src.name))
+            if _collision_safe_move(src, LEGACY_DIR / src.name):
                 moved.append(src.name)
-            except Exception:
-                pass
     for pattern in _LEGACY_GLOBS:
         for src in OUT_DIR.glob(pattern):
-            try:
-                shutil.move(str(src), str(LEGACY_DIR / src.name))
+            if _collision_safe_move(src, LEGACY_DIR / src.name):
                 moved.append(src.name)
-            except Exception:
-                pass
     return {"moved": moved, "count": len(moved)}
 
 

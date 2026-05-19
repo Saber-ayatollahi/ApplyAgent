@@ -40,6 +40,15 @@ import os
 import re
 import sys
 import time
+
+# Force UTF-8 stdio so emoji + ∪ symbols don't crash cp1252 Windows
+# consoles. errors="replace" so a print of an unencodable char becomes
+# '?' instead of a fatal exception.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -1359,11 +1368,14 @@ def main() -> int:
         if wpath is None:
             # No inputs at all — neither worklist nor a raw scan. Trigger
             # a rebuild in case there are inputs that just haven't been
-            # folded yet, then re-resolve.
+            # folded yet. Log any failure (used to be silently swallowed,
+            # which produced cryptic "no scan_*.json" errors with no clue
+            # that rebuild() was actually crashing).
             try:
                 worklist.rebuild()
-            except Exception:
-                pass
+            except Exception as _e:
+                print(f"[fit_scorer] worklist.rebuild() bootstrap failed: "
+                      f"{type(_e).__name__}: {_e}", file=sys.stderr)
             wpath = worklist.effective_scan()
         if wpath is None:
             print("ERROR: no worklist.json and no scan_*.json in outputs/. "

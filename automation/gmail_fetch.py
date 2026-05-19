@@ -33,6 +33,14 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Force UTF-8 stdio so emoji + unicode (·, ✓, ❌) don't crash cp1252
+# consoles. With this off, gmail_fetch crashed mid-print on Windows.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 

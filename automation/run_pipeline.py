@@ -34,6 +34,16 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+# Force UTF-8 stdio so emoji + unicode symbols (∪, ✓, ❌) don't crash on
+# cp1252 Windows consoles. Without this, `print("scrape ∪ ...")` raises
+# UnicodeEncodeError mid-pipeline and the run stalls in a half-finished
+# state. reconfigure() is Python 3.7+; safe to call unconditionally.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 PIPELINE_DIR = OUT_DIR / "pipelines"

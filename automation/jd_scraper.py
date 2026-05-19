@@ -36,6 +36,16 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
+# Force UTF-8 stdio so unicode prints (✓, ⚠, ∪) don't crash cp1252
+# consoles. Without this, jd_scraper rebuild stage prints crashed on
+# Windows interactive runs (subprocess via scan_runner is fine because
+# its stdout is redirected to a utf-8 logfile, but standalone CLI fails).
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 try:
     import requests
     from bs4 import BeautifulSoup  # type: ignore
@@ -1450,6 +1460,12 @@ def main() -> int:
     # Auto-rebuild worklist so the next score run sees these rows.
     # Every scrape OR Gmail fetch triggers a rebuild — the user never
     # has to remember to merge anything. See automation/worklist.py.
+    #
+    # We DO NOT propagate rebuild failures into the scrape's exit code:
+    # the scrape produced a valid scan_*.json, that's its contract. But
+    # we make the warning LOUD with traceback so a silent stale-worklist
+    # state can't slip through unnoticed. Pipelines call rebuild() again
+    # themselves so they're covered regardless.
     try:
         try:
             import worklist  # type: ignore
@@ -1460,7 +1476,13 @@ def main() -> int:
               f"({wstats['scrape']} scrape, {wstats['gmail']} gmail, "
               f"{wstats['both']} both)")
     except Exception as e:
-        print(f"[scan] ⚠ worklist rebuild failed: {e}", file=sys.stderr)
+        import traceback
+        print(f"[scan] ⚠⚠ WORKLIST REBUILD FAILED — scrape itself "
+              f"succeeded but worklist.json is stale. Run "
+              f"`python automation/worklist.py` to retry manually.\n"
+              f"      {type(e).__name__}: {e}",
+              file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
 
     return 0
 

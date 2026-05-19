@@ -402,13 +402,17 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
     docs = _find_tailor_docs(job)
     run_id = st.session_state.get("_active_tailor_run_id")
 
+    # Job-id-scoped key suffix so the drawer can be re-entered for a
+    # different role without Streamlit complaining about duplicate keys
+    # (which would crash if two drawers ever rendered in the same run).
+    _kk = job_id.replace("-", "_") if job_id else "unknown"
     with st.container(border=True):
         _hc1, _hc2 = st.columns([5, 1])
         _hc1.markdown(f"### ✨ Tailor — {job.get('company', '?')} · "
                        f"{(job.get('title') or '?')[:80]}")
         with _hc2:
             if st.button("✕ Close", width='stretch',
-                          key="tailor_drawer_close",
+                          key=f"tailor_drawer_close_{_kk}",
                           help="Close the drawer. Tailor output stays "
                                "on disk for next time."):
                 st.session_state.pop("_active_tailor_job_id", None)
@@ -463,7 +467,7 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
             if not job.get("date_applied"):
                 if st.button("✅ Mark applied",
                               width='stretch', type="primary",
-                              key="drawer_apply_btn"):
+                              key=f"drawer_apply_btn_{_kk}"):
                     for _tj in tracker_data.get("jobs", []):
                         if _tj.get("id") == job_id:
                             _tj["date_applied"] = date.today().isoformat()
@@ -492,7 +496,7 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
         with _dc:
             if st.button("📋 Copy file path",
                           width='stretch',
-                          key="drawer_copy_path",
+                          key=f"drawer_copy_path_{_kk}",
                           help="Copy the absolute path to your clipboard. "
                                "(Open in your editor for fine-tuning.)"):
                 # No clipboard API in Streamlit; surface the path so the

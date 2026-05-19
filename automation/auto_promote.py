@@ -34,6 +34,13 @@ import sys
 from datetime import date, datetime
 from pathlib import Path
 
+# Force UTF-8 stdio so emoji + ∪ symbols don't crash cp1252 consoles.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 # Cross-process-safe tracker reads/writes. Degrades to plain json if unavailable.
 try:
     from safe_json import read_json as _sj_read, write_json as _sj_write  # type: ignore
