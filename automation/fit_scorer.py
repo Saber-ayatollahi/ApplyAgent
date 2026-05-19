@@ -398,6 +398,46 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+
+# ---------------------------------------------------------------------------
+# Input-token rate limiter — Anthropic org cap is 50k input TPM. Keep a 60s
+# sliding window of recent (timestamp, tokens) entries; before each call,
+# block until the window has room. Cap is set ~10% under the org limit so
+# concurrent telemetry/preflight traffic doesn't tip us over.
+# ---------------------------------------------------------------------------
+_TPM_CAP = int(os.environ.get("FIT_SCORER_INPUT_TPM_CAP", "45000"))
+_TPM_WINDOW_SEC = 60.0
+_tpm_lock = Lock()
+_tpm_log: deque[tuple[float, int]] = deque()
+
+
+def _tpm_reserve(tokens: int) -> None:
+    """Block until `tokens` will fit under _TPM_CAP within the next 60s window.
+
+    Single-call payload larger than the cap is admitted anyway — refusing it
+    would deadlock; the API will 429 and our existing retry loop handles it.
+    """
+    if tokens <= 0:
+        return
+    while True:
+        with _tpm_lock:
+            now = time.monotonic()
+            cutoff = now - _TPM_WINDOW_SEC
+            while _tpm_log and _tpm_log[0][0] < cutoff:
+                _tpm_log.popleft()
+            in_window = sum(t for _, t in _tpm_log)
+            if in_window + tokens <= _TPM_CAP or not _tpm_log:
+                _tpm_log.append((now, tokens))
+                return
+            wait = max(0.05, _tpm_log[0][0] + _TPM_WINDOW_SEC - now)
+        time.sleep(min(wait, 1.0))
+
+
+def _estimate_input_tokens(system_text: str, user_text: str) -> int:
+    """Cheap char-based estimate (~4 chars/token). Good enough for budgeting;
+    actual usage is reconciled into _cost_state from resp.usage."""
+    return max(1, (len(system_text) + len(user_text)) // 4 + 32)
+
 # ---------------------------------------------------------------------------
 # Stage 1 — rule-based triage.
 # ---------------------------------------------------------------------------
@@ -1211,6 +1251,7 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
             if _abort_event.is_set():
                 break
             try:
+                _tpm_reserve(_estimate_input_tokens(SYSTEM_PROMPT, user))
                 resp = client.messages.create(
                     model=model,
                     # 800 — 400 truncated mid-JSON when the model emitted
@@ -1561,6 +1602,17 @@ def main() -> int:
         print(f"\n[fit_scorer] ⚠️  Run aborted early — results are incomplete.\n"
               f"  Fix: {api_error[:200]}", file=sys.stderr)
     json_out = OUT_DIR / (Path(args.scan).stem + "_scored.json")
+    # Snapshot the previous scored output so the UI can diff this run vs prior
+    # (Action Plan: NEW / UPGRADED / DOWNGRADED / STABLE badges). Best-effort —
+    # if the rename fails (file in use, perms), we log and proceed; the scoring
+    # output is the priority. Only one generation is kept.
+    if json_out.exists():
+        prev_path = json_out.with_suffix(".prev.json")
+        try:
+            json_out.replace(prev_path)
+        except Exception as _snap_err:
+            print(f"[fit_scorer] warn: could not snapshot {json_out.name} -> "
+                  f"{prev_path.name}: {_snap_err}", file=sys.stderr)
     json_out.write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     # Human-readable MD

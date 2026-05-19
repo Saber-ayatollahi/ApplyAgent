@@ -179,6 +179,13 @@ def main() -> int:
                     help="After commit, spawn jd_tailor.py for each new Tier-1 role "
                          "(outputs land in outputs/ as <company>_<role>_<date>_prompt.md). "
                          "Ignored in dry-run.")
+    ap.add_argument("--only-url", action="append", default=None, metavar="URL",
+                    help="Promote ONLY the scored row(s) whose canonical URL matches "
+                         "the supplied URL. Repeatable for multiple URLs. Skips the "
+                         "expire-stale pass (nonsensical for a single-row promote). "
+                         "Example: --only-url "
+                         "https://www.linkedin.com/jobs/view/3987654321 "
+                         "--commit")
     args = ap.parse_args()
 
     if not args.scan:
@@ -216,6 +223,30 @@ def main() -> int:
         return 1
 
     scored = json.loads(scored_path.read_text(encoding="utf-8"))
+
+    # --only-url: filter the scored input down to the supplied URL(s) before
+    # we even look at the tracker. Uses worklist.norm_url so a LinkedIn
+    # tracking-redirect URL still matches its canonical /jobs/view/<id> form.
+    only_url_targets: set[str] | None = None
+    if args.only_url:
+        try:
+            import worklist  # type: ignore
+        except ImportError:
+            from . import worklist  # type: ignore
+        only_url_targets = {
+            worklist.norm_url({"link": u}) for u in args.only_url if u
+        }
+        only_url_targets.discard("")
+        all_results = scored.get("results", [])
+        scored["results"] = [
+            r for r in all_results if worklist.norm_url(r) in only_url_targets
+        ]
+        matched = len(scored["results"])
+        if matched == 0:
+            print(f"[only-url] matched 0 row(s); promoted 0; skipped 0 "
+                  f"(URL(s) not present in {scored_path.name}).")
+            return 0
+
     if _sj_read is not None:
         tr = _sj_read(TRACKER, default={"jobs": [], "meta": {}})
     else:
@@ -266,7 +297,9 @@ def main() -> int:
     # Expire stale auto- entries not in latest scan
     scan_urls = {r["link"] for r in scored.get("results", [])}
     expired = 0
-    if args.expire_stale:
+    # Skip expire-stale entirely in --only-url mode: a single-row promote
+    # has no business marking the rest of the tracker as expired.
+    if args.expire_stale and not args.only_url:
         for j in tr["jobs"]:
             if j["id"].startswith("auto-") and j.get("url") not in scan_urls:
                 if j.get("status") in ("Applied", "Recruiter_Screen", "Phone_Screen",
@@ -380,6 +413,16 @@ def main() -> int:
         print(f"[auto_promote] DRY-RUN: would add {added}, upgrade {updated}, expire {expired}")
         print(f"[auto_promote] Re-run with --commit to apply.")
     print(f"[auto_promote] Report: {report_path}")
+
+    # UI-parseable summary for single-URL promote mode. "promoted" counts
+    # added + upgraded (anything that landed or would land in the tracker);
+    # "skipped" combines dedupe / wrong-verdict / below-min-score so the
+    # caller doesn't have to reason about the breakdown.
+    if args.only_url:
+        promoted = added + updated
+        skipped_total = skipped_dupe + skipped_verdict + skipped_score
+        print(f"[only-url] matched {matched} row(s); promoted {promoted}; "
+              f"skipped {skipped_total} (already in tracker / non-actionable verdict)")
     return 0
 
 
