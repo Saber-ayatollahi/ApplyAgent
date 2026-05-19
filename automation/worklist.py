@@ -294,13 +294,28 @@ def rebuild(quarantine: bool = True) -> dict:
 
     for r in web_rows:
         _add(r, "scrape")
+    # Older scan_gmail_*.json files pre-date the geo gate that gmail_fetch.py
+    # now applies at parse time. Re-apply it here so legacy rows (Raleigh /
+    # Chicago / NYC) don't leak into the pool on rebuild.
+    try:
+        from location_filter import keep_for_toronto_pipeline as _geo_keep  # type: ignore
+    except ImportError:
+        try:
+            from .location_filter import keep_for_toronto_pipeline as _geo_keep  # type: ignore
+        except Exception:
+            _geo_keep = None
+    geo_dropped = 0
     for gp in gmail_files:
         for r in _read_envelope(gp).get("results", []) or []:
+            if _geo_keep is not None and not _geo_keep(r.get("location") or ""):
+                geo_dropped += 1
+                continue
             _add(r, "gmail")
 
     rows: list[dict] = []
     stats = {"scrape": 0, "gmail": 0, "both": 0, "total": 0,
-             "new_since_last_score": 0}
+             "new_since_last_score": 0,
+             "gmail_geo_dropped": geo_dropped}
     for u, r in by_url.items():
         r["is_new_since_last_score"] = (u not in prev_scored)
         if r["is_new_since_last_score"]:

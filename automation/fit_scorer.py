@@ -181,6 +181,14 @@ def _atomic_write_text(path: Path, text: str) -> None:
 _fit_cache_locks_guard = Lock()
 _fit_cache_locks: dict[str, Lock] = {}
 
+# Prior-run scored fit index, keyed by canonical URL. Populated once at
+# main() startup from worklist_scored.json. score_with_llm consults this on
+# cache miss when the worklist marked the row as is_new_since_last_score=False
+# (i.e. the same URL was already scored in the previous run) — saves a Haiku
+# call when the fit-cache file was orphaned by a key-canonicalization bump or
+# a manual cache wipe.
+_prev_fit_index: dict[str, dict] = {}
+
 _FIT_CACHE_LOCK_CAP = 1024
 
 
@@ -698,8 +706,30 @@ def rule_triage(title: str) -> dict:
 # ---------------------------------------------------------------------------
 # JD fetching (cached to disk)
 # ---------------------------------------------------------------------------
+def _canonicalize_url(url: str) -> str:
+    """Canonicalize a JD URL before hashing so ?utm_source=…, trailing slash,
+    scheme/host case, and LinkedIn tracking-redirect variants all collapse to
+    the same cache key. Mirrors worklist.norm_url so the scorer's per-URL cache
+    matches the worklist's dedup key."""
+    if not url:
+        return ""
+    try:
+        from worklist import norm_url  # type: ignore
+    except ImportError:
+        try:
+            from .worklist import norm_url  # type: ignore
+        except Exception:
+            norm_url = None  # type: ignore
+    if norm_url is not None:
+        n = norm_url({"link": url})
+        if n:
+            return n
+    base = str(url).split("#", 1)[0].split("?", 1)[0]
+    return base.rstrip("/").lower()
+
+
 def _url_hash(url: str) -> str:
-    return hashlib.sha1(url.encode("utf-8")).hexdigest()[:16]
+    return hashlib.sha1(_canonicalize_url(url).encode("utf-8")).hexdigest()[:16]
 
 
 # Boilerplate regexes — applied AFTER HTML stripping, before we send to the LLM.
@@ -1185,6 +1215,30 @@ def _compute_deterministic_analysis(jd_text: str) -> Optional[dict]:
     }
 
 
+def _load_prev_fit_index() -> dict[str, dict]:
+    """Map canonical URL -> prior `fit` dict from worklist_scored.json. Used as
+    a second-chance lookup when the per-URL fit cache misses but the worklist
+    says is_new_since_last_score=False (so the role definitely was scored
+    before, only the cache key changed)."""
+    scored = OUT_DIR / "worklist_scored.json"
+    if not scored.exists():
+        return {}
+    try:
+        data = json.loads(scored.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    idx: dict[str, dict] = {}
+    for r in data.get("results", []) or []:
+        url = (r.get("link") or "").strip()
+        fit = r.get("fit")
+        if not url or not isinstance(fit, dict):
+            continue
+        canon = _canonicalize_url(url)
+        if canon:
+            idx[canon] = fit
+    return idx
+
+
 def score_with_llm(client, role: dict, jd_text: str) -> dict:
     """Call Claude with role+JD, cached by URL hash. Returns parsed dict.
 
@@ -1212,6 +1266,20 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
             if _log_error is not None:
                 _log_error("fit_cache_read", e, module="fit_scorer",
                             extra={"url": role.get("link")})
+
+    # Second-chance hit: worklist diff says this URL was already scored in the
+    # prior run. Reuse that fit instead of paying for another LLM call when
+    # the per-URL cache file is orphaned (cache-key bump, manual wipe).
+    if _prev_fit_index and role.get("is_new_since_last_score") is False:
+        canon = _canonicalize_url(role.get("link") or "")
+        prev_fit = _prev_fit_index.get(canon)
+        if prev_fit and prev_fit.get("fit_verdict") not in ("error", None):
+            try:
+                _atomic_write_text(cache, json.dumps(prev_fit, indent=2))
+            except Exception:
+                pass
+            _cost_tick(cache_hit=True)
+            return prev_fit
 
     if _abort_event.is_set():
         return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["aborted"],
@@ -1526,6 +1594,18 @@ def main() -> int:
             p = _cache_path_fit(r["link"])
             if p.exists():
                 p.unlink()
+    else:
+        # Build the prior-fit index from worklist_scored.json so a row that
+        # the worklist marked as is_new_since_last_score=False can short-circuit
+        # to the prior fit on cache miss (e.g. when a cache-key canonicalization
+        # bump orphaned the fit_cache files). --rescore deliberately bypasses
+        # this — that flag exists to force a fresh LLM call.
+        global _prev_fit_index
+        _prev_fit_index = _load_prev_fit_index()
+        if _prev_fit_index:
+            print(f"[fit_scorer] loaded {len(_prev_fit_index)} prior fits "
+                  f"from worklist_scored.json (used on cache miss for "
+                  f"is_new_since_last_score=False rows).", file=sys.stderr)
 
     # Activate cost guardrail (daily + per-run USD caps from env). Preflight
     # refuses to start if today's spend is already over cap; in-run checks

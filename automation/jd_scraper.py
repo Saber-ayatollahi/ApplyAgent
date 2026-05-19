@@ -32,7 +32,7 @@ import json
 import re
 import sys
 import time
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -550,6 +550,36 @@ def fetch_lever_jobs(slug: str) -> list[dict]:
         return []
 
 
+_WORKDAY_REL_DAYS = re.compile(r"posted\s+(\d+)\+?\s+days?\s+ago", re.IGNORECASE)
+
+
+def _normalize_workday_posted(raw: str, today: Optional[date] = None) -> str:
+    """Workday's postedOn arrives as relative strings ("Posted 6 Days Ago",
+    "Posted Today", "Posted Yesterday", "Posted 30+ Days Ago"). Convert to
+    ISO YYYY-MM-DD so downstream [:10] slicing and date diffs work. Pass
+    through anything already ISO-shaped or empty."""
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    # Already ISO-ish — leave alone.
+    if re.match(r"^\d{4}-\d{2}-\d{2}", s):
+        return s
+    today = today or date.today()
+    low = s.lower()
+    if "today" in low:
+        return today.isoformat()
+    if "yesterday" in low:
+        return (today - timedelta(days=1)).isoformat()
+    m = _WORKDAY_REL_DAYS.search(s)
+    if m:
+        try:
+            n = int(m.group(1))
+        except ValueError:
+            return ""
+        return (today - timedelta(days=n)).isoformat()
+    return ""
+
+
 WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
 
 
@@ -612,7 +642,8 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                             "title": title,
                             "link": f"https://{host}{path}",
                             "location": p.get("locationsText", ""),
-                            "posted_date": p.get("postedOn", ""),
+                            "posted_date": _normalize_workday_posted(
+                                p.get("postedOn", "")),
                             "keyword_hit": kw,
                             "source": f"workday:{tenant_key}",
                         })
