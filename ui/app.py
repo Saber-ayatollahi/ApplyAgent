@@ -3978,6 +3978,22 @@ elif page == "🎯 Pipeline":
                 "the worklist will be built automatically.",
                 icon="⚠️",
             )
+        # Persistent success banner from the previous Rebuild click.
+        # st.rerun() inside the click handler discards any st.success()
+        # rendered there, so the user saw nothing happen. Stash the
+        # result in session_state and surface it on the next render.
+        _last_rebuild = st.session_state.pop("_worklist_rebuild_result", None)
+        if _last_rebuild:
+            st.success(
+                f"✅ Worklist rebuilt: **{_last_rebuild['total']} rows** "
+                f"({_last_rebuild['scrape']} 🛰 scrape · "
+                f"{_last_rebuild['gmail']} 📬 gmail · "
+                f"{_last_rebuild['both']} 🔁 both)"
+                + (f" · 🆕 {_last_rebuild['new_since_last_score']} "
+                    "new since last score"
+                   if _last_rebuild.get("new_since_last_score") else "")
+            )
+
         _wc1, _wc2 = st.columns([1, 5])
         with _wc1:
             if st.button("🔄 Rebuild now",
@@ -3986,11 +4002,15 @@ elif page == "🎯 Pipeline":
                           help="Force a worklist rebuild from current "
                                "inputs. Normally automatic — only useful "
                                "if you manually edited a scan_*.json."):
-                _rs = worklist.rebuild()
-                st.success(
-                    f"Worklist: **{_rs['total']} rows** "
-                    f"({_rs['scrape']} scrape · {_rs['gmail']} gmail · "
-                    f"{_rs['both']} both)"
+                with st.spinner("Rebuilding worklist…"):
+                    _rs = worklist.rebuild()
+                # Stash for next render — st.rerun() will discard any
+                # banner shown here, so we surface it AFTER the rerun.
+                st.session_state["_worklist_rebuild_result"] = _rs
+                st.toast(
+                    f"✅ Rebuilt: {_rs['total']} rows "
+                    f"({_rs['scrape']}/{_rs['gmail']}/{_rs['both']})",
+                    icon="🎯",
                 )
                 st.rerun()
 

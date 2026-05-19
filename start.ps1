@@ -23,6 +23,15 @@ param(
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
 
+# Force UTF-8 stdio for every Python child process. Backend CLI scripts
+# (run_pipeline, fit_scorer, gmail_fetch, etc.) print emoji + unicode
+# symbols (∪, ✓, ❌). On a default cp1252 Windows console without this,
+# they crashed with UnicodeEncodeError mid-pipeline. The scripts also
+# call sys.stdout.reconfigure() defensively, but setting the env var
+# at the launcher catches any future script that forgets to do so.
+$env:PYTHONIOENCODING = 'utf-8'
+$env:PYTHONUTF8 = '1'
+
 # ---------- Helpers ----------
 function Test-PortFree([int]$p) {
     # True if no LISTEN on $p. Get-NetTCPConnection is the clean API on Win10+.
