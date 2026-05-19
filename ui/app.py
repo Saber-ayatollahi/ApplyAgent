@@ -918,6 +918,66 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
                     f"Pricing from Anthropic public rates — invoice is authoritative."
                 )
 
+        # Live log tail. The structured progress JSON shows metrics but the
+        # user wants to see actual stdout — preflight messages, cost-guard
+        # heartbeats, "scored 140/657" lines. Two paths to the log file:
+        #   1. scan_runner has an active pipeline/fit_scorer run → use its
+        #      registered log_path (the canonical case).
+        #   2. The producer was launched outside scan_runner (e.g., manual
+        #      relaunch from a shell with API key sourced) → fall back to
+        #      the most recently modified .log in outputs/runs/. While the
+        #      scorer is actively writing progress, that log file's mtime
+        #      is also being touched, so "newest log within 2 min" is a
+        #      reliable proxy.
+        _log_path: str | None = None
+        _log_label = ""
+        try:
+            _active_pipe_run = next(
+                (r for r in scan_runner.active_runs()
+                 if "pipeline" in (r.get("label") or "")
+                 or "fit_scorer" in (r.get("label") or "")),
+                None,
+            )
+        except Exception:
+            _active_pipe_run = None
+        if _active_pipe_run and _active_pipe_run.get("log_path"):
+            _log_path = _active_pipe_run["log_path"]
+            _log_label = "scan_runner"
+        else:
+            try:
+                _runs_dir = OUT_DIR / "runs"
+                _candidates = sorted(
+                    _runs_dir.glob("*.log"),
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                if _candidates:
+                    _newest = _candidates[0]
+                    _age_s = datetime.now().timestamp() - _newest.stat().st_mtime
+                    if _age_s < 120:
+                        _log_path = str(_newest)
+                        _log_label = "fallback (newest *.log)"
+            except Exception:
+                pass
+
+        if _log_path:
+            with st.expander("📜 Live log tail (last ~30 lines)", expanded=True):
+                _log_text = scan_runner.tail_log(_log_path, max_bytes=8000)
+                _lines = _log_text.splitlines()[-30:] if _log_text else []
+                if _lines:
+                    st.code("\n".join(_lines), language="text")
+                else:
+                    st.caption("(no log output yet)")
+                st.caption(
+                    f"📁 `{_log_path}` · {_log_label} · refreshes every 3s"
+                )
+        else:
+            with st.expander("📜 Live log tail", expanded=False):
+                st.caption(
+                    "(no active pipeline run registered with scan_runner "
+                    "and no recent .log file in outputs/runs/)"
+                )
+
         status_caption = {
             "running": f"🟡 Running · updated {prog.get('updated_at', '—')}",
             "finished": f"🟢 Finished at {prog.get('finished_at', '—')}",
@@ -1176,7 +1236,9 @@ def render_gmail_trash_panel(container=None,
         # nobody downstream cared about.
         with b1:
             _key_ok = api_key.is_key_valid()
-            _can_score = _key_ok and not already_scored
+            # Block re-scoring if a scorer/pipeline is already running —
+            # otherwise the user can launch a duplicate process.
+            _can_score = _key_ok and not already_scored and not any_work_active
             score_label = (
                 f"🤖 Score worklist (+{n_rows} new)"
                 if not already_scored else "✅ Worklist already scored"
@@ -1198,6 +1260,8 @@ def render_gmail_trash_panel(container=None,
                     "the new rows are in worklist_scored.json. "
                     "Check the Pipeline page for verdicts."
                     if already_scored else
+                    "Another job is running — wait for it to finish."
+                    if any_work_active else
                     "Needs Anthropic API key — set it in the sidebar."
                 ),
             ):
@@ -3755,7 +3819,12 @@ elif page == "🎯 Pipeline":
                     parts.append("no stages completed")
             _last_event_detail = " · ".join(parts)
 
-    if _last_run:
+    # If the pipeline is live, it IS the latest activity — full stop. Don't
+    # let a recently-finished background run (e.g. gmail_fetch) clobber the
+    # live pipeline's started_at timestamp; that comparison is apples-to-
+    # oranges (started_at vs finished_at) and made the strip lie about state.
+    _pipe_is_live = bool(_last_pipe and _last_pipe.get("state") == "running")
+    if _last_run and not _pipe_is_live:
         t = _last_run.get("finished_at") or _last_run.get("started_at")
         if t and (not _last_event_time or t > _last_event_time):
             _last_event_time = t
@@ -3815,6 +3884,54 @@ elif page == "🎯 Pipeline":
             else:
                 st.caption("🟢 Scan + score complete — review Inspect tab")
 
+    # ---------- Nightly refresh strip ----------
+    # nightly_refresh.py runs daily at 6:30 AM via Windows Task Scheduler
+    # (ApplyAgent_NightlyRefresh) and produces delta_YYYYMMDD.json +
+    # brief_YYYYMMDD.json. Surface its last run so the user knows the
+    # background loop is alive (or noticed it's stalled).
+    try:
+        _delta_files = sorted(OUT_DIR.glob("delta_*.json"),
+                              key=lambda p: p.stat().st_mtime, reverse=True)
+        _brief_files = sorted(OUT_DIR.glob("brief_*.json"),
+                              key=lambda p: p.stat().st_mtime, reverse=True)
+        _latest_delta = _delta_files[0] if _delta_files else None
+        _latest_brief = _brief_files[0] if _brief_files else None
+    except Exception:
+        _latest_delta = None
+        _latest_brief = None
+
+    with st.container(border=True):
+        nc1, nc2, nc3 = st.columns([2, 3, 2])
+        with nc1:
+            st.markdown("**Nightly refresh** (6:30 AM daily)")
+            if _latest_brief:
+                _age_h = (datetime.now().timestamp()
+                          - _latest_brief.stat().st_mtime) / 3600
+                _icon = "✅" if _age_h < 30 else "⚠️" if _age_h < 72 else "🔴"
+                st.markdown(f"{_icon} `{_latest_brief.name}`")
+                st.caption(f"{_age_label(_latest_brief)}")
+            elif _latest_delta:
+                st.caption(f"🟡 delta only — `{_latest_delta.name}` "
+                           f"({_age_label(_latest_delta)})")
+            else:
+                st.caption("⚪ No nightly artifacts found yet.")
+        with nc2:
+            if _latest_delta:
+                try:
+                    _dd = json.loads(_latest_delta.read_text(encoding="utf-8"))
+                    _new_n = len(_dd.get("new", []) or _dd.get("results", []))
+                    st.caption(f"🆕 delta: {_new_n} new role(s) since last score")
+                except Exception:
+                    pass
+            st.caption(
+                "scrape (--expansion --gmail) → scan_delta → "
+                "morning_brief (--auto-tailor)"
+            )
+        with nc3:
+            st.markdown("**Schedule**")
+            st.caption("Windows Task Scheduler · `ApplyAgent_NightlyRefresh`")
+            st.caption("Run manually: `schtasks /run /tn ApplyAgent_NightlyRefresh`")
+
     st.markdown("---")
 
     # ---------- Pause / resume / checkpoint status ----------
@@ -3846,7 +3963,29 @@ elif page == "🎯 Pipeline":
     except Exception:
         _scraper_active = pipeline_running
 
-    if _ckpt or _pause_requested or _scraper_active:
+    # Stale-pause-flag cleanup: if no scraper is running and no checkpoint
+    # exists, a leftover scan_pause.flag is orphaned (e.g. the user killed
+    # the scraper externally, or a previous run paused, completed, and the
+    # cleanup line got skipped). Auto-unlink if the flag is older than 10
+    # minutes so the user doesn't see a phantom "paused" panel forever.
+    if _pause_requested and not _scraper_active and not _ckpt:
+        try:
+            if (datetime.now().timestamp() - _pause_path.stat().st_mtime) > 600:
+                _pause_path.unlink()
+                _pause_requested = False
+        except Exception:
+            pass
+
+    # Render the scrape panel only when there's something real to show:
+    #   - a live scraper (with or without checkpoint/pause flag), or
+    #   - a checkpoint to resume (paused state, scraper not running).
+    # An orphaned pause flag with no checkpoint and no scraper renders nothing
+    # — the cleanup above will eventually remove it.
+    _show_scrape_panel = (
+        _scraper_active
+        or (_ckpt is not None)
+    )
+    if _show_scrape_panel:
         with st.container(border=True):
             _section_title = (
                 "#### 🟢 Scrape in progress"
@@ -3983,10 +4122,21 @@ elif page == "🎯 Pipeline":
     _wstats = _wstatus.get("stats") or {}
     with st.container(border=True):
         if _wstatus.get("worklist_exists"):
-            _scored_str = (
-                "✅ scored" if _wstatus.get("worklist_scored_exists")
-                else "🟡 not yet scored"
-            )
+            # Three states: scoring-in-progress beats scored beats not-scored.
+            # When scorer_running is true the progress file shows current/total,
+            # so surface that instead of the stale "not yet scored" label.
+            if scorer_running:
+                _prog = load_scorer_progress() or {}
+                _cur = _prog.get("current", 0)
+                _tot = _prog.get("total", 0)
+                _scored_str = (
+                    f"🤖 scoring in progress ({_cur}/{_tot})"
+                    if _tot else "🤖 scoring in progress"
+                )
+            elif _wstatus.get("worklist_scored_exists"):
+                _scored_str = "✅ scored"
+            else:
+                _scored_str = "🟡 not yet scored"
             _new = _wstats.get("new_since_last_score", 0)
             st.markdown(
                 f"#### 🎯 Worklist · **{_wstats.get('total', 0)} jobs** "
@@ -4006,6 +4156,55 @@ elif page == "🎯 Pipeline":
                 "harvests). Scorer and promoter read THIS file. "
                 "Scrape and Gmail-fetch buttons rebuild it automatically."
             )
+
+            # New-rows expander: when the worklist has been rebuilt with
+            # rows that weren't in the previous scoring run, surface the
+            # actual rows (company, title, source, URL) — not just the
+            # count. The is_new_since_last_score flag is already written
+            # by worklist.rebuild() so no schema change is needed.
+            if _new and _wstatus.get("worklist_scored_exists"):
+                with st.expander(
+                    f"🆕 Show the {_new} new row{'s' if _new != 1 else ''} "
+                    "since last score",
+                    expanded=False,
+                ):
+                    try:
+                        _wl_path = OUT_DIR / "worklist.json"
+                        _wl = json.loads(_wl_path.read_text(encoding="utf-8"))
+                        _new_rows = [
+                            r for r in _wl.get("results", [])
+                            if r.get("is_new_since_last_score")
+                        ]
+                    except Exception as _e:
+                        st.caption(f"(could not read worklist.json: {_e})")
+                        _new_rows = []
+                    if _new_rows:
+                        _src_emoji = {"scrape": "🛰", "gmail": "📬", "both": "🔁"}
+                        _df_rows = [{
+                            "src": _src_emoji.get(r.get("source", ""), "·"),
+                            "company": r.get("company", "")[:40],
+                            "title": r.get("title", "")[:80],
+                            "url": r.get("link", r.get("url", "")),
+                        } for r in _new_rows]
+                        st.dataframe(
+                            pd.DataFrame(_df_rows),
+                            hide_index=True, width='stretch',
+                            column_config={
+                                "url": st.column_config.LinkColumn("open"),
+                            },
+                            height=min(40 + 36 * len(_df_rows), 340),
+                        )
+                        st.caption(
+                            f"These {_new} row(s) entered the worklist after "
+                            "the last scoring run. Re-score to get verdicts "
+                            "for them — cached rows pay nothing, only the "
+                            "new ones hit the API."
+                        )
+                    else:
+                        st.caption(
+                            "(no rows flagged is_new_since_last_score — "
+                            "the count may be stale; rebuild the worklist.)"
+                        )
         else:
             st.warning(
                 "🎯 No worklist yet — run a scrape or Gmail fetch and "
@@ -4028,18 +4227,27 @@ elif page == "🎯 Pipeline":
                    if _last_rebuild.get("new_since_last_score") else "")
             )
 
-        _wc1, _wc2 = st.columns([1, 5])
-        with _wc1:
+        # Rebuild is normally automatic (scrape + gmail_fetch trigger it).
+        # The button is an escape hatch only — tucked under an expander so
+        # it doesn't compete with primary actions, and disabled while any
+        # work is active so the user can't race the scorer.
+        with st.expander("⚙️ Advanced — manual rebuild", expanded=False):
+            st.caption(
+                "The worklist rebuilds automatically after every scrape "
+                "and Gmail fetch. Use this only if you hand-edited a "
+                "scan_*.json or suspect the worklist is stale."
+            )
             if st.button("🔄 Rebuild now",
                           width='stretch',
+                          disabled=any_work_active,
                           key="rebuild_worklist_btn",
-                          help="Force a worklist rebuild from current "
-                               "inputs. Normally automatic — only useful "
-                               "if you manually edited a scan_*.json."):
+                          help=("Disabled while another job is running — "
+                                "rebuild would race the scorer."
+                                if any_work_active else
+                                "Rebuild worklist.json from latest scrape + "
+                                "rolling 30-day Gmail.")):
                 with st.spinner("Rebuilding worklist…"):
                     _rs = worklist.rebuild()
-                # Stash for next render — st.rerun() will discard any
-                # banner shown here, so we surface it AFTER the rerun.
                 st.session_state["_worklist_rebuild_result"] = _rs
                 st.toast(
                     f"✅ Rebuilt: {_rs['total']} rows "
@@ -4215,7 +4423,8 @@ elif page == "🎯 Pipeline":
     with st.expander(
         f"📊 Pipeline funnel"
         + (f" — `{_funnel_scan_name}`" if _funnel_scan_name else " — no scan")
-        + (" ✅ scored" if score_count else
+        + (" 🤖 scoring…" if scorer_running else
+           " ✅ scored" if score_count else
            " ⚠️ not scored" if scan_f else ""),
         expanded=True,
     ):
@@ -4581,7 +4790,11 @@ elif page == "🎯 Pipeline":
             rescore = st.checkbox("Bypass cache (force fresh LLM call)",
                                    key="url_score_rescore")
             if st.button("🤖 Score this URL", type="primary",
-                         disabled=not (url_key_ok and url_in.strip()),
+                         disabled=(not (url_key_ok and url_in.strip())
+                                   or any_work_active),
+                         help=("Another job is running — wait for it to "
+                               "finish before scoring a one-off URL."
+                               if any_work_active else None),
                          key="url_score_btn"):
                 cmd = [sys.executable, str(ROOT / "automation" / "score_url.py"),
                        url_in.strip(), "--json-only"]
