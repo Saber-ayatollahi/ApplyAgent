@@ -281,22 +281,226 @@ Be specific to the role — reference IRRBB/ALM/OSFI where relevant."""
 
 
 def _find_tailor_docs(job: dict) -> list:
-    """Return list of tailored doc Paths for this job (resume/CL markdown files)."""
+    """Return list of tailored doc Paths for this job (resume/CL markdown files).
+
+    Checks outputs/tailored/ first (current location, see jd_tailor.py),
+    then outputs/ root for legacy files written before the May 2026 split.
+    """
     jid = job.get("id", "")
     co  = (job.get("company") or "").replace(" ", "_")
     ttl = (job.get("title") or "").replace(" ", "_").replace("/", "_")
-    # Pattern 1: *_{job_id_underscored}*.md  (jd_tailor standard output)
     pat1 = f"*_{jid.replace('-', '_')}*.md"
-    # Pattern 2: {Company}_{Title}*.md  (prompt files also useful as context)
     pat2 = f"{co}_{ttl[:30]}*.md"
-    found = list(OUT_DIR.glob(pat1)) + list(OUT_DIR.glob(pat2))
-    # Exclude raw scan/delta/brief/report files
     skip = {"scan_", "delta_", "brief_", "promote_", "SCAN_", "scorer_", "weekly_"}
+    found: list = []
+    for _root in (OUT_DIR / "tailored", OUT_DIR):
+        if _root.exists():
+            found.extend(_root.glob(pat1))
+            found.extend(_root.glob(pat2))
     return sorted(
         {p for p in found if not any(p.name.startswith(s) for s in skip)
          and "_prompt." not in p.name},
         key=lambda p: p.stat().st_mtime, reverse=True,
     )
+
+
+def render_tailor_action_row(job: dict, key_prefix: str,
+                              tracker_data: dict, tracker_path):
+    """Render the 3-button action strip for a job: Tailor · Open · Apply.
+
+    Behaviour:
+      - 🔗 Open posting: link button to job["url"].
+      - ✨ Tailor: spawns jd_tailor.py in background. Stores (job_id, run_id)
+        in session_state so subsequent rerenders can detect completion and
+        surface the drawer below the row.
+      - ✅ Mark applied: stamps date_applied=today, status=Applied, and
+        writes the tracker. Closes the loop without leaving the page.
+
+    The drawer (in-page tailor preview + copy buttons) is rendered by
+    render_tailor_drawer() — which the caller invokes once per page after
+    the action rows so multiple Tailor clicks queue up correctly.
+    """
+    job_id = job.get("id", "")
+    url = job.get("url", "")
+    has_draft = bool(_find_tailor_docs(job))
+
+    btn_url, btn_tailor, btn_apply = st.columns(3)
+    with btn_url:
+        if url:
+            st.link_button("🔗 Open posting", url, width='stretch')
+        else:
+            st.button("🔗 (no URL)", disabled=True, width='stretch',
+                       key=f"{key_prefix}_nourl_{job_id}")
+    with btn_tailor:
+        _tailor_label = "📄 View tailor" if has_draft else "✨ Tailor"
+        if st.button(_tailor_label, width='stretch',
+                      key=f"{key_prefix}_tailor_{job_id}",
+                      help="Generate (or open) tailored resume + cover letter "
+                           "for this role. Runs jd_tailor.py in the background "
+                           "(~60s, ~$0.30 on Opus). Output appears below."):
+            if not has_draft:
+                # Spawn jd_tailor in background
+                _cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
+                        "--job-id", job_id]
+                _rec = scan_runner.start_run(f"tailor_{job_id}", _cmd)
+                st.session_state["_active_tailor_job_id"] = job_id
+                st.session_state["_active_tailor_run_id"] = _rec.run_id
+                st.toast(f"✨ Tailoring {job.get('company', '')}…", icon="🚀")
+            else:
+                # Doc exists — just surface the drawer
+                st.session_state["_active_tailor_job_id"] = job_id
+            st.rerun()
+    with btn_apply:
+        _applied = bool(job.get("date_applied"))
+        if st.button("✅ Applied" if not _applied else "✅ (already)",
+                      width='stretch',
+                      type="primary" if (has_draft and not _applied) else "secondary",
+                      disabled=_applied,
+                      key=f"{key_prefix}_apply_{job_id}",
+                      help="Stamp date_applied=today, status=Applied. "
+                           "Closes the loop without leaving the page."):
+            for _tj in tracker_data.get("jobs", []):
+                if _tj.get("id") == job_id:
+                    _tj["date_applied"] = date.today().isoformat()
+                    _tj["status"] = "Applied"
+                    # Schedule first follow-up at +3 days
+                    _fs = _tj.setdefault("followup_schedule", {})
+                    _fs.setdefault("cadence_days", [3, 10, 21])
+                    _fs["next_due"] = (date.today() + timedelta(days=3)).isoformat()
+                    break
+            try:
+                from safe_json import write_json as _sj_write  # type: ignore
+                _sj_write(tracker_path, tracker_data)
+            except ImportError:
+                tracker_path.write_text(
+                    json.dumps(tracker_data, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+            st.toast(f"✅ Marked {job.get('company', '')} as applied",
+                      icon="🎯")
+            st.rerun()
+
+
+def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
+    """If session_state has an active tailor target, render the drawer
+    below the page's action rows. Reads the tailor run state via
+    scan_runner; once finished AND a tailor doc exists, swaps from
+    'in progress' to 'preview + copy' mode.
+
+    Closes when user clicks 'Done' / 'Mark applied' / dismisses.
+    """
+    job_id = st.session_state.get("_active_tailor_job_id")
+    if not job_id:
+        return
+    job = next((j for j in jobs_list if j.get("id") == job_id), None)
+    if not job:
+        # Job was removed from tracker — clear the drawer
+        st.session_state.pop("_active_tailor_job_id", None)
+        st.session_state.pop("_active_tailor_run_id", None)
+        return
+
+    docs = _find_tailor_docs(job)
+    run_id = st.session_state.get("_active_tailor_run_id")
+
+    with st.container(border=True):
+        _hc1, _hc2 = st.columns([5, 1])
+        _hc1.markdown(f"### ✨ Tailor — {job.get('company', '?')} · "
+                       f"{(job.get('title') or '?')[:80]}")
+        with _hc2:
+            if st.button("✕ Close", width='stretch',
+                          key="tailor_drawer_close",
+                          help="Close the drawer. Tailor output stays "
+                               "on disk for next time."):
+                st.session_state.pop("_active_tailor_job_id", None)
+                st.session_state.pop("_active_tailor_run_id", None)
+                st.rerun()
+
+        # Status check: if run_id is known and run is still running, show
+        # the live log tail. Otherwise look for the doc on disk.
+        if run_id and not docs:
+            _status_path = scan_runner.RUNS_DIR / f"{run_id}.json"
+            if _status_path.exists():
+                _rec = scan_runner.refresh_state(_status_path)
+                if _rec.get("state") == "running":
+                    st.info("⏳ Tailor is still running — "
+                            "drawer auto-refreshes when ready.",
+                            icon="🤖")
+                    _log = scan_runner.tail_log(_rec.get("log_path", ""), 4000)
+                    if _log:
+                        st.code(_log[-2000:], language="text")
+                    return
+                if _rec.get("state") == "failed":
+                    st.error("❌ Tailor run failed. See log:")
+                    _log = scan_runner.tail_log(_rec.get("log_path", ""), 4000)
+                    if _log:
+                        st.code(_log[-2000:], language="text")
+                    return
+
+        if not docs:
+            st.warning(
+                "No tailor doc found yet. If a run just started, give it "
+                "60s and refresh the page. Otherwise hit ✨ Tailor on the "
+                "row to spawn one.",
+                icon="⏳",
+            )
+            return
+
+        # Drawer content: render the most recent tailor doc + copy actions
+        latest = docs[0]
+        _content = latest.read_text(encoding="utf-8", errors="replace")
+        st.caption(
+            f"📄 `{latest.name}` · "
+            f"{datetime.fromtimestamp(latest.stat().st_mtime).strftime('%b %d %H:%M')}"
+        )
+
+        _da, _db, _dc = st.columns([2, 2, 1])
+        with _da:
+            _url = job.get("url", "")
+            if _url:
+                st.link_button("🔗 Open application URL", _url,
+                                width='stretch', type="primary")
+        with _db:
+            if not job.get("date_applied"):
+                if st.button("✅ Mark applied",
+                              width='stretch', type="primary",
+                              key="drawer_apply_btn"):
+                    for _tj in tracker_data.get("jobs", []):
+                        if _tj.get("id") == job_id:
+                            _tj["date_applied"] = date.today().isoformat()
+                            _tj["status"] = "Applied"
+                            _fs = _tj.setdefault("followup_schedule", {})
+                            _fs.setdefault("cadence_days", [3, 10, 21])
+                            _fs["next_due"] = (date.today() + timedelta(days=3)).isoformat()
+                            break
+                    try:
+                        from safe_json import write_json as _sj_write  # type: ignore
+                        _sj_write(tracker_path, tracker_data)
+                    except ImportError:
+                        tracker_path.write_text(
+                            json.dumps(tracker_data, indent=2, ensure_ascii=False),
+                            encoding="utf-8",
+                        )
+                    st.session_state.pop("_active_tailor_job_id", None)
+                    st.session_state.pop("_active_tailor_run_id", None)
+                    st.toast(f"✅ {job.get('company', '?')} marked applied",
+                              icon="🎯")
+                    st.rerun()
+            else:
+                st.caption(
+                    f"Already applied {job.get('date_applied')}"
+                )
+        with _dc:
+            if st.button("📋 Copy file path",
+                          width='stretch',
+                          key="drawer_copy_path",
+                          help="Copy the absolute path to your clipboard. "
+                               "(Open in your editor for fine-tuning.)"):
+                # No clipboard API in Streamlit; surface the path so the
+                # user can copy manually. Code block selects on triple-click.
+                st.code(str(latest), language="text")
+
+        with st.expander("📄 Tailor preview", expanded=True):
+            st.markdown(_content)
 
 
 CRM_STALE_DAYS = 14  # past this, contacts get flagged as "nudge-worthy"
@@ -1647,6 +1851,146 @@ if page == "🏠 Dashboard":
         delta_color="inverse" if _crm_badge_count > 0 else "normal",
         help="High-priority recruiters not yet contacted. Go to 🤝 Recruiter CRM.",
     )
+
+    # ── 🎯 TODAY'S QUEUE ─────────────────────────────────────────────────────
+    # Hero card: the answer to "what should I do right now?". Three buckets,
+    # ranked. Each item has a one-click action so the daily session can be
+    # driven from this card alone instead of bouncing across 4 pages.
+    #
+    #   Apply now: tracker rows in Found/Watch with high fit, ordered by
+    #              urgency (urgency=High first, then by fit_score_numeric).
+    #   Follow up: tracker rows past followup_schedule.next_due, OR
+    #              applied ≥3d ago with no recent outreach.
+    #   Reach out: high-priority CRM recruiters not yet contacted.
+    _APPLY_STATUSES = {"Found", "Watch", "Tailoring"}
+    _NO_FOLLOWUP_STATUSES = {"Rejected", "Withdrawn", "Offer", "Expired"}
+    _today_apply_now = []
+    _today_followups = []
+    for _j in jobs:
+        _st = _j.get("status", "")
+        _fitn = int(_j.get("fit_score_numeric") or 0)
+        # Apply-now: ready-to-apply roles, must have fit ≥6 to surface
+        if _st in _APPLY_STATUSES and _fitn >= 6 and not _j.get("date_applied"):
+            _today_apply_now.append(_j)
+        # Follow-up: applied + past next_due, or applied 3+ days ago with
+        # no logged outreach since
+        if _st not in _NO_FOLLOWUP_STATUSES:
+            _next_due_str = (_j.get("followup_schedule") or {}).get("next_due")
+            _next_due = parse_date(_next_due_str)
+            _date_app = parse_date(_j.get("date_applied"))
+            _is_due = bool(_next_due and _next_due <= today)
+            _olog = _j.get("outreach_log") or []
+            _last_touch = max(
+                (parse_date(o.get("date")) for o in _olog if parse_date(o.get("date"))),
+                default=None,
+            )
+            _stale_apply = (
+                _date_app and (today - _date_app).days >= 3
+                and (not _last_touch or (today - _last_touch).days >= 3)
+            )
+            if _is_due or _stale_apply:
+                _j["_followup_reason"] = (
+                    "due " + str((today - _next_due).days) + "d ago"
+                    if _is_due else f"applied {(today - _date_app).days}d ago"
+                )
+                _today_followups.append(_j)
+
+    # Sort each bucket by urgency / staleness
+    _today_apply_now.sort(
+        key=lambda j: (
+            0 if (j.get("urgency") or "").lower() == "high" else 1,
+            -int(j.get("fit_score_numeric") or 0),
+        )
+    )
+    _today_followups.sort(
+        key=lambda j: (parse_date(j.get("date_applied")) or today),
+    )
+
+    # CRM reach-outs (already computed above as _crm_early_all but
+    # filter to high-priority + not contacted)
+    _today_reach_out = [
+        c for c in _crm_early_all
+        if c.get("priority") == "High"
+        and c.get("status") == "Not_Contacted"
+        and not c.get("last_touchpoint")
+    ][:5]
+
+    _total_today = (
+        len(_today_apply_now[:5])
+        + len(_today_followups[:5])
+        + len(_today_reach_out)
+    )
+    if _total_today:
+        with st.container(border=True):
+            st.markdown(f"### 🎯 Today's queue · **{_total_today} action"
+                         f"{'s' if _total_today != 1 else ''}**")
+            st.caption(
+                "What to do right now, ranked. Each row has a one-click "
+                "action — you should be able to drive your day from here."
+            )
+
+            if _today_apply_now:
+                st.markdown(
+                    f"#### 🟢 Apply now · {min(len(_today_apply_now), 5)}"
+                    + (f" of {len(_today_apply_now)}"
+                       if len(_today_apply_now) > 5 else "")
+                )
+                for _j in _today_apply_now[:5]:
+                    _co = _j.get("company", "?")
+                    _ti = _j.get("title", "?")[:80]
+                    _fit = int(_j.get("fit_score_numeric") or 0)
+                    _urg = _j.get("urgency", "")
+                    _crm_n = len(crm_contacts_at_company(crm, _co))
+                    _has_t = bool(_find_tailor_docs(_j))
+                    _badges = []
+                    if _urg == "High":
+                        _badges.append("🔴 urgent")
+                    if _crm_n:
+                        _badges.append(f"🤝{_crm_n}")
+                    if _has_t:
+                        _badges.append("📄 tailored")
+                    _badge_str = "  ·  ".join(_badges) if _badges else ""
+                    st.markdown(
+                        f"**{_co}** — {_ti}  ·  fit **{_fit}/10**  "
+                        f"{('· ' + _badge_str) if _badge_str else ''}"
+                    )
+                    render_tailor_action_row(
+                        _j, key_prefix="today_q", tracker_data=tr,
+                        tracker_path=TRACKER,
+                    )
+
+            if _today_followups:
+                st.markdown(
+                    f"#### 🟡 Follow up · {min(len(_today_followups), 5)}"
+                    + (f" of {len(_today_followups)}"
+                       if len(_today_followups) > 5 else "")
+                )
+                for _j in _today_followups[:5]:
+                    _co = _j.get("company", "?")
+                    _ti = _j.get("title", "?")[:80]
+                    _reason = _j.get("_followup_reason", "")
+                    st.markdown(
+                        f"**{_co}** — {_ti}  ·  _{_reason}_"
+                    )
+
+            if _today_reach_out:
+                st.markdown(f"#### 🤝 Reach out · {len(_today_reach_out)}")
+                for _crec in _today_reach_out:
+                    _name = _crec.get("firm") or _crec.get("name") or "?"
+                    _action = _crec.get("next_action") or "—"
+                    st.markdown(
+                        f"**{_name}** — {(_crec.get('firm_type') or '').replace('_',' ')}  ·  "
+                        f"_next action: {_action[:140]}_"
+                    )
+                st.caption(
+                    "→ Navigate to 🤝 Recruiter CRM to log outreach."
+                )
+
+        # Tailor drawer — opens whenever a queue/Kanban Tailor button was
+        # clicked. Stays open across reruns until user dismisses or marks
+        # applied. Inline (not a modal) so the page state isn't lost.
+        render_tailor_drawer(jobs, tr, TRACKER)
+        st.markdown("")  # tiny breather before campaign progress
 
     # ── Campaign progress + pipeline funnel ──────────────────────────────────
     _camp_start_str = meta.get("campaign_start", "2026-05-03")
@@ -3592,6 +3936,115 @@ elif page == "🎯 Pipeline":
                 )
                 st.rerun()
 
+    # ---------- Ready-to-promote banner ----------
+    # When worklist_scored exists with ≥1 apply_now/tailor verdicts AND
+    # the user hasn't recently dismissed/committed it, nudge with one
+    # banner instead of forcing them to navigate to the advanced form.
+    # Auto-detection trumps the old "click promote button after score"
+    # ritual — closing this loop is the single highest-leverage UX win
+    # because previously promote was an afterthought (most scored runs
+    # never made it to the tracker until a manual button push).
+    _wls_path = OUT_DIR / "worklist_scored.json"
+    if _wls_path.exists():
+        try:
+            _wls = json.loads(_wls_path.read_text(encoding="utf-8"))
+            _verdicts: dict = {}
+            for _r in _wls.get("results", []):
+                _v = (_r.get("fit") or {}).get("fit_verdict", "")
+                if _v:
+                    _verdicts[_v] = _verdicts.get(_v, 0) + 1
+            _apply_now = _verdicts.get("apply_now", 0)
+            _tailor = _verdicts.get("tailor_and_apply", 0)
+            _ready = _apply_now + _tailor
+        except Exception:
+            _ready = 0
+            _apply_now = 0
+            _tailor = 0
+
+        # Has the user already dismissed this scored file? Track via
+        # a session-state key keyed by the scored file's mtime so a
+        # fresh score (new mtime) re-prompts.
+        _wls_mtime = int(_wls_path.stat().st_mtime)
+        _dismiss_key = f"_promote_banner_dismissed_{_wls_mtime}"
+        _already_committed = any(
+            j.get("source", "").endswith("+fit_scorer")
+            and parse_date(j.get("date_found")) == date.today()
+            for j in jobs
+        )
+
+        if (_ready >= 1
+            and not st.session_state.get(_dismiss_key)
+            and not _already_committed):
+            with st.container(border=True):
+                st.markdown(
+                    f"### 🎯 **{_ready} role"
+                    f"{'s' if _ready != 1 else ''} ready to promote** "
+                    f"to your tracker"
+                )
+                _msg_parts = []
+                if _apply_now:
+                    _msg_parts.append(f"**{_apply_now} apply_now**")
+                if _tailor:
+                    _msg_parts.append(f"**{_tailor} tailor_and_apply**")
+                st.caption(
+                    f"Latest scoring run found {' + '.join(_msg_parts)}. "
+                    f"Promote stamps them into the tracker so you can "
+                    f"act, follow up, and tailor."
+                )
+                _pb1, _pb2, _pb3 = st.columns([2, 2, 1])
+                with _pb1:
+                    if st.button(
+                        f"📋 Commit promote ({_ready})",
+                        type="primary",
+                        width='stretch',
+                        key=f"promote_commit_{_wls_mtime}",
+                        help="Run auto_promote --commit. Writes the tracker, "
+                             "creates a promote_report_*.md, and stamps "
+                             "every promoted role with date_found=today.",
+                    ):
+                        rec = scan_runner.start_run("pipeline", [
+                            sys.executable,
+                            str(ROOT / "automation" / "run_pipeline.py"),
+                            "--skip-scrape", "--skip-score",
+                            "--commit-promote",
+                        ])
+                        st.session_state["_last_launch"] = {
+                            "run_id": rec.run_id,
+                            "label": f"Promote {_ready}",
+                        }
+                        st.session_state[_dismiss_key] = True
+                        st.toast(f"📋 Promoting {_ready} roles…", icon="🚀")
+                        st.rerun()
+                with _pb2:
+                    if st.button(
+                        "👀 Review first (dry-run)",
+                        width='stretch',
+                        key=f"promote_dry_{_wls_mtime}",
+                        help="Run auto_promote without --commit. Writes the "
+                             "preview report; tracker stays untouched.",
+                    ):
+                        rec = scan_runner.start_run("pipeline", [
+                            sys.executable,
+                            str(ROOT / "automation" / "run_pipeline.py"),
+                            "--skip-scrape", "--skip-score",
+                        ])
+                        st.session_state["_last_launch"] = {
+                            "run_id": rec.run_id,
+                            "label": f"Promote dry-run ({_ready})",
+                        }
+                        st.toast("👀 Promote dry-run launched…", icon="🚀")
+                        st.rerun()
+                with _pb3:
+                    if st.button(
+                        "🙈 Hide",
+                        width='stretch',
+                        key=f"promote_dismiss_{_wls_mtime}",
+                        help="Hide this prompt for the current scored "
+                             "file. Re-prompts after the next score run.",
+                    ):
+                        st.session_state[_dismiss_key] = True
+                        st.rerun()
+
     # ---------- Funnel data collection ----------
     scan_f = latest_scan()
     scored_f = latest_scored()
@@ -4647,9 +5100,15 @@ elif page == "📋 Jobs Kanban":
                     f"{job.get('sector')} · {job.get('status','?')} · "
                     f"fit {job.get('fit_score')} · 📄 {variant_str}"
                 )
-                _jurl = job.get('url', '')
-                if _jurl:
-                    st.link_button("🔗 Open posting", _jurl)
+                # Inline tailor + apply action strip — same widget that
+                # lives in Today's queue. 3 buttons: Open posting · Tailor
+                # · Mark applied. Tailor spawns jd_tailor in background;
+                # the drawer (rendered at end of page) surfaces the doc
+                # and a one-click Apply when ready.
+                render_tailor_action_row(
+                    job, key_prefix="kanban_inspect", tracker_data=tr,
+                    tracker_path=TRACKER,
+                )
                 _fit_notes = job.get("fit_notes", "")
                 if _fit_notes:
                     with st.expander("📊 Fit notes", expanded=False):
@@ -4768,6 +5227,10 @@ elif page == "📋 Jobs Kanban":
                     save_tracker(tr)
                     st.success("Marked Applied; first follow-up in 3 days.")
                     st.rerun()
+
+    # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
+    # 📄 View tailor was clicked anywhere on this page.
+    render_tailor_drawer(jobs, tr, TRACKER)
 
 
 # ============================================================================
