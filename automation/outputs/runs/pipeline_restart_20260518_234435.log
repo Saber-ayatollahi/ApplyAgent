@@ -1,0 +1,5 @@
+[run_pipeline] ❌ API preflight FAILED (category=empty): ANTHROPIC_API_KEY not set in env
+[run_pipeline] → Set ANTHROPIC_API_KEY in your environment, e.g. (PowerShell):
+  $env:ANTHROPIC_API_KEY = "sk-ant-..."
+Or paste one in the Streamlit sidebar — it hydrates the env for subprocesses.
+[run_pipeline] (to bypass for debugging: APPLYAGENT_SKIP_PREFLIGHT=1)

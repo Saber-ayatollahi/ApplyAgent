@@ -24,6 +24,11 @@ dist/
 Thumbs.db
 
 # ============================================================================
+# Claude Code agent worktrees — local-only checkouts, each with its own .git
+# ============================================================================
+.claude/worktrees/
+
+# ============================================================================
 # Agent outputs — tracked so both machines stay in sync
 # ============================================================================
 # Intentionally NOT ignored (so they commit):

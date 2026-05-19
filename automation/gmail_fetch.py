@@ -100,11 +100,13 @@ def main() -> int:
         from gmail_reader import (  # type: ignore
             load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
         )
+        from location_filter import keep_for_toronto_pipeline  # type: ignore
     except ImportError:
         try:
             from .gmail_reader import (  # type: ignore
                 load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
             )
+            from .location_filter import keep_for_toronto_pipeline  # type: ignore
         except Exception as e:
             print(f"[gmail_fetch] cannot import gmail_reader: {e}", file=sys.stderr)
             return 1
@@ -130,7 +132,7 @@ def main() -> int:
 
     alert_msgs = [m for m in messages
                    if m.kind == "alert" and "linkedin.com" in m.sender_email.lower()]
-    rows: list[dict] = []
+    raw_rows: list[dict] = []
     msgs_with_rows = 0
     msgs_without_rows = 0
     for m in alert_msgs:
@@ -142,15 +144,39 @@ def main() -> int:
         for row in parsed:
             row["posted_date"] = m.date or None
             row["gmail_uid"] = m.uid
+            raw_rows.append(row)
+
+    # Geo gate: LinkedIn pads digest emails with "similar roles" pulled from
+    # outside the Toronto-anchored saved alert (Raleigh, NYC, etc). Drop rows
+    # whose location is clearly non-GTA. Empty-location rows are kept — let
+    # the scorer decide rather than silently lose a Toronto role whose
+    # location field LinkedIn happened to omit. Mirrors the web scraper's
+    # _is_gta_or_canada_remote gate at jd_scraper.py.
+    rows: list[dict] = []
+    dropped_loc_examples: list[str] = []
+    for row in raw_rows:
+        if keep_for_toronto_pipeline(row.get("location") or ""):
             rows.append(row)
+        elif len(dropped_loc_examples) < 5:
+            dropped_loc_examples.append(
+                f"{row.get('company','?')} — {row.get('location','?')}"
+            )
+    rows_dropped_location = len(raw_rows) - len(rows)
+
     print(f"[gmail_fetch] inbox match: {len(messages)} sender-classified, "
           f"{len(alert_msgs)} LinkedIn alert(s); "
-          f"parsed {len(rows)} row(s) from {msgs_with_rows} digest(s) "
+          f"parsed {len(raw_rows)} row(s) from {msgs_with_rows} digest(s) "
           f"({msgs_without_rows} digest(s) yielded zero rows)",
           file=sys.stderr)
+    if rows_dropped_location:
+        print(f"[gmail_fetch] geo filter: dropped {rows_dropped_location} "
+              f"non-GTA row(s) — kept {len(rows)}", file=sys.stderr)
+        for ex in dropped_loc_examples:
+            print(f"  · drop: {ex}", file=sys.stderr)
 
     if args.dry_run:
-        print(f"\n[gmail_fetch] DRY RUN: would write {len(rows)} row(s).")
+        print(f"\n[gmail_fetch] DRY RUN: would write {len(rows)} row(s) "
+              f"({rows_dropped_location} dropped by geo filter).")
         for r in rows[:10]:
             print(f"  · {r.get('company','?')} — {(r.get('title') or '?')[:70]}")
         if len(rows) > 10:
@@ -171,7 +197,10 @@ def main() -> int:
         "linkedin_alerts_seen": len(alert_msgs),
         "digests_with_rows": msgs_with_rows,
         "digests_without_rows": msgs_without_rows,
-        "rows_parsed": len(rows),
+        "rows_parsed": len(raw_rows),
+        "rows_dropped_location": rows_dropped_location,
+        "rows_kept": len(rows),
+        "dropped_location_examples": dropped_loc_examples,
     }
     out_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
                          encoding="utf-8")

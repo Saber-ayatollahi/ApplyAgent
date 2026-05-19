@@ -1,0 +1,95 @@
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260518_234737 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 1360 rows (1137 scrape, 223 gmail, 0 both) · 1360 new since last score
+[score] [fit_scorer] Loaded 1360 roles from worklist.json
+[score] [fit_scorer] Stage 1: 657 pass / 703 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK â€” Valid & credits OK â€” 5 models, billing works
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$1.366 / cap=$5.00
+[score]   [fit_scorer] scored 10/657 (0.0 min)
+[score]   [fit_scorer] scored 20/657 (0.0 min)
+[score]   [fit_scorer] scored 30/657 (0.0 min)
+[score]   [fit_scorer] scored 40/657 (0.0 min)
+[score]   [fit_scorer] scored 50/657 (0.0 min)
+[score]   [fit_scorer] scored 60/657 (0.0 min)
+[score]   [fit_scorer] scored 70/657 (0.0 min)
+[score]   [fit_scorer] scored 80/657 (0.0 min)
+[score]   [fit_scorer] scored 90/657 (0.0 min)
+[score]   [fit_scorer] scored 100/657 (0.1 min)
+[score]   [fit_scorer] scored 110/657 (0.2 min)
+[score]   [fit_scorer] scored 120/657 (0.3 min)
+[score]   [fit_scorer] scored 130/657 (0.4 min)
+[score]   [fit_scorer] scored 140/657 (0.6 min)
+[score]   [fit_scorer] scored 150/657 (0.7 min)
+[score]   [fit_scorer] scored 160/657 (0.8 min)
+[score]   [fit_scorer] scored 170/657 (0.8 min)
+[score]   [fit_scorer] scored 180/657 (0.9 min)
+[score]   [fit_scorer] scored 190/657 (1.0 min)
+[score]   [fit_scorer] scored 200/657 (1.0 min)
+[score]   [fit_scorer] scored 210/657 (1.3 min)
+[score]   [fit_scorer] scored 220/657 (1.8 min)
+[score]   [fit_scorer] scored 230/657 (2.7 min)
+[score]   [fit_scorer] scored 240/657 (3.5 min)
+[score]   [fit_scorer] scored 250/657 (4.5 min)
+[score]   [fit_scorer] scored 260/657 (5.2 min)
+[score]   [fit_scorer] scored 270/657 (6.1 min)
+[score]   [fit_scorer] scored 280/657 (7.3 min)
+[score]   [fit_scorer] scored 290/657 (8.4 min)
+[score]   [fit_scorer] scored 300/657 (9.4 min)
+[score]   [fit_scorer] scored 310/657 (10.4 min)
+[score]   [fit_scorer] scored 320/657 (11.4 min)
+[score]   [fit_scorer] scored 330/657 (12.4 min)
+[score]   [fit_scorer] scored 340/657 (13.4 min)
+[score]   [fit_scorer] scored 350/657 (14.5 min)
+[score]   [fit_scorer] scored 360/657 (15.6 min)
+[score]   [fit_scorer] scored 370/657 (16.6 min)
+[score]   [fit_scorer] scored 380/657 (17.7 min)
+[score]   [fit_scorer] scored 390/657 (18.8 min)
+[score]   [fit_scorer] scored 400/657 (20.0 min)
+[score]   [fit_scorer] scored 410/657 (21.1 min)
+[score]   [fit_scorer] scored 420/657 (22.3 min)
+[score]   [fit_scorer] scored 430/657 (23.3 min)
+[score]   [fit_scorer] scored 440/657 (24.4 min)
+[score]   [fit_scorer] scored 450/657 (25.5 min)
+[score]   [fit_scorer] scored 460/657 (26.6 min)
+[score]   [fit_scorer] scored 470/657 (27.7 min)
+[score]   [fit_scorer] scored 480/657 (28.9 min)
+[score]   [fit_scorer] scored 490/657 (30.0 min)
+[score]   [fit_scorer] scored 500/657 (31.3 min)
+[score] 
+[score] [cost_guard] per-run cap exceeded: $2.004 >= $2.00 â€” aborting pending LLM calls.
+[score]   [fit_scorer] scored 510/657 (31.7 min)
+[score]   [fit_scorer] scored 520/657 (31.7 min)
+[score]   [fit_scorer] scored 530/657 (31.7 min)
+[score]   [fit_scorer] scored 540/657 (31.7 min)
+[score]   [fit_scorer] scored 550/657 (31.7 min)
+[score]   [fit_scorer] scored 560/657 (31.7 min)
+[score]   [fit_scorer] scored 570/657 (31.7 min)
+[score]   [fit_scorer] scored 580/657 (31.7 min)
+[score]   [fit_scorer] scored 590/657 (31.7 min)
+[score]   [fit_scorer] scored 600/657 (31.7 min)
+[score]   [fit_scorer] scored 610/657 (31.7 min)
+[score]   [fit_scorer] scored 620/657 (31.7 min)
+[score]   [fit_scorer] scored 630/657 (31.7 min)
+[score]   [fit_scorer] scored 640/657 (31.7 min)
+[score]   [fit_scorer] scored 650/657 (31.7 min)
+[score]   [fit_scorer] scored 657/657 (31.7 min)
+
+[pipeline] ❌ CRASHED: UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 20: character maps to <undefined>
+Traceback (most recent call last):
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 345, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 183, in main
+    return _run(args, status, pipeline_id)
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 283, in _run
+    rc = _stream(cmd, "score", status, "score")
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 85, in _stream
+    for line in proc.stdout:
+                ^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 20: character maps to <undefined>

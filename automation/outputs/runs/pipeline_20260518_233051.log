@@ -1,0 +1,28 @@
+# pipeline
+# cmd: C:\Program Files\Python313\python.exe C:\Dev\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-concurrency 6
+# started: 2026-05-18T23:30:51.578657
+
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260518_233055 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 1360 rows (1137 scrape, 223 gmail, 0 both) · 1360 new since last score
+[score] [fit_scorer] Loaded 1360 roles from worklist.json
+[score] [fit_scorer] Stage 1: 657 pass / 703 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK — Valid & credits OK — 5 models, billing works
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$0.519 / cap=$5.00
+[score]   [fit_scorer] scored 10/657 (0.0 min)
+[score]   [fit_scorer] scored 20/657 (0.0 min)
+[score]   [fit_scorer] scored 30/657 (0.0 min)
+[score]   [fit_scorer] scored 40/657 (0.0 min)
+[score]   [fit_scorer] scored 50/657 (0.0 min)
+[score]   [fit_scorer] scored 60/657 (0.0 min)
+[score]   [fit_scorer] scored 70/657 (0.2 min)
+[score]   [fit_scorer] scored 80/657 (1.3 min)
+[score]   [fit_scorer] scored 90/657 (2.3 min)
+[score]   [fit_scorer] scored 100/657 (3.3 min)
+[score]   [fit_scorer] scored 110/657 (4.2 min)
+[score]   [fit_scorer] scored 120/657 (5.1 min)
+[score]   [fit_scorer] scored 130/657 (5.3 min)
+[score]   [fit_scorer] scored 140/657 (6.2 min)

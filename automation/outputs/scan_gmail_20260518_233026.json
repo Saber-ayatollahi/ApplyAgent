@@ -1,0 +1,98 @@
+{
+  "scan_date": "2026-05-18",
+  "scan_timestamp": "2026-05-19T03:30:26Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 6,
+    "output": 6,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "69592"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-05-19T00:03:44",
+    "delete_result": {
+      "moved": 1,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Financial Risk Manager",
+      "company": "Deloitte",
+      "link": "https://www.linkedin.com/jobs/view/4385346760",
+      "location": "Raleigh, NC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    },
+    {
+      "title": "VP, Capital & Liquidity Manager",
+      "company": "Cathay Bank",
+      "link": "https://www.linkedin.com/jobs/view/4374075610",
+      "location": "El Monte, CA",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    },
+    {
+      "title": "Sr. Manager, Investment Risk",
+      "company": "Charles Schwab",
+      "link": "https://www.linkedin.com/jobs/view/4411192141",
+      "location": "Chicago, IL",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    },
+    {
+      "title": "Capital and Risk Analytics Lead",
+      "company": "Anchorage Digital",
+      "link": "https://www.linkedin.com/jobs/view/4367398230",
+      "location": "United States",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    },
+    {
+      "title": "Director, The Operational Risk Stress Testing and Scenario Analysis",
+      "company": "hackajob",
+      "link": "https://www.linkedin.com/jobs/view/4415455029",
+      "location": "New York, NY",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    },
+    {
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4368084295",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-19",
+      "gmail_uid": "69592"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 4,
+    "linkedin_alerts_seen": 1,
+    "digests_with_rows": 1,
+    "digests_without_rows": 0,
+    "rows_parsed": 6
+  }
+}

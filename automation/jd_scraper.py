@@ -672,36 +672,10 @@ _SF_KEYWORDS = ["risk", "model", "capital", "treasury", "liquidity", "analytics"
                 "balance sheet", "market risk"]
 
 
-def _is_gta_or_canada_remote(loc_lower: str) -> bool:
-    """Return True if a location string refers to the Greater Toronto Area or
-    Canada-remote. Used by SF + similar adapters that need to filter on RSS
-    location strings like 'Mississauga, ON, CA, L5B 1M3' or 'Toronto, ON, CA'.
-
-    Accepts:
-      - Any GTA city (Toronto proper, Mississauga, Markham, Oakville, etc.)
-      - Explicit Ontario, ON, CA markers (for e.g. "Kitchener, ON, CA")
-      - Remote Canada
-    Rejects Ottawa-only, Montreal, Vancouver, etc. (Saber is Toronto-focused)."""
-    # GTA-wide
-    gta = ("toronto", "mississauga", "markham", "vaughan", "brampton",
-            "oakville", "burlington", "milton", "richmond hill",
-            "pickering", "ajax", "whitby", "oshawa", "north york",
-            "scarborough", "etobicoke", "thornhill", "concord", "woodbridge",
-            "aurora", "newmarket", "stouffville")
-    if any(c in loc_lower for c in gta):
-        return True
-    # Canada-remote variants
-    if "remote - canada" in loc_lower or "canada - remote" in loc_lower:
-        return True
-    if "remote canada" in loc_lower or "remote, canada" in loc_lower:
-        return True
-    if loc_lower.strip() in ("canada", "ca"):
-        return True
-    # Commute-reachable SW Ontario (Saber is Toronto-based but Waterloo/Kitchener
-    # are sometimes flexible with hybrid)
-    if "waterloo" in loc_lower or "kitchener" in loc_lower:
-        return True
-    return False
+try:
+    from location_filter import is_gta_or_canada_remote as _is_gta_or_canada_remote  # type: ignore
+except ImportError:
+    from .location_filter import is_gta_or_canada_remote as _is_gta_or_canada_remote  # type: ignore
 
 
 def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
@@ -977,7 +951,8 @@ def _source_rank(src: str) -> int:
 
 def _normalize_title(title: str) -> str:
     """Canonical form for near-dup detection. Strips hints that don't change the job:
-    hybrid/remote tags, trailing job IDs, Toronto location qualifiers, punctuation."""
+    hybrid/remote tags, trailing job IDs, Toronto location qualifiers, punctuation.
+    Must match worklist.py:_normalize_title in lockstep."""
     t = (title or "").lower()
     # Remove trailing job IDs like "(4451)" or "(7557)"
     t = re.sub(r"\s*\(\s*\d{3,6}\s*\)\s*$", "", t)
@@ -986,6 +961,11 @@ def _normalize_title(title: str) -> str:
                " ", t)
     # Strip location suffixes
     t = re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
+    # Seniority/abbreviation expansions
+    t = re.sub(r"\bsr\.?(?=\s|$)", "senior", t)
+    t = re.sub(r"\bsnr(?=\s|$)", "senior", t)
+    t = re.sub(r"\bvice[\s\-]+president\b", "vp", t)
+    t = t.replace("&", "and")
     # Collapse punctuation/whitespace
     t = re.sub(r"[,/\-–—_]+", " ", t)
     t = re.sub(r"\s+", " ", t).strip()

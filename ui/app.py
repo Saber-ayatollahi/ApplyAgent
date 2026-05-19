@@ -1174,13 +1174,32 @@ def _ap_render_card(row: dict, idx: int, band: str, diff_label: str,
                 st.rerun()
 
 
+def _ap_rescore_supports_only_url() -> bool:
+    """Probe fit_scorer.py --help once per session for the --only-url flag."""
+    key = "_ap_rescore_supports_only_url"
+    if key in st.session_state:
+        return st.session_state[key]
+    supports = False
+    try:
+        r = subprocess.run(
+            [sys.executable, str(ROOT / "automation" / "fit_scorer.py"), "--help"],
+            capture_output=True, text=True, timeout=5,
+        )
+        supports = "--only-url" in (r.stdout or "") + (r.stderr or "")
+    except Exception:
+        supports = False
+    st.session_state[key] = supports
+    return supports
+
+
 def _ap_render_suspicious(row: dict, hit: str):
     fit = row.get("fit") or {}
     url = _ap_url(row)
     h = _ap_hash(url)
+    company = row.get("company", "—")
     with st.container(border=True):
         st.markdown(
-            f"⚠️ **{row.get('company', '—')} · {row.get('title', '—')}** · "
+            f"⚠️ **{company} · {row.get('title', '—')}** · "
             f"score: {fit.get('fit_score', '?')}/10 · "
             f"verdict: `{fit.get('fit_verdict', '?')}` · keyword hit: `{hit}`"
         )
@@ -1188,9 +1207,27 @@ def _ap_render_suspicious(row: dict, hit: str):
             st.caption(fit["summary"])
         b1, b2, _ = st.columns([1, 1, 3])
         with b1:
-            st.button("👀 Force re-score", key=f"_ap_resc_{h}",
-                      disabled=True, width='stretch',
-                      help="Coming soon — will re-score this URL with --rescore flag")
+            supports = _ap_rescore_supports_only_url()
+            if st.button(
+                "👀 Force re-score",
+                key=f"_ap_resc_{h}",
+                disabled=not (supports and url),
+                width='stretch',
+                help=("Bust the fit cache for this URL and re-call the LLM "
+                      "(merges back into worklist_scored.json without "
+                      "touching the diff baseline)."
+                      if supports else
+                      "fit_scorer.py doesn't have --only-url yet."),
+            ):
+                rec = scan_runner.start_run(f"rescore_{h}", [
+                    sys.executable,
+                    str(ROOT / "automation" / "fit_scorer.py"),
+                    "--only-url", url, "--rescore",
+                ])
+                st.session_state["_last_launch"] = {
+                    "run_id": rec.run_id, "label": f"Re-score {company}"}
+                st.toast(f"👀 Re-scoring {company}…", icon="🚀")
+                st.rerun()
         with b2:
             if url:
                 st.link_button("🔗 Open JD", url, width='stretch')

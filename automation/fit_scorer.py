@@ -1219,7 +1219,13 @@ def _load_prev_fit_index() -> dict[str, dict]:
     """Map canonical URL -> prior `fit` dict from worklist_scored.json. Used as
     a second-chance lookup when the per-URL fit cache misses but the worklist
     says is_new_since_last_score=False (so the role definitely was scored
-    before, only the cache key changed)."""
+    before, only the cache key changed).
+
+    Skips rows whose `fit_verdict` is `error`, `needs_rescore`, or any other
+    sentinel that indicates the prior run never produced a real score —
+    otherwise score_with_llm would copy these placeholders into fit_cache and
+    we'd silently skip the LLM call for URLs that have never actually been
+    scored."""
     scored = OUT_DIR / "worklist_scored.json"
     if not scored.exists():
         return {}
@@ -1227,11 +1233,23 @@ def _load_prev_fit_index() -> dict[str, dict]:
         data = json.loads(scored.read_text(encoding="utf-8"))
     except Exception:
         return {}
+    real_verdicts = {"apply_now", "tailor_and_apply", "watch", "skip"}
+    # Sentinel reason strings written by score_one's abort path or score_with_llm's
+    # fatal/parse-fail returns. These rows carry a real-looking verdict (often
+    # `skip`) so the verdict filter alone misses them — checking the reasons
+    # blocklist catches the cases where a row was never actually LLM-scored.
+    abort_markers = {"aborted_fatal_api_error", "aborted",
+                     "fatal_api", "LLM_failure"}
     idx: dict[str, dict] = {}
     for r in data.get("results", []) or []:
         url = (r.get("link") or "").strip()
         fit = r.get("fit")
         if not url or not isinstance(fit, dict):
+            continue
+        if fit.get("fit_verdict") not in real_verdicts:
+            continue
+        reasons = fit.get("top_3_reasons") or []
+        if any(m in reasons for m in abort_markers):
             continue
         canon = _canonicalize_url(url)
         if canon:
@@ -1462,6 +1480,13 @@ def main() -> int:
                     help="Limit to N roles after stage 1 triage (0=all).")
     ap.add_argument("--only", action="append", default=[],
                     help="Only score titles matching this regex (can pass multiple).")
+    ap.add_argument("--only-url", action="append", default=None, metavar="URL",
+                    help="Score ONLY the row(s) whose canonical URL matches. "
+                         "Repeatable. Merges into the existing scored file "
+                         "instead of overwriting, and skips the .prev.json "
+                         "snapshot so a single-URL rescore doesn't reset the "
+                         "Action Plan diff baseline. Pair with --rescore to "
+                         "bypass the fit cache.")
     ap.add_argument("--dry-run", action="store_true",
                     help="Stage 1 only; don't call LLM.")
     ap.add_argument("--rescore", action="store_true",
@@ -1513,6 +1538,31 @@ def main() -> int:
     roles = scan.get("results", [])
     print(f"[fit_scorer] Loaded {len(roles)} roles from {scan_path.name}", file=sys.stderr)
 
+    # --only-url: filter the input pool down to the supplied URL(s) before
+    # stage-1 triage. Uses worklist.norm_url so a LinkedIn tracking-redirect
+    # URL still matches its canonical /jobs/view/<id> form. Triage and the
+    # cache layer are deliberately untouched — pair with --rescore to also
+    # bust the fit cache.
+    only_url_targets: set[str] | None = None
+    if args.only_url:
+        try:
+            import worklist  # type: ignore
+        except ImportError:
+            from . import worklist  # type: ignore
+        only_url_targets = {
+            worklist.norm_url({"link": u}) for u in args.only_url if u
+        }
+        only_url_targets.discard("")
+        before = len(roles)
+        roles = [r for r in roles
+                 if worklist.norm_url(r) in only_url_targets]
+        print(f"[fit_scorer] --only-url matched {len(roles)}/{before} role(s).",
+              file=sys.stderr)
+        if not roles:
+            print(f"[fit_scorer] --only-url matched 0 rows in {scan_path.name}; "
+                  f"nothing to do.", file=sys.stderr)
+            return 0
+
     # Stage 1 — rule triage. We keep the dropped records in a separate list
     # so the UI can show "why didn't this role get scored?" — before this,
     # failed stage-1 roles vanished silently and the user had no way to
@@ -1551,6 +1601,15 @@ def main() -> int:
         print(f"[fit_scorer] Limiting to {len(triaged)} for this run.", file=sys.stderr)
 
     if args.dry_run:
+        # --only-url + --dry-run is meaningless and dangerous: dry-run writes
+        # only the triaged stage-1 rows to <scan>_scored.json with no `fit`
+        # field, which would clobber the live scored file. Refuse instead of
+        # silently destroying the user's scored snapshot.
+        if only_url_targets:
+            print("[fit_scorer] --only-url with --dry-run is unsafe (would "
+                  "overwrite the scored file with stage-1-only rows). "
+                  "Drop one of the flags.", file=sys.stderr)
+            return 2
         out = {"scan_date": scan.get("scan_date"), "stage1_only": True,
                "total_input": len(roles), "stage1_passed": len(triaged),
                "stage1_dropped": len(triage_drops),
@@ -1682,6 +1741,39 @@ def main() -> int:
         print(f"\n[fit_scorer] ⚠️  Run aborted early — results are incomplete.\n"
               f"  Fix: {api_error[:200]}", file=sys.stderr)
     json_out = OUT_DIR / (Path(args.scan).stem + "_scored.json")
+    # Single-URL rescore: merge updated row(s) into the existing scored file
+    # instead of overwriting it (otherwise re-scoring one suspicious skip
+    # would obliterate the other 500 scored rows in worklist_scored.json).
+    # Skip the .prev.json snapshot too — a single-URL touch shouldn't reset
+    # the Action Plan diff baseline.
+    if only_url_targets and json_out.exists():
+        try:
+            existing = json.loads(json_out.read_text(encoding="utf-8"))
+        except Exception as _merge_err:
+            print(f"[fit_scorer] warn: could not read existing "
+                  f"{json_out.name} for merge ({_merge_err}); falling back to "
+                  f"overwrite.", file=sys.stderr)
+        else:
+            try:
+                import worklist  # type: ignore
+            except ImportError:
+                from . import worklist  # type: ignore
+            updated = {worklist.norm_url(r): r for r in scored}
+            merged: list[dict] = []
+            for r in existing.get("results", []):
+                key = worklist.norm_url(r)
+                merged.append(updated.pop(key, r) if key in updated else r)
+            merged.extend(updated.values())  # any rescored row not in old file
+            merged.sort(key=lambda r: (-(r.get("fit") or {}).get("fit_score", 0),
+                                       (r.get("fit") or {}).get("tier", 4)))
+            out["results"] = merged
+            out["stage2_scored"] = len(scored)  # only this run, not the merged total
+            print(f"[fit_scorer] --only-url merge: rewrote {len(scored)} "
+                  f"row(s) into {json_out.name}; total rows in file: "
+                  f"{len(merged)}.", file=sys.stderr)
+            json_out.write_text(json.dumps(out, indent=2), encoding="utf-8")
+            # Skip prev-snapshot AND skip the bottom-of-function rewrite below.
+            return 0
     # Snapshot the previous scored output so the UI can diff this run vs prior
     # (Action Plan: NEW / UPGRADED / DOWNGRADED / STABLE badges). Best-effort —
     # if the rename fails (file in use, perms), we log and proceed; the scoring

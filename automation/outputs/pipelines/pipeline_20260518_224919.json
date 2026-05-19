@@ -1,0 +1,40 @@
+{
+  "pipeline_id": "20260518_224919",
+  "started_at": "2026-05-18T22:49:19",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": true,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 1356,
+      "scrape_only": 1137,
+      "gmail_only": 219,
+      "both": 0,
+      "new_since_last_score": 1353
+    },
+    "score": {
+      "state": "skipped"
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "finished_at": "2026-05-18T22:49:19"
+}

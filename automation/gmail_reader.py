@@ -344,6 +344,82 @@ def _canonical_li_job_url(raw_url: str) -> str | None:
     return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
 
 
+# LinkedIn alert digest cards pack title + company + location + activity-text
+# into one cell. When cell_lines splitting goes sideways (multiple anchors,
+# encoding mojibake of the · separator, single-line cells), we end up with
+# trailing junk in `title` ("Senior Manager … BMO · Toronto, ON 12 connections"),
+# location stuffed into `company`, or activity-text in `location`. This pass
+# normalizes after-the-fact so dedup keys are clean.
+#
+# Treats both real `· ` (U+00B7) and the mojibake `�` (replacement char
+# from broken UTF-8 round-trips) as separators — we've seen the latter on
+# scans persisted before stdio was reconfigured.
+_ALERT_SEP = r"\s+(?:[·�]|[-–—])\s+"
+_ALERT_ACTIVITY_PHRASE = (
+    r"(?:Actively recruiting|"
+    r"\d+\s+(?:connection|connections|company alumni|school alumni|alumni)|"
+    r"Promoted)"
+)
+_ALERT_ACTIVITY_TAIL = re.compile(
+    rf"\s+{_ALERT_ACTIVITY_PHRASE}\s*$",
+    re.IGNORECASE,
+)
+# Used when the activity phrase IS the whole field (e.g. location='23 connections')
+_ALERT_ACTIVITY_BARE = re.compile(
+    rf"^{_ALERT_ACTIVITY_PHRASE}$",
+    re.IGNORECASE,
+)
+_ALERT_MODE_TAIL = re.compile(
+    r"\s*\((?:Hybrid|On-?site|Remote)\)\s*$",
+    re.IGNORECASE,
+)
+
+
+def _clean_alert_fields(title: str, company: str, location: str
+                         ) -> tuple[str, str, str]:
+    """Normalize LinkedIn-alert (title, company, location) so dedup keys match
+    web-scrape rows. See module-level comment for the failure modes this fixes."""
+    # Strip activity-text tails (trailing) that might have stuck to any field
+    title = _ALERT_ACTIVITY_TAIL.sub("", title or "").strip()
+    company = _ALERT_ACTIVITY_TAIL.sub("", company or "").strip()
+    location = _ALERT_ACTIVITY_TAIL.sub("", location or "").strip()
+
+    # Failure mode A: activity text IS the entire location (e.g. "23 connections",
+    # "Actively recruiting"). Bare-form match — drop it.
+    if location and _ALERT_ACTIVITY_BARE.match(location):
+        location = ""
+
+    # Failure mode B: `company` field contains "<co> · <loc>" — split it
+    if company and re.search(_ALERT_SEP, company):
+        parts = re.split(_ALERT_SEP, company, maxsplit=1)
+        if len(parts) == 2:
+            company = parts[0].strip()
+            new_loc = parts[1].strip()
+            new_loc = _ALERT_MODE_TAIL.sub("", new_loc).strip()
+            if not location:
+                location = new_loc
+
+    # Failure mode C: `title` field has the company-and-location echo trailing.
+    # Drop everything from " · " onward — the cell joins title to subtitle that way.
+    if title and re.search(_ALERT_SEP, title):
+        title = re.split(_ALERT_SEP, title, maxsplit=1)[0].strip()
+        # After splitting, also drop the company name if it's the last word(s)
+        # before the separator — safer to leave it alone; the regex split
+        # already cut at the separator, so the company name shouldn't be there.
+
+    # Failure mode D: title ends with the full company name redundantly. E.g.
+    # "Treasury Manager KOHO" — drop the trailing company token if present.
+    if title and company and len(company) >= 3:
+        # Match company at end of title, allowing a leading space.
+        co_re = re.escape(company)
+        title = re.sub(rf"\s+{co_re}\s*$", "", title, flags=re.IGNORECASE).strip()
+
+    # Strip work-mode tail off location for parity with web scrape
+    location = _ALERT_MODE_TAIL.sub("", location or "").strip()
+
+    return title[:180], company[:120], location[:120]
+
+
 def parse_linkedin_alert(body: str) -> list[dict]:
     """Extract job rows from a LinkedIn alert email body.
 
@@ -431,6 +507,9 @@ def parse_linkedin_alert(body: str) -> list[dict]:
                 company = company.strip()[:120]
                 location = location.strip()[:120]
 
+                title, company, location = _clean_alert_fields(
+                    title, company, location)
+
                 existing = rows_by_id.get(job_id)
                 if existing is None or (not existing.get("company") and company):
                     rows_by_id[job_id] = {
@@ -459,13 +538,15 @@ def parse_linkedin_alert(body: str) -> list[dict]:
         lines = [l.strip() for l in context.split("\n") if l.strip()]
         title = lines[-2] if len(lines) >= 2 else ""
         company = lines[-1] if lines else ""
+        title, company, location = _clean_alert_fields(
+            title[:180], company[:120], "")
         rows_by_id[job_id] = {
-            "title": title[:180],
-            "company": company[:120],
+            "title": title,
+            "company": company,
             "link": canon,
             "source": "gmail_linkedin_alert",
             "sector": "",
-            "location": "",
+            "location": location,
         }
     return [r for r in rows_by_id.values() if r.get("title") or r.get("company")]
 

@@ -40,6 +40,11 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
+try:
+    from brand_aliases import canonical_brand  # type: ignore
+except ImportError:
+    from .brand_aliases import canonical_brand  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 TRACKER = ROOT / "data" / "job_tracker_data.json"
@@ -75,7 +80,10 @@ _LEGACY_GLOBS = (
 # ---------------------------------------------------------------------------
 # URL normalization — the dedup key
 # ---------------------------------------------------------------------------
-_LI_JOB_RE = re.compile(r"linkedin\.com/.*?/jobs/view/(\d+)", re.IGNORECASE)
+_LI_JOB_RE = re.compile(
+    r"linkedin\.com/(?:[^/?#]*/)*jobs/view/(?:[^/?#]*?-)?(\d{6,})",
+    re.IGNORECASE,
+)
 
 
 def norm_url(row: dict) -> str:
@@ -103,13 +111,29 @@ def _normalize_title(title: str) -> str:
         r"full[- ]?time|part[- ]?time|\d+\s*month\s*contract)\)\s*",
         " ", t)
     t = re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
+    # Seniority/abbreviation expansions: "Sr."/"Sr"/"Snr" → senior, "Vice
+    # President" → vp, "&" → and. Catches Workday-vs-LinkedIn pairs that
+    # picked different conventions (e.g. Citi posts the same role as
+    # "Sr Analyst - AVP" and "Senior Analyst - Assistant Vice President").
+    t = re.sub(r"\bsr\.?(?=\s|$)", "senior", t)
+    t = re.sub(r"\bsnr(?=\s|$)", "senior", t)
+    t = re.sub(r"\bvice[\s\-]+president\b", "vp", t)
+    t = t.replace("&", "and")
     t = re.sub(r"[,/\-–—_]+", " ", t)
     t = re.sub(r"\s+", " ", t).strip()
     return t
 
 
 def _ct_key(company: str, title: str) -> tuple[str, str] | None:
-    co = (company or "").lower().strip()
+    """Near-dup key: (canonical_brand_token, normalized_title).
+
+    Brand canonicalization (via brand_aliases.canonical_brand) collapses
+    "BMO" / "Bank of Montreal" / "BMO Financial Group" / "BMO Capital Markets"
+    onto the same key, so the same role posted via Workday and a LinkedIn
+    alert merges into one row. Without this, the gmail/scrape "both" count
+    stays structurally near-zero.
+    """
+    co = canonical_brand(company)
     nt = _normalize_title(title)
     if not co or not nt:
         return None
@@ -294,9 +318,20 @@ def rebuild(quarantine: bool = True) -> dict:
 
     for r in web_rows:
         _add(r, "scrape")
-    # Older scan_gmail_*.json files pre-date the geo gate that gmail_fetch.py
-    # now applies at parse time. Re-apply it here so legacy rows (Raleigh /
-    # Chicago / NYC) don't leak into the pool on rebuild.
+    # Gmail rows from older scans pre-date the parser cleanup pass. Run them
+    # through _clean_alert_fields here so dedup keys match the post-fix scrape
+    # rows (e.g. "BMO · Toronto, ON" → "BMO"). New scans are already clean at
+    # parse time but a defensive pass is cheap and keeps replay consistent.
+    try:
+        from gmail_reader import _clean_alert_fields  # type: ignore
+    except ImportError:
+        try:
+            from .gmail_reader import _clean_alert_fields  # type: ignore
+        except Exception:
+            _clean_alert_fields = None
+    # Older scan_gmail_*.json files also pre-date the geo gate that
+    # gmail_fetch.py now applies at parse time. Re-apply it here so legacy
+    # rows (Raleigh / Chicago / NYC) don't leak into the pool on rebuild.
     try:
         from location_filter import keep_for_toronto_pipeline as _geo_keep  # type: ignore
     except ImportError:
@@ -307,6 +342,11 @@ def rebuild(quarantine: bool = True) -> dict:
     geo_dropped = 0
     for gp in gmail_files:
         for r in _read_envelope(gp).get("results", []) or []:
+            if _clean_alert_fields is not None:
+                t, c, l = _clean_alert_fields(
+                    r.get("title", ""), r.get("company", ""),
+                    r.get("location", ""))
+                r = {**r, "title": t, "company": c, "location": l}
             if _geo_keep is not None and not _geo_keep(r.get("location") or ""):
                 geo_dropped += 1
                 continue
