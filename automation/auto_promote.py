@@ -166,12 +166,18 @@ def main() -> int:
 
     if not args.scan:
         # Old default was scan_v4_scored.json — retired. Pick the freshest
-        # scan_YYYYMMDD_scored.json so running standalone Just Works.
+        # scan_*_scored.json (web OR Gmail). Previously we required the
+        # stripped stem to be all-digits, which silently excluded
+        # scan_gmail_<stamp>_scored.json — Gmail rows could be scored
+        # but never auto-promoted because the picker pretended the file
+        # didn't exist.
         candidates = sorted(
-            (p for p in OUT_DIR.glob("scan_*_scored.json")
-             if p.stem.replace("scan_", "").replace("_scored", "").isdigit()),
+            OUT_DIR.glob("scan_*_scored.json"),
+            key=lambda p: p.stat().st_mtime,
             reverse=True,
         )
+        # Still skip the retired scan_v4_scored
+        candidates = [p for p in candidates if p.stem != "scan_v4_scored"]
         if not candidates:
             print("ERROR: no scan_YYYYMMDD_scored.json in outputs/. Run fit_scorer.py first.",
                   file=sys.stderr)

@@ -151,28 +151,42 @@ def _since_query(days: int) -> str:
 
 
 def _decode_payload(msg: email.message.Message) -> str:
-    """Best-effort: return plain text from a message."""
+    """Best-effort: return the richest body we can.
+
+    LinkedIn job-alert digests are multipart/alternative: the text/plain
+    part has a 'See all jobs' CTA but NO per-job URLs — every /jobs/view/<id>
+    link lives ONLY in the text/html part. The previous implementation
+    preferred text/plain, so the parser received a body with nothing to
+    extract and `harvested 0 raw alert row(s)` even when the inbox had
+    dozens of digests. We now prefer HTML for alert senders and fall
+    back to plain only when no HTML part exists. We also return the raw
+    HTML (not tag-stripped) so parse_linkedin_alert's bs4 anchor walker
+    has structure to work with.
+    """
     if msg.is_multipart():
+        html_body = ""
+        text_body = ""
         for part in msg.walk():
             ct = part.get_content_type()
-            if ct == "text/plain":
+            if ct == "text/html" and not html_body:
                 try:
-                    return part.get_payload(decode=True).decode(
+                    html_body = part.get_payload(decode=True).decode(
                         part.get_content_charset() or "utf-8", errors="replace"
                     )
                 except Exception:
                     continue
-        # Fall back to text/html stripped
-        for part in msg.walk():
-            if part.get_content_type() == "text/html":
+            elif ct == "text/plain" and not text_body:
                 try:
-                    html = part.get_payload(decode=True).decode(
+                    text_body = part.get_payload(decode=True).decode(
                         part.get_content_charset() or "utf-8", errors="replace"
                     )
-                    return re.sub(r"<[^>]+>", " ", html)
                 except Exception:
                     continue
-        return ""
+        # HTML wins: parse_linkedin_alert preferentially uses bs4 anchors
+        # when '<' and '>' both appear, falling back to text regex otherwise.
+        if html_body:
+            return html_body
+        return text_body
     try:
         payload = msg.get_payload(decode=True)
         if not payload:

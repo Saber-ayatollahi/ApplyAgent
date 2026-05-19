@@ -1344,12 +1344,16 @@ def main() -> int:
     args = ap.parse_args()
 
     if not args.scan:
-        # Pick the freshest scan_YYYYMMDD.json. Old default was scan_v4.json
-        # which was retired when the weekly pipeline started writing dated
-        # scans; running standalone with no --scan now Just Works.
+        # Pick the freshest scan_*.json (web scrape OR scan_gmail_*).
+        # Previously required all-digit 13-char stem, which silently
+        # excluded scan_gmail_<stamp>.json — Gmail fetch produced rows
+        # but `python fit_scorer.py` (no --scan) couldn't find them.
         candidates = sorted(
             (p for p in OUT_DIR.glob("scan_*.json")
-             if p.stem.replace("scan_", "").isdigit() and len(p.stem) == 13),
+             if "_scored" not in p.name
+             and "scan_checkpoint" not in p.name
+             and p.stem != "scan_v4"),
+            key=lambda p: p.stat().st_mtime,
             reverse=True,
         )
         if not candidates:

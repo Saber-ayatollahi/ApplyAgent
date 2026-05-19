@@ -135,12 +135,41 @@ def main() -> int:
     print(f"[gmail_fetch] ✓ authenticated as {email_addr} — fetching "
           f"alerts from last {args.days} days...", file=sys.stderr)
 
+    # Capture diagnostics so "0 rows" is debuggable: how many alert emails
+    # IMAP matched, how many we tried to parse, how many produced rows.
+    # Without this, the user can't tell "no LinkedIn alerts in inbox" from
+    # "alerts arrived but parser returned nothing" (a parser regression).
     try:
-        rows = scrape_from_inbox(days=args.days)
+        from gmail_reader import fetch_inbox_signals, parse_linkedin_alert  # type: ignore
+    except ImportError:
+        from .gmail_reader import fetch_inbox_signals, parse_linkedin_alert  # type: ignore
+
+    try:
+        messages = fetch_inbox_signals(days=args.days, limit=200, include_body=True)
     except Exception as e:
-        print(f"[gmail_fetch] ❌ harvest failed: {e}", file=sys.stderr)
+        print(f"[gmail_fetch] ❌ inbox fetch failed: {e}", file=sys.stderr)
         return 2
-    print(f"[gmail_fetch] harvested {len(rows)} raw alert row(s)", file=sys.stderr)
+
+    alert_msgs = [m for m in messages
+                   if m.kind == "alert" and "linkedin.com" in m.sender_email.lower()]
+    rows: list[dict] = []
+    msgs_with_rows = 0
+    msgs_without_rows = 0
+    for m in alert_msgs:
+        parsed = parse_linkedin_alert(m.snippet)
+        if parsed:
+            msgs_with_rows += 1
+        else:
+            msgs_without_rows += 1
+        for row in parsed:
+            row["posted_date"] = m.date or None
+            row["gmail_uid"] = m.uid
+            rows.append(row)
+    print(f"[gmail_fetch] inbox match: {len(messages)} sender-classified, "
+          f"{len(alert_msgs)} LinkedIn alert(s); "
+          f"parsed {len(rows)} row(s) from {msgs_with_rows} digest(s) "
+          f"({msgs_without_rows} digest(s) yielded zero rows)",
+          file=sys.stderr)
 
     # Dedupe against tracker
     dropped_tracker = 0
@@ -164,19 +193,35 @@ def main() -> int:
             print(f"  ... +{len(rows)-10} more")
         return 0 if rows else 3
 
-    if not rows:
-        print("[gmail_fetch] no new rows to write. "
-              "Your inbox may have no recent alerts, "
-              "or all alerts are already in the tracker.", file=sys.stderr)
-        return 3
-
+    # ALWAYS write the envelope so the UI can see the run completed and
+    # surface diagnostics. Previously a 0-row run wrote nothing — making
+    # success-with-no-rows indistinguishable from "fetch never ran" or
+    # "Streamlit lost track of the subprocess". The envelope now carries
+    # `harvest_diagnostics` so the UI can render
+    # 'Inbox had N alerts but parser returned 0 rows — likely parse bug'.
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     fname = args.output or f"scan_gmail_{stamp}.json"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUT_DIR / fname
     envelope = _emit_scan_shape(rows, source_label="gmail_linkedin_alert")
+    envelope["harvest_diagnostics"] = {
+        "days_window": args.days,
+        "imap_messages_matched": len(messages),
+        "linkedin_alerts_seen": len(alert_msgs),
+        "digests_with_rows": msgs_with_rows,
+        "digests_without_rows": msgs_without_rows,
+        "rows_after_parse": len(rows) + dropped_tracker,
+        "rows_dropped_tracker_dedup": dropped_tracker,
+        "rows_final": len(rows),
+    }
     out_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
                          encoding="utf-8")
+    if not rows:
+        print(f"[gmail_fetch] ⚠ wrote {out_path.name} with 0 rows. "
+              f"({len(alert_msgs)} alert(s) seen — likely parse miss "
+              "or all rows already in tracker.)", file=sys.stderr)
+        return 0  # not an error — UI will surface the diagnostic
+
     print(f"[gmail_fetch] ✓ wrote {out_path.name} with {len(rows)} "
           f"row(s).", file=sys.stderr)
     n_uids = len(envelope.get("gmail_alerts", {}).get("contributing_uids", []))

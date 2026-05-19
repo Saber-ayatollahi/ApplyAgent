@@ -776,15 +776,23 @@ def latest_pipeline_status() -> dict | None:
     return _resolve_pipeline_staleness(data, files[0])
 
 
-def render_gmail_trash_panel(container=None) -> bool:
-    """If the most recent scan_gmail_*.json has alert UIDs that haven't been
-    moved to Trash yet, render a confirm/delete panel. Returns True if it
-    rendered (UI shifted), False otherwise so the caller can collapse layout.
+def render_gmail_trash_panel(container=None,
+                              fresh_window_s: int = 3600) -> bool:
+    """Render the 'Gmail fetch result' panel for a recent scan_gmail_*.json.
 
-    The panel only ever offers to delete alerts that produced rows. If a
-    parse returned 0 rows from a digest, the UID is not in
-    `gmail_alerts.contributing_uids` and survives — that protects unparsed
-    leads from being lost when we extend the parser later.
+    Surfaces three things in one place:
+      1. Harvest diagnostics (rows parsed, alerts seen, parse misses)
+      2. Score-Gmail-rows-now CTA (so the user can act on freshly-pulled rows
+         without bouncing to the Pipeline tab and re-typing the filename)
+      3. Trash cleanup (move source emails to Gmail Trash) — only after rows
+         have been parsed; only on un-trashed UIDs.
+
+    Scoping rule (avoid stale prompts): only auto-render when the source
+    scan was created within `fresh_window_s` seconds (default 1h). Older
+    un-trashed scans are silently skipped — they're available from
+    Admin/Pipeline manage views.
+
+    Returns True if it rendered (UI shifted), False otherwise.
     """
     target = container or st
     files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
@@ -792,75 +800,213 @@ def render_gmail_trash_panel(container=None) -> bool:
     if not files:
         return False
     latest = files[0]
+    age_s = datetime.now().timestamp() - latest.stat().st_mtime
+    if age_s > fresh_window_s:
+        return False
     try:
         env = json.loads(latest.read_text(encoding="utf-8"))
     except Exception:
         return False
+
+    rows = env.get("results") or []
+    n_rows = len(rows)
+    diag = env.get("harvest_diagnostics") or {}
     alerts = env.get("gmail_alerts") or {}
     uids = alerts.get("contributing_uids") or []
-    if not uids:
-        return False
-    if alerts.get("deleted"):
-        # One-time success caption so the user knows the previous click
-        # actually moved messages — but no big banner.
-        dr = alerts.get("delete_result") or {}
-        moved = dr.get("moved", 0)
-        when = alerts.get("deleted_at") or ""
-        target.caption(
-            f"🗑 {moved} Gmail alert(s) moved to Trash at {when} "
-            f"(from `{latest.name}`)."
-        )
-        return True
 
-    n_rows = len(env.get("results") or [])
+    # Have we already scored this scan? Look for the matching _scored.json.
+    scored_path = OUT_DIR / (latest.stem + "_scored.json")
+    already_scored = scored_path.exists()
+
+    age_min = int(age_s / 60)
+    age_label = f"{age_min}m ago" if age_min < 60 else f"{age_min // 60}h ago"
+
     with target.container(border=True):
+        # ── HEADER ───────────────────────────────────────────────────────
         st.markdown(
-            f"#### 🗑 Clean up Gmail · {len(uids)} alert email"
-            f"{'s' if len(uids) != 1 else ''} ready to delete"
+            f"#### 📬 Gmail fetch · `{latest.name}` · {age_label}"
         )
-        st.caption(
-            f"`{latest.name}` extracted **{n_rows} job row"
-            f"{'s' if n_rows != 1 else ''}** from these alerts. "
-            "Moving them to Gmail Trash declutters your inbox; Gmail "
-            "auto-purges Trash after 30 days, and you can restore them "
-            "manually from there if needed. Read-only stays the default — "
-            "this is the only operation that mutates mail."
-        )
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            do_delete = st.button(
-                f"🗑 Move {len(uids)} to Trash",
-                width='stretch',
-                type="primary",
-                key=f"gmail_trash_{latest.stem}",
-                help="Opens a read-write IMAP session and moves the listed "
-                     "UIDs to [Gmail]/Trash. Reversible from Gmail UI.",
-            )
-        with col2:
-            if st.button(
-                "🙈 Hide for this scan",
-                width='stretch',
-                key=f"gmail_trash_hide_{latest.stem}",
-                help="Mark this scan as 'don't ask again' without deleting "
-                     "any mail. The next scan_gmail_ run will offer again.",
-            ):
-                env.setdefault("gmail_alerts", {})
-                env["gmail_alerts"]["deleted"] = True
-                env["gmail_alerts"]["delete_result"] = {
-                    "moved": 0, "failed": 0,
-                    "errors": ["User dismissed without deleting."],
-                }
-                env["gmail_alerts"]["deleted_at"] = datetime.now().isoformat(timespec="seconds")
-                latest.write_text(
-                    json.dumps(env, indent=2, ensure_ascii=False),
-                    encoding="utf-8",
+
+        # ── DIAGNOSTICS ROW ──────────────────────────────────────────────
+        if diag:
+            d1, d2, d3, d4 = st.columns(4)
+            d1.metric("Alerts seen",
+                       diag.get("linkedin_alerts_seen", "—"),
+                       help=f"LinkedIn alert emails matched within "
+                            f"{diag.get('days_window', '?')}-day window")
+            d2.metric("Digests parsed",
+                       diag.get("digests_with_rows", "—"),
+                       delta=(f"-{diag['digests_without_rows']} miss"
+                              if diag.get("digests_without_rows", 0) else None),
+                       delta_color="inverse",
+                       help="Alerts that yielded ≥1 job row. 'Miss' = "
+                            "digest matched but parser extracted nothing.")
+            d3.metric("Rows parsed",
+                       diag.get("rows_after_parse", n_rows),
+                       help="Total job rows extracted before tracker dedup")
+            d4.metric("New rows",
+                       n_rows,
+                       delta=(f"-{diag.get('rows_dropped_tracker_dedup', 0)} dup"
+                              if diag.get("rows_dropped_tracker_dedup", 0) else None),
+                       delta_color="inverse",
+                       help="After dropping URLs already in tracker")
+        else:
+            st.caption(f"📊 {n_rows} row(s) extracted")
+
+        # ── ZERO-ROW DIAGNOSTIC ──────────────────────────────────────────
+        if n_rows == 0:
+            if diag.get("linkedin_alerts_seen", 0) == 0:
+                st.info(
+                    "🔍 **No LinkedIn alert emails found** in the search window. "
+                    "Either no alerts arrived in this period, or your "
+                    "subscription isn't active. Verify by visiting Gmail "
+                    "and searching `from:jobalerts-noreply@linkedin.com`.",
+                    icon="📭",
                 )
+            elif diag.get("digests_without_rows", 0) > 0:
+                st.warning(
+                    f"⚠️ **Parser miss** — {diag['linkedin_alerts_seen']} "
+                    "LinkedIn alert(s) arrived but the parser extracted "
+                    "**0 job rows** from them. Likely a digest layout we "
+                    "don't handle yet. Check `automation/gmail_diagnose.py` "
+                    "or open one of the alerts in Gmail to see what changed.",
+                    icon="🐛",
+                )
+            else:
+                tracker_drops = diag.get("rows_dropped_tracker_dedup", 0)
+                if tracker_drops:
+                    st.info(
+                        f"All {tracker_drops} parsed row(s) were already in "
+                        "the tracker. Nothing new to score.",
+                        icon="✅",
+                    )
+            # Still allow trash even with 0 rows? No — UIDs only contain
+            # rows-producing alerts, so uids is necessarily empty here.
+            return True
+
+        # ── ROW PREVIEW ──────────────────────────────────────────────────
+        with st.expander(
+            f"🔍 Preview the {n_rows} parsed row(s)",
+            expanded=False,
+        ):
+            try:
+                preview_df = pd.DataFrame([
+                    {
+                        "company": r.get("company", "")[:40],
+                        "title": r.get("title", "")[:80],
+                        "location": r.get("location", "")[:30],
+                        "posted": r.get("posted_date", ""),
+                        "url": r.get("link", ""),
+                    } for r in rows[:200]
+                ])
+                st.dataframe(
+                    preview_df, hide_index=True, width='stretch',
+                    column_config={"url": st.column_config.LinkColumn("open")},
+                    height=min(420, 60 + 36 * len(preview_df)),
+                )
+                if n_rows > 200:
+                    st.caption(f"+{n_rows - 200} more row(s) in `{latest.name}`")
+            except Exception as e:
+                st.caption(f"(preview unavailable: {e})")
+
+        # ── ACTIONS ──────────────────────────────────────────────────────
+        # Three buttons: Score now (primary, only if not yet scored & key set),
+        # Move-to-Trash (secondary, only if uids and not already deleted),
+        # Hide (tertiary, dismiss without deleting).
+        st.markdown("**Next steps:**")
+        b1, b2, b3 = st.columns(3)
+
+        # — Score now —
+        with b1:
+            _key_ok = api_key.is_key_valid()
+            _can_score = _key_ok and not already_scored
+            score_label = (
+                f"🤖 Score these {n_rows}"
+                if not already_scored else "✅ Already scored"
+            )
+            if st.button(
+                score_label,
+                type="primary" if _can_score else "secondary",
+                width='stretch',
+                disabled=not _can_score,
+                key=f"gmail_score_{latest.stem}",
+                help=(
+                    "Run fit_scorer on this scan_gmail file. ~30s for a small "
+                    "Gmail batch. Costs ≈ $0.001/row on Sonnet rule-stage."
+                    if _can_score else
+                    "Already scored — see the *_scored.json companion file."
+                    if already_scored else
+                    "Needs Anthropic API key — set it in the sidebar."
+                ),
+            ):
+                rec = scan_runner.start_run(
+                    f"score_gmail_{latest.stem}",
+                    [
+                        sys.executable,
+                        str(ROOT / "automation" / "fit_scorer.py"),
+                        "--scan", latest.name,
+                    ],
+                )
+                st.session_state["_last_launch"] = {
+                    "run_id": rec.run_id,
+                    "label": f"Score Gmail ({n_rows} rows)",
+                }
+                st.toast(f"🤖 Scoring {n_rows} Gmail row(s)…", icon="🚀")
                 st.rerun()
 
-        if do_delete:
+        # — Trash —
+        with b2:
+            if alerts.get("deleted"):
+                dr = alerts.get("delete_result") or {}
+                st.button(
+                    f"✅ {dr.get('moved', 0)} moved to Trash",
+                    width='stretch', disabled=True,
+                    key=f"gmail_trash_done_{latest.stem}",
+                )
+                do_delete = False
+            elif uids:
+                do_delete = st.button(
+                    f"🗑 Move {len(uids)} alert(s) to Trash",
+                    width='stretch',
+                    key=f"gmail_trash_{latest.stem}",
+                    help="Opens a read-write IMAP session and moves the "
+                         "listed UIDs to [Gmail]/Trash. Reversible from "
+                         "Gmail UI; auto-purges after 30 days.",
+                )
+            else:
+                st.button("🗑 (no UIDs to delete)",
+                           width='stretch', disabled=True,
+                           key=f"gmail_trash_none_{latest.stem}")
+                do_delete = False
+
+        # — Hide —
+        with b3:
+            if not alerts.get("deleted") and uids:
+                if st.button(
+                    "🙈 Hide cleanup prompt",
+                    width='stretch',
+                    key=f"gmail_trash_hide_{latest.stem}",
+                    help="Mark this scan as 'don't ask again' without "
+                         "deleting any mail. The next Gmail fetch resets.",
+                ):
+                    env.setdefault("gmail_alerts", {})
+                    env["gmail_alerts"]["deleted"] = True
+                    env["gmail_alerts"]["delete_result"] = {
+                        "moved": 0, "failed": 0,
+                        "errors": ["User dismissed without deleting."],
+                    }
+                    env["gmail_alerts"]["deleted_at"] = (
+                        datetime.now().isoformat(timespec="seconds")
+                    )
+                    latest.write_text(
+                        json.dumps(env, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                    st.rerun()
+
+        # ── DELETE EXECUTION ─────────────────────────────────────────────
+        if 'do_delete' in locals() and do_delete:
             try:
-                # Lazy import — gmail_reader pulls in imaplib + bs4. Keep it
-                # off the page-load critical path.
                 sys.path.insert(0, str(ROOT / "automation"))
                 import gmail_reader as _gr  # type: ignore
                 with st.spinner(f"Moving {len(uids)} alert(s) to Trash…"):
@@ -870,7 +1016,9 @@ def render_gmail_trash_panel(container=None) -> bool:
                 return True
             env.setdefault("gmail_alerts", {})
             env["gmail_alerts"]["deleted"] = True
-            env["gmail_alerts"]["deleted_at"] = datetime.now().isoformat(timespec="seconds")
+            env["gmail_alerts"]["deleted_at"] = (
+                datetime.now().isoformat(timespec="seconds")
+            )
             env["gmail_alerts"]["delete_result"] = {
                 "moved": res.moved,
                 "failed": res.failed,
@@ -894,6 +1042,7 @@ def render_gmail_trash_panel(container=None) -> bool:
                     f"Errors: {res.errors[:3]}"
                 )
             st.rerun()
+
     return True
 
 
@@ -3574,45 +3723,11 @@ elif page == "🎯 Pipeline":
         # Pipeline page see the prompt without bouncing back to home.
         render_gmail_trash_panel()
 
-        # --- Gmail fetch summary (shown after a completed gmail_fetch run) ---
-        _gf_runs = [r for r in scan_runner.list_runs(limit=10)
-                    if r.get("label") == "gmail_fetch" and r.get("state") == "finished"]
-        if _gf_runs:
-            _gf_last = _gf_runs[0]
-            _gf_log = scan_runner.tail_log(_gf_last.get("log_path", ""), 8000)
-            if _gf_log:
-                import re as _re2
-                def _extract(pattern, text, default=None):
-                    m = _re2.search(pattern, text)
-                    return int(m.group(1)) if m else default
-
-                _gf_harvested  = _extract(r"harvested (\d+) raw", _gf_log)
-                _gf_kept       = _extract(r"tracker dedup: (\d+) kept", _gf_log)
-                _gf_overlap    = _extract(r"-(\d+) already in tracker", _gf_log)
-                _gf_emails     = _extract(r"(\d+) alert email\(s\) produced", _gf_log)
-                _gf_wrote      = _extract(r"wrote .+ with (\d+) row", _gf_log)
-
-                st.markdown("---")
-                st.markdown("#### 📬 Last Gmail fetch summary")
-                st.caption(f"Run `{_gf_last.get('run_id','')}` · {fmt_dt(_gf_last.get('finished_at'))}")
-                _gc1, _gc2, _gc3, _gc4 = st.columns(4)
-                _gc1.metric("Emails scanned",  _gf_emails  if _gf_emails  is not None else "—",
-                            help="Alert emails that contained at least one job link")
-                _gc2.metric("Jobs parsed",     _gf_harvested if _gf_harvested is not None else "—",
-                            help="Raw job rows extracted from those emails")
-                _gc3.metric("Already in tracker", _gf_overlap if _gf_overlap is not None else "—",
-                            help="Skipped — URL already exists in your tracker")
-                _gc4.metric("New jobs added",  _gf_kept    if _gf_kept    is not None else "—",
-                            help="Written to scan_gmail_*.json, ready to score")
-
-                if _gf_kept == 0 and _gf_harvested == 0:
-                    st.info("No job links found in recent alert emails. "
-                            "Check that LinkedIn/Indeed alert emails are arriving in your inbox "
-                            "and that the sender addresses match known alert senders.", icon="ℹ️")
-                elif _gf_kept == 0 and _gf_harvested and _gf_harvested > 0:
-                    st.success(f"All {_gf_harvested} jobs already in your tracker — nothing new to add.", icon="✅")
-                elif _gf_wrote:
-                    st.success(f"{_gf_wrote} new jobs written — hit **Score latest scan** to rank them.", icon="✅")
+        # (Note: a previous log-regex 'Gmail fetch summary' panel was
+        # superseded by render_gmail_trash_panel(), which reads structured
+        # `harvest_diagnostics` from the scan envelope rather than parsing
+        # log strings. Single panel covers both: diagnostics + score-now
+        # CTA + trash cleanup, all on one card.)
 
         # --- Recent runs: what actually happened ---
         st.markdown("---")

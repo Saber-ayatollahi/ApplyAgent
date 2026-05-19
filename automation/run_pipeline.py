@@ -268,11 +268,14 @@ def _run(args, status: dict, pipeline_id: str) -> int:
         # scan_YYYYMMDD_scored.json — never the retired scan_v4_scored.
         target_scored = scored_file
         if target_scored is None:
+            # Pick latest scan_*_scored.json (web or Gmail). Previously
+            # required all-digit stem which excluded scan_gmail_*_scored.
             candidates = sorted(
-                (p for p in OUT_DIR.glob("scan_*_scored.json")
-                 if p.stem.replace("scan_", "").replace("_scored", "").isdigit()),
+                OUT_DIR.glob("scan_*_scored.json"),
+                key=lambda p: p.stat().st_mtime,
                 reverse=True,
             )
+            candidates = [p for p in candidates if p.stem != "scan_v4_scored"]
             if not candidates:
                 print("[stage 3] FAILED — no scored scan available to promote.",
                       flush=True)
