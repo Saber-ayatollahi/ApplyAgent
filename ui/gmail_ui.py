@@ -95,6 +95,24 @@ def render_sidebar():
             "(https://myaccount.google.com/apppasswords), paste below. "
             "Read-only — we never send or delete mail."
         )
+
+        # Persistent save-result banner. The previous code did
+        # st.success/st.error inside the click handler followed by
+        # st.rerun() — which discards both before the user can read
+        # them. Now we stash the verdict in session_state and surface
+        # it on the *next* render so it stays visible.
+        _save_msg = st.session_state.pop("_gmail_save_msg", None)
+        if _save_msg:
+            kind = _save_msg.get("kind", "info")
+            txt = _save_msg.get("text", "")
+            renderer = {
+                "success": st.success,
+                "error":   st.error,
+                "warning": st.warning,
+                "info":    st.info,
+            }.get(kind, st.info)
+            renderer(txt)
+
         new_email = st.text_input(
             "Gmail address",
             value=email_addr or "",
@@ -119,25 +137,58 @@ def render_sidebar():
                 try:
                     gr.save_credentials(new_email.strip(), pw_clean)
                 except Exception as e:
-                    st.error(f"Save failed (filesystem error): {e}")
-                    st.caption(f"Target path: `{gr.CONFIG_PATH}`")
-                    st.stop()
+                    st.session_state["_gmail_save_msg"] = {
+                        "kind": "error",
+                        "text": (f"❌ Save failed (filesystem error): {e}\n\n"
+                                  f"Target path: `{gr.CONFIG_PATH}`"),
+                    }
+                    st.rerun()
                 # Confirm the file actually landed and loads back what we wrote
                 saved_email, saved_pw = gr.load_credentials()
                 if not saved_email or saved_pw != pw_clean:
-                    st.error(
-                        "Save appeared to succeed but reading back failed or "
-                        f"returned different data. Check `{gr.CONFIG_PATH}` "
-                        "manually — it should contain gmail_address and "
-                        "gmail_app_password keys."
-                    )
-                    st.stop()
+                    st.session_state["_gmail_save_msg"] = {
+                        "kind": "error",
+                        "text": ("❌ Save appeared to succeed but reading back "
+                                  "failed or returned different data. Check "
+                                  f"`{gr.CONFIG_PATH}` manually — it should "
+                                  "contain gmail_address and gmail_app_password "
+                                  "keys."),
+                    }
+                    st.rerun()
                 res = gr.validate(new_email.strip(), pw_clean)
                 st.session_state["_gmail_check"] = res
+                # Distinguish "credentials saved" from "IMAP probe succeeded".
+                # Past UI conflated them, so a yellow "Connection failed"
+                # banner read like a save failure when in fact the file
+                # WAS written and the credentials are persisted.
                 if res.ok:
-                    st.success(f"Saved to {gr.CONFIG_PATH.name}. {res.message}")
+                    st.session_state["_gmail_save_msg"] = {
+                        "kind": "success",
+                        "text": (f"✅ **Credentials saved** to "
+                                  f"`{gr.CONFIG_PATH.name}` and Gmail "
+                                  f"connection verified ({res.message})."),
+                    }
+                elif _is_login_rejected(res):
+                    st.session_state["_gmail_save_msg"] = {
+                        "kind": "error",
+                        "text": (f"💾 **Credentials saved** to "
+                                  f"`{gr.CONFIG_PATH.name}` — but Gmail "
+                                  f"REJECTED the login: {res.message}\n\n"
+                                  "→ Generate a fresh app password at "
+                                  "myaccount.google.com/apppasswords. "
+                                  "Make sure 2FA is enabled."),
+                    }
                 else:
-                    st.error(f"Saved to {gr.CONFIG_PATH.name}, but: {res.message}")
+                    st.session_state["_gmail_save_msg"] = {
+                        "kind": "warning",
+                        "text": (f"💾 **Credentials saved** to "
+                                  f"`{gr.CONFIG_PATH.name}` — but Gmail "
+                                  f"was unreachable for the verify probe: "
+                                  f"{res.message}\n\n"
+                                  "Likely a firewall/VPN/network issue. "
+                                  "Your password is persisted; click "
+                                  "🔄 Test once the network is OK to verify."),
+                    }
                 st.rerun()
         with c2:
             if st.button("🔄 Test", width='stretch',

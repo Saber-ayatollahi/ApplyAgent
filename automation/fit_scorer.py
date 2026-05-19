@@ -1213,7 +1213,10 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
             try:
                 resp = client.messages.create(
                     model=model,
-                    max_tokens=400,
+                    # 800 — 400 truncated mid-JSON when the model emitted
+                    # ```json fences plus full schema (3 reasons + gaps +
+                    # summary), causing the closing-brace regex to miss.
+                    max_tokens=800,
                     system=[{"type": "text", "text": SYSTEM_PROMPT,
                              "cache_control": {"type": "ephemeral"}}],
                     messages=[{"role": "user", "content": user}],
@@ -1231,7 +1234,14 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                     pass
 
                 text = "".join(b.text for b in resp.content if getattr(b, "type", None) == "text")
-                m = re.search(r"\{.*\}", text, flags=re.S)
+                # Strip ```json / ``` fences if the model wrapped its output —
+                # SYSTEM_PROMPT forbids this but both Haiku and Sonnet do it
+                # intermittently, so we tolerate it instead of parse-missing.
+                stripped = text.strip()
+                if stripped.startswith("```"):
+                    stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
+                    stripped = re.sub(r"\s*```\s*$", "", stripped)
+                m = re.search(r"\{.*\}", stripped, flags=re.S)
                 if not m:
                     # Parse miss — model returned text but no JSON. Log it
                     # (so a recurring pattern is visible) and break out of
