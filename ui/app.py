@@ -1092,10 +1092,132 @@ def list_pipelines(limit: int = 20) -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Base ("working set") scan — a user-pinned scan that survives accidental
+# rescrapes. Without this, every scrape overwrites scan_<date>.json and
+# latest_scan() blindly follows mtime, so one stray "rescrape" click destroys
+# the week's curated job pool. The pin is a tiny pointer file.
+# ---------------------------------------------------------------------------
+BASE_SCAN_POINTER = OUT_DIR / ".base_scan"
+
+
+def get_base_scan() -> Path | None:
+    """Return the user-pinned base scan, or None if not pinned / missing."""
+    try:
+        if BASE_SCAN_POINTER.exists():
+            name = BASE_SCAN_POINTER.read_text(encoding="utf-8").strip()
+            if name:
+                p = OUT_DIR / name
+                if p.exists():
+                    return p
+    except Exception:
+        pass
+    return None
+
+
+def set_base_scan(path) -> None:
+    try:
+        BASE_SCAN_POINTER.write_text(Path(path).name, encoding="utf-8")
+    except Exception:
+        pass
+
+
+def clear_base_scan() -> None:
+    try:
+        BASE_SCAN_POINTER.unlink()
+    except FileNotFoundError:
+        pass
+    except Exception:
+        pass
+
+
+def _scan_candidates() -> list[Path]:
+    """All real scan envelopes, newest first. Excludes scored files and the
+    checkpoint (which matches scan_*.json but is NOT a scan envelope — picking
+    it made the funnel read 0 results mid-scrape)."""
+    files = sorted(OUT_DIR.glob("scan_*.json"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    return [f for f in files
+            if "_scored" not in f.name
+            and f.name != "scan_checkpoint.json"]
+
+
 def latest_scan() -> Path | None:
-    files = sorted(OUT_DIR.glob("scan_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    files = [f for f in files if "_scored" not in f.name]
-    return files[0] if files else None
+    """Pinned base wins; otherwise newest scan envelope by mtime."""
+    base = get_base_scan()
+    if base:
+        return base
+    cands = _scan_candidates()
+    return cands[0] if cands else None
+
+
+def _scan_url(row: dict) -> str:
+    return (row.get("link") or row.get("url") or row.get("job_url") or "").strip()
+
+
+def merge_into_base() -> tuple[Path | None, dict]:
+    """Merge the current base (or newest web scrape) with every newer
+    scan_gmail_*.json and the newest non-gmail scrape, dedup by URL, write
+    scan_base_<date>.json, and pin it. Returns (path, stats)."""
+    stats = {"sources": [], "input": 0, "unique": 0, "dropped": 0}
+    base = get_base_scan()
+    cands = _scan_candidates()
+    gmail_files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
+                         key=lambda p: p.stat().st_mtime, reverse=True)
+    non_gmail = [c for c in cands if "scan_gmail_" not in c.name
+                 and "scan_base_" not in c.name]
+
+    pool: list[Path] = []
+    if base:
+        pool.append(base)
+    if non_gmail:
+        pool.append(non_gmail[0])           # newest real web scrape
+    pool.extend(gmail_files)                 # all gmail harvests
+    # De-dup the file list, preserve order
+    seen_files, ordered = set(), []
+    for p in pool:
+        if p and p.exists() and p.name not in seen_files:
+            seen_files.add(p.name)
+            ordered.append(p)
+
+    if not ordered:
+        return None, stats
+
+    seen_urls: set[str] = set()
+    combined: list[dict] = []
+    envelope_template = None
+    for p in ordered:
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if envelope_template is None:
+            envelope_template = d
+        rows = d.get("results", []) or []
+        stats["input"] += len(rows)
+        stats["sources"].append(f"{p.name} ({len(rows)})")
+        for r in rows:
+            u = _scan_url(r)
+            if u and u in seen_urls:
+                stats["dropped"] += 1
+                continue
+            if u:
+                seen_urls.add(u)
+            combined.append(r)
+
+    stats["unique"] = len(combined)
+    merged = dict(envelope_template or {})
+    merged["results"] = combined
+    merged["dedup_stats"] = {
+        "input": stats["input"], "output": stats["unique"],
+        "dropped_url": stats["dropped"], "dropped_near": 0,
+    }
+    merged["sources_merged"] = stats["sources"]
+    dest = OUT_DIR / f"scan_base_{datetime.now().strftime('%Y%m%d')}.json"
+    dest.write_text(json.dumps(merged, indent=2, ensure_ascii=False),
+                     encoding="utf-8")
+    set_base_scan(dest)
+    return dest, stats
 
 
 def latest_scored() -> Path | None:
@@ -3460,6 +3582,31 @@ elif page == "🎯 Pipeline":
                         st.error(f"Could not delete: {_e}")
                     st.rerun()
 
+            # Hard stop — abort the run now (distinct from graceful pause).
+            # Safe to use even mid-scrape: a pinned base scan is never
+            # overwritten by latest_scan(), so stopping won't lose your pool.
+            if _scraper_active:
+                try:
+                    _active_scrape = next(
+                        (r for r in scan_runner.active_runs()
+                         if any(t in (r.get("label") or "")
+                                for t in ("scrape", "jd_scraper", "pipeline"))),
+                        None)
+                except Exception:
+                    _active_scrape = None
+                if _active_scrape:
+                    st.markdown("")
+                    if st.button("⏹ Stop scrape now (abort)",
+                                 width='stretch', type="primary",
+                                 key="scrape_hard_stop_btn",
+                                 help="Kills the run immediately. Use Pause "
+                                      "instead if you want a clean checkpoint. "
+                                      "Your pinned base scan is NOT affected."):
+                        scan_runner.stop_run(_active_scrape["run_id"])
+                        st.warning("⏹ Stop signal sent — the scrape will exit "
+                                   "now. Your pinned base is safe.")
+                        st.rerun()
+
             if _pause_requested and _scraper_active:
                 st.caption("⏳ Pause requested — waiting for the current company to finish.")
             elif _ckpt:
@@ -3481,6 +3628,72 @@ elif page == "🎯 Pipeline":
 
     # Build stage summaries from latest pipeline status + filesystem
     stages_info = (pipe or {}).get("stages", {})
+
+    # ---------- Working set (pinned base scan) ----------
+    # Lets the user lock a scan as "this week's job pool" so an accidental
+    # rescrape can't destroy it, and fold Gmail alerts into it.
+    _base = get_base_scan()
+    _newest = _scan_candidates()
+    _newest_web = next((c for c in _newest
+                        if "scan_gmail_" not in c.name and "scan_base_" not in c.name),
+                       None)
+    _n_gmail = len(list(OUT_DIR.glob("scan_gmail_*.json")))
+
+    def _scan_count(p):
+        try:
+            return len(json.loads(p.read_text(encoding="utf-8")).get("results", []))
+        except Exception:
+            return "?"
+
+    with st.container(border=True):
+        st.markdown("#### 📌 Working set — the job pool the scorer uses")
+        if _base:
+            st.success(
+                f"**Pinned base:** `{_base.name}` · **{_scan_count(_base)} jobs** "
+                f"— protected from rescrape overwrites.", icon="📌")
+        else:
+            _auto = _newest_web or (_newest[0] if _newest else None)
+            st.info(
+                f"**No base pinned.** Scorer auto-uses the newest scan: "
+                f"`{_auto.name if _auto else '(none)'}`"
+                + (f" ({_scan_count(_auto)} jobs)" if _auto else "")
+                + " — a rescrape will replace it.", icon="⚠️")
+
+        _wc1, _wc2, _wc3 = st.columns(3)
+        with _wc1:
+            _pin_target = _base or _newest_web or (_newest[0] if _newest else None)
+            if st.button("📌 Pin newest scrape as base",
+                         disabled=not _newest_web, width='stretch',
+                         key="pin_base_btn",
+                         help="Lock the newest web scrape as the working set. "
+                              "Future scrapes won't overwrite it."):
+                set_base_scan(_newest_web)
+                st.success(f"Pinned `{_newest_web.name}` as base.")
+                st.rerun()
+        with _wc2:
+            if st.button(f"➕ Merge Gmail + scrapes into base ({_n_gmail} gmail)",
+                         width='stretch', key="merge_base_btn",
+                         type="primary",
+                         help="Combine the base + every Gmail harvest + newest "
+                              "scrape, dedup by URL, and pin the result."):
+                _dest, _st = merge_into_base()
+                if _dest:
+                    st.success(
+                        f"Merged → `{_dest.name}` · **{_st['unique']} unique** "
+                        f"({_st['input']} in, -{_st['dropped']} dupes). "
+                        f"Pinned as base.")
+                    st.caption("Sources: " + " · ".join(_st["sources"]))
+                    st.rerun()
+                else:
+                    st.error("Nothing to merge — no scan files found.")
+        with _wc3:
+            if st.button("🔓 Unpin (use newest)", disabled=not _base,
+                         width='stretch', key="unpin_base_btn",
+                         help="Stop protecting the base. Scorer reverts to "
+                              "the newest scan by date."):
+                clear_base_scan()
+                st.warning("Base unpinned — scorer will use the newest scan.")
+                st.rerun()
 
     # ---------- Funnel data collection ----------
     scan_f = latest_scan()
