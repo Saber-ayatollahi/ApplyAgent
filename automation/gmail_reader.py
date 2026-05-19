@@ -267,10 +267,13 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100,
         uids = uids[-limit:]  # most recent N
         for uid in reversed(uids):
             try:
-                typ, msg_data = m.uid("fetch", uid, "(BODY.PEEK[HEADER] BODY.PEEK[TEXT])")
+                # RFC822 fetches the complete raw message in one shot.
+                # BODY.PEEK[HEADER]+BODY.PEEK[TEXT] reassembly was dropping
+                # headers in some Gmail IMAP responses, leaving sender_email=""
+                # and every email classified as kind="other" (skipped).
+                typ, msg_data = m.uid("fetch", uid, "(RFC822)")
                 if typ != "OK" or not msg_data:
                     continue
-                # Parse header + body separately
                 raw = b""
                 for part in msg_data:
                     if isinstance(part, tuple) and len(part) >= 2:
