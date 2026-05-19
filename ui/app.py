@@ -1441,28 +1441,54 @@ _crm_badge_count = sum(
     and not c.get("last_touchpoint")
 )
 
+# Legacy separators kept (referenced elsewhere) but the consolidated nav
+# below doesn't use them — its 5 top-level entries each fold related
+# pages under a sub-radio. The original 12 page bodies stay untouched;
+# this is purely a routing change.
 _SEP_WORK    = "── Work ──"
 _SEP_TRACKER = "── Tracker ──"
 _SEP_ADMIN   = "── Admin ──"
 _SEPARATORS = {_SEP_WORK, _SEP_TRACKER, _SEP_ADMIN}
 
-_NAV_OPTIONS = [
-    _SEP_WORK,
-    "🏠 Dashboard",
-    "🎯 Pipeline",
-    "📥 Outcome Inbox",
-    "📊 Analytics",
-    _SEP_TRACKER,
-    "🔔 Follow-ups",
-    "📬 Review Queue",
-    "📋 Jobs Kanban",
-    "🤝 Recruiter CRM",
-    _SEP_ADMIN,
-    "📅 Weekly Plan",
-    "📝 Content & Memory",
-    "📜 Scan History",
-    "⚙️ Admin",
-]
+# Top-level groups + their children. Each child label maps to the EXACT
+# page-name string the if/elif router downstream expects — that way the
+# 12 page bodies don't need to change, and external session_state writes
+# (e.g. AppTest harness) using the old name still resolve correctly.
+_NAV_GROUPS = {
+    "🏠 Today": [
+        ("Dashboard",   "🏠 Dashboard"),
+        ("Replies",     "📥 Outcome Inbox"),
+        ("Review",      "📬 Review Queue"),
+        ("Follow-ups",  "🔔 Follow-ups"),
+    ],
+    "🎯 Pipeline": [
+        ("",            "🎯 Pipeline"),     # single-page group, no sub-radio
+    ],
+    "📋 Roles": [
+        ("Tracker",     "📋 Jobs Kanban"),
+        ("Scans",       "📜 Scan History"),
+    ],
+    "🤝 Network": [
+        ("",            "🤝 Recruiter CRM"),
+    ],
+    "⚙️ System": [
+        ("Admin",       "⚙️ Admin"),
+        ("Analytics",   "📊 Analytics"),
+        ("Weekly Plan", "📅 Weekly Plan"),
+        ("Content",     "📝 Content & Memory"),
+    ],
+}
+_NAV_OPTIONS = list(_NAV_GROUPS.keys())  # legacy alias — some sidebar
+                                          # widgets read this.
+
+# Map every old page-name back to its new (group, child) so a directly-set
+# session_state still routes correctly. AppTest does this; users who had
+# a deep nav state from the previous nav layout do too.
+_LEGACY_PAGE_TO_GROUP = {
+    child_page: (group, child_label)
+    for group, items in _NAV_GROUPS.items()
+    for (child_label, child_page) in items
+}
 
 # ── Campaign quick stats in sidebar ──────────────────────────────────────
 try:
@@ -1501,16 +1527,44 @@ st.sidebar.markdown(
 )
 st.sidebar.markdown("---")
 
+# Backwards-compat: if the user (or the AppTest harness) wrote one of
+# the 12 OLD page names directly into _applyagent_nav, translate that
+# into the new (group, child) so the radio defaults match. Without
+# this, an old name silently falls through to the first group and the
+# user lands somewhere unexpected.
+_nav_state = st.session_state.get("_applyagent_nav")
+if _nav_state in _LEGACY_PAGE_TO_GROUP:
+    _legacy_group, _legacy_child = _LEGACY_PAGE_TO_GROUP[_nav_state]
+    st.session_state["_applyagent_nav"] = _legacy_group
+    if _legacy_child:
+        st.session_state[f"_nav_sub_{_legacy_group}"] = _legacy_child
+
 _nav_pick = st.sidebar.radio(
     "Navigate",
     _NAV_OPTIONS,
-    index=1,                                    # default: Dashboard
+    index=0,                                    # default: 🏠 Today
     label_visibility="collapsed",
     key="_applyagent_nav",
 )
-# If the user somehow picks a separator, fall back to Dashboard so the
-# if/elif page-router below always matches something.
-page = _nav_pick if _nav_pick not in _SEPARATORS else "🏠 Dashboard"
+
+# Sub-radio for groups with multiple children. Single-child groups skip
+# the sub-radio and resolve directly. The sub key is per-group so each
+# group preserves its own "last visited" subpage when you flip groups.
+_children = _NAV_GROUPS.get(_nav_pick, [])
+if len(_children) <= 1:
+    page = _children[0][1] if _children else "🏠 Dashboard"
+else:
+    _sub_labels = [c[0] for c in _children]
+    _sub_key = f"_nav_sub_{_nav_pick}"
+    _sub_pick = st.sidebar.radio(
+        f"{_nav_pick} sections",
+        _sub_labels,
+        index=0,
+        label_visibility="collapsed",
+        key=_sub_key,
+    )
+    page = next((c[1] for c in _children if c[0] == _sub_pick),
+                _children[0][1])
 
 # ── Sidebar urgency strip ──────────────────────────────────────────────
 # Surfaces the most time-sensitive action counts so they're visible from
