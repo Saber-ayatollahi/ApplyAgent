@@ -1,0 +1,40 @@
+{
+  "pipeline_id": "20260518_210345",
+  "started_at": "2026-05-18T21:03:45",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": false,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false
+  },
+  "state": "stale",
+  "stages": {
+    "scrape": {
+      "state": "skipped",
+      "scan_file": "scan_base_20260518.json"
+    },
+    "score": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\fit_scorer.py",
+        "--scan",
+        "scan_base_20260518.json",
+        "--concurrency",
+        "6"
+      ],
+      "started_at": "2026-05-18T21:03:45",
+      "state": "running"
+    }
+  },
+  "finished_at": "2026-05-18T21:13:48",
+  "stale_reason": "No active pipeline subprocess and status file idle for 10 minutes."
+}

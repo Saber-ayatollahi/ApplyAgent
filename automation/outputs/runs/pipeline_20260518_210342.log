@@ -1,0 +1,166 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-concurrency 6
+# started: 2026-05-18T21:03:42.578118
+
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260518_210345 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED — using existing scan_base_20260518.json
+[score] [fit_scorer] Loaded 1363 roles from scan_base_20260518.json
+[score] [fit_scorer] Stage 1: 660 pass / 703 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK — Valid & credits OK — 5 models, billing works
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$0.000 / cap=$5.00
+[score] [safe_json] WARN: portalocker not installed — JSON writes are NOT cross-process safe. pip install portalocker
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [fit_scorer] scored 10/660 (0.4 min)
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 20/660 (1.1 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 30/660 (1.9 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [fit_scorer] scored 40/660 (2.8 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 50/660 (3.5 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [fit_scorer] scored 60/660 (4.2 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 70/660 (5.2 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 80/660 (6.0 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 90/660 (6.6 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-sonnet-4-6 parse miss — falling through to fallback model
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [fit_scorer] scored 100/660 (7.3 min)
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 2/3 transient error, retrying in 3.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448
+[score]   [score_llm] claude-haiku-4-5-20251001 attempt 1/3 transient error, retrying in 1.0s: Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your org
+[score]   [score_llm] claude-haiku-4-5-20251001 failed (attempt 3): Error code: 429 - {'type': 'error', 'error': {'type': 'rate_limit_error', 'message': "This request would exceed your organization's rate limit of 50,000 input tokens per minute (org: 9fe7708f-dc55-448

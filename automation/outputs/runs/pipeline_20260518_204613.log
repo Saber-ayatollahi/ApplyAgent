@@ -1,0 +1,9 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --scrape-mode core --skip-score --skip-promote
+# started: 2026-05-18T20:46:13.727308
+
+=== ApplyAgent pipeline 20260518_204613 ===
+Mode: scrape=core skip_scrape=False skip_score=True skip_promote=True
+[scrape] [scan 1/66] Scotiabank (sector: Canadian Big 6 Banks)
+[scrape]   -> 153 new candidate(s) [sf:53, linkedin:100]
+[scrape] [scan 2/66] RBC (sector: Canadian Big 6 Banks)

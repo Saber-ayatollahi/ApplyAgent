@@ -1093,131 +1093,18 @@ def list_pipelines(limit: int = 20) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Base ("working set") scan — a user-pinned scan that survives accidental
-# rescrapes. Without this, every scrape overwrites scan_<date>.json and
-# latest_scan() blindly follows mtime, so one stray "rescrape" click destroys
-# the week's curated job pool. The pin is a tiny pointer file.
+# Source-of-truth job pool. Logic lives in automation/worklist.py so the UI
+# and the nightly CLI share ONE implementation. Three concepts:
+#   scrape source (pinned, stable) | gmail pool (rolling 30d) | working set
+#   (derived = dedup(scrape u gmail), what the scorer consumes).
 # ---------------------------------------------------------------------------
-BASE_SCAN_POINTER = OUT_DIR / ".base_scan"
-
-
-def get_base_scan() -> Path | None:
-    """Return the user-pinned base scan, or None if not pinned / missing."""
-    try:
-        if BASE_SCAN_POINTER.exists():
-            name = BASE_SCAN_POINTER.read_text(encoding="utf-8").strip()
-            if name:
-                p = OUT_DIR / name
-                if p.exists():
-                    return p
-    except Exception:
-        pass
-    return None
-
-
-def set_base_scan(path) -> None:
-    try:
-        BASE_SCAN_POINTER.write_text(Path(path).name, encoding="utf-8")
-    except Exception:
-        pass
-
-
-def clear_base_scan() -> None:
-    try:
-        BASE_SCAN_POINTER.unlink()
-    except FileNotFoundError:
-        pass
-    except Exception:
-        pass
-
-
-def _scan_candidates() -> list[Path]:
-    """All real scan envelopes, newest first. Excludes scored files and the
-    checkpoint (which matches scan_*.json but is NOT a scan envelope — picking
-    it made the funnel read 0 results mid-scrape)."""
-    files = sorted(OUT_DIR.glob("scan_*.json"),
-                   key=lambda p: p.stat().st_mtime, reverse=True)
-    return [f for f in files
-            if "_scored" not in f.name
-            and f.name != "scan_checkpoint.json"]
+sys.path.insert(0, str(ROOT / "automation"))
+import worklist  # noqa: E402
 
 
 def latest_scan() -> Path | None:
-    """Pinned base wins; otherwise newest scan envelope by mtime."""
-    base = get_base_scan()
-    if base:
-        return base
-    cands = _scan_candidates()
-    return cands[0] if cands else None
-
-
-def _scan_url(row: dict) -> str:
-    return (row.get("link") or row.get("url") or row.get("job_url") or "").strip()
-
-
-def merge_into_base() -> tuple[Path | None, dict]:
-    """Merge the current base (or newest web scrape) with every newer
-    scan_gmail_*.json and the newest non-gmail scrape, dedup by URL, write
-    scan_base_<date>.json, and pin it. Returns (path, stats)."""
-    stats = {"sources": [], "input": 0, "unique": 0, "dropped": 0}
-    base = get_base_scan()
-    cands = _scan_candidates()
-    gmail_files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
-                         key=lambda p: p.stat().st_mtime, reverse=True)
-    non_gmail = [c for c in cands if "scan_gmail_" not in c.name
-                 and "scan_base_" not in c.name]
-
-    pool: list[Path] = []
-    if base:
-        pool.append(base)
-    if non_gmail:
-        pool.append(non_gmail[0])           # newest real web scrape
-    pool.extend(gmail_files)                 # all gmail harvests
-    # De-dup the file list, preserve order
-    seen_files, ordered = set(), []
-    for p in pool:
-        if p and p.exists() and p.name not in seen_files:
-            seen_files.add(p.name)
-            ordered.append(p)
-
-    if not ordered:
-        return None, stats
-
-    seen_urls: set[str] = set()
-    combined: list[dict] = []
-    envelope_template = None
-    for p in ordered:
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if envelope_template is None:
-            envelope_template = d
-        rows = d.get("results", []) or []
-        stats["input"] += len(rows)
-        stats["sources"].append(f"{p.name} ({len(rows)})")
-        for r in rows:
-            u = _scan_url(r)
-            if u and u in seen_urls:
-                stats["dropped"] += 1
-                continue
-            if u:
-                seen_urls.add(u)
-            combined.append(r)
-
-    stats["unique"] = len(combined)
-    merged = dict(envelope_template or {})
-    merged["results"] = combined
-    merged["dedup_stats"] = {
-        "input": stats["input"], "output": stats["unique"],
-        "dropped_url": stats["dropped"], "dropped_near": 0,
-    }
-    merged["sources_merged"] = stats["sources"]
-    dest = OUT_DIR / f"scan_base_{datetime.now().strftime('%Y%m%d')}.json"
-    dest.write_text(json.dumps(merged, indent=2, ensure_ascii=False),
-                     encoding="utf-8")
-    set_base_scan(dest)
-    return dest, stats
+    """Scorer/funnel input: working set -> scrape source -> newest scan."""
+    return worklist.effective_scan()
 
 
 def latest_scored() -> Path | None:
@@ -3629,70 +3516,109 @@ elif page == "🎯 Pipeline":
     # Build stage summaries from latest pipeline status + filesystem
     stages_info = (pipe or {}).get("stages", {})
 
-    # ---------- Working set (pinned base scan) ----------
-    # Lets the user lock a scan as "this week's job pool" so an accidental
-    # rescrape can't destroy it, and fold Gmail alerts into it.
-    _base = get_base_scan()
-    _newest = _scan_candidates()
-    _newest_web = next((c for c in _newest
-                        if "scan_gmail_" not in c.name and "scan_base_" not in c.name),
-                       None)
-    _n_gmail = len(list(OUT_DIR.glob("scan_gmail_*.json")))
+    # ---------- Sources & Working set ----------
+    # Three separated concepts (see automation/worklist.py):
+    #   scrape source (pinned, stable) · gmail pool (rolling 30d) ·
+    #   working set (derived = dedup(scrape ∪ gmail), what the scorer reads).
+    _src = worklist.get_scrape_source()
+    _cands = worklist.scan_candidates()
+    _newest_web = _cands[0] if _cands else None
+    _pool_env = worklist._read_envelope(worklist.GMAIL_POOL)
+    _pool_n = len(_pool_env.get("results", []) or [])
+    _ws_env = worklist._read_envelope(worklist.WORKING_SET)
+    _ws_stats = _ws_env.get("working_set_stats", {})
+    _n_raw_gmail = len(list(OUT_DIR.glob("scan_gmail_*.json")))
 
-    def _scan_count(p):
+    def _cnt(p):
         try:
-            return len(json.loads(p.read_text(encoding="utf-8")).get("results", []))
+            return len(json.loads(Path(p).read_text(encoding="utf-8")).get("results", []))
         except Exception:
             return "?"
 
     with st.container(border=True):
-        st.markdown("#### 📌 Working set — the job pool the scorer uses")
-        if _base:
-            st.success(
-                f"**Pinned base:** `{_base.name}` · **{_scan_count(_base)} jobs** "
-                f"— protected from rescrape overwrites.", icon="📌")
-        else:
-            _auto = _newest_web or (_newest[0] if _newest else None)
-            st.info(
-                f"**No base pinned.** Scorer auto-uses the newest scan: "
-                f"`{_auto.name if _auto else '(none)'}`"
-                + (f" ({_scan_count(_auto)} jobs)" if _auto else "")
-                + " — a rescrape will replace it.", icon="⚠️")
+        st.markdown("#### 📊 Sources & working set")
 
-        _wc1, _wc2, _wc3 = st.columns(3)
+        # Row 1: scrape source
+        if _src:
+            _delta = worklist.scrape_delta_vs_source()
+            _msg = (f"🛰️ **Scrape source:** `{_src.name}` · **{_cnt(_src)} jobs** "
+                    f"— pinned & protected.")
+            if _delta.get("new", 0) > 0:
+                _msg += (f"  ·  ℹ️ a fresh scrape (`{_delta['newest']}`) would add "
+                         f"**{_delta['new']}** new — re-pin to adopt it.")
+            st.success(_msg, icon="🛰️")
+        else:
+            st.warning(
+                f"🛰️ **No scrape source pinned.** Newest scrape: "
+                f"`{_newest_web.name if _newest_web else '(none)'}`"
+                + (f" ({_cnt(_newest_web)} jobs)" if _newest_web else "")
+                + " — pin one so rescrapes can't replace your pool.", icon="⚠️")
+
+        # Row 2: gmail pool
+        st.info(
+            f"📬 **Gmail pool:** **{_pool_n} jobs** (rolling "
+            f"{worklist.POOL_WINDOW_DAYS}-day window) · "
+            f"{_n_raw_gmail} raw harvest file(s) on disk.", icon="📬")
+
+        # Row 3: working set (derived)
+        if _ws_env:
+            _wsc = _ws_stats
+            _new_bits = ""
+            if _wsc.get("has_baseline"):
+                _new_bits = (f" · 🆕 **{_wsc.get('new_total',0)} new** "
+                             f"({_wsc.get('new_scrape',0)} scrape, "
+                             f"{_wsc.get('new_gmail',0)} gmail)")
+            st.markdown(
+                f"🎯 **Working set: {_wsc.get('unique','?')} unique** — "
+                f"scorer reads THIS{_new_bits}  \n"
+                f"<span style='opacity:0.7;font-size:0.85em'>mix: "
+                f"{_wsc.get('scrape',0)} scrape-only · {_wsc.get('gmail',0)} "
+                f"gmail-only · {_wsc.get('both',0)} in both</span>",
+                unsafe_allow_html=True)
+        else:
+            st.caption("🎯 Working set not built yet — hit **Rebuild** below.")
+
+        _wc1, _wc2, _wc3, _wc4 = st.columns(4)
         with _wc1:
-            _pin_target = _base or _newest_web or (_newest[0] if _newest else None)
-            if st.button("📌 Pin newest scrape as base",
-                         disabled=not _newest_web, width='stretch',
-                         key="pin_base_btn",
-                         help="Lock the newest web scrape as the working set. "
-                              "Future scrapes won't overwrite it."):
-                set_base_scan(_newest_web)
-                st.success(f"Pinned `{_newest_web.name}` as base.")
+            if st.button("📌 Pin newest scrape", disabled=not _newest_web,
+                         width='stretch', key="pin_src_btn",
+                         help="Lock the newest web scrape as the stable source "
+                              "for this search cycle. Rescrapes won't touch it."):
+                worklist.set_scrape_source(_newest_web)
+                worklist.rebuild_working_set()
+                st.success(f"Pinned `{_newest_web.name}` & rebuilt working set.")
                 st.rerun()
         with _wc2:
-            if st.button(f"➕ Merge Gmail + scrapes into base ({_n_gmail} gmail)",
-                         width='stretch', key="merge_base_btn",
-                         type="primary",
-                         help="Combine the base + every Gmail harvest + newest "
-                              "scrape, dedup by URL, and pin the result."):
-                _dest, _st = merge_into_base()
-                if _dest:
-                    st.success(
-                        f"Merged → `{_dest.name}` · **{_st['unique']} unique** "
-                        f"({_st['input']} in, -{_st['dropped']} dupes). "
-                        f"Pinned as base.")
-                    st.caption("Sources: " + " · ".join(_st["sources"]))
-                    st.rerun()
-                else:
-                    st.error("Nothing to merge — no scan files found.")
+            if st.button(f"📬 Refresh Gmail pool", width='stretch',
+                         key="refresh_pool_btn",
+                         help="Fold every Gmail harvest into the pool, dedup, "
+                              "and prune entries older than 30 days."):
+                _ps = worklist.update_gmail_pool()
+                worklist.rebuild_working_set()
+                st.success(
+                    f"Pool: +{_ps['added']} new, -{_ps['pruned']} stale, "
+                    f"**{_ps['pool_total']} total**. Working set rebuilt.")
+                st.rerun()
         with _wc3:
-            if st.button("🔓 Unpin (use newest)", disabled=not _base,
-                         width='stretch', key="unpin_base_btn",
-                         help="Stop protecting the base. Scorer reverts to "
-                              "the newest scan by date."):
-                clear_base_scan()
-                st.warning("Base unpinned — scorer will use the newest scan.")
+            if st.button("🎯 Rebuild working set", width='stretch',
+                         type="primary", key="rebuild_ws_btn",
+                         help="Regenerate dedup(scrape ∪ gmail pool). "
+                              "Non-destructive — sources stay untouched."):
+                _rs = worklist.rebuild_working_set()
+                st.success(
+                    f"Working set: **{_rs['unique']} unique** "
+                    f"({_rs['scrape']} scrape · {_rs['gmail']} gmail · "
+                    f"{_rs['both']} both)"
+                    + (f" · 🆕 {_rs['new_total']} new" if _rs['has_baseline']
+                       else " · baseline set"))
+                st.rerun()
+        with _wc4:
+            if st.button("🔓 Unpin source", disabled=not _src,
+                         width='stretch', key="unpin_src_btn",
+                         help="Stop protecting the scrape source. Falls back "
+                              "to newest scan."):
+                worklist.clear_scrape_source()
+                st.warning("Scrape source unpinned.")
                 st.rerun()
 
     # ---------- Funnel data collection ----------

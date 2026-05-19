@@ -1,3465 +1,2493 @@
 {
   "scan_date": "2026-05-18",
-  "scan_timestamp": "2026-05-19T00:37:33Z",
-  "source": "gmail_linkedin_alert",
-  "dedup_stats": {
-    "input": 337,
-    "output": 337,
-    "dropped_url": 0,
-    "dropped_near": 0
-  },
-  "diagnostics": {
-    "zero_result_companies": [],
-    "per_company": [],
-    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest, no web scraping."
-  },
-  "gmail_alerts": {
-    "contributing_uids": [
-      "69161",
-      "69165",
-      "69177",
-      "69178",
-      "69182",
-      "69195",
-      "69206",
-      "69212",
-      "69216",
-      "69228",
-      "69246",
-      "69270",
-      "69292",
-      "69299",
-      "69301",
-      "69307",
-      "69326",
-      "69327",
-      "69329",
-      "69331",
-      "69332",
-      "69346",
-      "69350",
-      "69357",
-      "69360",
-      "69393",
-      "69400",
-      "69405",
-      "69421",
-      "69424",
-      "69428",
-      "69433",
-      "69436",
-      "69438",
-      "69459",
-      "69478",
-      "69486",
-      "69494",
-      "69514",
-      "69519",
-      "69520",
-      "69523",
-      "69533",
-      "69537",
-      "69541",
-      "69542",
-      "69546",
-      "69548",
-      "69552",
-      "69556",
-      "69557",
-      "69563",
-      "69566",
-      "69584",
-      "69586",
-      "69589"
-    ],
-    "deleted": true,
-    "deleted_at": "2026-05-18T20:40:42",
-    "delete_result": {
-      "moved": 56,
-      "failed": 0,
-      "errors": []
-    }
-  },
+  "source": "gmail_pool",
+  "window_days": 30,
   "results": [
     {
       "title": "Treasury Manager KOHO · Canada (Remote) 8 school alumni",
       "company": "Treasury Manager",
       "link": "https://www.linkedin.com/jobs/view/4406800213",
       "location": "KOHO · Canada (Remote)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON Actively recruiting",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414282267",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Senior Manager, International Banking Treasury Scotiabank · Toronto, ON 23 connections",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4404112222",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Capital & Risk Weighted Assets Project Delivery, Program Execution and Transformation, Vice President Citi · Mississauga, ON (On-site) 10 connections",
       "company": "Citi · Mississauga, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4405390506",
       "location": "10 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Director, Generative and Agentic AI Model Validation BMO · Toronto, ON Actively recruiting",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414273407",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Director & Head, Insights & Analytics, IT Risk Scotiabank · Toronto, ON Actively recruiting",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4368084295",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69589"
-    },
-    {
-      "title": "Senior Manager, International Banking Treasury Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4404112222",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69586"
-    },
-    {
-      "title": "Treasury Manager KOHO · Canada (Remote) 8 school alumni",
-      "company": "Treasury Manager",
-      "link": "https://www.linkedin.com/jobs/view/4406800213",
-      "location": "KOHO · Canada (Remote)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69586"
+      "gmail_uid": "69589",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Director Risk Services Eastern Region Northbridge Financial Corporation · Toronto, ON (Hybrid) Actively recruiting",
       "company": "Director Risk Services Eastern Region",
       "link": "https://www.linkedin.com/jobs/view/4372649125",
       "location": "Northbridge Financial Corporation · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
+      "gmail_uid": "69584",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L) · Toronto, ON (On-site) Actively recruiting",
       "company": "Senior Manager, Operations Risk",
       "link": "https://www.linkedin.com/jobs/view/4406609619",
       "location": "Connor, Clark & Lunn Financial Group (CC&L) · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
-    },
-    {
-      "title": "Director & Head, Insights & Analytics, IT Risk Scotiabank · Toronto, ON 8 company alumni",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4368084295",
-      "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
+      "gmail_uid": "69584",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Director & Head, Portfolio Management, IT Risk Scotiabank · Toronto, ON 8 company alumni",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4367062101",
       "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
+      "gmail_uid": "69584",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L) · Vancouver, BC (Hybrid) Actively recruiting",
       "company": "Senior Manager, Operations Risk",
       "link": "https://www.linkedin.com/jobs/view/4406606752",
       "location": "Connor, Clark & Lunn Financial Group (CC&L) · Vancouver, BC (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
+      "gmail_uid": "69584",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Senior Manager, Risk Advisory Services BDO Canada · Ottawa, ON 1 connection",
       "company": "Senior Manager, Risk Advisory Services",
       "link": "https://www.linkedin.com/jobs/view/4414926958",
       "location": "BDO Canada · Ottawa, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-18",
-      "gmail_uid": "69584"
+      "gmail_uid": "69584",
+      "first_seen": "2026-05-18"
     },
     {
       "title": "Financial Risk Manager Deloitte · New York, NY (Hybrid) 17 connections",
       "company": "Financial Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4385349562",
       "location": "Deloitte · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Risk and Liquidity Manager – Investment Management Team UBS · Weehawken, NJ (On-site) $140K-$180K / year 1 connection",
       "company": "UBS · Weehawken, NJ (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4374045308",
       "location": "$140K-$180K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Financial Risk Manager Deloitte · Charlotte, NC (Hybrid) 63 company alumni",
       "company": "Financial Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4385358188",
       "location": "Deloitte · Charlotte, NC (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Risk Manager Fidelity Investments · Roanoke, TX (Hybrid) 4 connections",
       "company": "Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4397349112",
       "location": "Fidelity Investments · Roanoke, TX (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Manager - Risk Management American Express · New York, NY (Hybrid) 1 connection",
       "company": "Senior Manager - Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4415135334",
       "location": "American Express · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Manager, Finance Strategy & Analytics Charles Schwab · Westlake, TX (Hybrid) $130K-$170K / year 10 company alumni",
       "company": "Charles Schwab · Westlake, TX (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4411184758",
       "location": "$130K-$170K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69566"
-    },
-    {
-      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L) · Toronto, ON (On-site) Actively recruiting",
-      "company": "Senior Manager, Operations Risk",
-      "link": "https://www.linkedin.com/jobs/view/4406609619",
-      "location": "Connor, Clark & Lunn Financial Group (CC&L) · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
+      "gmail_uid": "69566",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Manager, IT Risk Assessment (Global Security) RBC · Toronto, ON 19 company alumni",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4403792217",
       "location": "19 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
+      "gmail_uid": "69563",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Sr. Manager, AI-Driven Risk Analytics & Automation RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4406692731",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
-    },
-    {
-      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L) · Vancouver, BC (Hybrid) Actively recruiting",
-      "company": "Senior Manager, Operations Risk",
-      "link": "https://www.linkedin.com/jobs/view/4406606752",
-      "location": "Connor, Clark & Lunn Financial Group (CC&L) · Vancouver, BC (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON 54 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "54 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
-    },
-    {
-      "title": "Senior Manager, Risk Advisory Services BDO Canada · Ottawa, ON 1 connection",
-      "company": "Senior Manager, Risk Advisory Services",
-      "link": "https://www.linkedin.com/jobs/view/4414926958",
-      "location": "BDO Canada · Ottawa, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69563"
+      "gmail_uid": "69563",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "VP, Treasury and Capital Management Zurich Canada · Toronto, ON 1 connection",
       "company": "VP, Treasury and Capital Management",
       "link": "https://www.linkedin.com/jobs/view/4382463759",
       "location": "Zurich Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Vice President (Non-Executive) – Cash Flow Forecasting & Liquidity Solutions TD Securities · Toronto, ON (On-site) 10 connections",
       "company": "TD Securities · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4415565313",
       "location": "10 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Vice President (Non-Executive) – Cash Flow Forecasting & Liquidity Solutions TD · Toronto, ON (On-site) 42 connections",
       "company": "TD · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4415523688",
       "location": "42 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
       "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4415550965",
       "location": "15 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Investment Strategist RBC Dominion Securities · Toronto, ON 2 connections",
       "company": "Senior Investment Strategist",
       "link": "https://www.linkedin.com/jobs/view/4415829161",
       "location": "RBC Dominion Securities · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Director, FinTech & Risk Analytics Jobber · Kitchener, ON (Hybrid) 27 school alumni",
       "company": "Director, FinTech & Risk Analytics",
       "link": "https://www.linkedin.com/jobs/view/4412034856",
       "location": "Jobber · Kitchener, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69557"
-    },
-    {
-      "title": "VP, Treasury and Capital Management Zurich Canada · Toronto, ON 1 connection",
-      "company": "VP, Treasury and Capital Management",
-      "link": "https://www.linkedin.com/jobs/view/4382463759",
-      "location": "Zurich Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69556"
-    },
-    {
-      "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
-      "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4415550965",
-      "location": "15 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69556"
-    },
-    {
-      "title": "Treasury Manager KOHO · Canada (Remote) 8 school alumni",
-      "company": "Treasury Manager",
-      "link": "https://www.linkedin.com/jobs/view/4406800213",
-      "location": "KOHO · Canada (Remote)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69556"
+      "gmail_uid": "69557",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Manager/Senior Manager, Quantitative Market Risk Models - Financial Engineering and Modeling Deloitte · Toronto, ON 17 connections",
       "company": "Deloitte · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4415802327",
       "location": "17 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69556"
-    },
-    {
-      "title": "Manager/Senior Manager, Quantitative Market Risk Models - Financial Engineering and Modeling Deloitte · Toronto, ON Actively recruiting",
-      "company": "Deloitte · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4415802327",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON 54 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "54 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
-    },
-    {
-      "title": "Director, FinTech & Risk Analytics Jobber · Kitchener, ON (Hybrid) 27 school alumni",
-      "company": "Director, FinTech & Risk Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4412034856",
-      "location": "Jobber · Kitchener, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
+      "gmail_uid": "69556",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Director, FinTech & Risk Analytics Jobber · Toronto, ON (Hybrid) 1 connection",
       "company": "Director, FinTech & Risk Analytics",
       "link": "https://www.linkedin.com/jobs/view/4412048278",
       "location": "Jobber · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
+      "gmail_uid": "69552",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Consulting Manager, Governance, Risk & Compliance (Workiva) Clearsulting · Toronto, ON 1 company alum",
       "company": "Clearsulting · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4415510059",
       "location": "1 company alum",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
-    },
-    {
-      "title": "Senior Manager, Risk Advisory Services BDO Canada · Ottawa, ON 1 connection",
-      "company": "Senior Manager, Risk Advisory Services",
-      "link": "https://www.linkedin.com/jobs/view/4414926958",
-      "location": "BDO Canada · Ottawa, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69552"
+      "gmail_uid": "69552",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
       "company": "Senior Director, Model Validation",
       "link": "https://www.linkedin.com/jobs/view/4414643852",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Associate Director, Liquidity Strategy Scotiabank · Toronto, ON 23 connections",
       "company": "Associate Director, Liquidity Strategy",
       "link": "https://www.linkedin.com/jobs/view/4414488070",
       "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 1 company alum",
       "company": "Senior Director, Total Portfolio Risk",
       "link": "https://www.linkedin.com/jobs/view/4414654470",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Director, Structured Finance Sun Life · Toronto, ON 8 connections",
       "company": "Director, Structured Finance",
       "link": "https://www.linkedin.com/jobs/view/4414708847",
       "location": "Sun Life · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
       "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414951559",
       "location": "15 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Manager, Liquidity Risk Measurement RBC · Toronto, ON 49 connections",
       "company": "Manager, Liquidity Risk Measurement",
       "link": "https://www.linkedin.com/jobs/view/4414969942",
       "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-17",
-      "gmail_uid": "69548"
-    },
-    {
-      "title": "Manager, Liquidity Risk Measurement RBC · Toronto, ON 49 connections",
-      "company": "Manager, Liquidity Risk Measurement",
-      "link": "https://www.linkedin.com/jobs/view/4414969942",
-      "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
-    },
-    {
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Senior Director, Total Portfolio Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414654470",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
-    },
-    {
-      "title": "Associate Director, Liquidity Strategy Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Associate Director, Liquidity Strategy",
-      "link": "https://www.linkedin.com/jobs/view/4414488070",
-      "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
+      "gmail_uid": "69548",
+      "first_seen": "2026-05-17"
     },
     {
       "title": "Senior Director, Enterprise Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 1 company alum",
       "company": "Senior Director, Enterprise Risk",
       "link": "https://www.linkedin.com/jobs/view/4414650601",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
+      "gmail_uid": "69546",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Director, Global Operations Risk & Control Governance Manulife · Toronto, ON (Hybrid) 20 connections",
       "company": "Manulife · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4405049169",
       "location": "20 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
+      "gmail_uid": "69546",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada Actively recruiting",
       "company": "President's Choice Financial · Greater Toronto Area, Canada",
       "link": "https://www.linkedin.com/jobs/view/4414765163",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69546"
+      "gmail_uid": "69546",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior ALM / Balance Sheet Risk Manager Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site) $175K-$198K / year Actively recruiting Apply",
       "company": "Senior ALM / Balance Sheet Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4405532772",
       "location": "Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
+      "gmail_uid": "69542",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "FVP, ALM Manager Cathay Bank · El Monte, CA 1 school alum",
       "company": "FVP, ALM Manager",
       "link": "https://www.linkedin.com/jobs/view/4374092329",
       "location": "Cathay Bank · El Monte, CA",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
+      "gmail_uid": "69542",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Vice President, Model Risk Management BNY · Los Angeles, CA 18 company alumni",
       "company": "Vice President, Model Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4414973956",
       "location": "BNY · Los Angeles, CA",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
-    },
-    {
-      "title": "Senior Manager - Risk Management American Express · New York, NY (Hybrid) 1 connection",
-      "company": "Senior Manager - Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4415135334",
-      "location": "American Express · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
+      "gmail_uid": "69542",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Vice President, Market and Treasury Risk BNY · New York, NY 1 connection",
       "company": "BNY · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4414979537",
       "location": "1 connection",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
+      "gmail_uid": "69542",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Client Market Risk Manager, Futures Macquarie Group · New York City Metropolitan Area (Hybrid) 4 connections",
       "company": "Client Market Risk Manager, Futures",
       "link": "https://www.linkedin.com/jobs/view/4355888013",
       "location": "Macquarie Group · New York City Metropolitan Area (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69542"
-    },
-    {
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 1 company alum",
-      "company": "Senior Director, Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4414643852",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
-    },
-    {
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Senior Director, Total Portfolio Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414654470",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
+      "gmail_uid": "69542",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Manager, Third Party Risk Portfolio & Operational Excellence RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414973860",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
+      "gmail_uid": "69541",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Associate Director / Director - Risk Enhanced Analytics team - Toronto Fitch Ratings · Toronto, ON (Hybrid) 3 connections",
       "company": "Fitch Ratings · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4404495113",
       "location": "3 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
-    },
-    {
-      "title": "Senior Manager, Risk Advisory Services BDO Canada · Ottawa, ON 1 connection",
-      "company": "Senior Manager, Risk Advisory Services",
-      "link": "https://www.linkedin.com/jobs/view/4414926958",
-      "location": "BDO Canada · Ottawa, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
-    },
-    {
-      "title": "Director, Global Operations Risk & Control Governance Manulife · Toronto, ON (Hybrid) 20 connections",
-      "company": "Manulife · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4405049169",
-      "location": "20 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69541"
-    },
-    {
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Senior Director, Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4414643852",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
-    },
-    {
-      "title": "Associate Director, Liquidity Strategy Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Associate Director, Liquidity Strategy",
-      "link": "https://www.linkedin.com/jobs/view/4414488070",
-      "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
-    },
-    {
-      "title": "VP, Treasury and Capital Management Zurich Canada · Toronto, ON 1 connection",
-      "company": "VP, Treasury and Capital Management",
-      "link": "https://www.linkedin.com/jobs/view/4382463759",
-      "location": "Zurich Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
-    },
-    {
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 1 company alum",
-      "company": "Senior Director, Total Portfolio Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414654470",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
-    },
-    {
-      "title": "Manager, Liquidity Risk Measurement RBC · Toronto, ON 49 connections",
-      "company": "Manager, Liquidity Risk Measurement",
-      "link": "https://www.linkedin.com/jobs/view/4414969942",
-      "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
-    },
-    {
-      "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
-      "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414951559",
-      "location": "15 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69537"
+      "gmail_uid": "69541",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Manager, Balance Sheet Market Risk - Toronto, ON Scotiabank · Toronto, ON Actively recruiting",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4379491885",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69533"
+      "gmail_uid": "69533",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC · Toronto, ON (On-site) 19 connections",
       "company": "Managing Director, Enterprise Risk",
       "link": "https://www.linkedin.com/jobs/view/4411535487",
       "location": "CPP Investments | Investissements RPC · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
+      "gmail_uid": "69523",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Vice President, Model Risk Management BNY · New York, NY Be first of 8 to apply",
       "company": "BNY · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4414985296",
       "location": "Be first of 8 to apply",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
+      "gmail_uid": "69523",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Head of Portfolio Risk & Analytics Brown Brothers Harriman · New York, United States (Hybrid) $160K-$200K / year Be first of 6 to apply",
       "company": "Head of Portfolio Risk & Analytics",
       "link": "https://www.linkedin.com/jobs/view/4414713412",
       "location": "Brown Brothers Harriman · New York, United States (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
-    },
-    {
-      "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
-      "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414951559",
-      "location": "15 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
-    },
-    {
-      "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada Be first of 6 to apply",
-      "company": "President's Choice Financial · Greater Toronto Area, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4414765163",
-      "location": "Be first of 6 to apply",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
+      "gmail_uid": "69523",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid) 1 connection",
       "company": "Director Investment Risk",
       "link": "https://www.linkedin.com/jobs/view/4414740484",
       "location": "Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69523"
+      "gmail_uid": "69523",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Jobs similar to Senior Manager of Safety and Risk at Quark Expeditions",
       "company": "Jobs similar to",
       "link": "https://www.linkedin.com/jobs/view/4407878362",
       "location": "Senior Manager of Safety and Risk",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Manager, Corporate Health and Safety ERCO Worldwide · Mississauga, ON",
       "company": "ERCO Worldwide · Mississauga, ON",
       "link": "https://www.linkedin.com/jobs/view/4378003162",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "HSE Manager Jobgether · Canada (Remote)",
       "company": "HSE Manager",
       "link": "https://www.linkedin.com/jobs/view/4412124748",
       "location": "Jobgether · Canada (Remote)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "EHS Business Regional Manager - Canada & HQ/DCs Eaton · Mississauga, ON (Remote)",
       "company": "Eaton · Mississauga, ON (Remote)",
       "link": "https://www.linkedin.com/jobs/view/4408426010",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "EHS Business Regional Manager - Canada & HQ/DCs Eaton · Burlington, ON (Remote)",
       "company": "Eaton · Burlington, ON (Remote)",
       "link": "https://www.linkedin.com/jobs/view/4408429002",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "EHS Business Regional Manager - Canada & HQ/DCs Eaton · Toronto, ON (Remote)",
       "company": "Eaton · Toronto, ON (Remote)",
       "link": "https://www.linkedin.com/jobs/view/4408403997",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Consultant principal en santé et sécurité – Télétravail (Canada) / Principal Health and Safety Consultant – Remote (Canada) EHS Support · Canada (Remote)",
       "company": "EHS Support · Canada (Remote)",
       "link": "https://www.linkedin.com/jobs/view/4410827614",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "HSE Manager Sun Gro Horticulture · Ontario, Canada",
       "company": "HSE Manager",
       "link": "https://www.linkedin.com/jobs/view/4377017911",
       "location": "Sun Gro Horticulture · Ontario, Canada",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "EHS Business Regional Manager - Canada & HQ/DCs Eaton Cummins Automated Transmission Technologies · Toronto, ON",
       "company": "Eaton Cummins Automated Transmission Technologies · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4408130275",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69520"
+      "gmail_uid": "69520",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Manager, Strategic Support - Global Risk Management Scotiabank · Toronto, ON 8 company alumni",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414169664",
       "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
+      "gmail_uid": "69519",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Manager, Technology Risk and Control Self-Assessment Scotiabank · Toronto, ON 23 connections",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4393057017",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
+      "gmail_uid": "69519",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Sr. Manager, Regulatory Remediation RBC · Toronto, ON (Hybrid) 19 company alumni",
       "company": "Sr. Manager, Regulatory Remediation",
       "link": "https://www.linkedin.com/jobs/view/4405410405",
       "location": "RBC · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
+      "gmail_uid": "69519",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Senior Manager, Global Client and Payment Screening RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414546585",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
+      "gmail_uid": "69519",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead PwC Canada · Toronto, ON 5 connections",
       "company": "PwC Canada · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414292970",
       "location": "5 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
-      "gmail_uid": "69519"
+      "gmail_uid": "69519",
+      "first_seen": "2026-05-16"
     },
     {
       "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada Actively recruiting",
       "company": "President's Choice Financial · Greater Toronto Area, Canada",
       "link": "https://www.linkedin.com/jobs/view/4392483035",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "VP Global Markets Funds Transfer Pricing BMO · Toronto, ON Actively recruiting",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4414281245",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Global Treasury Manager Tipalti · Toronto, ON Actively recruiting",
       "company": "Global Treasury Manager",
       "link": "https://www.linkedin.com/jobs/view/4414290102",
       "location": "Tipalti · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Global Treasury Manager Tipalti · Vancouver, BC Actively recruiting",
       "company": "Global Treasury Manager",
       "link": "https://www.linkedin.com/jobs/view/4414270942",
       "location": "Tipalti · Vancouver, BC",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Treasury Manager FCC Fidelity Canada · Toronto, ON 1 connection",
       "company": "Treasury Manager FCC",
       "link": "https://www.linkedin.com/jobs/view/4410629305",
       "location": "Fidelity Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Dir. princ., Trésorerie TD · Toronto, ON (Hybrid) 42 connections",
       "company": "Dir. princ., Trésorerie",
       "link": "https://www.linkedin.com/jobs/view/4393555116",
       "location": "TD · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69514"
+      "gmail_uid": "69514",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Sr. Manager, Investment Risk Charles Schwab · Chicago, IL (Hybrid) $100K-$170K / year 10 company alumni",
       "company": "Sr. Manager, Investment Risk",
       "link": "https://www.linkedin.com/jobs/view/4411192141",
       "location": "Charles Schwab · Chicago, IL (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Sr. Manager, Investment Risk Charles Schwab · Westlake, TX (Hybrid) $100K-$170K / year 10 company alumni",
       "company": "Sr. Manager, Investment Risk",
       "link": "https://www.linkedin.com/jobs/view/4411193153",
       "location": "Charles Schwab · Westlake, TX (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Manager - Risk Management American Express · New York, NY (Hybrid) $89K-$150K / year 1 connection",
       "company": "Manager - Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4414762721",
       "location": "American Express · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "AVP, Market Risk National Life Group · Addison, TX Actively recruiting",
       "company": "AVP, Market Risk",
       "link": "https://www.linkedin.com/jobs/view/4404451976",
       "location": "National Life Group · Addison, TX",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Director - Investment Risk Management Franklin Templeton · Baltimore, MD (Hybrid) 5 company alumni",
       "company": "Director - Investment Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4414719057",
       "location": "Franklin Templeton · Baltimore, MD (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "AVP, Market Risk National Life Group · Montpelier, VT Actively recruiting",
       "company": "AVP, Market Risk",
       "link": "https://www.linkedin.com/jobs/view/4404472830",
       "location": "National Life Group · Montpelier, VT",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69494"
+      "gmail_uid": "69494",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Director, Portfolio Construction Mackenzie Investments · Greater Toronto Area, Canada (Hybrid) 1 connection",
       "company": "Director, Portfolio Construction",
       "link": "https://www.linkedin.com/jobs/view/4404549735",
       "location": "Mackenzie Investments · Greater Toronto Area, Canada (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
-    },
-    {
-      "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada Actively recruiting",
-      "company": "President's Choice Financial · Greater Toronto Area, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4392483035",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
+      "gmail_uid": "69486",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Associate Director, Project Manager - Risk (Capital Markets) RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4392021933",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
+      "gmail_uid": "69486",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Sr. Director Finance & Actuarial Transformation RBC · Mississauga, ON Actively recruiting",
       "company": "RBC · Mississauga, ON",
       "link": "https://www.linkedin.com/jobs/view/4390385270",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON Actively recruiting",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
+      "gmail_uid": "69486",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Director, Expert Services Kroll · Toronto, ON (On-site) 1 connection",
       "company": "Director, Expert Services",
       "link": "https://www.linkedin.com/jobs/view/4411135512",
       "location": "Kroll · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69486"
-    },
-    {
-      "title": "Associate Director, Project Manager - Risk (Capital Markets) RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392021933",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
-    },
-    {
-      "title": "Senior Manager, Strategic Support - Global Risk Management Scotiabank · Toronto, ON 8 company alumni",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414169664",
-      "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
-    },
-    {
-      "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada Actively recruiting",
-      "company": "President's Choice Financial · Greater Toronto Area, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4392483035",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
+      "gmail_uid": "69486",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Risk Management Lead Open Systems Technologies · Mississauga, ON (Hybrid) Actively recruiting Apply",
       "company": "Risk Management Lead",
       "link": "https://www.linkedin.com/jobs/view/4404443637",
       "location": "Open Systems Technologies · Mississauga, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
+      "gmail_uid": "69478",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Senior Manager, Regulatory Risk and Governance Scotiabank · Toronto, ON 23 connections",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4404214634",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69478"
+      "gmail_uid": "69478",
+      "first_seen": "2026-05-15"
     },
     {
       "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
       "company": "Principal, Total Portfolio",
       "link": "https://www.linkedin.com/jobs/view/4380143887",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Associate Director, Risk Initiatives & Infrastructure RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4404095129",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Director, Risk Analytics & Model Risk Management (LCC) First West Credit Union · City of Langley, BC (Hybrid) $120K-$154K / year 5 connections",
       "company": "First West Credit Union · City of Langley, BC (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4403652815",
       "location": "$120K-$154K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Recovery and Resolution Planning, Enterprise Recovery and Resolution Office TD · Toronto, ON (Hybrid) 17 company alumni",
       "company": "TD · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4393585396",
       "location": "17 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "VP or Director, Government Finance BMO Capital Markets · Toronto, ON 12 connections",
       "company": "VP or Director, Government Finance",
       "link": "https://www.linkedin.com/jobs/view/4413743550",
       "location": "BMO Capital Markets · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Director, Structured Finance Sun Life · Toronto, ON 8 connections",
       "company": "Director, Structured Finance",
       "link": "https://www.linkedin.com/jobs/view/4413854121",
       "location": "Sun Life · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69459"
+      "gmail_uid": "69459",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Jobs similar to Senior Manager, Business Banking Credit Strategy Risk Management at BMO",
       "company": "Jobs similar to",
       "link": "https://www.linkedin.com/jobs/view/4405438345",
       "location": "Senior Manager, Business Banking Credit Strategy Risk Management",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Credit Risk Strategy Oversight BMO · Toronto, ON",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4411761777",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Head Credit Risk Model Management CIBC · Toronto, ON",
       "company": "Head Credit Risk Model Management",
       "link": "https://www.linkedin.com/jobs/view/4413480128",
       "location": "CIBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Strategy and Analytics - Credit Risk Management Capital One · Toronto, ON",
       "company": "Capital One · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4404858727",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Risk Initiatives BMO · Toronto, ON",
       "company": "Senior Manager, Risk Initiatives",
       "link": "https://www.linkedin.com/jobs/view/4391195723",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Loss Mitigation Strategy RBC · Toronto, ON",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4408792193",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
-    },
-    {
-      "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada",
-      "company": "President's Choice Financial · Greater Toronto Area, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4392483035",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Chief Advisor Financing and Credit Risk Performance National Bank of Canada · Toronto, ON (Hybrid)",
       "company": "National Bank of Canada · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4411713062",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Senior Manager, Collateral Risk Analytics RBC · Toronto, ON",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4408589584",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Director & Head, Credit Risk Strategy Scotiabank · Toronto, ON",
       "company": "Director & Head, Credit Risk Strategy",
       "link": "https://www.linkedin.com/jobs/view/4408953606",
       "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Sr. Manager, Business Banking CIBC · Toronto, ON",
       "company": "Sr. Manager, Business Banking",
       "link": "https://www.linkedin.com/jobs/view/4398031303",
       "location": "CIBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-14",
-      "gmail_uid": "69438"
-    },
-    {
-      "title": "Associate Director, Risk Initiatives & Infrastructure RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4404095129",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69438",
+      "first_seen": "2026-05-14"
     },
     {
       "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON Actively recruiting",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4392987201",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69436",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager, Strategic Initiatives, Credit Risk Models BMO · Toronto, ON Actively recruiting",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4410997364",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69436",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Manager of Treasury The Mason Group - Strategic Search Partners · Toronto, ON (Hybrid) CA$90K-CA$110K / year 1 connection Apply",
       "company": "Manager of Treasury",
       "link": "https://www.linkedin.com/jobs/view/4413134054",
       "location": "The Mason Group - Strategic Search Partners · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69436",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Treasury Senior Manager American Iron & Metal (AIM) · Montreal, QC 1 connection Apply",
       "company": "Treasury Senior Manager",
       "link": "https://www.linkedin.com/jobs/view/4411774577",
       "location": "American Iron & Metal (AIM) · Montreal, QC",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69436",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager, Cash Management BMO · Toronto, ON Actively recruiting",
       "company": "Senior Manager, Cash Management",
       "link": "https://www.linkedin.com/jobs/view/4410236372",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69436"
+      "gmail_uid": "69436",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Risk Manager Balyasny Asset Management L.P. · New York, NY (On-site) $225K-$275K / year Actively recruiting",
       "company": "Senior Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4413093481",
       "location": "Balyasny Asset Management L.P. · New York, NY (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Director – Front Office Risk Manager, Fixed Income BNP Paribas · New York, NY 4 connections",
       "company": "BNP Paribas · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4412915440",
       "location": "4 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Risk Management – Model Risk Program Management – Vice President JPMorganChase · Jersey City, NJ (On-site) $120K-$191K / year Actively recruiting",
       "company": "JPMorganChase · Jersey City, NJ (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4413283851",
       "location": "$120K-$191K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Market Risk Manager - Vice President Deutsche Bank · New York, NY (Hybrid) 1 connection Apply",
       "company": "Market Risk Manager - Vice President",
       "link": "https://www.linkedin.com/jobs/view/4412946405",
       "location": "Deutsche Bank · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Investment Risk Manager Mercer · New York, NY (Hybrid) Actively recruiting",
       "company": "Investment Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4412991388",
       "location": "Mercer · New York, NY (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Director - Risk Management Regulatory Reporting SMBC Group · New York, NY Actively recruiting",
       "company": "SMBC Group · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4392924903",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69433"
+      "gmail_uid": "69433",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager, Wealth Management Governance & Risk Programs Wealth Management Governance & Controls BMO · Toronto, ON 15 company alumni",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4395394318",
       "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
+      "gmail_uid": "69428",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager, Operational Risk Management Initiative and Implementation RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4413268942",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
+      "gmail_uid": "69428",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager, Credit Risk Model Validation BMO · Toronto, ON 54 connections",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4362462550",
       "location": "54 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
-    },
-    {
-      "title": "Associate Director, Risk Initiatives & Infrastructure RBC · Toronto, ON 19 company alumni",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4404095129",
-      "location": "19 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
-    },
-    {
-      "title": "Director, Risk Analytics & Model Risk Management (LCC) First West Credit Union · City of Langley, BC (Hybrid) $120K-$154K / year 5 connections",
-      "company": "First West Credit Union · City of Langley, BC (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4403652815",
-      "location": "$120K-$154K / year",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
+      "gmail_uid": "69428",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Manager Operational Risk Management (12-month term) ATB Financial · Calgary, AB 10 connections",
       "company": "ATB Financial · Calgary, AB",
       "link": "https://www.linkedin.com/jobs/view/4411654329",
       "location": "10 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69428"
-    },
-    {
-      "title": "Associate Director, Risk Initiatives & Infrastructure RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4404095129",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
-    },
-    {
-      "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392987201",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
-    },
-    {
-      "title": "Senior Manager, Credit Risk Model Validation BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4362462550",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
-    },
-    {
-      "title": "Senior Manager, Operational Risk Management Initiative and Implementation RBC · Toronto, ON 18 company alumni",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4413268942",
-      "location": "18 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
+      "gmail_uid": "69428",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Manager, Global Risk Management BGIS · Toronto, ON (Hybrid) 1 connection",
       "company": "Manager, Global Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4413084912",
       "location": "BGIS · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
+      "gmail_uid": "69424",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Manager, Operational Risk Sun Life · Toronto, ON (Hybrid) 8 connections",
       "company": "Manager, Operational Risk",
       "link": "https://www.linkedin.com/jobs/view/4412942098",
       "location": "Sun Life · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69424"
+      "gmail_uid": "69424",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Director, Model Validation BMO · Toronto, ON 54 connections",
       "company": "Director, Model Validation",
       "link": "https://www.linkedin.com/jobs/view/4401378033",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
-    },
-    {
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Principal, Total Portfolio",
-      "link": "https://www.linkedin.com/jobs/view/4380143887",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
-    },
-    {
-      "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392987201",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
+      "gmail_uid": "69421",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Associate Director, Credit Modeling and Methodology RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4413281065",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
+      "gmail_uid": "69421",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Associate Director, Treasury Management Officer, Global Transaction Banking - Toronto, ON Scotiabank · Toronto, ON 23 connections",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4412950909",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
+      "gmail_uid": "69421",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Senior Investment Strategist, Canada Edward Jones · Mississauga, ON (Hybrid) CA$140K-CA$239K / year 2 connections",
       "company": "Senior Investment Strategist, Canada",
       "link": "https://www.linkedin.com/jobs/view/4412962191",
       "location": "Edward Jones · Mississauga, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-13",
-      "gmail_uid": "69421"
+      "gmail_uid": "69421",
+      "first_seen": "2026-05-13"
     },
     {
       "title": "Manager, Credit Risk Model Validation BMO · Toronto, ON 15 company alumni",
       "company": "Manager, Credit Risk Model Validation",
       "link": "https://www.linkedin.com/jobs/view/4400617140",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Director, High Risk Portfolio Management Team BMO · Toronto, ON 54 connections",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4388540803",
       "location": "54 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Manager, Global Risk Management BGIS · Toronto, ON (Hybrid) 1 connection",
       "company": "Manager, Global Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4362180315",
       "location": "BGIS · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Manager, Loss Forecasting RBC · Toronto, ON 18 company alumni",
       "company": "Manager, Loss Forecasting",
       "link": "https://www.linkedin.com/jobs/view/4412725081",
       "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Senior Manager, Governance, Risk and Compliance Services KPMG Canada · Winnipeg, MB (On-site) Actively recruiting",
       "company": "KPMG Canada · Winnipeg, MB (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4365605871",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Senior Manager, GRM International Banking Scotiabank · Toronto, ON 8 company alumni",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4360080787",
       "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69405"
-    },
-    {
-      "title": "Senior Manager, Wealth Management Governance & Risk Programs Wealth Management Governance & Controls BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4395394318",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
-    },
-    {
-      "title": "Senior Manager, Credit Risk Model Validation BMO · Toronto, ON 54 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4362462550",
-      "location": "54 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
-    },
-    {
-      "title": "Senior Manager, GRM International Banking Scotiabank · Toronto, ON 8 company alumni",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4360080787",
-      "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
-    },
-    {
-      "title": "Senior Manager, Governance, Risk and Compliance Services KPMG Canada · Winnipeg, MB (On-site) Actively recruiting",
-      "company": "KPMG Canada · Winnipeg, MB (On-site)",
-      "link": "https://www.linkedin.com/jobs/view/4365605871",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
+      "gmail_uid": "69405",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Senior Manager, Governance, Risk and Compliance Services KPMG Canada · Regina, SK (On-site) 16 connections",
       "company": "KPMG Canada · Regina, SK (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4365618581",
       "location": "16 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
+      "gmail_uid": "69400",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Senior Manager, Data Management (4519) TD · Toronto, ON (On-site) 17 company alumni",
       "company": "Senior Manager, Data Management (4519)",
       "link": "https://www.linkedin.com/jobs/view/4391783733",
       "location": "TD · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69400"
-    },
-    {
-      "title": "Director, Model Validation BMO · Toronto, ON Actively recruiting",
-      "company": "Director, Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4401378033",
-      "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
-    },
-    {
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Principal, Total Portfolio",
-      "link": "https://www.linkedin.com/jobs/view/4380143887",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
-    },
-    {
-      "title": "Director, High Risk Portfolio Management Team BMO · Toronto, ON Actively recruiting",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4388540803",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
+      "gmail_uid": "69400",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Senior Manager, Valuations & Modelling BDO Canada · Toronto, ON 1 connection",
       "company": "Senior Manager, Valuations & Modelling",
       "link": "https://www.linkedin.com/jobs/view/4412590007",
       "location": "BDO Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
+      "gmail_uid": "69393",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Manager, Advanced Analytics-2 TD · Toronto, ON (On-site) 42 connections",
       "company": "Manager, Advanced Analytics-2",
       "link": "https://www.linkedin.com/jobs/view/4412574959",
       "location": "TD · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
+      "gmail_uid": "69393",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Associate Director & Actuary Corebridge Financial · Richmond, BC (Remote) 2 company alumni",
       "company": "Associate Director & Actuary",
       "link": "https://www.linkedin.com/jobs/view/4380633394",
       "location": "Corebridge Financial · Richmond, BC (Remote)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-12",
-      "gmail_uid": "69393"
+      "gmail_uid": "69393",
+      "first_seen": "2026-05-12"
     },
     {
       "title": "Vice President, Trading Risk Management Morgan Stanley · New York, NY Actively recruiting",
       "company": "Vice President, Trading Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4402146694",
       "location": "Morgan Stanley · New York, NY",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Vice President, Risk/ Policy Management Morgan Stanley · New York, NY 7 connections",
       "company": "Vice President, Risk/ Policy Management",
       "link": "https://www.linkedin.com/jobs/view/4401498844",
       "location": "Morgan Stanley · New York, NY",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Manager, U.S. Trade Floor Risk Management, Global Risk Management Scotiabank · New York, NY 23 connections",
       "company": "Scotiabank · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4323247990",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Finance Manager - Global Liquidity Management Bank of America · New York, NY $150K-$180K / year 7 connections",
       "company": "Bank of America · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4365576157",
       "location": "$150K-$180K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Risk Manager - Corporate PJT Partners · New York, United States 8 school alumni",
       "company": "Risk Manager - Corporate",
       "link": "https://www.linkedin.com/jobs/view/4390788628",
       "location": "PJT Partners · New York, United States",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Risk Modeling Services P&C - Director PwC · San Francisco, CA Actively recruiting",
       "company": "Risk Modeling Services P&C - Director",
       "link": "https://www.linkedin.com/jobs/view/4371166954",
       "location": "PwC · San Francisco, CA",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69360"
-    },
-    {
-      "title": "Senior Manager, GRM International Banking Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4360080787",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
-    },
-    {
-      "title": "Director & Head, Portfolio Management, IT Risk Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4367062101",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
-    },
-    {
-      "title": "Manager, Global Risk Management BGIS · Toronto, ON (Hybrid) 1 connection",
-      "company": "Manager, Global Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4362180315",
-      "location": "BGIS · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
+      "gmail_uid": "69360",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Manager, Root Cause Analysis KPMG Canada · Vaughan, ON (On-site) 16 connections",
       "company": "Senior Manager, Root Cause Analysis",
       "link": "https://www.linkedin.com/jobs/view/4371862998",
       "location": "KPMG Canada · Vaughan, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
+      "gmail_uid": "69357",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Manager, Root Cause Analysis KPMG Canada · Hamilton, ON (On-site) Actively recruiting",
       "company": "Senior Manager, Root Cause Analysis",
       "link": "https://www.linkedin.com/jobs/view/4371884036",
       "location": "KPMG Canada · Hamilton, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
+      "gmail_uid": "69357",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "AVP, Casualty Corporate Risk Aviva Canada · Toronto, ON 6 connections",
       "company": "AVP, Casualty Corporate Risk",
       "link": "https://www.linkedin.com/jobs/view/4402766316",
       "location": "Aviva Canada · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69357"
-    },
-    {
-      "title": "Director, Model Validation BMO · Toronto, ON 54 connections",
-      "company": "Director, Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4401378033",
-      "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
-    },
-    {
-      "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392987201",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
-    },
-    {
-      "title": "Director & Head, Insights & Analytics, IT Risk Scotiabank · Toronto, ON 8 company alumni",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4368084295",
-      "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
+      "gmail_uid": "69357",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Quantitative Valuations Lead LSEG · Toronto, ON (Hybrid) 31 company alumni",
       "company": "Quantitative Valuations Lead",
       "link": "https://www.linkedin.com/jobs/view/4402767595",
       "location": "LSEG · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
+      "gmail_uid": "69350",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Director, (Structured Credit/MBS) Scotiabank · Toronto, ON (Hybrid) 23 connections",
       "company": "Director, (Structured Credit/MBS)",
       "link": "https://www.linkedin.com/jobs/view/4325298832",
       "location": "Scotiabank · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
+      "gmail_uid": "69350",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Quantitative Risk Associate RBC · Toronto, ON 49 connections",
       "company": "Quantitative Risk Associate",
       "link": "https://www.linkedin.com/jobs/view/4403802513",
       "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69350"
-    },
-    {
-      "title": "Manager, Global Risk Management BGIS · Toronto, ON (Hybrid) 1 connection",
-      "company": "Manager, Global Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4362180315",
-      "location": "BGIS · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
-    },
-    {
-      "title": "Director & Head, Insights & Analytics, IT Risk Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4368084295",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
-    },
-    {
-      "title": "Director & Head, Portfolio Management, IT Risk Scotiabank · Toronto, ON Actively recruiting",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4367062101",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
+      "gmail_uid": "69350",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Manager, Risk Independence KPMG Canada · Vaughan, ON (Hybrid) Actively recruiting",
       "company": "Manager, Risk Independence",
       "link": "https://www.linkedin.com/jobs/view/4391732468",
       "location": "KPMG Canada · Vaughan, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
+      "gmail_uid": "69346",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Manager, Risk Independence KPMG Canada · Ottawa, ON (Hybrid) 16 connections",
       "company": "Manager, Risk Independence",
       "link": "https://www.linkedin.com/jobs/view/4391740336",
       "location": "KPMG Canada · Ottawa, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
+      "gmail_uid": "69346",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Manager, Risk Management, Privacy & Compliance Medavie · Greater St. John's Metropolitan Area 3 school alumni",
       "company": "Medavie · Greater St. John's Metropolitan Area",
       "link": "https://www.linkedin.com/jobs/view/4409956208",
       "location": "3 school alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69346"
-    },
-    {
-      "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON 54 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392987201",
-      "location": "54 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
+      "gmail_uid": "69346",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Enterprise Risk Manager VersaBank · London, ON (On-site) Actively recruiting",
       "company": "Enterprise Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4412115336",
       "location": "VersaBank · London, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
+      "gmail_uid": "69332",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Manager, Structural Market Risk BMO · Toronto, ON 15 company alumni",
       "company": "Manager, Structural Market Risk",
       "link": "https://www.linkedin.com/jobs/view/4411772536",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
+      "gmail_uid": "69332",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Vice President - Global Credit Reserve Sr. Lead Analyst - Risk Management (Hybrid) Citi · Mississauga, ON (Hybrid) 10 connections",
       "company": "Citi · Mississauga, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4411710366",
       "location": "10 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
+      "gmail_uid": "69332",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Manager, Business Risk, Global Transaction Banking - Toronto, ON Scotiabank · Toronto, ON (On-site) 23 connections",
       "company": "Scotiabank · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4412183335",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
+      "gmail_uid": "69332",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "VP, Risk Portfolio Control BMO Capital Markets · Toronto, ON 12 connections",
       "company": "VP, Risk Portfolio Control",
       "link": "https://www.linkedin.com/jobs/view/4389226405",
       "location": "BMO Capital Markets · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-11",
-      "gmail_uid": "69332"
-    },
-    {
-      "title": "Senior Manager, Wealth Management Governance & Risk Programs Wealth Management Governance & Controls BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4395394318",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
-    },
-    {
-      "title": "Senior Manager, Business Risk, Global Transaction Banking - Toronto, ON Scotiabank · Toronto, ON (On-site) 8 company alumni",
-      "company": "Scotiabank · Toronto, ON (On-site)",
-      "link": "https://www.linkedin.com/jobs/view/4412183335",
-      "location": "8 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
+      "gmail_uid": "69332",
+      "first_seen": "2026-05-11"
     },
     {
       "title": "Senior Manager, Financial Risk (Crypto & Treasury) Kraken · Canada (Remote) 2 company alumni",
       "company": "Kraken · Canada (Remote)",
       "link": "https://www.linkedin.com/jobs/view/4390739777",
       "location": "2 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
-    },
-    {
-      "title": "Senior Manager, Credit Risk Model Validation BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4362462550",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
-    },
-    {
-      "title": "Senior Vice President - Global Credit Reserve Sr. Lead Analyst - Risk Management (Hybrid) Citi · Mississauga, ON (Hybrid) 10 connections",
-      "company": "Citi · Mississauga, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4411710366",
-      "location": "10 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
+      "gmail_uid": "69331",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Senior Risk Manager Raise · Calgary, AB CA$92-CA$106 / year Actively recruiting Apply",
       "company": "Senior Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4411753535",
       "location": "Raise · Calgary, AB",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69331"
+      "gmail_uid": "69331",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Model Risk Manager Associated Bank · Greater Milwaukee $142K-$243K / year Actively recruiting",
       "company": "Model Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4390972584",
       "location": "Associated Bank · Greater Milwaukee",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
-    },
-    {
-      "title": "Vice President, Trading Risk Management Morgan Stanley · New York, NY 7 connections",
-      "company": "Vice President, Trading Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4402146694",
-      "location": "Morgan Stanley · New York, NY",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
-    },
-    {
-      "title": "Vice President, Risk/ Policy Management Morgan Stanley · New York, NY Actively recruiting",
-      "company": "Vice President, Risk/ Policy Management",
-      "link": "https://www.linkedin.com/jobs/view/4401498844",
-      "location": "Morgan Stanley · New York, NY",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
+      "gmail_uid": "69329",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Model Risk Management, AI Risk, NY, Vice President Goldman Sachs · New York, NY Actively recruiting",
       "company": "Goldman Sachs · New York, NY",
       "link": "https://www.linkedin.com/jobs/view/4326581235",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
+      "gmail_uid": "69329",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Manager, Structural Market Risk BMO U.S. · New York, NY 1 connection",
       "company": "Manager, Structural Market Risk",
       "link": "https://www.linkedin.com/jobs/view/4411761776",
       "location": "BMO U.S. · New York, NY",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
+      "gmail_uid": "69329",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "AVP Asset Risk & Analytics Venerable · Greater Philadelphia (Hybrid) 1 company alum",
       "company": "AVP Asset Risk & Analytics",
       "link": "https://www.linkedin.com/jobs/view/4411762850",
       "location": "Venerable · Greater Philadelphia (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69329"
+      "gmail_uid": "69329",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Senior Director Data Analytics National Bank of Canada · Toronto, ON (Hybrid) 8 connections",
       "company": "Senior Director Data Analytics",
       "link": "https://www.linkedin.com/jobs/view/4411716067",
       "location": "National Bank of Canada · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
+      "gmail_uid": "69327",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Associate Director – Portfolio Management National Bank of Canada · Montreal, QC (On-site) 55 school alumni",
       "company": "National Bank of Canada · Montreal, QC (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4411713086",
       "location": "55 school alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
+      "gmail_uid": "69327",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Senior Manager, Portfolio Insights and Analytics - Toronto Scotiabank · Toronto, ON 23 connections",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4402197388",
       "location": "23 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
+      "gmail_uid": "69327",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Director of Treasury Clarity Recruitment · Vaughan, ON (On-site) 4 connections Apply",
       "company": "Director of Treasury",
       "link": "https://www.linkedin.com/jobs/view/4411707633",
       "location": "Clarity Recruitment · Vaughan, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
-    },
-    {
-      "title": "Senior Manager, Strategic Initiatives, Credit Risk Models BMO · Toronto, ON 15 company alumni",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4410997364",
-      "location": "15 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
+      "gmail_uid": "69327",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Senior Manager, Enterprise Capital Management TD · Toronto, ON (Hybrid) 42 connections",
       "company": "TD · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4411892473",
       "location": "42 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69327"
+      "gmail_uid": "69327",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Associate Director IRRBB National Bank of Canada · Montreal, QC (On-site) 55 school alumni",
       "company": "Associate Director IRRBB",
       "link": "https://www.linkedin.com/jobs/view/4411396975",
       "location": "National Bank of Canada · Montreal, QC (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
-    },
-    {
-      "title": "Global Markets Liquidity and Funding Manager BMO · Toronto, ON Actively recruiting",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4392987201",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
+      "gmail_uid": "69326",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Director - Total Fund Management, Investment Analytics Ontario Teachers'​ Pension Plan · Toronto, ON 15 connections",
       "company": "Ontario Teachers'​ Pension Plan · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4390670699",
       "location": "15 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
-    },
-    {
-      "title": "Senior Manager, Cash Management BMO · Toronto, ON Actively recruiting",
-      "company": "Senior Manager, Cash Management",
-      "link": "https://www.linkedin.com/jobs/view/4410236372",
-      "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
-    },
-    {
-      "title": "Director of Treasury Clarity Recruitment · Vaughan, ON (On-site) 4 connections Apply",
-      "company": "Director of Treasury",
-      "link": "https://www.linkedin.com/jobs/view/4411707633",
-      "location": "Clarity Recruitment · Vaughan, ON (On-site)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
-    },
-    {
-      "title": "Senior Manager, Financial Risk (Crypto & Treasury) Kraken · Canada (Remote) Actively recruiting",
-      "company": "Kraken · Canada (Remote)",
-      "link": "https://www.linkedin.com/jobs/view/4390739777",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69326"
+      "gmail_uid": "69326",
+      "first_seen": "2026-05-10"
     },
     {
       "title": "Director of Quantitative Research Hillsdale Investment Management Inc. · Greater Toronto Area, Canada (Hybrid) 1 connection Apply",
       "company": "Director of Quantitative Research",
       "link": "https://www.linkedin.com/jobs/view/4400210844",
       "location": "Hillsdale Investment Management Inc. · Greater Toronto Area, Canada (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "VP, Risk Portfolio Control BMO Capital Markets · New York, NY 12 connections",
       "company": "VP, Risk Portfolio Control",
       "link": "https://www.linkedin.com/jobs/view/4411803892",
       "location": "BMO Capital Markets · New York, NY",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "Director, CCR Oversight BMO · Toronto, ON Be first of 9 to apply",
       "company": "Director, CCR Oversight",
       "link": "https://www.linkedin.com/jobs/view/4411809419",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "Director, Investment Management Systems RBC · Toronto, ON Be first of 16 to apply",
       "company": "Director, Investment Management Systems",
       "link": "https://www.linkedin.com/jobs/view/4411683028",
       "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "Associate/Senior Associate – Quant Cross-Asset Strategist Oliver James · New York, United States Be first of 13 to apply",
       "company": "Oliver James · New York, United States",
       "link": "https://www.linkedin.com/jobs/view/4411687003",
       "location": "Be first of 13 to apply",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "Quantitative Trading & Research - Credit - Vice President JPMorganChase · New York, NY (On-site) $200K-$285K / year Be first of 15 to apply",
       "company": "JPMorganChase · New York, NY (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4411856518",
       "location": "$200K-$285K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-09",
-      "gmail_uid": "69307"
+      "gmail_uid": "69307",
+      "first_seen": "2026-05-09"
     },
     {
       "title": "Senior Director, Asset and Liability Management (ALM) EQ Bank · Toronto, ON (Hybrid) 12 connections Apply",
       "company": "EQ Bank · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4408200851",
       "location": "12 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
+      "gmail_uid": "69301",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Senior Manager, Balance Sheet and Liquidity Risk RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4402692951",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
+      "gmail_uid": "69301",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "IRRBB Manager Mercury · Canada (Remote) Actively recruiting",
       "company": "IRRBB Manager",
       "link": "https://www.linkedin.com/jobs/view/4409603191",
       "location": "Mercury · Canada (Remote)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
-    },
-    {
-      "title": "Senior Manager, Strategic Initiatives, Credit Risk Models BMO · Toronto, ON 54 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4410997364",
-      "location": "54 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
+      "gmail_uid": "69301",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Senior Manager, Treasury and Securitization goeasy Ltd. · Mississauga, ON (On-site) 2 connections Apply",
       "company": "goeasy Ltd. · Mississauga, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4378544233",
       "location": "2 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
+      "gmail_uid": "69301",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Sr. Director, Funds Transfer Pricing CIBC · Toronto, ON 26 connections",
       "company": "Sr. Director, Funds Transfer Pricing",
       "link": "https://www.linkedin.com/jobs/view/4411819768",
       "location": "CIBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69301"
+      "gmail_uid": "69301",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Senior Manager, Risk Management & Compliance RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4390327141",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
+      "gmail_uid": "69299",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Senior Manager, Risk Transformation EQ Bank · Toronto, ON (Hybrid) Actively recruiting Apply",
       "company": "Senior Manager, Risk Transformation",
       "link": "https://www.linkedin.com/jobs/view/4408210518",
       "location": "EQ Bank · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
-    },
-    {
-      "title": "Senior Manager, Balance Sheet and Liquidity Risk RBC · Toronto, ON 18 company alumni",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4402692951",
-      "location": "18 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
+      "gmail_uid": "69299",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Senior Manager, Advanced Analytics TD · Toronto, ON (Hybrid) 42 connections",
       "company": "Senior Manager, Advanced Analytics",
       "link": "https://www.linkedin.com/jobs/view/4411821187",
       "location": "TD · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
-    },
-    {
-      "title": "Senior Director, Asset and Liability Management (ALM) EQ Bank · Toronto, ON (Hybrid) 12 connections Apply",
-      "company": "EQ Bank · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4408200851",
-      "location": "12 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
+      "gmail_uid": "69299",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Enterprise Risk Management - Senior Manager/Manager, Risk, Distribution Aritzia · New Westminster, BC (On-site) Actively recruiting",
       "company": "Aritzia · New Westminster, BC (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4410880400",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69299"
-    },
-    {
-      "title": "Senior Director, Asset and Liability Management (ALM) EQ Bank · Toronto, ON (Hybrid) 12 connections Apply",
-      "company": "EQ Bank · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4408200851",
-      "location": "12 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
-    },
-    {
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
-      "company": "Principal, Total Portfolio",
-      "link": "https://www.linkedin.com/jobs/view/4380143887",
-      "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
-    },
-    {
-      "title": "Senior Manager, Advanced Analytics TD · Toronto, ON (Hybrid) 17 company alumni",
-      "company": "Senior Manager, Advanced Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4411821187",
-      "location": "TD · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
+      "gmail_uid": "69299",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Associate Director - CM Treasury Technology RBC · Toronto, ON 18 company alumni",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4402688988",
       "location": "18 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
-    },
-    {
-      "title": "Senior Manager, Balance Sheet and Liquidity Risk RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4402692951",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
+      "gmail_uid": "69292",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Vice President, Liquidity Product Management TD · Toronto, ON (On-site) 17 company alumni",
       "company": "TD · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4411674714",
       "location": "17 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-08",
-      "gmail_uid": "69292"
-    },
-    {
-      "title": "Senior Manager, Balance Sheet and Liquidity Risk RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4402692951",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
-    },
-    {
-      "title": "Senior Manager, Risk Management & Compliance RBC · Halifax, NS 18 company alumni",
-      "company": "RBC · Halifax, NS",
-      "link": "https://www.linkedin.com/jobs/view/4390327141",
-      "location": "18 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
-    },
-    {
-      "title": "Senior Director, Asset and Liability Management (ALM) EQ Bank · Toronto, ON (Hybrid) 12 connections Apply",
-      "company": "EQ Bank · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4408200851",
-      "location": "12 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
-    },
-    {
-      "title": "Senior Manager, Advanced Analytics TD · Toronto, ON (Hybrid) 42 connections",
-      "company": "Senior Manager, Advanced Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4411821187",
-      "location": "TD · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
-    },
-    {
-      "title": "Senior Manager, Risk Transformation EQ Bank · Toronto, ON (Hybrid) Actively recruiting Apply",
-      "company": "Senior Manager, Risk Transformation",
-      "link": "https://www.linkedin.com/jobs/view/4408210518",
-      "location": "EQ Bank · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
-    },
-    {
-      "title": "Director, CCR Oversight BMO · Toronto, ON 54 connections",
-      "company": "Director, CCR Oversight",
-      "link": "https://www.linkedin.com/jobs/view/4411809419",
-      "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69270"
+      "gmail_uid": "69292",
+      "first_seen": "2026-05-08"
     },
     {
       "title": "Jobs similar to Vice President, Enterprise Risk Management at Canada Guaranty",
       "company": "Jobs similar to",
       "link": "https://www.linkedin.com/jobs/view/4409535198",
       "location": "Vice President, Enterprise Risk Management",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "VP, Global Enterprise Risk Management Element Fleet Management · Toronto, ON (On-site)",
       "company": "VP, Global Enterprise Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4404308907",
       "location": "Element Fleet Management · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Director, Risk and Controls Management RBC · Toronto, ON",
       "company": "Director, Risk and Controls Management",
       "link": "https://www.linkedin.com/jobs/view/4408490495",
       "location": "RBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Director and Head, Risk Identification - Business Risk Management Scotiabank · Toronto, ON",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4405029683",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC · Toronto, ON (On-site)",
       "company": "Managing Director, Enterprise Risk",
       "link": "https://www.linkedin.com/jobs/view/4357725889",
       "location": "CPP Investments | Investissements RPC · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
-    },
-    {
-      "title": "Director, Enterprise & Financial Risk Management President's Choice Financial · Greater Toronto Area, Canada",
-      "company": "President's Choice Financial · Greater Toronto Area, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4392483035",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Senior Manager, TD Insurance Enterprise Risk TD · Toronto, ON (On-site)",
       "company": "TD · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4410060702",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "VP, Business Assurance Services Equinix · Toronto, ON (Hybrid)",
       "company": "VP, Business Assurance Services",
       "link": "https://www.linkedin.com/jobs/view/4409218862",
       "location": "Equinix · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Manager, Enterprise Risk Management Canada Life · Toronto, ON (Hybrid)",
       "company": "Manager, Enterprise Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4409715140",
       "location": "Canada Life · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
-    },
-    {
-      "title": "Director, Global Operations Risk & Control Governance Manulife · Toronto, ON (Hybrid)",
-      "company": "Manulife · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4405049169",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Vice President - Policy Execution and Oversight 2nd Line of Defense Analyst - Risk (Hybrid) Citi · Mississauga, ON (Hybrid)",
       "company": "Citi · Mississauga, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4409780662",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69246"
+      "gmail_uid": "69246",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Associate Director, Liquidity Risk Measurement RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4408486564",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69228"
+      "gmail_uid": "69228",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Associate, Portfolio Construction and Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid) 1 connection",
       "company": "Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4409378941",
       "location": "1 connection",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69228"
+      "gmail_uid": "69228",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Specialist, Investment Risk Northern Trust · Chicago, IL (Hybrid) 2 connections",
       "company": "Specialist, Investment Risk",
       "link": "https://www.linkedin.com/jobs/view/4408479445",
       "location": "Northern Trust · Chicago, IL (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69228"
+      "gmail_uid": "69228",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Risk Manager, Credit Millennium · New York, NY (On-site) 1 connection",
       "company": "Risk Manager, Credit",
       "link": "https://www.linkedin.com/jobs/view/4389307338",
       "location": "Millennium · New York, NY (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69228"
+      "gmail_uid": "69228",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Manager - Company Financials Industries Data Bloomberg · Princeton, NJ (On-site) $215K-$325K / year 1 connection",
       "company": "Bloomberg · Princeton, NJ (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4399740675",
       "location": "$215K-$325K / year",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69228"
+      "gmail_uid": "69228",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Senior Manager, High Risk Client Management RBC · Halifax, NS 49 connections",
       "company": "RBC · Halifax, NS",
       "link": "https://www.linkedin.com/jobs/view/4408492499",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
-    },
-    {
-      "title": "Associate Director, Liquidity Risk Measurement RBC · Toronto, ON Actively recruiting",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408486564",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
+      "gmail_uid": "69216",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Senior Manager, Risk Policy, Governance, and Regulatory Affairs Wealth One Bank of Canada · Toronto, ON (Hybrid) 2 school alumni",
       "company": "Wealth One Bank of Canada · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4410717298",
       "location": "2 school alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
+      "gmail_uid": "69216",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Sr Risk Manager e-STORAGE · Kitchener, ON 1 school alum",
       "company": "Sr Risk Manager",
       "link": "https://www.linkedin.com/jobs/view/4348692097",
       "location": "e-STORAGE · Kitchener, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
+      "gmail_uid": "69216",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Senior Manager Insight Global · Toronto, ON (Hybrid) CA$125K-CA$140K / year Actively recruiting Apply",
       "company": "Senior Manager",
       "link": "https://www.linkedin.com/jobs/view/4409716155",
       "location": "Insight Global · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
+      "gmail_uid": "69216",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Senior Manager GRC KPMG Canada · Toronto, ON (On-site) 16 connections",
       "company": "Senior Manager GRC",
       "link": "https://www.linkedin.com/jobs/view/4323947242",
       "location": "KPMG Canada · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-07",
-      "gmail_uid": "69216"
-    },
-    {
-      "title": "Associate Director, Liquidity Risk Measurement RBC · Toronto, ON 18 company alumni",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408486564",
-      "location": "18 company alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
+      "gmail_uid": "69216",
+      "first_seen": "2026-05-07"
     },
     {
       "title": "Associate Director, GRA Risk Methodology RBC · Toronto, ON 49 connections",
       "company": "RBC · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4408803305",
       "location": "49 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
+      "gmail_uid": "69212",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Funding & Investments Scotiabank · Toronto, ON 23 connections",
       "company": "Director, Funding & Investments",
       "link": "https://www.linkedin.com/jobs/view/4399682908",
       "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
+      "gmail_uid": "69212",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Enterprise Liquidity Risk Analyst (4594) TD · Toronto, ON (On-site) 42 connections",
       "company": "TD · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4410576459",
       "location": "42 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
+      "gmail_uid": "69212",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Business Management, Corporate Treasury BMO · Toronto, ON 54 connections",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4409072773",
       "location": "54 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
+      "gmail_uid": "69212",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid) 1 connection",
       "company": "Director Investment Risk",
       "link": "https://www.linkedin.com/jobs/view/4409393067",
       "location": "Canada Infrastructure Bank/ Banque de l'infrastructure du Canada · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69212"
-    },
-    {
-      "title": "Associate Director, Liquidity Risk Measurement RBC · Toronto, ON Actively recruiting",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408486564",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69206"
-    },
-    {
-      "title": "Associate Director, GRA Risk Methodology RBC · Toronto, ON Actively recruiting",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408803305",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69206"
-    },
-    {
-      "title": "Director, Funding & Investments Scotiabank · Toronto, ON 23 connections",
-      "company": "Director, Funding & Investments",
-      "link": "https://www.linkedin.com/jobs/view/4399682908",
-      "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69206"
+      "gmail_uid": "69212",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Manager, Treasury Elexicon Energy Inc. · Whitby, ON 7 school alumni",
       "company": "Manager, Treasury",
       "link": "https://www.linkedin.com/jobs/view/4410762849",
       "location": "Elexicon Energy Inc. · Whitby, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69206"
+      "gmail_uid": "69206",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Treasury RECRUITMENT PARTNERS INC. · Calgary, AB Actively recruiting",
       "company": "Director, Treasury",
       "link": "https://www.linkedin.com/jobs/view/4410796644",
       "location": "RECRUITMENT PARTNERS INC. · Calgary, AB",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69206"
-    },
-    {
-      "title": "Associate Director, Liquidity Risk Measurement RBC · Toronto, ON Actively recruiting",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408486564",
-      "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
-    },
-    {
-      "title": "Associate Director, GRA Risk Methodology RBC · Toronto, ON 49 connections",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408803305",
-      "location": "49 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
-    },
-    {
-      "title": "Manager, Enterprise Risk Management Canada Life · Toronto, ON (Hybrid) Actively recruiting",
-      "company": "Manager, Enterprise Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4409715140",
-      "location": "Canada Life · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
+      "gmail_uid": "69206",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Manager, Enterprise Risk Management Canada Life · London, ON (Hybrid) 10 connections",
       "company": "Manager, Enterprise Risk Management",
       "link": "https://www.linkedin.com/jobs/view/4409722039",
       "location": "Canada Life · London, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
-    },
-    {
-      "title": "Senior Manager Insight Global · Toronto, ON (Hybrid) CA$125K-CA$140K / year Actively recruiting Apply",
-      "company": "Senior Manager",
-      "link": "https://www.linkedin.com/jobs/view/4409716155",
-      "location": "Insight Global · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
-    },
-    {
-      "title": "Senior Manager, Risk Policy, Governance, and Regulatory Affairs Wealth One Bank of Canada · Toronto, ON (Hybrid) 2 school alumni",
-      "company": "Wealth One Bank of Canada · Toronto, ON (Hybrid)",
-      "link": "https://www.linkedin.com/jobs/view/4410717298",
-      "location": "2 school alumni",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69195"
-    },
-    {
-      "title": "Jobs similar to Senior Manager, Business Banking Credit Strategy Risk Management at BMO",
-      "company": "Jobs similar to",
-      "link": "https://www.linkedin.com/jobs/view/4405438345",
-      "location": "Senior Manager, Business Banking Credit Strategy Risk Management",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
+      "gmail_uid": "69195",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager, Credit Risk Model Validation BMO · Toronto, ON",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4401369512",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Senior Manager, Risk Initiatives BMO · Toronto, ON",
-      "company": "Senior Manager, Risk Initiatives",
-      "link": "https://www.linkedin.com/jobs/view/4391195723",
-      "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Senior Manager, Strategy and Analytics - Credit Risk Management Capital One · Toronto, ON",
-      "company": "Capital One · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4404858727",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Senior Manager, Collateral Risk Analytics RBC · Toronto, ON",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408589584",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Senior Manager, Loss Mitigation Strategy RBC · Toronto, ON",
-      "company": "RBC · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4408792193",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Sr. Manager, Business Banking CIBC · Toronto, ON",
-      "company": "Sr. Manager, Business Banking",
-      "link": "https://www.linkedin.com/jobs/view/4398031303",
-      "location": "CIBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
+      "gmail_uid": "69182",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager, Credit Risk Business Banking Scotiabank · Toronto, ON",
       "company": "Scotiabank · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4398189019",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
+      "gmail_uid": "69182",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Director, Credit Risk/Lending Neo Financial · Toronto, ON (On-site)",
       "company": "Senior Director, Credit Risk/Lending",
       "link": "https://www.linkedin.com/jobs/view/4374870125",
       "location": "Neo Financial · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
-    },
-    {
-      "title": "Senior Manager, GRM International Banking Scotiabank · Toronto, ON",
-      "company": "Scotiabank · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4360080787",
-      "location": "",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
+      "gmail_uid": "69182",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Chief Advisor Financing and Credit Risk Performance National Bank of Canada · Toronto, ON (Hybrid)",
       "company": "National Bank of Canada · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4399952813",
       "location": "",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69182"
+      "gmail_uid": "69182",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager, Liquidity Management TD · Toronto, ON (Hybrid) 17 company alumni",
       "company": "Senior Manager, Liquidity Management",
       "link": "https://www.linkedin.com/jobs/view/4410068524",
       "location": "TD · Toronto, ON (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
+      "gmail_uid": "69178",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager – Customer Risk Analysis (4665) TD · Toronto, ON (Hybrid) 17 company alumni",
       "company": "TD · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4410069535",
       "location": "17 company alumni",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
+      "gmail_uid": "69178",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead PwC Canada · Toronto, ON 5 connections",
       "company": "PwC Canada · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4410004123",
       "location": "5 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
+      "gmail_uid": "69178",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Global Regulatory Management CIBC · Toronto, ON 25 connections",
       "company": "Director, Global Regulatory Management",
       "link": "https://www.linkedin.com/jobs/view/4410084226",
       "location": "CIBC · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
-    },
-    {
-      "title": "Senior Manager, Business Banking Credit Strategy Risk Management BMO · Toronto, ON 55 connections",
-      "company": "BMO · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4405438345",
-      "location": "55 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
+      "gmail_uid": "69178",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager, Independence Consultations, Deloitte Risk & Brand Deloitte · Toronto, ON 17 connections",
       "company": "Deloitte · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4410050766",
       "location": "17 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69178"
+      "gmail_uid": "69178",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Treasury Analytics goeasy Ltd. · Mississauga, ON (On-site) 2 connections",
       "company": "Director, Treasury Analytics",
       "link": "https://www.linkedin.com/jobs/view/4351596306",
       "location": "goeasy Ltd. · Mississauga, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Senior Manager, Finance Data Analytics Lead Questrade Financial Group · North York, ON (Hybrid) 2 connections",
       "company": "Questrade Financial Group · North York, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4386165213",
       "location": "2 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Associate Director, Financial Institutions S&P Global · Toronto, ON (On-site) 11 connections",
       "company": "S&P Global · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4408632196",
       "location": "11 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Director, Lending & Portfolio Management Monitoring & Customer Insights BMO · Toronto, ON 55 connections",
       "company": "BMO · Toronto, ON",
       "link": "https://www.linkedin.com/jobs/view/4405878249",
       "location": "55 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Associate Treasury Director Solmax · Longueuil, QC (Hybrid) Actively recruiting Apply",
       "company": "Associate Treasury Director",
       "link": "https://www.linkedin.com/jobs/view/4407720907",
       "location": "Solmax · Longueuil, QC (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Structured Finance - Structured Credit Alternative Products, Senior Director - Toronto Fitch Ratings · Toronto, ON (Hybrid) Actively recruiting",
       "company": "Fitch Ratings · Toronto, ON (Hybrid)",
       "link": "https://www.linkedin.com/jobs/view/4369166497",
       "location": "Actively recruiting",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-06",
-      "gmail_uid": "69177"
-    },
-    {
-      "title": "Associate Treasury Director Solmax · Longueuil, QC (Hybrid) Actively recruiting Apply",
-      "company": "Associate Treasury Director",
-      "link": "https://www.linkedin.com/jobs/view/4407720907",
-      "location": "Solmax · Longueuil, QC (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69165"
+      "gmail_uid": "69177",
+      "first_seen": "2026-05-06"
     },
     {
       "title": "Actuarial Manager, Capital Management MasterHill Talent · Greater Toronto Area, Canada (Hybrid) Apply",
       "company": "Actuarial Manager, Capital Management",
       "link": "https://www.linkedin.com/jobs/view/4408679236",
       "location": "MasterHill Talent · Greater Toronto Area, Canada (Hybrid)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-05",
-      "gmail_uid": "69165"
-    },
-    {
-      "title": "Associate Treasury Director Solmax · Longueuil, QC (Hybrid) Actively recruiting Apply",
-      "company": "Associate Treasury Director",
-      "link": "https://www.linkedin.com/jobs/view/4407720907",
-      "location": "Solmax · Longueuil, QC (Hybrid)",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
+      "gmail_uid": "69165",
+      "first_seen": "2026-05-05"
     },
     {
       "title": "Manager, Process Transformation (4890) TD · Toronto, ON (On-site) 17 company alumni",
       "company": "Manager, Process Transformation (4890)",
       "link": "https://www.linkedin.com/jobs/view/4410048363",
       "location": "TD · Toronto, ON (On-site)",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
-    },
-    {
-      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead PwC Canada · Toronto, ON 5 connections",
-      "company": "PwC Canada · Toronto, ON",
-      "link": "https://www.linkedin.com/jobs/view/4410004123",
-      "location": "5 connections",
-      "source": "gmail_linkedin_alert",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
+      "gmail_uid": "69161",
+      "first_seen": "2026-05-05"
     },
     {
       "title": "Director, Credit Execution, Strategic Accounts, TD Auto Finance TD · Toronto, ON (On-site) 42 connections",
       "company": "TD · Toronto, ON (On-site)",
       "link": "https://www.linkedin.com/jobs/view/4410055318",
       "location": "42 connections",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
+      "gmail_uid": "69161",
+      "first_seen": "2026-05-05"
     },
     {
       "title": "Director, Loan & Appraisal Review BMO · Toronto, ON 15 company alumni",
       "company": "Director, Loan & Appraisal Review",
       "link": "https://www.linkedin.com/jobs/view/4405600255",
       "location": "BMO · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
+      "gmail_uid": "69161",
+      "first_seen": "2026-05-05"
     },
     {
       "title": "Manager, Counterparty Credit Risk Scotiabank · Toronto, ON 23 connections",
       "company": "Manager, Counterparty Credit Risk",
       "link": "https://www.linkedin.com/jobs/view/4310233947",
       "location": "Scotiabank · Toronto, ON",
-      "source": "gmail_linkedin_alert",
+      "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-05",
-      "gmail_uid": "69161"
+      "gmail_uid": "69161",
+      "first_seen": "2026-05-05"
     }
-  ],
-  "harvest_diagnostics": {
-    "days_window": 30,
-    "imap_messages_matched": 59,
-    "linkedin_alerts_seen": 56,
-    "digests_with_rows": 56,
-    "digests_without_rows": 0,
-    "rows_after_parse": 337,
-    "rows_dropped_tracker_dedup": 0,
-    "rows_final": 337
-  }
+  ]
 }
