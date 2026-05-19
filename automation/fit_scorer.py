@@ -168,6 +168,29 @@ def _atomic_write_text(path: Path, text: str) -> None:
         raise
 
 
+def _atomic_write_json(path: Path, data: dict) -> None:
+    """tmp-file-and-replace JSON write so a concurrent reader (UI Action
+    Plan) never sees a missing or half-written `worklist_scored.json`.
+    Mirrors `worklist._atomic_write_json` — kept local so importing the
+    sibling module isn't a hard dep at this call site."""
+    import tempfile
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=path.name + ".",
+                                suffix=".tmp", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
 # ---------------------------------------------------------------------------
 # Per-cache-path lock dict. The lock is acquired ONLY around the cache write
 # (see the double-checked-locking block in score_with_llm). Two concurrent
@@ -339,6 +362,10 @@ def progress_end(state: str = "finished"):
 _cost_state = {
     "llm_calls": 0,
     "cache_hits": 0,
+    # Subset of cache_hits attributable to the prev-fit second-chance reuse
+    # path (worklist_scored.json index hit on cache miss). Surfaces how often
+    # we avoid paying for a re-score when fit_cache is orphaned.
+    "prev_fit_reuses": 0,
     "input_tokens": 0,
     "output_tokens": 0,
     "cache_create_tokens": 0,
@@ -349,11 +376,14 @@ _cost_state = {
 
 
 def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0,
-               cache_create: int = 0, cache_read: int = 0, cache_hit: bool = False):
+               cache_create: int = 0, cache_read: int = 0, cache_hit: bool = False,
+               prev_fit_reuse: bool = False):
     cost = 0.0
     with _progress_lock:
         if cache_hit:
             _cost_state["cache_hits"] += 1
+            if prev_fit_reuse:
+                _cost_state["prev_fit_reuses"] += 1
         else:
             _cost_state["llm_calls"] += 1
             _cost_state["input_tokens"] += in_tokens
@@ -1225,10 +1255,20 @@ def _load_prev_fit_index() -> dict[str, dict]:
     sentinel that indicates the prior run never produced a real score —
     otherwise score_with_llm would copy these placeholders into fit_cache and
     we'd silently skip the LLM call for URLs that have never actually been
-    scored."""
+    scored.
+
+    Falls back to `worklist_scored.prev.json` if the live file is missing —
+    a `--rescore` run interrupted between the prev-snapshot and the rewrite
+    would otherwise leave the next normal run with no prior index, forcing
+    paid re-scoring for everything."""
     scored = OUT_DIR / "worklist_scored.json"
     if not scored.exists():
-        return {}
+        # Fall back to the .prev.json snapshot — a `--rescore` interrupted
+        # between the snapshot copy and the rewrite would otherwise leave
+        # the next normal run thinking nothing was scored before.
+        scored = OUT_DIR / "worklist_scored.prev.json"
+        if not scored.exists():
+            return {}
     try:
         data = json.loads(scored.read_text(encoding="utf-8"))
     except Exception:
@@ -1291,13 +1331,21 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
     if _prev_fit_index and role.get("is_new_since_last_score") is False:
         canon = _canonicalize_url(role.get("link") or "")
         prev_fit = _prev_fit_index.get(canon)
-        if prev_fit and prev_fit.get("fit_verdict") not in ("error", None):
-            try:
-                _atomic_write_text(cache, json.dumps(prev_fit, indent=2))
-            except Exception:
-                pass
-            _cost_tick(cache_hit=True)
-            return prev_fit
+        if prev_fit:
+            # Block reuse on any signal the prior fit was a model parse-miss
+            # or default-fallback (verdict in {error, skip, None}, score==0,
+            # empty top_3_reasons). Otherwise we'd re-stamp a placeholder
+            # into fit_cache and skip a real LLM call indefinitely.
+            bad_verdict = prev_fit.get("fit_verdict") in ("error", None, "skip")
+            bad_score = (prev_fit.get("fit_score") or 0) == 0
+            bad_reasons = not prev_fit.get("top_3_reasons")
+            if not (bad_verdict or bad_score or bad_reasons):
+                try:
+                    _atomic_write_text(cache, json.dumps(prev_fit, indent=2))
+                except Exception:
+                    pass
+                _cost_tick(cache_hit=True, prev_fit_reuse=True)
+                return prev_fit
 
     if _abort_event.is_set():
         return {"fit_score": 0, "fit_verdict": "error", "top_3_reasons": ["aborted"],
@@ -1647,19 +1695,26 @@ def main() -> int:
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
         return 2
 
+    # Module-global persists across main() calls in the same process
+    # (Streamlit). Both branches below assign it, so declare global once
+    # up-front (Python forbids `global` after a same-name assignment).
+    global _prev_fit_index
     if args.rescore:
         # Nuke fit cache for each triaged role
         for r in triaged:
             p = _cache_path_fit(r["link"])
             if p.exists():
                 p.unlink()
+        # The non-rescore branch sets _prev_fit_index; --rescore must
+        # explicitly clear so a second invocation in the same process
+        # doesn't reuse stale prior fits the user just asked us to ignore.
+        _prev_fit_index = {}
     else:
         # Build the prior-fit index from worklist_scored.json so a row that
         # the worklist marked as is_new_since_last_score=False can short-circuit
         # to the prior fit on cache miss (e.g. when a cache-key canonicalization
         # bump orphaned the fit_cache files). --rescore deliberately bypasses
         # this — that flag exists to force a fresh LLM call.
-        global _prev_fit_index
         _prev_fit_index = _load_prev_fit_index()
         if _prev_fit_index:
             print(f"[fit_scorer] loaded {len(_prev_fit_index)} prior fits "
@@ -1776,16 +1831,23 @@ def main() -> int:
             return 0
     # Snapshot the previous scored output so the UI can diff this run vs prior
     # (Action Plan: NEW / UPGRADED / DOWNGRADED / STABLE badges). Best-effort —
-    # if the rename fails (file in use, perms), we log and proceed; the scoring
-    # output is the priority. Only one generation is kept.
+    # if the snapshot fails (file in use, perms), we log and proceed; the
+    # scoring output is the priority. Only one generation is kept.
+    #
+    # COPY-then-atomic-replace, not rename-then-write: a 10-min re-score
+    # would otherwise leave `worklist_scored.json` missing on disk for the
+    # whole run, and the UI Action Plan reading concurrently would see no
+    # file. With copy+os.replace the live file is never absent — readers
+    # see either old-complete or new-complete.
     if json_out.exists():
         prev_path = json_out.with_suffix(".prev.json")
         try:
-            json_out.replace(prev_path)
+            import shutil
+            shutil.copy2(json_out, prev_path)
         except Exception as _snap_err:
             print(f"[fit_scorer] warn: could not snapshot {json_out.name} -> "
                   f"{prev_path.name}: {_snap_err}", file=sys.stderr)
-    json_out.write_text(json.dumps(out, indent=2), encoding="utf-8")
+    _atomic_write_json(json_out, out)
 
     # Human-readable MD
     md_lines = [

@@ -4524,6 +4524,9 @@ elif page == "🎯 Pipeline":
             _bits = []
             if _new and _wstatus.get("worklist_scored_exists"):
                 _bits.append(f"🆕 **{_new} new** since last score")
+            _geo_dropped = _wstats.get("gmail_geo_dropped", 0)
+            if _geo_dropped:
+                _bits.append(f"📍 {_geo_dropped} gmail geo-dropped")
             if _wstatus.get("rebuilt_at"):
                 _bits.append(f"rebuilt {_wstatus['rebuilt_at']}")
             if _bits:

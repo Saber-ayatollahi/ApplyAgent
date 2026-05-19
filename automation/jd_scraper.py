@@ -550,14 +550,18 @@ def fetch_lever_jobs(slug: str) -> list[dict]:
         return []
 
 
-_WORKDAY_REL_DAYS = re.compile(r"posted\s+(\d+)\+?\s+days?\s+ago", re.IGNORECASE)
+_WORKDAY_REL = re.compile(
+    r"posted\s+(\d+)\+?\s+(day|week|month)s?\s+ago",
+    re.IGNORECASE,
+)
 
 
 def _normalize_workday_posted(raw: str, today: Optional[date] = None) -> str:
     """Workday's postedOn arrives as relative strings ("Posted 6 Days Ago",
-    "Posted Today", "Posted Yesterday", "Posted 30+ Days Ago"). Convert to
-    ISO YYYY-MM-DD so downstream [:10] slicing and date diffs work. Pass
-    through anything already ISO-shaped or empty."""
+    "Posted Today", "Posted Yesterday", "Posted 30+ Days Ago", "Posted 2
+    Months Ago", "Posted 1 Week Ago"). Convert to ISO YYYY-MM-DD so
+    downstream [:10] slicing and date diffs work. Pass through anything
+    already ISO-shaped or empty."""
     if not raw:
         return ""
     s = str(raw).strip()
@@ -570,13 +574,15 @@ def _normalize_workday_posted(raw: str, today: Optional[date] = None) -> str:
         return today.isoformat()
     if "yesterday" in low:
         return (today - timedelta(days=1)).isoformat()
-    m = _WORKDAY_REL_DAYS.search(s)
+    m = _WORKDAY_REL.search(s)
     if m:
         try:
             n = int(m.group(1))
         except ValueError:
             return ""
-        return (today - timedelta(days=n)).isoformat()
+        unit = m.group(2).lower()
+        days = n * {"day": 1, "week": 7, "month": 30}[unit]
+        return (today - timedelta(days=days)).isoformat()
     return ""
 
 

@@ -32,6 +32,15 @@ def main() -> int:
         ("",                       ""),
         (None,                     ""),
         ("garbage",                ""),
+        # Weeks / months coverage
+        ("Posted 1 Week Ago",      (fixed - timedelta(days=7)).isoformat()),
+        ("Posted 2 Weeks Ago",     (fixed - timedelta(days=14)).isoformat()),
+        ("Posted 1 Month Ago",     (fixed - timedelta(days=30)).isoformat()),
+        ("Posted 2 Months Ago",    (fixed - timedelta(days=60)).isoformat()),
+        ("Posted 30+ Months Ago",  (fixed - timedelta(days=900)).isoformat()),
+        # Whitespace / case variants
+        ("  POSTED TODAY  ",       fixed.isoformat()),
+        ("posted   6   days   ago", (fixed - timedelta(days=6)).isoformat()),
     ]
     print("=" * 60)
     print("workday posted_date normalization")

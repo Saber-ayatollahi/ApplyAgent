@@ -150,6 +150,30 @@ check_gta("Mississauga � ON (Hybrid)", True, "Mojibake'd + mode tail")
 # Multi-line (LinkedIn sometimes)
 check_gta("Toronto, ON\n(Hybrid)", True, "newline embedded")
 
+# ----- False-positive guards (HIGH-1: loose canada+remote substring leak) -----
+check_keep("Canada Goose Inc - Remote office in Texas, USA", False, "company name 'Canada' + remote elsewhere")
+check_keep("Remote — must reside in CA, not Canada", False, "explicit Canada negation")
+check_keep("United States Remote (Canada too)", False, "US-primary, Canada-also")
+check_keep("Toronto-Dominion Canada Square, London", False, "Canada Square is a UK street")
+
+# ----- Order-of-clauses (HIGH-2: US-state suffix shouldn't poison legit GTA match) -----
+check_gta("Toronto, OH / Remote, Canada", True, "OH namesake but offers Canada remote")
+check_gta("New York, NY or Toronto, ON", True, "multi-city: NY suffix shouldn't nuke Toronto, ON")
+check_gta("Hybrid - Toronto, ON or Remote Canada", True, "hybrid phrasing")
+
+# ----- Word-boundary (LOW-3: 'milton' substring leak via 'hamilton') -----
+check_gta("Hamilton, OH", False, "Hamilton OH should drop (no longer rescued by 'milton' substring)")
+# NOTE: Hamilton, ON now correctly drops — it's not in _GTA_CITIES; commute distance from Toronto.
+# Only flag if you want to add Hamilton explicitly to _GTA_CITIES.
+check_gta("Hamilton, ON", False, "Hamilton ON now correctly drops (not in _GTA_CITIES)")
+
+# ----- Real LinkedIn formats -----
+check_gta("Greater Toronto Area (Remote)", True, "GTA phrase + remote modifier")
+check_gta("Toronto, ON / Remote", True, "GTA + remote slash")
+check_gta("Montreal, QC (Remote possible)", False, "Montreal — out of region even if remote")
+check_keep("Anywhere", True, "Anywhere — let scorer decide")
+check_keep("Remote (Anywhere)", True, "Remote anywhere — let scorer decide")
+
 # ----- Summary -----
 print(f"\n{PASS} pass / {FAIL} fail")
 for f in FAILS:
