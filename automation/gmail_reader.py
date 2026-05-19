@@ -34,6 +34,7 @@ IMAP_PORT = 993
 ALERT_SENDERS = [
     "jobalerts-noreply@linkedin.com",
     "jobs-noreply@linkedin.com",
+    "jobs-listings@linkedin.com",   # LinkedIn job listing digests
     "alert@indeed.com",
     "noreply@glassdoor.com",
     "talent@glassdoor.com",

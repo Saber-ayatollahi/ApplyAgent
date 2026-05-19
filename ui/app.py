@@ -1724,7 +1724,7 @@ if page == "🏠 Dashboard":
                 rec = scan_runner.start_run("gmail_fetch", [
                     sys.executable,
                     str(ROOT / "automation" / "gmail_fetch.py"),
-                    "--days", "14",
+                    "--days", "30",
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Gmail fetch"}
                 st.toast("📬 Gmail fetch launched!", icon="🚀")
@@ -3528,7 +3528,7 @@ elif page == "🎯 Pipeline":
                          help="Pull LinkedIn/Indeed alert emails (14d). ~10s, free."):
                 rec = scan_runner.start_run("gmail_fetch", [
                     sys.executable,
-                    str(ROOT / "automation" / "gmail_fetch.py"), "--days", "14",
+                    str(ROOT / "automation" / "gmail_fetch.py"), "--days", "30",
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Gmail fetch"}
                 st.toast("📬 Gmail fetch launched!", icon="🚀")
