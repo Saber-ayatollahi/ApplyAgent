@@ -1446,6 +1446,22 @@ def main() -> int:
     # Clean run finished — clear the checkpoint so a stray --resume on the
     # next invocation doesn't accidentally skip companies in a new scan.
     _clear_checkpoint()
+
+    # Auto-rebuild worklist so the next score run sees these rows.
+    # Every scrape OR Gmail fetch triggers a rebuild — the user never
+    # has to remember to merge anything. See automation/worklist.py.
+    try:
+        try:
+            import worklist  # type: ignore
+        except ImportError:
+            from . import worklist  # type: ignore
+        wstats = worklist.rebuild()
+        print(f"[scan] worklist rebuilt: {wstats['total']} rows "
+              f"({wstats['scrape']} scrape, {wstats['gmail']} gmail, "
+              f"{wstats['both']} both)")
+    except Exception as e:
+        print(f"[scan] ⚠ worklist rebuild failed: {e}", file=sys.stderr)
+
     return 0
 
 

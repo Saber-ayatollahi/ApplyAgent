@@ -179,21 +179,22 @@ def main() -> int:
 
 
 def _run(args, status: dict, pipeline_id: str) -> int:
+    # Worklist contract: every stage operates on worklist.json (the deduped
+    # union of latest web scrape + recent Gmail harvests). The pipeline
+    # rebuilds the worklist between scrape and score so the scorer always
+    # sees a fresh, provenance-tagged pool. See automation/worklist.py.
+    try:
+        import worklist  # type: ignore
+    except ImportError:
+        from . import worklist  # type: ignore
 
     # -------- [1] SCRAPE --------
-    scan_file: Path | None = None
     if args.skip_scrape:
-        if args.scan:
-            scan_file = OUT_DIR / args.scan
-        else:
-            scan_file = _find_latest_scan()
-        if not scan_file or not scan_file.exists():
-            print(f"ERROR: --skip-scrape but no scan file available.", flush=True)
-            status["state"] = "failed"
-            _write_status(status)
-            return 2
-        print(f"[stage 1] SKIPPED — using existing {scan_file.name}", flush=True)
-        status["stages"]["scrape"] = {"state": "skipped", "scan_file": scan_file.name}
+        # No new scrape — the worklist will fold whatever scrape already
+        # exists. If --scan was passed, we honor it as a one-off override
+        # at score time (see stage 2).
+        print("[stage 1] SKIPPED (using existing scrape inputs)", flush=True)
+        status["stages"]["scrape"] = {"state": "skipped"}
         _write_status(status)
     else:
         cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py")]
@@ -207,31 +208,60 @@ def _run(args, status: dict, pipeline_id: str) -> int:
             status["state"] = "failed"
             _write_status(status)
             return rc
-        scan_file = _find_latest_scan()
-        if scan_file:
-            status["stages"]["scrape"]["scan_file"] = scan_file.name
-            # count
+        latest = _find_latest_scan()
+        if latest:
+            status["stages"]["scrape"]["scan_file"] = latest.name
             try:
-                d = json.loads(scan_file.read_text(encoding="utf-8"))
+                d = json.loads(latest.read_text(encoding="utf-8"))
                 status["stages"]["scrape"]["candidate_count"] = len(d.get("results", []))
             except Exception:
                 pass
             _write_status(status)
 
+    # -------- [1.5] REBUILD WORKLIST --------
+    # The single merge surface. Folds latest scrape + 30d Gmail pool into
+    # worklist.json. Idempotent — safe to call even if the scrape stage
+    # was skipped or if no new files arrived.
+    print("[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...", flush=True)
+    try:
+        wstats = worklist.rebuild()
+        status["stages"]["worklist"] = {
+            "state": "finished",
+            "rows": wstats.get("total", 0),
+            "scrape_only": wstats.get("scrape", 0),
+            "gmail_only": wstats.get("gmail", 0),
+            "both": wstats.get("both", 0),
+            "new_since_last_score": wstats.get("new_since_last_score", 0),
+        }
+        print(f"[worklist] {wstats['total']} rows "
+              f"({wstats['scrape']} scrape, {wstats['gmail']} gmail, "
+              f"{wstats['both']} both) · "
+              f"{wstats['new_since_last_score']} new since last score",
+              flush=True)
+    except Exception as e:
+        status["stages"]["worklist"] = {"state": "failed", "error": str(e)[:300]}
+        print(f"[worklist] REBUILD FAILED: {e}", flush=True)
+        status["state"] = "failed"
+        _write_status(status)
+        return 4
+    _write_status(status)
+
     # -------- [2] SCORE --------
-    scored_file: Path | None = None
+    # Always score worklist.json (or args.scan if explicitly provided).
+    score_target = args.scan or "worklist.json"
+    score_target_path = OUT_DIR / score_target
     if args.skip_score:
         print("[stage 2] SKIPPED", flush=True)
         status["stages"]["score"] = {"state": "skipped"}
         _write_status(status)
     else:
-        if not scan_file:
-            print("ERROR: no scan file to score.", flush=True)
+        if not score_target_path.exists():
+            print(f"ERROR: score target {score_target} not found.", flush=True)
             status["state"] = "failed"
             _write_status(status)
             return 2
         cmd = [sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
-               "--scan", scan_file.name,
+               "--scan", score_target,
                "--concurrency", str(args.score_concurrency)]
         if args.score_limit:
             cmd += ["--limit", str(args.score_limit)]
@@ -242,13 +272,12 @@ def _run(args, status: dict, pipeline_id: str) -> int:
             status["state"] = "failed"
             _write_status(status)
             return rc
-        scored_file = OUT_DIR / (scan_file.stem + "_scored.json")
-        if scored_file.exists():
-            status["stages"]["score"]["scored_file"] = scored_file.name
+        scored_path = OUT_DIR / (score_target_path.stem + "_scored.json")
+        if scored_path.exists():
+            status["stages"]["score"]["scored_file"] = scored_path.name
             try:
-                d = json.loads(scored_file.read_text(encoding="utf-8"))
+                d = json.loads(scored_path.read_text(encoding="utf-8"))
                 status["stages"]["score"]["scored_count"] = d.get("stage2_scored", 0)
-                # verdict breakdown
                 verdicts: dict = {}
                 for r in d.get("results", []):
                     v = (r.get("fit") or {}).get("fit_verdict", "?")
@@ -263,26 +292,21 @@ def _run(args, status: dict, pipeline_id: str) -> int:
         print("[stage 3] SKIPPED", flush=True)
         status["stages"]["promote"] = {"state": "skipped"}
     else:
-        # If the score stage didn't produce a fresh scored file (e.g.
-        # --skip-score with stale outputs), fall back to the latest
-        # scan_YYYYMMDD_scored.json — never the retired scan_v4_scored.
-        target_scored = scored_file
-        if target_scored is None:
-            # Pick latest scan_*_scored.json (web or Gmail). Previously
-            # required all-digit stem which excluded scan_gmail_*_scored.
-            candidates = sorted(
-                OUT_DIR.glob("scan_*_scored.json"),
-                key=lambda p: p.stat().st_mtime,
-                reverse=True,
-            )
-            candidates = [p for p in candidates if p.stem != "scan_v4_scored"]
-            if not candidates:
+        # Default to worklist_scored.json (or the matching companion of
+        # whatever score_target was used). auto_promote.py also defaults
+        # to worklist_scored.json on its own if --scan is omitted.
+        scored_companion = OUT_DIR / (score_target_path.stem + "_scored.json")
+        if scored_companion.exists():
+            target_scored = scored_companion
+        else:
+            ws = worklist.effective_scored()
+            if ws is None:
                 print("[stage 3] FAILED — no scored scan available to promote.",
                       flush=True)
                 status["state"] = "failed"
                 _write_status(status)
                 return 1
-            target_scored = candidates[0]
+            target_scored = ws
         cmd = [sys.executable, str(ROOT / "automation" / "auto_promote.py"),
                "--scan", target_scored.name,
                "--min-score", str(args.min_score)]

@@ -1149,14 +1149,37 @@ try:
     _lt_in = _lt_tot.get("input_tokens", 0) or 0
     _lt_out = _lt_tot.get("output_tokens", 0) or 0
     _lt_tokens = _lt_in + _lt_out
+
+    # Today + 7-day rollups so the user can see "is this run going to
+    # blow my budget?" at a glance. Without this, lifetime numbers were
+    # the only signal — useless when one bad rescore can spike $5 in
+    # an hour. Thresholds: yellow at $5/day, red at $10/day.
+    _daily = _ledger.get("daily", {}) or {}
+    _today_key = datetime.now().strftime("%Y-%m-%d")
+    _today_cost = float((_daily.get(_today_key) or {}).get("estimated_cost_usd", 0.0))
+    _week_cost = 0.0
+    for _i in range(7):
+        _k = (datetime.now() - timedelta(days=_i)).strftime("%Y-%m-%d")
+        _week_cost += float((_daily.get(_k) or {}).get("estimated_cost_usd", 0.0))
+
+    if _today_cost >= 10.0:
+        _today_emoji = "🔴"
+    elif _today_cost >= 5.0:
+        _today_emoji = "🟡"
+    else:
+        _today_emoji = "🟢"
+
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 💰 Lifetime LLM spend")
+    st.sidebar.markdown(
+        f"### 💰 Spend · {_today_emoji} today **${_today_cost:.2f}** · "
+        f"week ${_week_cost:.2f}"
+    )
     _lsc1, _lsc2 = st.sidebar.columns(2)
-    _lsc1.metric("Total", f"${_lt_cost:.2f}")
+    _lsc1.metric("Lifetime", f"${_lt_cost:.2f}")
     _lsc2.metric("Calls", f"{_lt_calls:,}")
     st.sidebar.caption(
-        f"{_lt_tokens:,} tokens ({_lt_in:,} in · {_lt_out:,} out) · "
-        f"never resets · see ⚙️ Admin → Cost ledger for details"
+        f"{_lt_tokens:,} tokens · 🟡 ≥$5/day · 🔴 ≥$10/day · "
+        f"see ⚙️ Admin → Cost ledger"
     )
 except Exception as _e:
     st.sidebar.caption(f"Ledger unavailable: {_e}")
@@ -3516,109 +3539,57 @@ elif page == "🎯 Pipeline":
     # Build stage summaries from latest pipeline status + filesystem
     stages_info = (pipe or {}).get("stages", {})
 
-    # ---------- Sources & Working set ----------
-    # Three separated concepts (see automation/worklist.py):
-    #   scrape source (pinned, stable) · gmail pool (rolling 30d) ·
-    #   working set (derived = dedup(scrape ∪ gmail), what the scorer reads).
-    _src = worklist.get_scrape_source()
-    _cands = worklist.scan_candidates()
-    _newest_web = _cands[0] if _cands else None
-    _pool_env = worklist._read_envelope(worklist.GMAIL_POOL)
-    _pool_n = len(_pool_env.get("results", []) or [])
-    _ws_env = worklist._read_envelope(worklist.WORKING_SET)
-    _ws_stats = _ws_env.get("working_set_stats", {})
-    _n_raw_gmail = len(list(OUT_DIR.glob("scan_gmail_*.json")))
-
-    def _cnt(p):
-        try:
-            return len(json.loads(Path(p).read_text(encoding="utf-8")).get("results", []))
-        except Exception:
-            return "?"
-
+    # ---------- Worklist status strip ----------
+    # ONE source of truth: worklist.json. Auto-rebuilt by jd_scraper and
+    # gmail_fetch when they finish. The user normally never touches the
+    # rebuild button — it's there as an escape hatch only.
+    _wstatus = worklist.status()
+    _wstats = _wstatus.get("stats") or {}
     with st.container(border=True):
-        st.markdown("#### 📊 Sources & working set")
-
-        # Row 1: scrape source
-        if _src:
-            _delta = worklist.scrape_delta_vs_source()
-            _msg = (f"🛰️ **Scrape source:** `{_src.name}` · **{_cnt(_src)} jobs** "
-                    f"— pinned & protected.")
-            if _delta.get("new", 0) > 0:
-                _msg += (f"  ·  ℹ️ a fresh scrape (`{_delta['newest']}`) would add "
-                         f"**{_delta['new']}** new — re-pin to adopt it.")
-            st.success(_msg, icon="🛰️")
+        if _wstatus.get("worklist_exists"):
+            _scored_str = (
+                "✅ scored" if _wstatus.get("worklist_scored_exists")
+                else "🟡 not yet scored"
+            )
+            _new = _wstats.get("new_since_last_score", 0)
+            st.markdown(
+                f"#### 🎯 Worklist · **{_wstats.get('total', 0)} jobs** "
+                f"({_wstats.get('scrape', 0)} 🛰 scrape · "
+                f"{_wstats.get('gmail', 0)} 📬 gmail · "
+                f"{_wstats.get('both', 0)} 🔁 both) · {_scored_str}"
+            )
+            _bits = []
+            if _new and _wstatus.get("worklist_scored_exists"):
+                _bits.append(f"🆕 **{_new} new** since last score")
+            if _wstatus.get("rebuilt_at"):
+                _bits.append(f"rebuilt {_wstatus['rebuilt_at']}")
+            if _bits:
+                st.caption(" · ".join(_bits))
+            st.caption(
+                "Worklist = dedup(latest web scrape ∪ rolling 30-day Gmail "
+                "harvests). Scorer and promoter read THIS file. "
+                "Scrape and Gmail-fetch buttons rebuild it automatically."
+            )
         else:
             st.warning(
-                f"🛰️ **No scrape source pinned.** Newest scrape: "
-                f"`{_newest_web.name if _newest_web else '(none)'}`"
-                + (f" ({_cnt(_newest_web)} jobs)" if _newest_web else "")
-                + " — pin one so rescrapes can't replace your pool.", icon="⚠️")
-
-        # Row 2: gmail pool
-        st.info(
-            f"📬 **Gmail pool:** **{_pool_n} jobs** (rolling "
-            f"{worklist.POOL_WINDOW_DAYS}-day window) · "
-            f"{_n_raw_gmail} raw harvest file(s) on disk.", icon="📬")
-
-        # Row 3: working set (derived)
-        if _ws_env:
-            _wsc = _ws_stats
-            _new_bits = ""
-            if _wsc.get("has_baseline"):
-                _new_bits = (f" · 🆕 **{_wsc.get('new_total',0)} new** "
-                             f"({_wsc.get('new_scrape',0)} scrape, "
-                             f"{_wsc.get('new_gmail',0)} gmail)")
-            st.markdown(
-                f"🎯 **Working set: {_wsc.get('unique','?')} unique** — "
-                f"scorer reads THIS{_new_bits}  \n"
-                f"<span style='opacity:0.7;font-size:0.85em'>mix: "
-                f"{_wsc.get('scrape',0)} scrape-only · {_wsc.get('gmail',0)} "
-                f"gmail-only · {_wsc.get('both',0)} in both</span>",
-                unsafe_allow_html=True)
-        else:
-            st.caption("🎯 Working set not built yet — hit **Rebuild** below.")
-
-        _wc1, _wc2, _wc3, _wc4 = st.columns(4)
+                "🎯 No worklist yet — run a scrape or Gmail fetch and "
+                "the worklist will be built automatically.",
+                icon="⚠️",
+            )
+        _wc1, _wc2 = st.columns([1, 5])
         with _wc1:
-            if st.button("📌 Pin newest scrape", disabled=not _newest_web,
-                         width='stretch', key="pin_src_btn",
-                         help="Lock the newest web scrape as the stable source "
-                              "for this search cycle. Rescrapes won't touch it."):
-                worklist.set_scrape_source(_newest_web)
-                worklist.rebuild_working_set()
-                st.success(f"Pinned `{_newest_web.name}` & rebuilt working set.")
-                st.rerun()
-        with _wc2:
-            if st.button(f"📬 Refresh Gmail pool", width='stretch',
-                         key="refresh_pool_btn",
-                         help="Fold every Gmail harvest into the pool, dedup, "
-                              "and prune entries older than 30 days."):
-                _ps = worklist.update_gmail_pool()
-                worklist.rebuild_working_set()
+            if st.button("🔄 Rebuild now",
+                          width='stretch',
+                          key="rebuild_worklist_btn",
+                          help="Force a worklist rebuild from current "
+                               "inputs. Normally automatic — only useful "
+                               "if you manually edited a scan_*.json."):
+                _rs = worklist.rebuild()
                 st.success(
-                    f"Pool: +{_ps['added']} new, -{_ps['pruned']} stale, "
-                    f"**{_ps['pool_total']} total**. Working set rebuilt.")
-                st.rerun()
-        with _wc3:
-            if st.button("🎯 Rebuild working set", width='stretch',
-                         type="primary", key="rebuild_ws_btn",
-                         help="Regenerate dedup(scrape ∪ gmail pool). "
-                              "Non-destructive — sources stay untouched."):
-                _rs = worklist.rebuild_working_set()
-                st.success(
-                    f"Working set: **{_rs['unique']} unique** "
+                    f"Worklist: **{_rs['total']} rows** "
                     f"({_rs['scrape']} scrape · {_rs['gmail']} gmail · "
                     f"{_rs['both']} both)"
-                    + (f" · 🆕 {_rs['new_total']} new" if _rs['has_baseline']
-                       else " · baseline set"))
-                st.rerun()
-        with _wc4:
-            if st.button("🔓 Unpin source", disabled=not _src,
-                         width='stretch', key="unpin_src_btn",
-                         help="Stop protecting the scrape source. Falls back "
-                              "to newest scan."):
-                worklist.clear_scrape_source()
-                st.warning("Scrape source unpinned.")
+                )
                 st.rerun()
 
     # ---------- Funnel data collection ----------
@@ -3811,40 +3782,34 @@ elif page == "🎯 Pipeline":
                 icon="🔑",
             )
 
-        st.markdown("#### Quick launch")
-        qa1, qa2, qa3, qa4 = st.columns(4)
+        # The five canonical actions. Each one operates on the SAME contract:
+        # the worklist (latest scrape ∪ rolling 30d Gmail). Scrape and Gmail
+        # rebuild the worklist on completion. Score reads worklist.json,
+        # writes worklist_scored.json. Promote reads worklist_scored.json.
+        # Full refresh chains everything.
+        st.markdown("#### ⚡ Quick launch")
+        _ws_total = _wstats.get("total", 0)
+        _ws_scored_exists = _wstatus.get("worklist_scored_exists", False)
+
+        qa1, qa2, qa3, qa4, qa5 = st.columns(5)
         with qa1:
-            if st.button("🛰 Scrape only", width='stretch',
-                         type="primary" if not key_ok_here else "secondary",
+            if st.button("🛰 Refresh scrape", width='stretch',
                          disabled=not _can_run,
-                         help="Core 77 targets, no API key needed. ~15-30 min. "
-                              "Writes scan_<date>.json."):
+                         help="Re-scrape the 77 core targets. ~15-30 min, no "
+                              "API key needed. Auto-rebuilds the worklist "
+                              "when done so the scorer sees the new rows."):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                     "--scrape-mode", "core", "--skip-score", "--skip-promote",
                 ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
-                st.toast("🛰 Core scrape launched!", icon="🚀")
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Refresh scrape"}
+                st.toast("🛰 Scrape launched!", icon="🚀")
                 st.rerun()
         with qa2:
-            _score_label = "🤖 Score latest scan" if scan_f else "🤖 Score (no scan)"
-            if st.button(_score_label, width='stretch',
-                         type="primary" if (key_ok_here and scan_f) else "secondary",
-                         disabled=(not _can_run or not key_ok_here or not scan_f),
-                         help=f"Run the LLM scorer on `{scan_f.name if scan_f else '?'}`. "
-                              f"~5-15 min, costs ~$0.10-0.30. Requires API key."):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--skip-scrape", "--skip-promote",
-                    "--score-concurrency", "6",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Score latest scan"}
-                st.toast("🤖 Scorer launched!", icon="🚀")
-                st.rerun()
-        with qa3:
-            if st.button("📬 Gmail alerts", width='stretch',
+            if st.button("📬 Refresh Gmail", width='stretch',
                          disabled=(not _gmail_ok or not _can_run),
-                         help="Pull LinkedIn/Indeed alert emails (14d). ~10s, free."):
+                         help="Pull LinkedIn alert emails from last 30d. "
+                              "~10-30s, free. Auto-rebuilds the worklist."):
                 rec = scan_runner.start_run("gmail_fetch", [
                     sys.executable,
                     str(ROOT / "automation" / "gmail_fetch.py"), "--days", "30",
@@ -3854,10 +3819,43 @@ elif page == "🎯 Pipeline":
                 st.rerun()
             if not _gmail_ok:
                 st.caption("🔌 Connect Gmail in sidebar")
+        with qa3:
+            _score_label = (
+                f"🤖 Score worklist ({_ws_total})" if _ws_total
+                else "🤖 Score (no rows)"
+            )
+            if st.button(_score_label, width='stretch',
+                         type="primary" if (key_ok_here and _ws_total) else "secondary",
+                         disabled=(not _can_run or not key_ok_here or not _ws_total),
+                         help=f"Score the {_ws_total}-row worklist. "
+                              "~5-15 min on first run, near-free on re-runs "
+                              "(fit_cache is persistent). Requires API key."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-promote",
+                    "--score-concurrency", "6",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Score worklist"}
+                st.toast("🤖 Scorer launched!", icon="🚀")
+                st.rerun()
         with qa4:
+            _promote_label = "📋 Promote scored" if _ws_scored_exists else "📋 (score first)"
+            if st.button(_promote_label, width='stretch',
+                         disabled=(not _can_run or not _ws_scored_exists),
+                         help="Promote scored roles into the tracker. "
+                              "Reads worklist_scored.json. Dry-run first; "
+                              "use the advanced form below for --commit."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-score",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Promote scored"}
+                st.toast("📋 Promote launched!", icon="🚀")
+                st.rerun()
+        with qa5:
             if st.button("🌅 Full refresh", width='stretch',
                          disabled=(not key_ok_here or not _can_run),
-                         help="Scrape + score new roles + morning brief. "
+                         help="Scrape → rebuild worklist → score → morning brief. "
                               "~25 min, ~$0.03. Requires API key."):
                 nightly_cmd_list = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
@@ -4526,19 +4524,25 @@ elif page == "📋 Jobs Kanban":
         out = re.sub(r"[^a-zA-Z0-9]+", "_", s or "").strip("_")
         return out[:cap] if cap else out
 
+    # Tailor outputs moved to outputs/tailored/ in May 2026 — check there
+    # first, fall back to outputs/ for legacy *.md files written before the
+    # split. Eventually outputs/ fallback can be removed.
+    _tailored_dir = OUT_DIR / "tailored"
+
     def _has_draft_for(company: str, title: str) -> str:
         sc = _tailor_safe(company, None)
         sr = _tailor_safe(title, 60)
         if not sc or not sr:
             return ""
-        # Final runs write <sc>_<sr>_YYYYMMDD.md (no _prompt suffix)
-        final = list(OUT_DIR.glob(f"{sc}_{sr}_*.md"))
-        final = [p for p in final if not p.name.endswith("_prompt.md")]
-        if final:
-            return "📄 ready"
-        # Dry-run only — preview exists but no real tailor output
-        if list(OUT_DIR.glob(f"{sc}_{sr}_*_prompt.md")):
-            return "📝 preview"
+        for _root in (_tailored_dir, OUT_DIR):
+            if not _root.exists():
+                continue
+            final = [p for p in _root.glob(f"{sc}_{sr}_*.md")
+                     if not p.name.endswith("_prompt.md")]
+            if final:
+                return "📄 ready"
+            if list(_root.glob(f"{sc}_{sr}_*_prompt.md")):
+                return "📝 preview"
         return ""
 
     # Load url_history once and enrich rows with posted/found
@@ -4567,13 +4571,38 @@ elif page == "📋 Jobs Kanban":
     # alerts vs. scraped postings. auto_promote.py preserves the original
     # gmail_* source as a "<source>+fit_scorer" composite.
     if "source" in view.columns:
-        view = view.assign(
-            src=view["source"].apply(
-                lambda s: "📬" if isinstance(s, str) and s.startswith("gmail_") else ""
-            )
-        )
+        # Worklist source tags get rendered as compact badges:
+        #   📬 = surfaced via Gmail alert only
+        #   🛰 = surfaced via web scrape only
+        #   🔁 = surfaced via both (highest-confidence — multiple paths)
+        # Legacy source strings fall back: "gmail_*" → 📬, anything else → 🛰.
+        def _src_badge(s):
+            if not isinstance(s, str):
+                return ""
+            if "scrape+gmail" in s:
+                return "🔁"
+            if s.startswith("gmail"):
+                return "📬"
+            if s.startswith("scraper"):
+                return "🛰"
+            return ""
+        view = view.assign(src=view["source"].apply(_src_badge))
 
-    cols = [c for c in ["id", "draft", "freshness", "src", "company", "title", "gta_area",
+    # Warm-intro column: rows where the CRM has at least one matching
+    # contact get a 🤝N badge. 70%+ of director-level finance hires in
+    # Toronto come via recruiter intros — surfacing the warm path at the
+    # row level (not buried in the inspector) is the highest-leverage
+    # cheap win for application strategy.
+    if "company" in view.columns:
+        def _warm_count(co):
+            if not isinstance(co, str) or not co:
+                return ""
+            n = len(crm_contacts_at_company(crm, co))
+            return f"🤝{n}" if n else ""
+        view = view.assign(warm=view["company"].apply(_warm_count))
+
+    cols = [c for c in ["id", "draft", "freshness", "src", "warm",
+                        "company", "title", "gta_area",
                         "sector", "tier", "status", "fit_score", "fit_score_numeric",
                         "primary_variant", "urgency",
                         "date_found", "date_applied", "url"]
@@ -5231,14 +5260,16 @@ elif page == "📜 Scan History":
             scrape_s = stages.get("scrape") or {}
             score_s = stages.get("score") or {}
             verdicts = (score_s.get("verdicts") or {})
+            # Cast int|"—" to str so pyarrow doesn't trip on mixed types
+            # when streamlit serializes this dataframe.
             pipe_rows.append({
                 "pipeline_id": p.get("pipeline_id", "?"),
                 "started": p.get("started_at", ""),
                 "finished": p.get("finished_at", ""),
                 "state": p.get("state", "?"),
                 "mode": (p.get("args") or {}).get("scrape_mode", "?"),
-                "candidates": scrape_s.get("candidate_count", "—"),
-                "scored": score_s.get("scored_count", "—"),
+                "candidates": str(scrape_s.get("candidate_count", "—")),
+                "scored": str(score_s.get("scored_count", "—")),
                 "apply_now": verdicts.get("apply_now", 0),
                 "tailor": verdicts.get("tailor_and_apply", 0),
                 "watch": verdicts.get("watch", 0),
@@ -5273,7 +5304,7 @@ elif page == "📜 Scan History":
             scan_rows.append({
                 "file": f.name,
                 "scan_date": scan_date,
-                "candidates": count,
+                "candidates": str(count),  # pyarrow-friendly: int|"?"  -> str
                 "sectors": len(sectors),
                 "mtime": datetime.fromtimestamp(f.stat().st_mtime).isoformat(timespec="seconds"),
                 "size_kb": round(f.stat().st_size / 1024, 1),

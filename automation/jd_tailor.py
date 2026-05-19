@@ -145,6 +145,11 @@ COVER_TEMPLATES = ROOT / "docs" / "cover_letter_templates.md"
 INTERVIEW_PREP = ROOT / "docs" / "interview_prep.md"
 TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
+# Tailor outputs land in their own subdir so the file pickers (Scan history,
+# scan_*.json globs, etc.) don't surface them as scan files. The UI glob
+# for "draft ready" badges checks here first, then falls back to OUT_DIR
+# for legacy *.md files written before this split.
+TAILORED_DIR = OUT_DIR / "tailored"
 
 MODEL = os.environ.get("JD_TAILOR_MODEL", "claude-opus-4-7")  # override via env
 FALLBACK_MODEL = os.environ.get("JD_TAILOR_FALLBACK", "claude-sonnet-4-6")
@@ -451,8 +456,9 @@ def main() -> int:
     safe_company = re.sub(r"[^a-zA-Z0-9]+", "_", company).strip("_")
     safe_role = re.sub(r"[^a-zA-Z0-9]+", "_", role)[:60].strip("_")
 
+    TAILORED_DIR.mkdir(parents=True, exist_ok=True)
     if args.dry_run:
-        prompt_path = OUT_DIR / f"{safe_company}_{safe_role}_{stamp}_prompt.md"
+        prompt_path = TAILORED_DIR / f"{safe_company}_{safe_role}_{stamp}_prompt.md"
         prompt_path.write_text(
             f"# SYSTEM PROMPT\n\n{system}\n\n---\n\n# USER PROMPT\n\n{user}",
             encoding="utf-8",
@@ -484,7 +490,7 @@ def main() -> int:
     print(f"[jd_tailor] Tailoring for {company} / {role} ...", file=sys.stderr)
     result = call_claude(system, user, cost_guard=guard)
 
-    out_path = OUT_DIR / f"{safe_company}_{safe_role}_{stamp}.md"
+    out_path = TAILORED_DIR / f"{safe_company}_{safe_role}_{stamp}.md"
     out_path.write_text(result, encoding="utf-8")
 
     print(f"[jd_tailor] Wrote: {out_path}")

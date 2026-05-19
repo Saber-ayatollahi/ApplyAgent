@@ -98,13 +98,22 @@ def make_entry(r: dict) -> dict:
 
     # Preserve provenance from the scan row. Without this, every promoted
     # entry got tagged "scraper+fit_scorer" and we lost the ability to tell
-    # Gmail-alert rows from web-scraped rows in the tracker — which matters
-    # for UI badges and for "delete the alert email after we have the row".
-    raw_src = r.get("source") or ""
-    if raw_src.startswith("gmail_"):
-        entry_source = f"{raw_src}+fit_scorer"
-    else:
+    # Gmail-alert rows from web-scraped rows in the tracker.
+    #
+    # Worklist rows carry source ∈ {"scrape", "gmail", "both"}; legacy
+    # raw scans carry the original source string ("gmail_linkedin_alert",
+    # "workday_direct_ats", etc.). Translate both into a tracker-friendly
+    # tag so the UI can render 📬 / 🛰 / 🔁 badges consistently.
+    raw_src = (r.get("source") or "").strip()
+    if raw_src == "both":
+        entry_source = "scrape+gmail+fit_scorer"
+    elif raw_src == "gmail" or raw_src.startswith("gmail_"):
+        entry_source = "gmail_linkedin_alert+fit_scorer"
+    elif raw_src == "scrape":
         entry_source = "scraper+fit_scorer"
+    else:
+        # Unknown / legacy source string — preserve verbatim, tag the scorer
+        entry_source = f"{raw_src or 'unknown'}+fit_scorer"
 
     return {
         "id": _id,
@@ -150,7 +159,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scan", default=None,
                     help="Filename in automation/outputs/ of the scored scan to promote. "
-                         "If omitted, picks the freshest scan_YYYYMMDD_scored.json.")
+                         "If omitted, promotes worklist_scored.json (the deduped "
+                         "scrape ∪ Gmail pool — see automation/worklist.py).")
     ap.add_argument("--commit", action="store_true", help="Actually write the tracker")
     ap.add_argument("--min-score", type=int, default=7,
                     help="Only promote roles with fit_score >= this (default 7)")
@@ -165,24 +175,32 @@ def main() -> int:
     args = ap.parse_args()
 
     if not args.scan:
-        # Old default was scan_v4_scored.json — retired. Pick the freshest
-        # scan_*_scored.json (web OR Gmail). Previously we required the
-        # stripped stem to be all-digits, which silently excluded
-        # scan_gmail_<stamp>_scored.json — Gmail rows could be scored
-        # but never auto-promoted because the picker pretended the file
-        # didn't exist.
-        candidates = sorted(
-            OUT_DIR.glob("scan_*_scored.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        # Still skip the retired scan_v4_scored
-        candidates = [p for p in candidates if p.stem != "scan_v4_scored"]
-        if not candidates:
-            print("ERROR: no scan_YYYYMMDD_scored.json in outputs/. Run fit_scorer.py first.",
-                  file=sys.stderr)
-            return 1
-        args.scan = candidates[0].name
+        # Default: read worklist_scored.json (worklist contract). If that
+        # doesn't exist, fall back to the freshest scan_*_scored.json so
+        # the legacy single-file flow keeps working during migration.
+        try:
+            import worklist  # type: ignore
+        except ImportError:
+            from . import worklist  # type: ignore
+        ws = worklist.effective_scored()
+        if ws is not None:
+            args.scan = ws.name
+            print(f"[auto_promote] No --scan supplied; using {args.scan} "
+                  f"(worklist contract).", file=sys.stderr)
+        else:
+            candidates = sorted(
+                OUT_DIR.glob("scan_*_scored.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            candidates = [p for p in candidates if p.stem != "scan_v4_scored"]
+            if not candidates:
+                print("ERROR: no worklist_scored.json or scan_*_scored.json in "
+                      "outputs/. Run fit_scorer.py first.", file=sys.stderr)
+                return 1
+            args.scan = candidates[0].name
+            print(f"[auto_promote] No --scan and no worklist_scored.json; "
+                  f"falling back to {args.scan}.", file=sys.stderr)
         print(f"[auto_promote] No --scan supplied; using latest: {args.scan}",
               file=sys.stderr)
     scored_path = OUT_DIR / args.scan

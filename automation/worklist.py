@@ -1,31 +1,43 @@
 #!/usr/bin/env python3
-"""worklist.py — source-of-truth job pool management.
+"""worklist.py — the ONE job pool every consumer reads.
 
-Replaces the old "merge everything into one base file" approach (destructive,
-loses provenance) with three clearly separated concepts:
+Replaces a tangle of half-overlapping concepts (.scrape_source pointer,
+.base_scan pointer, gmail_pool.json, working_set.json, scan_base_*.json,
+scan_*_merged.json) with a single contract:
 
-  1. SCRAPE SOURCE  — one pinned web scrape, the stable pool for this search
-     cycle. Set explicitly; rescrapes never overwrite it. Pointer: .scrape_source
-     (falls back to legacy .base_scan for migration).
+  INPUTS (immutable, append-only on disk):
+    automation/outputs/scan_<date>.json         ← raw web scrape
+    automation/outputs/scan_gmail_<stamp>.json  ← raw Gmail harvest
 
-  2. GMAIL POOL     — gmail_pool.json. An accumulating, deduped pool of jobs
-     harvested from Gmail alerts. Each fetch unions in NEW unique rows and
-     stamps first_seen. Rolling 30-day window: rows older than 30 days are
-     pruned UNLESS the URL is already in the tracker.
+  POOL (THE source of truth — derived):
+    automation/outputs/worklist.json            ← scorer reads this. Period.
 
-  3. WORKING SET    — working_set.json. DERIVED: dedup(scrape ∪ gmail). Each
-     row tagged source ("scrape" | "gmail" | "both"), first_seen, and is_new
-     (URL not present in the previous working-set snapshot). This is what the
-     scorer consumes. It is regenerated from the two sources — never edited.
+  DERIVED:
+    automation/outputs/worklist_scored.json     ← fit_scorer output
+    promote_report_<date>.md                    ← auto_promote preview
 
-Sources stay immutable inputs; the working set is a pure function of them.
-Provenance and recency are first-class so the nightly brief can highlight
-"N new from web scrape, M new from Gmail".
+The contract: **the scorer scores `worklist.json`. Nothing else. Ever.**
+
+`rebuild()` is the only function that produces `worklist.json`. It runs:
+  - Automatically after `jd_scraper` finishes (called from there)
+  - Automatically after `gmail_fetch` finishes (called from there)
+  - Manually from the UI's 'Rebuild' button (rarely needed — auto covers it)
+
+Each row carries:
+  - source: "scrape" | "gmail" | "both"
+  - first_seen: earliest date we saw the URL across all inputs
+  - in_pool_since: when this row first appeared in the worklist
+  - is_new_since_last_score: True if URL not in the previous worklist_scored
+
+Provenance and recency are first-class — the brief, scorer, and promote
+report all use them. Tracker rows promoted from a worklist entry inherit
+the source tag (so a 📬 / 🛰 / 🔁 badge can render).
 """
 from __future__ import annotations
 
 import json
 import re
+import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -33,18 +45,32 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 TRACKER = ROOT / "data" / "job_tracker_data.json"
 
-SCRAPE_SOURCE_POINTER = OUT_DIR / ".scrape_source"
-LEGACY_BASE_POINTER = OUT_DIR / ".base_scan"
-GMAIL_POOL = OUT_DIR / "gmail_pool.json"
-WORKING_SET = OUT_DIR / "working_set.json"
-PREV_URLS = OUT_DIR / ".working_set_prev_urls.json"
+WORKLIST = OUT_DIR / "worklist.json"
+WORKLIST_SCORED = OUT_DIR / "worklist_scored.json"
+LEGACY_DIR = OUT_DIR / "_legacy"
 
-POOL_WINDOW_DAYS = 30
+GMAIL_WINDOW_DAYS = 30  # how far back to fold scan_gmail_*.json files
 
-# Files that match scan_*.json but are NOT user-pickable web scrapes.
-# "_merged" excludes the legacy one-off merge hack (superseded by working set).
-_NON_SOURCE = ("scan_gmail_", "scan_base_", "scan_checkpoint",
-               "working_set", "gmail_pool", "_merged")
+# Patterns that match scan_*.json but are NOT user-pickable web scrapes.
+_NON_SCRAPE_PATTERNS = (
+    "scan_gmail_", "scan_base_", "scan_checkpoint",
+    "_merged", "working_set", "gmail_pool",
+)
+
+# Files we relocate to _legacy/ on first rebuild — old artifacts that
+# overlapped worklist's job. Idempotent: if they're already in _legacy/
+# (or never existed), the move is a no-op.
+_LEGACY_FILES = (
+    "gmail_pool.json",
+    "working_set.json",
+    ".working_set_prev_urls.json",
+    ".scrape_source",
+    ".base_scan",
+)
+_LEGACY_GLOBS = (
+    "scan_base_*.json",
+    "scan_*_merged.json",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -54,32 +80,66 @@ _LI_JOB_RE = re.compile(r"linkedin\.com/.*?/jobs/view/(\d+)", re.IGNORECASE)
 
 
 def norm_url(row: dict) -> str:
+    """Canonical URL for dedup. LinkedIn /jobs/view/<id> collapses tracking
+    redirects to the bare job id; everything else strips query/fragment
+    and normalizes case + trailing slash."""
     raw = (row.get("link") or row.get("url") or row.get("job_url") or "").strip()
     if not raw:
         return ""
     m = _LI_JOB_RE.search(raw)
     if m:
         return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
-    # Strip tracking query/fragment for everything else
     base = raw.split("#", 1)[0].split("?", 1)[0]
     return base.rstrip("/").lower()
 
 
-def _tracker_urls() -> set[str]:
-    try:
-        data = json.loads(TRACKER.read_text(encoding="utf-8"))
-        out = set()
-        for j in data.get("jobs", []):
-            u = (j.get("url") or "").strip()
-            if u:
-                out.add(norm_url({"url": u}))
-        return out
-    except Exception:
-        return set()
+def _normalize_title(title: str) -> str:
+    """Canonical title — must match jd_scraper._normalize_title so cross-scan
+    near-dup detection catches Workday tile vs. LinkedIn /jobs/view/<id>
+    of the same role."""
+    t = (title or "").lower()
+    t = re.sub(r"\s*\(\s*\d{3,6}\s*\)\s*$", "", t)
+    t = re.sub(
+        r"\s*\((hybrid|remote|on[- ]?site|contract|temporary|permanent|"
+        r"full[- ]?time|part[- ]?time|\d+\s*month\s*contract)\)\s*",
+        " ", t)
+    t = re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
+    t = re.sub(r"[,/\-–—_]+", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
 
 
-def _today() -> str:
-    return datetime.now().strftime("%Y-%m-%d")
+def _ct_key(company: str, title: str) -> tuple[str, str] | None:
+    co = (company or "").lower().strip()
+    nt = _normalize_title(title)
+    if not co or not nt:
+        return None
+    return (co, nt)
+
+
+# ---------------------------------------------------------------------------
+# Input discovery
+# ---------------------------------------------------------------------------
+def latest_web_scan() -> Path | None:
+    """The freshest scan_<date>.json that's a real web scrape (not Gmail,
+    not legacy merge artifacts, not the in-progress checkpoint)."""
+    files = sorted(OUT_DIR.glob("scan_*.json"),
+                    key=lambda p: p.stat().st_mtime, reverse=True)
+    for f in files:
+        if "_scored" in f.name:
+            continue
+        if any(t in f.name for t in _NON_SCRAPE_PATTERNS):
+            continue
+        return f
+    return None
+
+
+def recent_gmail_scans(window_days: int = GMAIL_WINDOW_DAYS) -> list[Path]:
+    """All scan_gmail_*.json from the last `window_days`, newest first."""
+    cutoff = datetime.now().timestamp() - (window_days * 86400)
+    files = sorted(OUT_DIR.glob("scan_gmail_*.json"),
+                    key=lambda p: p.stat().st_mtime, reverse=True)
+    return [f for f in files if f.stat().st_mtime >= cutoff]
 
 
 def _read_envelope(p: Path) -> dict:
@@ -89,208 +149,237 @@ def _read_envelope(p: Path) -> dict:
         return {}
 
 
+def _today() -> str:
+    return datetime.now().strftime("%Y-%m-%d")
+
+
 # ---------------------------------------------------------------------------
-# Scrape source pointer
+# Legacy file quarantine — runs on every rebuild, idempotent
 # ---------------------------------------------------------------------------
-def scan_candidates() -> list[Path]:
-    """Real, user-pickable web scrapes, newest first."""
-    files = sorted(OUT_DIR.glob("scan_*.json"),
-                   key=lambda p: p.stat().st_mtime, reverse=True)
-    return [f for f in files
-            if "_scored" not in f.name
-            and not any(t in f.name for t in _NON_SOURCE)]
+def quarantine_legacy() -> dict:
+    """Move legacy artifacts (scan_base_*, _merged, gmail_pool, working_set,
+    pointer files) to outputs/_legacy/ so they don't shadow the new worklist.
+    Returns counts. Safe to call repeatedly — only moves what's still there."""
+    LEGACY_DIR.mkdir(parents=True, exist_ok=True)
+    moved = []
+    for name in _LEGACY_FILES:
+        src = OUT_DIR / name
+        if src.exists():
+            try:
+                shutil.move(str(src), str(LEGACY_DIR / src.name))
+                moved.append(src.name)
+            except Exception:
+                pass
+    for pattern in _LEGACY_GLOBS:
+        for src in OUT_DIR.glob(pattern):
+            try:
+                shutil.move(str(src), str(LEGACY_DIR / src.name))
+                moved.append(src.name)
+            except Exception:
+                pass
+    return {"moved": moved, "count": len(moved)}
 
 
-def get_scrape_source() -> Path | None:
-    for ptr in (SCRAPE_SOURCE_POINTER, LEGACY_BASE_POINTER):
-        try:
-            if ptr.exists():
-                name = ptr.read_text(encoding="utf-8").strip()
-                if name:
-                    p = OUT_DIR / name
-                    if p.exists():
-                        return p
-        except Exception:
-            pass
-    return None
-
-
-def set_scrape_source(path) -> None:
+# ---------------------------------------------------------------------------
+# Rebuild — the only function that writes worklist.json
+# ---------------------------------------------------------------------------
+def _previous_scored_urls() -> set[str]:
+    """URLs that were in the LAST worklist_scored.json. Used to mark
+    rows as is_new_since_last_score so a re-score can skip them (or
+    so the brief can highlight 'N new since last scoring run')."""
+    if not WORKLIST_SCORED.exists():
+        return set()
     try:
-        SCRAPE_SOURCE_POINTER.write_text(Path(path).name, encoding="utf-8")
-    except Exception:
-        pass
-
-
-def clear_scrape_source() -> None:
-    for ptr in (SCRAPE_SOURCE_POINTER, LEGACY_BASE_POINTER):
-        try:
-            ptr.unlink()
-        except FileNotFoundError:
-            pass
-        except Exception:
-            pass
-
-
-# ---------------------------------------------------------------------------
-# Gmail pool — accumulate + rolling 30d prune
-# ---------------------------------------------------------------------------
-def update_gmail_pool() -> dict:
-    """Fold every scan_gmail_*.json harvest into gmail_pool.json, dedup by URL
-    (keep earliest first_seen), then prune rows older than POOL_WINDOW_DAYS
-    UNLESS the URL is in the tracker. Returns stats."""
-    stats = {"harvests": 0, "added": 0, "pruned": 0, "pool_total": 0}
-    pool_env = _read_envelope(GMAIL_POOL)
-    by_url: dict[str, dict] = {}
-    for r in pool_env.get("results", []) or []:
-        u = norm_url(r)
-        if u:
-            by_url[u] = r
-
-    harvests = sorted(OUT_DIR.glob("scan_gmail_*.json"),
-                      key=lambda p: p.stat().st_mtime)
-    for h in harvests:
-        stats["harvests"] += 1
-        for r in _read_envelope(h).get("results", []) or []:
-            u = norm_url(r)
-            if not u:
-                continue
-            if u in by_url:
-                continue  # already pooled, keep original first_seen
-            r = dict(r)
-            r["source"] = "gmail"
-            r.setdefault("first_seen", r.get("posted_date") or _today())
-            by_url[u] = r
-            stats["added"] += 1
-
-    # Rolling-window prune
-    cutoff = (datetime.now() - timedelta(days=POOL_WINDOW_DAYS)).date()
-    keep_urls = _tracker_urls()
-    kept: list[dict] = []
-    for u, r in by_url.items():
-        fs = str(r.get("first_seen", ""))[:10]
-        try:
-            fs_date = datetime.strptime(fs, "%Y-%m-%d").date()
-        except Exception:
-            fs_date = datetime.now().date()
-        if fs_date >= cutoff or u in keep_urls:
-            kept.append(r)
-        else:
-            stats["pruned"] += 1
-
-    stats["pool_total"] = len(kept)
-    GMAIL_POOL.write_text(json.dumps({
-        "scan_date": _today(),
-        "source": "gmail_pool",
-        "window_days": POOL_WINDOW_DAYS,
-        "results": kept,
-    }, indent=2, ensure_ascii=False), encoding="utf-8")
-    return stats
-
-
-# ---------------------------------------------------------------------------
-# Working set — derived view
-# ---------------------------------------------------------------------------
-def _prev_urls() -> set[str]:
-    try:
-        return set(json.loads(PREV_URLS.read_text(encoding="utf-8")))
+        data = json.loads(WORKLIST_SCORED.read_text(encoding="utf-8"))
+        return {norm_url(r) for r in data.get("results", []) if norm_url(r)}
     except Exception:
         return set()
 
 
-def rebuild_working_set() -> dict:
-    """working_set = dedup(scrape_source ∪ gmail_pool). Tag source / first_seen
-    / is_new (vs previous snapshot). Returns stats incl. per-source new counts."""
-    stats = {"scrape": 0, "gmail": 0, "both": 0, "unique": 0,
-             "new_total": 0, "new_scrape": 0, "new_gmail": 0,
-             "has_baseline": PREV_URLS.exists()}
+def _previous_pool_first_seen() -> dict[str, str]:
+    """Map url → first_seen from the existing worklist, so a row that
+    was already known keeps its earliest first_seen instead of resetting
+    to today every rebuild."""
+    if not WORKLIST.exists():
+        return {}
+    try:
+        data = json.loads(WORKLIST.read_text(encoding="utf-8"))
+        out = {}
+        for r in data.get("results", []) or []:
+            u = norm_url(r)
+            if u and r.get("first_seen"):
+                out[u] = str(r["first_seen"])[:10]
+        return out
+    except Exception:
+        return {}
 
-    src = get_scrape_source()
-    scrape_env = _read_envelope(src) if src else {}
-    pool_env = _read_envelope(GMAIL_POOL)
 
-    merged: dict[str, dict] = {}
-    for r in scrape_env.get("results", []) or []:
-        u = norm_url(r)
+def rebuild(quarantine: bool = True) -> dict:
+    """Rebuild worklist.json from current inputs. Returns stats.
+
+    Steps:
+      1. Move legacy files to _legacy/ (one-time, idempotent).
+      2. Read latest scan_<date>.json (the scrape input).
+      3. Read all scan_gmail_*.json from the last GMAIL_WINDOW_DAYS.
+      4. Dedup by canonical URL; tag source ("scrape" | "gmail" | "both").
+      5. Also dedup by (company, normalized_title) so the same role with
+         different URLs (Workday tile vs. /jobs/view/<id>) collapses.
+      6. Preserve first_seen across rebuilds (via _previous_pool_first_seen).
+      7. Mark is_new_since_last_score by diffing against worklist_scored.json.
+      8. Write worklist.json atomically (tmp + os.replace).
+
+    Sources stay immutable — this function never mutates the input files.
+    """
+    if quarantine:
+        quarantine_legacy()
+
+    web = latest_web_scan()
+    gmail_files = recent_gmail_scans()
+
+    web_env = _read_envelope(web) if web else {}
+    web_rows = web_env.get("results", []) or []
+
+    prev_first_seen = _previous_pool_first_seen()
+    prev_scored = _previous_scored_urls()
+
+    by_url: dict[str, dict] = {}
+    by_ct: dict[tuple[str, str], str] = {}  # ct_key → url (for near-dup merge)
+
+    def _add(row: dict, src: str):
+        u = norm_url(row)
         if not u:
-            continue
-        r = dict(r)
-        r["source"] = "scrape"
-        r.setdefault("first_seen", r.get("posted_date") or _today())
-        merged[u] = r
+            return
+        ct = _ct_key(row.get("company", ""), row.get("title", ""))
+        # Near-dup collision: same (co,title) seen via a different URL.
+        # Keep the existing entry but upgrade its source tag if needed.
+        if ct and ct in by_ct and by_ct[ct] != u:
+            existing_url = by_ct[ct]
+            existing = by_url[existing_url]
+            if existing["source"] != src and existing["source"] != "both":
+                existing["source"] = "both"
+            return
+        if u in by_url:
+            entry = by_url[u]
+            if entry["source"] != src and entry["source"] != "both":
+                entry["source"] = "both"
+            return
+        new_row = dict(row)
+        new_row["source"] = src
+        new_row["first_seen"] = (
+            prev_first_seen.get(u)
+            or (str(row.get("posted_date") or "")[:10])
+            or _today()
+        )
+        new_row["in_pool_since"] = prev_first_seen.get(u) or _today()
+        by_url[u] = new_row
+        if ct:
+            by_ct[ct] = u
 
-    for r in pool_env.get("results", []) or []:
-        u = norm_url(r)
-        if not u:
-            continue
-        if u in merged:
-            merged[u]["source"] = "both"
-            # earliest first_seen wins
-            a = str(merged[u].get("first_seen", ""))[:10]
-            b = str(r.get("first_seen", ""))[:10]
-            if b and (not a or b < a):
-                merged[u]["first_seen"] = b
-        else:
-            r = dict(r)
-            r["source"] = "gmail"
-            r.setdefault("first_seen", r.get("posted_date") or _today())
-            merged[u] = r
+    for r in web_rows:
+        _add(r, "scrape")
+    for gp in gmail_files:
+        for r in _read_envelope(gp).get("results", []) or []:
+            _add(r, "gmail")
 
-    prev = _prev_urls()
     rows: list[dict] = []
-    for u, r in merged.items():
-        is_new = bool(prev) and u not in prev
-        r["is_new"] = is_new
+    stats = {"scrape": 0, "gmail": 0, "both": 0, "total": 0,
+             "new_since_last_score": 0}
+    for u, r in by_url.items():
+        r["is_new_since_last_score"] = (u not in prev_scored)
+        if r["is_new_since_last_score"]:
+            stats["new_since_last_score"] += 1
+        stats[r["source"]] = stats.get(r["source"], 0) + 1
         rows.append(r)
-        s = r["source"]
-        stats[s] = stats.get(s, 0) + 1
-        if is_new:
-            stats["new_total"] += 1
-            if s in ("scrape", "both"):
-                stats["new_scrape"] += 1
-            if s in ("gmail", "both"):
-                stats["new_gmail"] += 1
+    stats["total"] = len(rows)
 
-    stats["unique"] = len(rows)
-
-    envelope = dict(scrape_env) if scrape_env else {}
-    envelope["results"] = rows
-    envelope["scan_date"] = _today()
-    envelope["source"] = "working_set"
-    envelope["working_set_stats"] = stats
-    envelope["dedup_stats"] = {
-        "input": (stats["scrape"] + stats["gmail"] + stats["both"]),
-        "output": stats["unique"], "dropped_url": 0, "dropped_near": 0,
+    envelope = {
+        "version": 1,
+        "scan_date": _today(),
+        "rebuilt_at": datetime.now().isoformat(timespec="seconds"),
+        "source": "worklist",
+        "sources": {
+            "scrape": web.name if web else None,
+            "gmail_window_days": GMAIL_WINDOW_DAYS,
+            "gmail_files_indexed": [p.name for p in gmail_files],
+        },
+        "stats": stats,
+        # dedup_stats kept for back-compat with funnel UI
+        "dedup_stats": {
+            "input": len(web_rows) + sum(
+                len(_read_envelope(p).get("results", []) or [])
+                for p in gmail_files
+            ),
+            "output": stats["total"],
+            "dropped_url": 0, "dropped_near": 0,
+        },
+        "results": rows,
     }
-    WORKING_SET.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
-                           encoding="utf-8")
-    # Snapshot for next-time delta
-    PREV_URLS.write_text(json.dumps(sorted(merged.keys())), encoding="utf-8")
+    _atomic_write_json(WORKLIST, envelope)
     return stats
 
 
-def scrape_delta_vs_source() -> dict:
-    """How many URLs a fresh scrape would ADD vs the pinned source.
-    Informational only — the source stays weekly-pinned by design."""
-    src = get_scrape_source()
-    cands = scan_candidates()
-    newest = next((c for c in cands if not src or c.name != src.name), None)
-    if not src or not newest:
-        return {"newest": newest.name if newest else None, "new": 0,
-                "source": src.name if src else None}
-    src_urls = {norm_url(r) for r in _read_envelope(src).get("results", []) or []}
-    new_n = sum(1 for r in _read_envelope(newest).get("results", []) or []
-                if norm_url(r) and norm_url(r) not in src_urls)
-    return {"newest": newest.name, "new": new_n, "source": src.name}
+def _atomic_write_json(path: Path, data: dict) -> None:
+    """tmp-file-and-replace so a crash mid-write can't truncate worklist.json
+    (which the scorer might be reading concurrently)."""
+    import os
+    import tempfile
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=path.name + ".",
+                                suffix=".tmp", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
+# ---------------------------------------------------------------------------
+# Public read API — every consumer goes through these
+# ---------------------------------------------------------------------------
 def effective_scan() -> Path | None:
-    """What the scorer/funnel should read: working set → scrape source →
-    newest raw scan (legacy fallback)."""
-    if WORKING_SET.exists():
-        return WORKING_SET
-    src = get_scrape_source()
-    if src:
-        return src
-    cands = scan_candidates()
-    return cands[0] if cands else None
+    """The file the scorer should read. Always worklist.json once it exists.
+    Returns None if no inputs have been seen yet (first-time setup)."""
+    if WORKLIST.exists():
+        return WORKLIST
+    # Bootstrap path: no rebuild has happened yet, but the user has a scan.
+    web = latest_web_scan()
+    if web:
+        return web
+    return None
+
+
+def effective_scored() -> Path | None:
+    """The file auto_promote should read. worklist_scored.json or None."""
+    return WORKLIST_SCORED if WORKLIST_SCORED.exists() else None
+
+
+def status() -> dict:
+    """Cheap snapshot for UI. Doesn't trigger a rebuild."""
+    out = {
+        "worklist_exists": WORKLIST.exists(),
+        "worklist_scored_exists": WORKLIST_SCORED.exists(),
+        "latest_web_scan": (latest_web_scan().name
+                             if latest_web_scan() else None),
+        "recent_gmail_count": len(recent_gmail_scans()),
+        "stats": None,
+    }
+    if WORKLIST.exists():
+        env = _read_envelope(WORKLIST)
+        out["stats"] = env.get("stats")
+        out["rebuilt_at"] = env.get("rebuilt_at")
+    return out
+
+
+if __name__ == "__main__":
+    # CLI: `python worklist.py` rebuilds and prints stats.
+    s = rebuild()
+    print(f"Worklist rebuilt: {s['total']} rows "
+          f"({s['scrape']} scrape, {s['gmail']} gmail, {s['both']} both) "
+          f"· {s['new_since_last_score']} new since last score")

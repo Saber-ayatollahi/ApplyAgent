@@ -369,27 +369,68 @@ def parse_linkedin_alert(body: str) -> list[dict]:
                 if not canon:
                     continue
                 job_id = canon.rsplit("/", 1)[-1]
-                # Title — usually the anchor's own text, often inside <strong>
-                anchor_text = " ".join(a.get_text(" ", strip=True).split())
-                title = anchor_text[:180] if anchor_text else ""
-                # Company — LinkedIn digests put company as a sibling link/cell
-                # underneath. Walk forward until we find the next short text.
+
+                # LinkedIn digest cards pack the whole job into ONE anchor's
+                # text in this shape:
+                #     <title> <company> · <location> <activity-text>
+                # Where:
+                #   - "title" is the role title (often inside <strong>)
+                #   - "company · location" sits in the next cell line
+                #   - "activity-text" is "Actively recruiting" / "N connections"
+                # Older code grabbed the entire anchor text as `title` and
+                # the second cell line as `company` — but that line was
+                # "company · location" so we ended up with company=
+                # "BMO · Toronto, ON" and title containing everything.
+                # New strategy: pull title from <strong> if present, else
+                # use the FIRST non-empty cell line; pull company+location
+                # by splitting the SECOND cell line on the LinkedIn middle
+                # dot (· U+00B7) or em-dash; drop the activity-text line.
+                title = ""
+                strong = a.find("strong")
+                if strong:
+                    title = " ".join(strong.get_text(" ", strip=True).split())
+
                 company = ""
                 location = ""
-                # Search within the nearest enclosing <table> cell for company/loc
                 cell = a.find_parent(["td", "div"])
+                cell_lines: list[str] = []
                 if cell is not None:
                     cell_text = cell.get_text("\n", strip=True)
-                    lines = [l.strip() for l in cell_text.split("\n") if l.strip()]
-                    # Title is first non-empty line; company/location follow
-                    if title and lines and lines[0].startswith(title[:40]):
-                        follow = lines[1:]
+                    cell_lines = [l.strip() for l in cell_text.split("\n") if l.strip()]
+
+                if not title and cell_lines:
+                    # Without <strong>, the first cell line is the title
+                    title = cell_lines[0]
+
+                # Find the company+location line — usually cell_lines[1].
+                # Pattern: "Company · City, Region (Mode)" or "Company - City"
+                co_loc = ""
+                for line in cell_lines[1:]:
+                    if title and line.startswith(title[:30]):
+                        continue  # skip if it's the title repeating
+                    co_loc = line
+                    break
+
+                if co_loc:
+                    # Try common separators in priority order. " · " is the
+                    # most common; em-dash and " - " are fallbacks.
+                    for sep in (" · ", " · ", " — ", " – ", " - "):
+                        if sep in co_loc:
+                            company, _, location = co_loc.partition(sep)
+                            break
                     else:
-                        follow = lines
-                    if follow:
-                        company = follow[0][:120]
-                    if len(follow) > 1:
-                        location = follow[1][:120]
+                        # No separator — assume the whole thing is the company
+                        company = co_loc
+
+                # Strip "(Hybrid)" / "(On-site)" / "(Remote)" tail from location
+                # so the row is comparable to web-scrape rows from Workday.
+                location = re.sub(r"\s*\((Hybrid|On-?site|Remote)\)\s*$",
+                                   "", location, flags=re.IGNORECASE)
+
+                title = title[:180]
+                company = company.strip()[:120]
+                location = location.strip()[:120]
+
                 existing = rows_by_id.get(job_id)
                 if existing is None or (not existing.get("company") and company):
                     rows_by_id[job_id] = {

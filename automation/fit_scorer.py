@@ -1327,7 +1327,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scan", default=None,
                     help="Filename in automation/outputs/ of the scraper output to score. "
-                         "If omitted, picks the freshest scan_YYYYMMDD.json.")
+                         "If omitted, scores worklist.json (the deduped pool — "
+                         "scrape ∪ recent Gmail). Pass --scan X for legacy "
+                         "single-file mode.")
     ap.add_argument("--limit", type=int, default=0,
                     help="Limit to N roles after stage 1 triage (0=all).")
     ap.add_argument("--only", action="append", default=[],
@@ -1344,24 +1346,32 @@ def main() -> int:
     args = ap.parse_args()
 
     if not args.scan:
-        # Pick the freshest scan_*.json (web scrape OR scan_gmail_*).
-        # Previously required all-digit 13-char stem, which silently
-        # excluded scan_gmail_<stamp>.json — Gmail fetch produced rows
-        # but `python fit_scorer.py` (no --scan) couldn't find them.
-        candidates = sorted(
-            (p for p in OUT_DIR.glob("scan_*.json")
-             if "_scored" not in p.name
-             and "scan_checkpoint" not in p.name
-             and p.stem != "scan_v4"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if not candidates:
-            print("ERROR: no scan_YYYYMMDD.json in outputs/. Pass --scan or run the scraper.",
-                  file=sys.stderr)
+        # Default: score worklist.json. The worklist module unions the
+        # latest web scrape with the rolling-30d Gmail pool, dedups, and
+        # tags every row with provenance — so scoring it covers every
+        # surfaced role exactly once. If worklist.json doesn't exist
+        # yet (first-time setup), bootstrap by triggering a rebuild.
+        try:
+            import worklist  # type: ignore
+        except ImportError:
+            from . import worklist  # type: ignore
+        wpath = worklist.effective_scan()
+        if wpath is None:
+            # No inputs at all — neither worklist nor a raw scan. Trigger
+            # a rebuild in case there are inputs that just haven't been
+            # folded yet, then re-resolve.
+            try:
+                worklist.rebuild()
+            except Exception:
+                pass
+            wpath = worklist.effective_scan()
+        if wpath is None:
+            print("ERROR: no worklist.json and no scan_*.json in outputs/. "
+                  "Run jd_scraper or gmail_fetch first.", file=sys.stderr)
             return 1
-        args.scan = candidates[0].name
-        print(f"[fit_scorer] No --scan supplied; using latest: {args.scan}",
+        args.scan = wpath.name
+        print(f"[fit_scorer] No --scan supplied; using {args.scan} "
+              f"(worklist contract — pool = scrape ∪ recent Gmail).",
               file=sys.stderr)
     scan_path = OUT_DIR / args.scan
     if not scan_path.exists():

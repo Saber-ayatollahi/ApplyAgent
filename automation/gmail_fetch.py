@@ -2,11 +2,9 @@
 """
 gmail_fetch.py — Standalone LinkedIn/Indeed alert fetcher.
 
-Until now, Gmail-harvested alerts only got pulled as a side-effect of a full
-jd_scraper run (--gmail flag). There was no way to refresh alerts
-independently. This script is the missing link — it can be launched from
-the UI Pipeline tab as a 10-second operation, produces a scan_gmail_<stamp>.json
-that feeds the same scorer/promote pipeline as any other scan.
+Harvests LinkedIn job-alert emails into a scan_gmail_<stamp>.json file with
+the same schema as web scrape outputs. After writing, automatically
+rebuilds worklist.json so the scorer's next run picks the new rows up.
 
 Usage:
     python automation/gmail_fetch.py                      # last 14 days
@@ -14,22 +12,18 @@ Usage:
     python automation/gmail_fetch.py --dry-run            # print counts only
 
 Outputs:
-    automation/outputs/scan_gmail_<YYYYMMDD_HHMMSS>.json  (scan_v4 schema)
+    automation/outputs/scan_gmail_<YYYYMMDD_HHMMSS>.json  (raw harvest)
+    automation/outputs/worklist.json                       (rebuilt)
 
-The output file name starts with scan_gmail_ so it's easy to distinguish
-from full web scrapes and the existing scoring pipeline can still run:
-
-    python automation/fit_scorer.py --scan scan_gmail_<stamp>.json
-    python automation/run_pipeline.py --skip-scrape --scan scan_gmail_<stamp>.json
-
-Tracker dedupe happens at auto_promote time — a URL already in tracker
-is skipped. So running this daily is safe even if alerts overlap.
+Dedup philosophy: this script ONLY writes the raw harvest. All dedup —
+URL match against tracker, near-dup match against the web scrape, rolling
+30-day pool maintenance — is the worklist module's job. Keeping the
+producer side dumb means there's exactly ONE place dedup logic lives.
 
 Exit codes:
-    0   success (any row count)
+    0   success (any row count, including zero — diagnostics on disk)
     1   credentials missing / invalid
-    2   Gmail fetch failed
-    3   no rows found (not an error per se, but signals 'nothing to do')
+    2   IMAP fetch failed
 """
 from __future__ import annotations
 
@@ -43,120 +37,11 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 
 
-def _load_tracker_urls() -> set[str]:
-    """Dedupe against roles already in the tracker. Cheap read."""
-    tp = ROOT / "data" / "job_tracker_data.json"
-    if not tp.exists():
-        return set()
-    try:
-        data = json.loads(tp.read_text(encoding="utf-8"))
-        return {j.get("url") for j in data.get("jobs", []) if j.get("url")}
-    except Exception:
-        return set()
-
-
-def _normalize_title(title: str) -> str:
-    """Canonical form matching jd_scraper._normalize_title so cross-scan
-    dedup works whether the row came from web scrape or Gmail. Inlined
-    here to avoid a hard import dependency on jd_scraper (which pulls
-    in requests, bs4, sector configs, etc.)."""
-    import re as _re
-    t = (title or "").lower()
-    t = _re.sub(r"\s*\(\s*\d{3,6}\s*\)\s*$", "", t)
-    t = _re.sub(
-        r"\s*\((hybrid|remote|on[- ]?site|contract|temporary|permanent|"
-        r"full[- ]?time|part[- ]?time|\d+\s*month\s*contract)\)\s*",
-        " ", t)
-    t = _re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
-    t = _re.sub(r"[,/\-–—_]+", " ", t)
-    t = _re.sub(r"\s+", " ", t).strip()
-    return t
-
-
-def _ct_key(company: str, title: str) -> tuple[str, str]:
-    """(company_lower, normalized_title) tuple — same shape jd_scraper uses
-    for its near-dup pass. Empty company OR title yields a sentinel that
-    never matches (we don't want to over-merge unlabeled rows)."""
-    co = (company or "").lower().strip()
-    nt = _normalize_title(title)
-    return (co, nt)
-
-
-def _load_recent_scan_urls_and_keys(
-    recent_gmail_window_days: int = 7,
-) -> tuple[set[str], set[tuple[str, str]], dict[str, int]]:
-    """Build the cross-scan dedup index.
-
-    Sources:
-      - The single freshest web scan (scan_<date>.json, excluding _scored,
-        scan_gmail_, and scan_checkpoint).
-      - All scan_gmail_*.json from the last `recent_gmail_window_days` days.
-
-    Returns (url_set, ct_key_set, source_counts).
-
-    Why: a Gmail digest from RBC/TD/etc. routinely overlaps with what the
-    web scrape just produced (Workday tile + LinkedIn /jobs/view/<id> for
-    the same role). Without cross-scan dedup, both files independently
-    feed scoring and the user pays the API cost twice for the same role.
-    """
-    url_set: set[str] = set()
-    ct_set: set[tuple[str, str]] = set()
-    counts = {"web_scan": 0, "gmail_scans": 0, "rows_indexed": 0}
-
-    # Latest web scan
-    web_files = sorted(
-        (p for p in OUT_DIR.glob("scan_*.json")
-         if "_scored" not in p.name
-         and "scan_gmail_" not in p.name
-         and "scan_checkpoint" not in p.name),
-        key=lambda p: p.stat().st_mtime, reverse=True,
-    )
-    if web_files:
-        try:
-            data = json.loads(web_files[0].read_text(encoding="utf-8"))
-            for r in data.get("results", []):
-                if r.get("link"):
-                    url_set.add(r["link"])
-                k = _ct_key(r.get("company", ""), r.get("title", ""))
-                if k[0] and k[1]:
-                    ct_set.add(k)
-                counts["rows_indexed"] += 1
-            counts["web_scan"] = 1
-        except Exception:
-            pass
-
-    # Recent Gmail scans
-    cutoff = datetime.now().timestamp() - (recent_gmail_window_days * 86400)
-    gmail_files = sorted(
-        OUT_DIR.glob("scan_gmail_*.json"),
-        key=lambda p: p.stat().st_mtime, reverse=True,
-    )
-    for p in gmail_files:
-        if p.stat().st_mtime < cutoff:
-            continue
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            for r in data.get("results", []):
-                if r.get("link"):
-                    url_set.add(r["link"])
-                k = _ct_key(r.get("company", ""), r.get("title", ""))
-                if k[0] and k[1]:
-                    ct_set.add(k)
-                counts["rows_indexed"] += 1
-            counts["gmail_scans"] += 1
-        except Exception:
-            continue
-
-    return url_set, ct_set, counts
-
-
 def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
-    """Wrap Gmail rows in the same envelope fit_scorer / auto_promote expect.
-
-    Also stamps a `gmail_alerts` block listing the UIDs of every email that
-    contributed at least one row. The UI uses this list to ask the user
-    'move these N alerts to Gmail Trash?' — only emails that produced data
-    are eligible, so we never drop a lead we couldn't parse."""
+    """Wrap Gmail rows in the envelope worklist + the legacy fit_scorer
+    paths expect. Stamps a `gmail_alerts` block listing the UIDs of every
+    email that contributed at least one row — the UI uses this to offer
+    'move these N alerts to Gmail Trash'."""
     contributing_uids = sorted({
         str(r.get("gmail_uid")) for r in rows
         if r.get("gmail_uid")
@@ -174,8 +59,8 @@ def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
         "diagnostics": {
             "zero_result_companies": [],
             "per_company": [],
-            "note": "Produced by gmail_fetch.py — pure Gmail alert harvest, "
-                    "no web scraping.",
+            "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. "
+                    "Dedup happens in worklist.rebuild() not here.",
         },
         "gmail_alerts": {
             "contributing_uids": contributing_uids,
@@ -194,30 +79,23 @@ def main() -> int:
                     help="How many days of alerts to pull (default 14)")
     ap.add_argument("--dry-run", action="store_true",
                     help="Fetch and print counts; don't write a scan file.")
-    ap.add_argument("--skip-tracker-dedup", action="store_true",
-                    help="Include alerts already in the tracker. Useful when "
-                         "rescoring an old URL with different resume variants.")
-    ap.add_argument("--skip-scan-dedup", action="store_true",
-                    help="Don't cross-check against the latest web scan and "
-                         "recent Gmail scans. Default behavior dedupes so a "
-                         "role surfaced both via web scrape and Gmail isn't "
-                         "scored twice.")
-    ap.add_argument("--scan-dedup-window-days", type=int, default=7,
-                    help="How far back to look at prior scan_gmail_*.json "
-                         "for dedup (default 7).")
     ap.add_argument("--output", default=None,
                     help="Override the output filename. Default: "
                          "scan_gmail_<YYYYMMDD_HHMMSS>.json")
+    ap.add_argument("--no-rebuild", action="store_true",
+                    help="Skip the automatic worklist.rebuild() at the end. "
+                         "Use only when chaining multiple harvests where you "
+                         "want a single rebuild after the last one.")
     args = ap.parse_args()
 
     try:
         from gmail_reader import (  # type: ignore
-            load_credentials, scrape_from_inbox, validate,
+            load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
         )
     except ImportError:
         try:
             from .gmail_reader import (  # type: ignore
-                load_credentials, scrape_from_inbox, validate,
+                load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
             )
         except Exception as e:
             print(f"[gmail_fetch] cannot import gmail_reader: {e}", file=sys.stderr)
@@ -229,23 +107,12 @@ def main() -> int:
               "sidebar → Gmail section, save an app password.", file=sys.stderr)
         return 1
 
-    # Quick validation so we fail with a clear message rather than a cryptic
-    # IMAP error mid-fetch.
     check = validate(email_addr, pw)
     if not check.ok:
         print(f"[gmail_fetch] ❌ Gmail auth failed: {check.message}", file=sys.stderr)
         return 1
     print(f"[gmail_fetch] ✓ authenticated as {email_addr} — fetching "
           f"alerts from last {args.days} days...", file=sys.stderr)
-
-    # Capture diagnostics so "0 rows" is debuggable: how many alert emails
-    # IMAP matched, how many we tried to parse, how many produced rows.
-    # Without this, the user can't tell "no LinkedIn alerts in inbox" from
-    # "alerts arrived but parser returned nothing" (a parser regression).
-    try:
-        from gmail_reader import fetch_inbox_signals, parse_linkedin_alert  # type: ignore
-    except ImportError:
-        from .gmail_reader import fetch_inbox_signals, parse_linkedin_alert  # type: ignore
 
     try:
         messages = fetch_inbox_signals(days=args.days, limit=200, include_body=True)
@@ -274,67 +141,17 @@ def main() -> int:
           f"({msgs_without_rows} digest(s) yielded zero rows)",
           file=sys.stderr)
 
-    # Dedupe against tracker
-    dropped_tracker = 0
-    if not args.skip_tracker_dedup:
-        tracker_urls = _load_tracker_urls()
-        kept = []
-        for r in rows:
-            if r.get("link") in tracker_urls:
-                dropped_tracker += 1
-                continue
-            kept.append(r)
-        rows = kept
-        print(f"[gmail_fetch] after tracker dedup: {len(rows)} kept "
-              f"(-{dropped_tracker} already in tracker)", file=sys.stderr)
-
-    # Cross-scan dedup against latest web scan + recent scan_gmail_ files.
-    # Without this, a role surfaced both via Workday (web scrape) and via
-    # the LinkedIn /jobs/view/<id> URL in a Gmail digest produces two
-    # rows that get scored independently — wastes API budget and pollutes
-    # the verdict bucket. Catches both URL-identical and (company,title)
-    # near-duplicates.
-    dropped_scan_url = 0
-    dropped_scan_ct = 0
-    scan_dedup_sources = {"web_scan": 0, "gmail_scans": 0, "rows_indexed": 0}
-    if not args.skip_scan_dedup:
-        scan_urls, scan_keys, scan_dedup_sources = _load_recent_scan_urls_and_keys(
-            recent_gmail_window_days=args.scan_dedup_window_days
-        )
-        kept = []
-        for r in rows:
-            link = r.get("link") or ""
-            k = _ct_key(r.get("company", ""), r.get("title", ""))
-            if link and link in scan_urls:
-                dropped_scan_url += 1
-                continue
-            if k[0] and k[1] and k in scan_keys:
-                dropped_scan_ct += 1
-                continue
-            kept.append(r)
-        rows = kept
-        print(f"[gmail_fetch] after scan dedup: {len(rows)} kept "
-              f"(-{dropped_scan_url} URL match, -{dropped_scan_ct} "
-              f"company+title match) "
-              f"[indexed {scan_dedup_sources['rows_indexed']} row(s) "
-              f"from {scan_dedup_sources['web_scan']} web scan + "
-              f"{scan_dedup_sources['gmail_scans']} prior Gmail scan(s)]",
-              file=sys.stderr)
-
     if args.dry_run:
         print(f"\n[gmail_fetch] DRY RUN: would write {len(rows)} row(s).")
         for r in rows[:10]:
             print(f"  · {r.get('company','?')} — {(r.get('title') or '?')[:70]}")
         if len(rows) > 10:
             print(f"  ... +{len(rows)-10} more")
-        return 0 if rows else 3
+        return 0
 
-    # ALWAYS write the envelope so the UI can see the run completed and
-    # surface diagnostics. Previously a 0-row run wrote nothing — making
-    # success-with-no-rows indistinguishable from "fetch never ran" or
-    # "Streamlit lost track of the subprocess". The envelope now carries
-    # `harvest_diagnostics` so the UI can render
-    # 'Inbox had N alerts but parser returned 0 rows — likely parse bug'.
+    # ALWAYS write the envelope — even on 0 rows — so the UI can show
+    # diagnostics. Previously 0-row runs wrote nothing, making success
+    # indistinguishable from a crashed subprocess.
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     fname = args.output or f"scan_gmail_{stamp}.json"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -346,32 +163,41 @@ def main() -> int:
         "linkedin_alerts_seen": len(alert_msgs),
         "digests_with_rows": msgs_with_rows,
         "digests_without_rows": msgs_without_rows,
-        "rows_after_parse": (
-            len(rows) + dropped_tracker
-            + dropped_scan_url + dropped_scan_ct
-        ),
-        "rows_dropped_tracker_dedup": dropped_tracker,
-        "rows_dropped_scan_url": dropped_scan_url,
-        "rows_dropped_scan_ct": dropped_scan_ct,
-        "scan_dedup_sources": scan_dedup_sources,
-        "rows_final": len(rows),
+        "rows_parsed": len(rows),
     }
     out_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
                          encoding="utf-8")
     if not rows:
         print(f"[gmail_fetch] ⚠ wrote {out_path.name} with 0 rows. "
-              f"({len(alert_msgs)} alert(s) seen — likely parse miss "
-              "or all rows already in tracker.)", file=sys.stderr)
-        return 0  # not an error — UI will surface the diagnostic
+              f"({len(alert_msgs)} alert(s) seen — likely parse miss.)",
+              file=sys.stderr)
+    else:
+        print(f"[gmail_fetch] ✓ wrote {out_path.name} with {len(rows)} row(s).",
+              file=sys.stderr)
+        n_uids = len(envelope.get("gmail_alerts", {}).get("contributing_uids", []))
+        if n_uids:
+            print(f"[gmail_fetch]   {n_uids} alert email(s) produced rows — "
+                  "the UI will offer to move them to Trash.", file=sys.stderr)
 
-    print(f"[gmail_fetch] ✓ wrote {out_path.name} with {len(rows)} "
-          f"row(s).", file=sys.stderr)
-    n_uids = len(envelope.get("gmail_alerts", {}).get("contributing_uids", []))
-    if n_uids:
-        print(f"[gmail_fetch]   {n_uids} alert email(s) produced rows — "
-              f"the UI will offer to move them to Trash.", file=sys.stderr)
-    print(f"[gmail_fetch]   Next: python automation/fit_scorer.py "
-          f"--scan {fname}", file=sys.stderr)
+    # Auto-rebuild worklist so the next score run sees these rows.
+    # The user never has to think about merge timing — every input
+    # change triggers a rebuild. Worklist owns dedup against the web
+    # scrape and the rolling 30d Gmail pool.
+    if not args.no_rebuild:
+        try:
+            try:
+                import worklist  # type: ignore
+            except ImportError:
+                from . import worklist  # type: ignore
+            stats = worklist.rebuild()
+            print(f"[gmail_fetch] worklist rebuilt: {stats['total']} rows "
+                  f"({stats['scrape']} scrape, {stats['gmail']} gmail, "
+                  f"{stats['both']} both) · "
+                  f"{stats['new_since_last_score']} new since last score",
+                  file=sys.stderr)
+        except Exception as e:
+            print(f"[gmail_fetch] ⚠ worklist rebuild failed: {e}", file=sys.stderr)
+
     return 0
 
 
