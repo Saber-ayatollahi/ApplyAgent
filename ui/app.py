@@ -843,13 +843,34 @@ def render_gmail_trash_panel(container=None,
                             "digest matched but parser extracted nothing.")
             d3.metric("Rows parsed",
                        diag.get("rows_after_parse", n_rows),
-                       help="Total job rows extracted before tracker dedup")
+                       help="Total job rows extracted before any dedup")
+            # Build the 'New rows' delta from all three drop sources so
+            # the user sees exactly where the funnel is leaking.
+            _drop_parts = []
+            if diag.get("rows_dropped_tracker_dedup", 0):
+                _drop_parts.append(f"{diag['rows_dropped_tracker_dedup']} tracker")
+            if diag.get("rows_dropped_scan_url", 0):
+                _drop_parts.append(f"{diag['rows_dropped_scan_url']} scan-URL")
+            if diag.get("rows_dropped_scan_ct", 0):
+                _drop_parts.append(f"{diag['rows_dropped_scan_ct']} scan-co/title")
+            _delta_str = f"-{' / '.join(_drop_parts)}" if _drop_parts else None
+            _src = diag.get("scan_dedup_sources") or {}
+            _help = (
+                "After dropping rows already in tracker AND rows already "
+                "present in the latest web scan + recent Gmail scans."
+            )
+            if _src:
+                _help += (
+                    f" Cross-scan index: "
+                    f"{_src.get('rows_indexed', 0)} row(s) from "
+                    f"{_src.get('web_scan', 0)} web scan + "
+                    f"{_src.get('gmail_scans', 0)} prior Gmail scan(s)."
+                )
             d4.metric("New rows",
                        n_rows,
-                       delta=(f"-{diag.get('rows_dropped_tracker_dedup', 0)} dup"
-                              if diag.get("rows_dropped_tracker_dedup", 0) else None),
+                       delta=_delta_str,
                        delta_color="inverse",
-                       help="After dropping URLs already in tracker")
+                       help=_help)
         else:
             st.caption(f"📊 {n_rows} row(s) extracted")
 
@@ -874,10 +895,20 @@ def render_gmail_trash_panel(container=None,
                 )
             else:
                 tracker_drops = diag.get("rows_dropped_tracker_dedup", 0)
-                if tracker_drops:
+                scan_url_drops = diag.get("rows_dropped_scan_url", 0)
+                scan_ct_drops = diag.get("rows_dropped_scan_ct", 0)
+                total_drops = tracker_drops + scan_url_drops + scan_ct_drops
+                if total_drops:
+                    parts = []
+                    if tracker_drops:
+                        parts.append(f"{tracker_drops} in tracker")
+                    if scan_url_drops:
+                        parts.append(f"{scan_url_drops} URL match w/ recent scans")
+                    if scan_ct_drops:
+                        parts.append(f"{scan_ct_drops} (company,title) match w/ recent scans")
                     st.info(
-                        f"All {tracker_drops} parsed row(s) were already in "
-                        "the tracker. Nothing new to score.",
+                        f"All {total_drops} parsed row(s) were already known "
+                        f"({', '.join(parts)}). Nothing new to score.",
                         icon="✅",
                     )
             # Still allow trash even with 0 rows? No — UIDs only contain

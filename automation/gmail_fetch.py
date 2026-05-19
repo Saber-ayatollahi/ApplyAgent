@@ -55,6 +55,101 @@ def _load_tracker_urls() -> set[str]:
         return set()
 
 
+def _normalize_title(title: str) -> str:
+    """Canonical form matching jd_scraper._normalize_title so cross-scan
+    dedup works whether the row came from web scrape or Gmail. Inlined
+    here to avoid a hard import dependency on jd_scraper (which pulls
+    in requests, bs4, sector configs, etc.)."""
+    import re as _re
+    t = (title or "").lower()
+    t = _re.sub(r"\s*\(\s*\d{3,6}\s*\)\s*$", "", t)
+    t = _re.sub(
+        r"\s*\((hybrid|remote|on[- ]?site|contract|temporary|permanent|"
+        r"full[- ]?time|part[- ]?time|\d+\s*month\s*contract)\)\s*",
+        " ", t)
+    t = _re.sub(r"[-–—,]\s*(toronto|ontario|gta|canada)[^a-z]*$", "", t)
+    t = _re.sub(r"[,/\-–—_]+", " ", t)
+    t = _re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def _ct_key(company: str, title: str) -> tuple[str, str]:
+    """(company_lower, normalized_title) tuple — same shape jd_scraper uses
+    for its near-dup pass. Empty company OR title yields a sentinel that
+    never matches (we don't want to over-merge unlabeled rows)."""
+    co = (company or "").lower().strip()
+    nt = _normalize_title(title)
+    return (co, nt)
+
+
+def _load_recent_scan_urls_and_keys(
+    recent_gmail_window_days: int = 7,
+) -> tuple[set[str], set[tuple[str, str]], dict[str, int]]:
+    """Build the cross-scan dedup index.
+
+    Sources:
+      - The single freshest web scan (scan_<date>.json, excluding _scored,
+        scan_gmail_, and scan_checkpoint).
+      - All scan_gmail_*.json from the last `recent_gmail_window_days` days.
+
+    Returns (url_set, ct_key_set, source_counts).
+
+    Why: a Gmail digest from RBC/TD/etc. routinely overlaps with what the
+    web scrape just produced (Workday tile + LinkedIn /jobs/view/<id> for
+    the same role). Without cross-scan dedup, both files independently
+    feed scoring and the user pays the API cost twice for the same role.
+    """
+    url_set: set[str] = set()
+    ct_set: set[tuple[str, str]] = set()
+    counts = {"web_scan": 0, "gmail_scans": 0, "rows_indexed": 0}
+
+    # Latest web scan
+    web_files = sorted(
+        (p for p in OUT_DIR.glob("scan_*.json")
+         if "_scored" not in p.name
+         and "scan_gmail_" not in p.name
+         and "scan_checkpoint" not in p.name),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    if web_files:
+        try:
+            data = json.loads(web_files[0].read_text(encoding="utf-8"))
+            for r in data.get("results", []):
+                if r.get("link"):
+                    url_set.add(r["link"])
+                k = _ct_key(r.get("company", ""), r.get("title", ""))
+                if k[0] and k[1]:
+                    ct_set.add(k)
+                counts["rows_indexed"] += 1
+            counts["web_scan"] = 1
+        except Exception:
+            pass
+
+    # Recent Gmail scans
+    cutoff = datetime.now().timestamp() - (recent_gmail_window_days * 86400)
+    gmail_files = sorted(
+        OUT_DIR.glob("scan_gmail_*.json"),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    for p in gmail_files:
+        if p.stat().st_mtime < cutoff:
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            for r in data.get("results", []):
+                if r.get("link"):
+                    url_set.add(r["link"])
+                k = _ct_key(r.get("company", ""), r.get("title", ""))
+                if k[0] and k[1]:
+                    ct_set.add(k)
+                counts["rows_indexed"] += 1
+            counts["gmail_scans"] += 1
+        except Exception:
+            continue
+
+    return url_set, ct_set, counts
+
+
 def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
     """Wrap Gmail rows in the same envelope fit_scorer / auto_promote expect.
 
@@ -102,6 +197,14 @@ def main() -> int:
     ap.add_argument("--skip-tracker-dedup", action="store_true",
                     help="Include alerts already in the tracker. Useful when "
                          "rescoring an old URL with different resume variants.")
+    ap.add_argument("--skip-scan-dedup", action="store_true",
+                    help="Don't cross-check against the latest web scan and "
+                         "recent Gmail scans. Default behavior dedupes so a "
+                         "role surfaced both via web scrape and Gmail isn't "
+                         "scored twice.")
+    ap.add_argument("--scan-dedup-window-days", type=int, default=7,
+                    help="How far back to look at prior scan_gmail_*.json "
+                         "for dedup (default 7).")
     ap.add_argument("--output", default=None,
                     help="Override the output filename. Default: "
                          "scan_gmail_<YYYYMMDD_HHMMSS>.json")
@@ -185,6 +288,39 @@ def main() -> int:
         print(f"[gmail_fetch] after tracker dedup: {len(rows)} kept "
               f"(-{dropped_tracker} already in tracker)", file=sys.stderr)
 
+    # Cross-scan dedup against latest web scan + recent scan_gmail_ files.
+    # Without this, a role surfaced both via Workday (web scrape) and via
+    # the LinkedIn /jobs/view/<id> URL in a Gmail digest produces two
+    # rows that get scored independently — wastes API budget and pollutes
+    # the verdict bucket. Catches both URL-identical and (company,title)
+    # near-duplicates.
+    dropped_scan_url = 0
+    dropped_scan_ct = 0
+    scan_dedup_sources = {"web_scan": 0, "gmail_scans": 0, "rows_indexed": 0}
+    if not args.skip_scan_dedup:
+        scan_urls, scan_keys, scan_dedup_sources = _load_recent_scan_urls_and_keys(
+            recent_gmail_window_days=args.scan_dedup_window_days
+        )
+        kept = []
+        for r in rows:
+            link = r.get("link") or ""
+            k = _ct_key(r.get("company", ""), r.get("title", ""))
+            if link and link in scan_urls:
+                dropped_scan_url += 1
+                continue
+            if k[0] and k[1] and k in scan_keys:
+                dropped_scan_ct += 1
+                continue
+            kept.append(r)
+        rows = kept
+        print(f"[gmail_fetch] after scan dedup: {len(rows)} kept "
+              f"(-{dropped_scan_url} URL match, -{dropped_scan_ct} "
+              f"company+title match) "
+              f"[indexed {scan_dedup_sources['rows_indexed']} row(s) "
+              f"from {scan_dedup_sources['web_scan']} web scan + "
+              f"{scan_dedup_sources['gmail_scans']} prior Gmail scan(s)]",
+              file=sys.stderr)
+
     if args.dry_run:
         print(f"\n[gmail_fetch] DRY RUN: would write {len(rows)} row(s).")
         for r in rows[:10]:
@@ -210,8 +346,14 @@ def main() -> int:
         "linkedin_alerts_seen": len(alert_msgs),
         "digests_with_rows": msgs_with_rows,
         "digests_without_rows": msgs_without_rows,
-        "rows_after_parse": len(rows) + dropped_tracker,
+        "rows_after_parse": (
+            len(rows) + dropped_tracker
+            + dropped_scan_url + dropped_scan_ct
+        ),
         "rows_dropped_tracker_dedup": dropped_tracker,
+        "rows_dropped_scan_url": dropped_scan_url,
+        "rows_dropped_scan_ct": dropped_scan_ct,
+        "scan_dedup_sources": scan_dedup_sources,
         "rows_final": len(rows),
     }
     out_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
