@@ -39,6 +39,21 @@ def _is_login_rejected(check: gr.GmailCheck | None) -> bool:
     return "Login rejected" in (check.message or "")
 
 
+def _is_tls_intercepted(check: gr.GmailCheck | None) -> bool:
+    """Did the connection get killed mid-TLS-handshake? Signature of an
+    antivirus / corporate-proxy / VPN doing TLS inspection on port 993.
+    The TCP socket opened (we can reach the server) but TLS dies. Almost
+    never the user's fault and almost never fixable from inside the app.
+    """
+    if not check or check.ok:
+        return False
+    msg = (check.message or "").lower()
+    return ("10054" in msg
+            or "wsaeconnreset" in msg
+            or "forcibly closed" in msg
+            or "tls" in msg and "handshake" in msg)
+
+
 def _check_age_s(check: gr.GmailCheck | None) -> float | None:
     if not check or not check.checked_at:
         return None
@@ -211,6 +226,31 @@ def render_sidebar():
                 st.caption(f"✅ Checked {check.checked_at} — {check.message}")
             else:
                 st.caption(f"❌ Checked {check.checked_at} — {check.message}")
+                # When the failure is the TLS-intercepted signature
+                # (WinError 10054 / "forcibly closed"), surface the
+                # remediation steps inline. The user shouldn't have to
+                # run the diagnostic to learn this is an environmental
+                # block, not anything they typed wrong.
+                if _is_tls_intercepted(check):
+                    st.warning(
+                        "**This looks like a network-side TLS block** "
+                        "(antivirus / corporate firewall / VPN intercepting "
+                        "port 993). Your credentials are fine.",
+                        icon="🛡️",
+                    )
+                    st.markdown(
+                        "**What to try, in order:**\n"
+                        "1. Disconnect any corporate VPN; click 🔄 Test.\n"
+                        "2. Tether to your phone hotspot; click 🔄 Test. "
+                        "If that works, your work network is blocking IMAP — "
+                        "no fix from inside this app.\n"
+                        "3. In your antivirus, exclude port 993 from "
+                        "*TLS/SSL scanning* or *encrypted-traffic* inspection. "
+                        "Common culprits: Kaspersky, McAfee, Symantec, ESET, "
+                        "BitDefender.\n"
+                        "4. Run 🩺 **Full diagnostic** below for a step-by-step "
+                        "trace if you want to see exactly where it dies."
+                    )
 
         # Diagnostic runner — walks DNS/TCP/TLS/LOGIN/SELECT/SEARCH/FETCH
         # and prints where it breaks. Useful when the one-line "Login rejected"

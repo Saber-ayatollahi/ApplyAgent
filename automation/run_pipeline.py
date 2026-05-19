@@ -126,7 +126,10 @@ def main() -> int:
 
     # Scorer options
     ap.add_argument("--score-limit", type=int, default=0, help="Cap scored count (0=all).")
-    ap.add_argument("--score-concurrency", type=int, default=6)
+    # 2 — Anthropic org cap is 50k input TPM; at ~5k tokens/call, 6 workers
+    # saturate the bucket and the run drowns in 429 retries. The TPM limiter
+    # in fit_scorer also throttles, but starting low keeps logs clean.
+    ap.add_argument("--score-concurrency", type=int, default=2)
     ap.add_argument("--score-dry-run", action="store_true",
                     help="Rule-stage only, no LLM calls.")
 

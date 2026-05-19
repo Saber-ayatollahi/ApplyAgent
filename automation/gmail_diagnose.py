@@ -115,11 +115,44 @@ def main() -> int:
         _ok(f"TLS OK · cert CN={subject.get('commonName', '?')}")
         tls.close()
     except ssl.SSLError as e:
-        _fail(f"TLS handshake failed: {e}. Corporate MITM proxy? Outdated Python CA bundle?")
+        _fail(f"TLS handshake failed: {e}.")
+        _info("Almost always a corporate MITM/AV doing TLS inspection on")
+        _info("port 993, OR an outdated Python CA bundle. Try the same")
+        _info("remediation as WinError 10054 (below).")
         sock.close()
         return 1
     except Exception as e:
-        _fail(f"TLS wrapper failed: {e}")
+        msg = str(e)
+        _fail(f"TLS wrapper failed: {msg}")
+        # WinError 10054 / WSAECONNRESET / "forcibly closed" is the
+        # signature of antivirus or corporate-firewall TLS interception
+        # on port 993. The TCP socket opens (step 4 passes) but the TLS
+        # handshake gets killed as soon as the server cert is presented.
+        if ("10054" in msg or "WSAECONNRESET" in msg
+                or "forcibly closed" in msg.lower()):
+            print()
+            _info("Diagnosis: a security product on this machine or")
+            _info("network is intercepting TLS on port 993 and breaking")
+            _info("the handshake. Common culprits:")
+            _info("  • Antivirus with 'TLS scanning' / 'SSL inspection'")
+            _info("    (Kaspersky, McAfee, Symantec, ESET, BitDefender)")
+            _info("  • Corporate proxy / TLS inspection appliance")
+            _info("    (Zscaler, Netskope, Forcepoint, Cisco Umbrella)")
+            _info("  • VPN forcing all traffic through a corporate gateway")
+            _info("  • Local firewall rule blocking outbound 993")
+            print()
+            _info("What to try, in order of likelihood:")
+            _info("  1. Disconnect any corporate VPN, retry.")
+            _info("  2. Tether to your phone hotspot, retry.")
+            _info("     If it works on hotspot, your work network is")
+            _info("     blocking IMAP — there's no fix from this app side.")
+            _info("  3. In your AV settings, exclude port 993 from")
+            _info("     'TLS / encrypted-traffic scanning'.")
+            _info("  4. If you have admin rights: temporarily disable")
+            _info("     the AV's network-protection module and retry.")
+            print()
+            _info("Note: your saved credentials are fine. This is purely")
+            _info("a network-path issue between this machine and Gmail.")
         sock.close()
         return 1
 
