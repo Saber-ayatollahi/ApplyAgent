@@ -1370,7 +1370,7 @@ def _action_plan_panel():
                 help=("Disabled while another job is running."
                       if _busy_panel else None),
             ):
-                rec = scan_runner.start_run("pipeline", [
+                rec = scan_runner.start_run("promote", [
                     sys.executable,
                     str(ROOT / "automation" / "run_pipeline.py"),
                     "--skip-scrape", "--skip-score", "--commit-promote",
@@ -4374,13 +4374,17 @@ elif page == "🎯 Pipeline":
 
     # Determine if a scraper is currently running.
     # A "pipeline" job also runs jd_scraper internally, so treat pipeline_running
-    # as scraper-active too — otherwise the state shows "paused" while scraping.
+    # as scraper-active too — UNLESS --skip-scrape is in its cmd (promote-only).
+    def _is_scrape_run(r: dict) -> bool:
+        label = r.get("label") or ""
+        cmd = r.get("cmd") or []
+        if "--skip-scrape" in cmd:
+            return False
+        return ("jd_scraper" in label or "scrape" in label
+                or "pipeline" in label)
     try:
         _scraper_active = pipeline_running or any(
-            "jd_scraper" in (r.get("label") or "") or
-            "scrape" in (r.get("label") or "") or
-            "pipeline" in (r.get("label") or "")
-            for r in scan_runner.active_runs()
+            _is_scrape_run(r) for r in scan_runner.active_runs()
         )
     except Exception:
         _scraper_active = pipeline_running

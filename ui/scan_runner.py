@@ -138,7 +138,9 @@ def refresh_state(rec_path: Path) -> dict:
         if log_path and Path(log_path).exists():
             try:
                 tail = Path(log_path).read_bytes()[-2048:]
-                if b"nightly_refresh finished" in tail or b"finished ===" in tail:
+                if (b"nightly_refresh finished" in tail
+                        or b"finished ===" in tail
+                        or b"complete ===" in tail):
                     crashed = False
             except OSError:
                 pass
