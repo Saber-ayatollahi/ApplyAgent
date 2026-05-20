@@ -1334,6 +1334,11 @@ def _action_plan_panel():
                 f"↘ {diff_counts['downgraded']} downgraded · "
                 f"✓ {diff_counts['stable']} stable · {dropped} dropped"
             )
+            st.caption(
+                "new = URL not in prior scored file. "
+                "upgraded = score/verdict improved or first-time scored. "
+                "stable = same score. dropped = URL removed from worklist."
+            )
         else:
             st.caption("No previous scored snapshot on file — first run, "
                        "all rows treated as stable.")
@@ -4556,7 +4561,9 @@ elif page == "🎯 Pipeline":
             st.caption(
                 "Worklist = dedup(latest web scrape ∪ rolling 30-day Gmail "
                 "harvests). Scorer and promoter read THIS file. "
-                "Scrape and Gmail-fetch buttons rebuild it automatically."
+                "Scrape and Gmail-fetch buttons rebuild it automatically. "
+                "'New since last score' = URLs not in the previous scored output "
+                "(i.e. the LLM hasn't evaluated them yet)."
             )
 
             # New-rows expander: when the worklist has been rebuilt with
@@ -4915,6 +4922,15 @@ elif page == "🎯 Pipeline":
         _big_number(cols[8], "📋", "Tracker",
                     tracker_found if tracker_found else "—",
                     sub=f"{tracker_applied} applied · {tailored_docs} tailored")
+
+        st.caption(
+            "**Scraped** = raw results from all portals/LinkedIn. "
+            "**Unique** = after URL + near-duplicate removal. "
+            "**Triaged** = passed keyword pre-filter (ALM/IRRBB/model-risk/etc) "
+            "before spending LLM tokens. "
+            "**Scored** = full LLM fit assessment. "
+            "**Tracker** = promoted roles you're actively pursuing."
+        )
 
     if pipeline_running:
         st.info(
