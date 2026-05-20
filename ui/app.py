@@ -61,6 +61,8 @@ PIPELINE_DIR = OUT_DIR / "pipelines"
 # ----------------------------- helpers ------------------------------------
 @st.cache_data(ttl=15)
 def load_tracker():
+    if not TRACKER.exists():
+        return {"jobs": [], "meta": {}}
     return json.loads(TRACKER.read_text(encoding="utf-8"))
 
 
@@ -1069,6 +1071,8 @@ def _compute_diff(current_rows: list, prev_rows: list) -> dict:
         if not pr:
             out[url] = "new"; continue
         cf, pf = r.get("fit") or {}, pr.get("fit") or {}
+        if cf and not pf:
+            out[url] = "upgraded"; continue
         cs, ps = cf.get("fit_score") or 0, pf.get("fit_score") or 0
         cv = _VERDICT_RANK.get(cf.get("fit_verdict", ""), -1)
         pv = _VERDICT_RANK.get(pf.get("fit_verdict", ""), -1)
@@ -1128,12 +1132,20 @@ def _ap_render_card(row: dict, idx: int, band: str, diff_label: str,
             st.caption(f"Gaps: {', '.join(gaps)}")
         if summary:
             st.caption(f"_{summary}_")
+        # Concurrency guard — never spawn a promote/tailor while another job is
+        # writing the tracker or worklist_scored.json. Two writers race the
+        # atomic-replace and the second loses; the user sees a green toast but
+        # the row didn't land.
+        _busy = bool(globals().get("any_work_active"))
         b1, b2, b3, b4 = st.columns(4)
         with b1:
             if st.button("📋 Promote", key=f"_ap_promote_{band}_{h}",
                          type="primary" if primary_action == "promote" else "secondary",
+                         disabled=_busy,
                          width='stretch',
-                         help="Promote just this URL to the tracker."):
+                         help=("Disabled while another job is running."
+                               if _busy else
+                               "Promote just this URL to the tracker.")):
                 if _ap_promote_supports_only_url():
                     rec = scan_runner.start_run("promote_one", [
                         sys.executable,
@@ -1152,8 +1164,11 @@ def _ap_render_card(row: dict, idx: int, band: str, diff_label: str,
         with b2:
             if st.button("✂️ Tailor", key=f"_ap_tailor_{band}_{h}",
                          type="primary" if primary_action == "tailor" else "secondary",
+                         disabled=_busy,
                          width='stretch',
-                         help="Generate tailored resume + cover letter prompt."):
+                         help=("Disabled while another job is running."
+                               if _busy else
+                               "Generate tailored resume + cover letter prompt.")):
                 rec = scan_runner.start_run(f"tailor_{h}", [
                     sys.executable,
                     str(ROOT / "automation" / "jd_tailor.py"),
@@ -1208,12 +1223,15 @@ def _ap_render_suspicious(row: dict, hit: str):
         b1, b2, _ = st.columns([1, 1, 3])
         with b1:
             supports = _ap_rescore_supports_only_url()
+            _busy = bool(globals().get("any_work_active"))
             if st.button(
                 "👀 Force re-score",
                 key=f"_ap_resc_{h}",
-                disabled=not (supports and url),
+                disabled=(not (supports and url)) or _busy,
                 width='stretch',
-                help=("Bust the fit cache for this URL and re-call the LLM "
+                help=("Disabled while another job is running."
+                      if _busy else
+                      "Bust the fit cache for this URL and re-call the LLM "
                       "(merges back into worklist_scored.json without "
                       "touching the diff baseline)."
                       if supports else
@@ -1320,10 +1338,14 @@ def _action_plan_panel():
             st.caption("No previous scored snapshot on file — first run, "
                        "all rows treated as stable.")
         h1, h2, _ = st.columns([2, 2, 1])
+        _busy_panel = bool(globals().get("any_work_active"))
         with h1:
             if counts["apply_now"] >= 1 and st.button(
                 f"📋 Promote {counts['apply_now']} apply_now",
                 key="_ap_header_promote", type="primary", width='stretch',
+                disabled=_busy_panel,
+                help=("Disabled while another job is running."
+                      if _busy_panel else None),
             ):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable,
@@ -5195,7 +5217,8 @@ elif page == "🎯 Pipeline":
                     cmd.append("--add-to-tracker")
                 with st.spinner("Fetching JD and scoring..."):
                     res = subprocess.run(cmd, capture_output=True, text=True,
-                                          cwd=str(ROOT), timeout=60)
+                                          cwd=str(ROOT), timeout=60,
+                                          encoding="utf-8", errors="replace")
                 if res.returncode != 0:
                     st.error(f"Scoring failed (exit {res.returncode}):")
                     st.code(res.stderr[-2000:], language="text")
@@ -7354,7 +7377,8 @@ elif page == "⚙️ Admin":
     if agent == "Weekly report":
         if st.button("📊 Generate weekly report", type="primary"):
             cmd = [sys.executable, str(ROOT / "automation" / "weekly_report.py")]
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT),
+                                encoding="utf-8", errors="replace", timeout=120)
             st.code((res.stdout or "") + "\n" + (res.stderr or "")[-2000:])
 
     elif agent == "JD tailor":
@@ -7375,7 +7399,8 @@ elif page == "⚙️ Admin":
                        "--job-id", pick]
                 if dry:
                     cmd.append("--dry-run")
-                res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+                res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT),
+                                    encoding="utf-8", errors="replace", timeout=300)
                 st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
                 latest = sorted(OUT_DIR.glob(f"*_{pick.replace('-','_')}*.md"),
                                key=lambda p: p.stat().st_mtime, reverse=True)

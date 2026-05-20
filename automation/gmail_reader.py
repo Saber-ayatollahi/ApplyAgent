@@ -226,11 +226,7 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100,
     if not email_addr or not pw:
         return []
     out: list[InboxMessage] = []
-    try:
-        m = _connect(email_addr, pw)
-    except Exception as e:
-        print(f"[gmail] connect failed: {e}", file=sys.stderr)
-        return []
+    m = _connect(email_addr, pw)
     try:
         # Build a multi-sender search. IMAP allows OR, but Gmail's IMAP is
         # friendlier to X-GM-RAW queries. Use from: filter.

@@ -43,14 +43,35 @@ except Exception:
 
 # Cross-process-safe tracker reads/writes. Degrades to plain json if unavailable.
 try:
-    from safe_json import read_json as _sj_read, write_json as _sj_write  # type: ignore
+    from safe_json import (  # type: ignore
+        read_json as _sj_read,
+        write_json as _sj_write,
+        mutate_json as _sj_mutate,
+    )
 except ImportError:
     _sj_read = None  # type: ignore
     _sj_write = None  # type: ignore
+    _sj_mutate = None  # type: ignore
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 TRACKER = ROOT / "data" / "job_tracker_data.json"
+
+# Promote-time geo gate. Producers (gmail_fetch, jd_scraper, worklist.rebuild)
+# already filter, but rows with mojibake/garbled location strings — where
+# `keep_for_toronto_pipeline` returns True via the empty-string fall-through
+# but `is_gta_or_canada_remote` returns False — slip past. The audit on
+# 2026-05-19 found 8 such rows already in the tracker. Add a second-line
+# defense at promote so a future leak is contained, and so the audit
+# becomes a one-time scrub, not a recurring chore.
+try:
+    from location_filter import (  # type: ignore
+        keep_for_toronto_pipeline as _keep_geo,
+    )
+except ImportError:
+    from .location_filter import (  # type: ignore
+        keep_for_toronto_pipeline as _keep_geo,
+    )
 
 
 SECTOR_ROUGH_TIER = {
@@ -247,68 +268,116 @@ def main() -> int:
                   f"(URL(s) not present in {scored_path.name}).")
             return 0
 
+    # Two-phase design (B4 — race-safety):
+    #   Phase 1 (preview):     read tracker once, classify each scored row vs
+    #                          the current tracker. Counts feed the report.
+    #   Phase 2 (commit):      under safe_json's exclusive lock, RE-classify
+    #                          against the freshest tracker on disk and apply
+    #                          all mutations in a single atomic write. Without
+    #                          this, a UI 'Mark Applied' between read and
+    #                          write got silently clobbered.
+    # The phase-1 counts feed the human report; phase-2 truth wins on commit.
+    try:
+        import worklist as _wl  # type: ignore
+    except ImportError:
+        from . import worklist as _wl  # type: ignore
+
+    def _classify_against(tr: dict) -> dict:
+        """Pure function: classify scored.results vs `tr`.
+        Returns dict with new_entries / upgrades / counts / expirations."""
+        existing_by_url = {
+            _wl.norm_url(j): j for j in tr.get("jobs", []) or [] if j.get("url")
+        }
+        existing_ids = {j["id"] for j in tr.get("jobs", []) or []}
+        new_entries: list[dict] = []
+        upgrades: list[tuple[str, dict, int]] = []  # (canonical_url, e, score)
+        added = updated = skipped_dupe = skipped_verdict = skipped_score = 0
+        skipped_geo = 0
+        for r in scored.get("results", []) or []:
+            f = r.get("fit") or {}
+            verdict = f.get("fit_verdict") or "skip"
+            score = int(f.get("fit_score") or 0)
+            if verdict not in VERDICT_DEFAULTS or VERDICT_DEFAULTS[verdict] is None:
+                skipped_verdict += 1
+                continue
+            if verdict == "watch" and not args.include_watch:
+                skipped_verdict += 1
+                continue
+            if score < args.min_score:
+                skipped_score += 1
+                continue
+            # Promote-time geo gate. The pool gate at gmail_fetch /
+            # jd_scraper / worklist.rebuild keeps rows with empty/garbled
+            # location for the scorer LLM to judge — fine for paid scoring,
+            # but mojibake rows ("Madison-Davis, LLC ▒ Los Angeles") slip
+            # into the tracker. We tighten here: at promote time, the row
+            # must affirmatively pass the GTA/Canada predicate. Empty string
+            # still passes (LinkedIn omits loc for some Toronto jobs).
+            if not _keep_geo(r.get("location") or ""):
+                skipped_geo += 1
+                continue
+            e = make_entry(r)
+            # Dedupe via canonical URL — raw j["url"] vs scan link can drift
+            # on Workday session tokens / LinkedIn tracking redirects, and a
+            # canonicalised form (worklist.norm_url) is the only stable key.
+            canon = _wl.norm_url(e)
+            if canon in existing_by_url:
+                existing = existing_by_url[canon]
+                if int(existing.get("fit_score_numeric", 0)) < score:
+                    upgrades.append((canon, e, score))
+                    updated += 1
+                else:
+                    skipped_dupe += 1
+                continue
+            if e["id"] in existing_ids:
+                e["id"] = e["id"] + "-" + str(score)
+            new_entries.append(e)
+            existing_ids.add(e["id"])
+            added += 1
+        # Expire stale auto- entries not in latest scan. Skip in --only-url
+        # mode (single-row promote shouldn't mark the rest of the tracker
+        # expired).
+        scan_canon = {_wl.norm_url(r) for r in (scored.get("results") or [])}
+        expirations: list[str] = []
+        if args.expire_stale and not args.only_url:
+            held_statuses = ("Applied", "Recruiter_Screen", "Phone_Screen",
+                             "Take_Home", "Onsite", "Offer")
+            for j in tr.get("jobs", []) or []:
+                if not str(j.get("id", "")).startswith("auto-"):
+                    continue
+                if _wl.norm_url(j) in scan_canon:
+                    continue
+                if j.get("status") in held_statuses:
+                    continue
+                if j.get("status") == "Expired":
+                    continue
+                expirations.append(j["id"])
+        return {
+            "new_entries": new_entries,
+            "upgrades": upgrades,
+            "expirations": expirations,
+            "added": added,
+            "updated": updated,
+            "skipped_dupe": skipped_dupe,
+            "skipped_verdict": skipped_verdict,
+            "skipped_score": skipped_score,
+            "skipped_geo": skipped_geo,
+        }
+
+    # Phase 1 — preview against current tracker
     if _sj_read is not None:
         tr = _sj_read(TRACKER, default={"jobs": [], "meta": {}})
     else:
         tr = json.loads(TRACKER.read_text(encoding="utf-8"))
-
-    existing_by_url = {j["url"]: j for j in tr["jobs"] if j.get("url")}
-    existing_ids = {j["id"] for j in tr["jobs"]}
-    added, updated, skipped_dupe, skipped_verdict, skipped_score = 0, 0, 0, 0, 0
-
-    new_entries = []
-    for r in scored.get("results", []):
-        f = r.get("fit") or {}
-        verdict = f.get("fit_verdict") or "skip"
-        score = int(f.get("fit_score") or 0)
-        if verdict not in VERDICT_DEFAULTS or VERDICT_DEFAULTS[verdict] is None:
-            skipped_verdict += 1
-            continue
-        if verdict == "watch" and not args.include_watch:
-            skipped_verdict += 1
-            continue
-        if score < args.min_score:
-            skipped_score += 1
-            continue
-        e = make_entry(r)
-        # Dedupe
-        if e["url"] in existing_by_url:
-            existing = existing_by_url[e["url"]]
-            # Merge: only update if existing doesn't have fit_score_numeric, or it's lower
-            if int(existing.get("fit_score_numeric", 0)) < score:
-                existing["fit_score_numeric"] = score
-                existing["fit_score"] = e["fit_score"]
-                existing["fit_notes"] = e["fit_notes"]
-                # Populate variant info even on re-score (older entries won't have it)
-                if e.get("resume_variants"):
-                    existing["resume_variants"] = e["resume_variants"]
-                    existing["primary_variant"] = e["primary_variant"]
-                updated += 1
-            else:
-                skipped_dupe += 1
-            continue
-        # Same-id check (multiple scan pulls can generate same slug)
-        if e["id"] in existing_ids:
-            e["id"] = e["id"] + "-" + str(score)
-        new_entries.append(e)
-        existing_ids.add(e["id"])
-        added += 1
-
-    # Expire stale auto- entries not in latest scan
-    scan_urls = {r["link"] for r in scored.get("results", [])}
-    expired = 0
-    # Skip expire-stale entirely in --only-url mode: a single-row promote
-    # has no business marking the rest of the tracker as expired.
-    if args.expire_stale and not args.only_url:
-        for j in tr["jobs"]:
-            if j["id"].startswith("auto-") and j.get("url") not in scan_urls:
-                if j.get("status") in ("Applied", "Recruiter_Screen", "Phone_Screen",
-                                        "Take_Home", "Onsite", "Offer"):
-                    continue
-                if j.get("status") != "Expired":
-                    j["status"] = "Expired"
-                    j["notes"] = (j.get("notes", "") + f" | Auto-expired {date.today().isoformat()}: URL not in latest scan").strip()
-                    expired += 1
+    preview = _classify_against(tr)
+    new_entries = preview["new_entries"]
+    added = preview["added"]
+    updated = preview["updated"]
+    skipped_dupe = preview["skipped_dupe"]
+    skipped_verdict = preview["skipped_verdict"]
+    skipped_score = preview["skipped_score"]
+    skipped_geo = preview["skipped_geo"]
+    expired = len(preview["expirations"])
 
     stamp = date.today().strftime("%Y%m%d")
     report_lines = [
@@ -326,6 +395,7 @@ def main() -> int:
         f"- Skipped — wrong verdict: {skipped_verdict}",
         f"- Skipped — below min-score: {skipped_score}",
         f"- Skipped — already in tracker at equal/higher score: {skipped_dupe}",
+        f"- Skipped — geo gate (out of GTA/Canada-remote): {skipped_geo}",
         "",
         "## Top 20 would-be-added (by score)",
         "",
@@ -342,33 +412,93 @@ def main() -> int:
     report_path = OUT_DIR / f"promote_report_{stamp}.md"
     report_path.write_text("\n".join([l for l in report_lines if l is not None]), encoding="utf-8")
 
+    # Captured by the mutator closure for the commit log message.
+    final_counts = {"added": 0, "updated": 0, "expired": 0, "geo": 0}
+
+    def _commit_mutator(current: dict) -> dict:
+        """Re-classify against the freshest tracker on disk and apply.
+        Called by safe_json.mutate_json under the exclusive lock so concurrent
+        UI writes can't be clobbered between the read and write."""
+        if not isinstance(current, dict):
+            current = {"jobs": [], "meta": {}}
+        current.setdefault("jobs", [])
+        current.setdefault("meta", {})
+
+        fresh = _classify_against(current)
+        # Apply upgrades to existing rows (in-place; current["jobs"] is the
+        # truth-on-disk list).
+        upgrade_by_canon = {canon: (e, score)
+                            for (canon, e, score) in fresh["upgrades"]}
+        if upgrade_by_canon:
+            for j in current["jobs"]:
+                canon = _wl.norm_url(j)
+                if canon in upgrade_by_canon:
+                    e, score = upgrade_by_canon[canon]
+                    j["fit_score_numeric"] = score
+                    j["fit_score"] = e["fit_score"]
+                    j["fit_notes"] = e["fit_notes"]
+                    if e.get("resume_variants"):
+                        j["resume_variants"] = e["resume_variants"]
+                        j["primary_variant"] = e["primary_variant"]
+        # Apply expirations
+        if fresh["expirations"]:
+            exp_set = set(fresh["expirations"])
+            today = date.today().isoformat()
+            for j in current["jobs"]:
+                if j.get("id") in exp_set:
+                    j["status"] = "Expired"
+                    j["notes"] = ((j.get("notes", "") +
+                                   f" | Auto-expired {today}: URL not in "
+                                   f"latest scan").strip())
+        # Append new entries
+        current["jobs"].extend(fresh["new_entries"])
+        current["meta"]["total_roles"] = len(current["jobs"])
+        current["meta"]["last_scan"] = date.today().isoformat()
+        current["meta"].setdefault("changelog", []).append({
+            "date": date.today().isoformat(),
+            "event": (f"auto_promote: +{fresh['added']} new, "
+                      f"{fresh['updated']} upgraded, "
+                      f"{len(fresh['expirations'])} expired, "
+                      f"{fresh['skipped_geo']} geo-skipped "
+                      f"(min_score={args.min_score})"),
+            "roles": len(current["jobs"]),
+        })
+        final_counts["added"] = fresh["added"]
+        final_counts["updated"] = fresh["updated"]
+        final_counts["expired"] = len(fresh["expirations"])
+        final_counts["geo"] = fresh["skipped_geo"]
+        # The post-mutation new_entries list (used by --auto-tailor)
+        final_counts["new_entries"] = fresh["new_entries"]  # type: ignore
+        return current
+
     if args.commit:
-        # Backup
+        # Backup BEFORE the mutation so the on-disk file we copy is the
+        # caller's pre-mutation truth. shutil.copy2 reads under no lock; in
+        # the worst case it races a concurrent UI write and we get a slightly-
+        # newer-than-pre-mutation snapshot — still a valid rollback target.
         bak = TRACKER.with_suffix(f".bak.{stamp}.json")
         shutil.copy2(TRACKER, bak)
-        tr["jobs"].extend(new_entries)
-        tr.setdefault("meta", {})
-        tr["meta"]["total_roles"] = len(tr["jobs"])
-        tr["meta"]["last_scan"] = date.today().isoformat()
-        # changelog may be absent on a freshly-reset tracker (safe_json default
-        # is {"jobs": [], "meta": {}}). Seed an empty list rather than crash.
-        tr["meta"].setdefault("changelog", []).append({
-            "date": date.today().isoformat(),
-            "event": f"auto_promote: +{added} new, {updated} upgraded, {expired} expired (min_score={args.min_score})",
-            "roles": len(tr["jobs"]),
-        })
-        if _sj_write is not None:
-            _sj_write(TRACKER, tr)
+
+        if _sj_mutate is not None:
+            _sj_mutate(TRACKER, _commit_mutator,
+                       default={"jobs": [], "meta": {}})
+        elif _sj_write is not None:
+            # Best-effort fallback: re-read, mutate, write. Not race-safe
+            # but better than nothing if portalocker is missing.
+            cur = _sj_read(TRACKER, default={"jobs": [], "meta": {}})
+            _sj_write(TRACKER, _commit_mutator(cur))
         else:
-            # Inline atomic fallback — same shape as safe_json._atomic_write
-            # but without the cross-process lock. Better than a raw write_text
-            # which truncates on crash.
+            # Last-resort fallback: inline atomic write w/ no cross-process
+            # lock. The first thing a fresh install of this repo should do
+            # is `pip install portalocker`.
+            cur = json.loads(TRACKER.read_text(encoding="utf-8"))
+            new = _commit_mutator(cur)
             import os as _os, tempfile as _tf
             fd, tmp = _tf.mkstemp(prefix=TRACKER.name + ".", suffix=".tmp",
                                    dir=str(TRACKER.parent))
             try:
                 with _os.fdopen(fd, "w", encoding="utf-8") as f:
-                    json.dump(tr, f, indent=2)
+                    json.dump(new, f, indent=2)
                     f.flush()
                     _os.fsync(f.fileno())
                 _os.replace(tmp, TRACKER)
@@ -376,7 +506,16 @@ def main() -> int:
                 try: _os.unlink(tmp)
                 except OSError: pass
                 raise
-        print(f"[auto_promote] COMMIT: added {added}, upgraded {updated}, expired {expired}")
+
+        # Use the freshly-classified counts (which may differ slightly from
+        # the preview if the tracker changed between phases — rare).
+        added = final_counts["added"]
+        updated = final_counts["updated"]
+        expired = final_counts["expired"]
+        skipped_geo = final_counts["geo"]
+        new_entries = final_counts.get("new_entries") or new_entries  # type: ignore
+        print(f"[auto_promote] COMMIT: added {added}, upgraded {updated}, "
+              f"expired {expired}, geo-skipped {skipped_geo}")
         print(f"[auto_promote] Tracker backed up to {bak.name}")
 
         # Auto-tailor hook — spawn one jd_tailor process per new Tier-1 role.
@@ -410,19 +549,22 @@ def main() -> int:
                         print(f"  [tailor] failed to spawn for {e['id']}: {ex}",
                               file=sys.stderr)
     else:
-        print(f"[auto_promote] DRY-RUN: would add {added}, upgrade {updated}, expire {expired}")
+        print(f"[auto_promote] DRY-RUN: would add {added}, upgrade {updated}, "
+              f"expire {expired}, geo-skip {skipped_geo}")
         print(f"[auto_promote] Re-run with --commit to apply.")
     print(f"[auto_promote] Report: {report_path}")
 
     # UI-parseable summary for single-URL promote mode. "promoted" counts
     # added + upgraded (anything that landed or would land in the tracker);
-    # "skipped" combines dedupe / wrong-verdict / below-min-score so the
-    # caller doesn't have to reason about the breakdown.
+    # "skipped" combines dedupe / wrong-verdict / below-min-score / geo so
+    # the caller doesn't have to reason about the breakdown.
     if args.only_url:
         promoted = added + updated
-        skipped_total = skipped_dupe + skipped_verdict + skipped_score
+        skipped_total = (skipped_dupe + skipped_verdict + skipped_score
+                         + skipped_geo)
         print(f"[only-url] matched {matched} row(s); promoted {promoted}; "
-              f"skipped {skipped_total} (already in tracker / non-actionable verdict)")
+              f"skipped {skipped_total} (tracker dupe / non-actionable verdict "
+              f"/ geo gate)")
     return 0
 
 

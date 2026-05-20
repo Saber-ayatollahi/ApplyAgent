@@ -168,18 +168,28 @@ def main():
     # ------------------------------------------------------------------
     # Stage 1 - scrape
     # ------------------------------------------------------------------
+    # Exit-code semantics across stages: any non-zero rc that isn't an
+    # explicit "partial-but-usable" sentinel aborts the run with that code.
+    # Without this, a Stage-1 crash silently feeds Stage 2/3 stale data and
+    # the user sees a "successful" night that burned LLM dollars on nothing.
     log("[1/3] Scraping (web + Gmail alerts)...")
     rc = run_stage("jd_scraper", [python, "automation/jd_scraper.py", "--expansion", "--gmail"])
     if rc != 0:
         log(f"Scraper finished with exit code {rc}.")
-        if rc not in (0, 2):   # 2 = paused (partial run), still usable
-            log("Scraper returned a non-zero code. Checking if we have usable output...")
+        if rc != 2:  # 2 = paused (partial scrape, still usable downstream)
+            log(f"ABORT: jd_scraper returned rc={rc}; not running delta/brief.")
+            sys.exit(rc)
 
     # ------------------------------------------------------------------
     # Stage 2 - delta
     # ------------------------------------------------------------------
     log("[2/3] Computing delta...")
-    run_stage("scan_delta", [python, "automation/scan_delta.py"])
+    rc = run_stage("scan_delta", [python, "automation/scan_delta.py"])
+    if rc not in (0, 2):
+        # scan_delta exits 2 when only one scan exists (can't compute delta);
+        # treat that as benign for first-day installs.
+        log(f"ABORT: scan_delta returned rc={rc}; not running brief.")
+        sys.exit(rc)
 
     # Guard: verify today's delta file exists and is non-trivial
     today = datetime.now().strftime("%Y%m%d")
@@ -202,6 +212,7 @@ def main():
     )
     if rc != 0:
         log(f"morning_brief finished with exit code {rc}.")
+        sys.exit(rc)
 
     log("=== nightly_refresh finished ===")
 

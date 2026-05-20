@@ -174,6 +174,23 @@ check_gta("Montreal, QC (Remote possible)", False, "Montreal — out of region e
 check_keep("Anywhere", True, "Anywhere — let scorer decide")
 check_keep("Remote (Anywhere)", True, "Remote anywhere — let scorer decide")
 
+# ----- Clause-prefix anchoring (B2 regression: "in canada" / "across canada" must be
+#       at clause start, not mid-sentence prose) -----
+check_gta("Headquartered in Canada, role is in NYC", False, "prose 'in Canada' not clause-anchored")
+check_gta("Operating across Canada and the US — role is NYC-based", False, "prose 'across Canada' not clause-anchored")
+check_keep("Headquartered in Canada, role is in NYC", False, "keep() prose leak")
+check_keep("Operating across Canada and the US — role is NYC-based", False, "keep() prose leak")
+check_gta("in Canada", True, "clause-start 'in canada' (bare)")
+check_gta("Remote, in Canada", True, "comma-then-in-canada OK")
+check_gta("Hybrid — across Canada", True, "dash-then-across-canada OK")
+check_keep("across Canada", True, "keep() bare across canada")
+
+# ----- _compute_diff bucket: newly-scored row detection -----
+# (tested separately in test_compute_diff.py)
+
+# ----- scan_delta: gmail filter -----
+# (integration test — run via test_scan_delta_filter.py)
+
 # ----- Summary -----
 print(f"\n{PASS} pass / {FAIL} fail")
 for f in FAILS:

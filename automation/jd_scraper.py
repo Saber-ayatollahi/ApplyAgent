@@ -57,6 +57,9 @@ ROOT = Path(__file__).resolve().parent.parent
 TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
+sys.path.insert(0, str(ROOT / "automation"))
+from location_filter import keep_for_toronto_pipeline as _keep_geo  # noqa: E402
+
 # Keyword tiers. "Any" match in a title or JD makes the role a candidate.
 KEYWORDS_STRONG = [
     "alm", "asset liability", "asset-liability",
@@ -490,8 +493,7 @@ def fetch_greenhouse_jobs(token: str) -> list[dict]:
         for j in data.get("jobs", []):
             title = j.get("title", "")
             loc = (j.get("location", {}) or {}).get("name", "")
-            # Toronto-filter
-            if "toronto" not in loc.lower() and "ontario" not in loc.lower() and "canada" not in loc.lower():
+            if not _keep_geo(loc):
                 continue
             if not keyword_match(title):
                 continue
@@ -640,9 +642,7 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                         path = p.get("externalPath", "") or ""
                         if path in seen_paths:
                             continue
-                        # Location filter
-                        if not any(tok in loc for tok in ("toronto", "ontario", "ont,",
-                                                          "remote - canada", "canada")):
+                        if not _keep_geo(loc):
                             continue
                         jobs.append({
                             "title": title,
@@ -678,10 +678,6 @@ _SF_KEYWORDS = ["risk", "model", "capital", "treasury", "liquidity", "analytics"
                 "balance sheet", "market risk"]
 
 
-try:
-    from location_filter import is_gta_or_canada_remote as _is_gta_or_canada_remote  # type: ignore
-except ImportError:
-    from .location_filter import is_gta_or_canada_remote as _is_gta_or_canada_remote  # type: ignore
 
 
 def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
@@ -713,7 +709,7 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
                 location = paren.group(1) if paren else ""
                 title = re.sub(r"\s*\(([^()]+)\)\s*$", "", full_title).strip()
                 loc_lower = location.lower()
-                if not _is_gta_or_canada_remote(loc_lower):
+                if not _keep_geo(loc_lower):
                     continue
                 posted = None
                 if pub_m:

@@ -1416,7 +1416,9 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 if stripped.startswith("```"):
                     stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
                     stripped = re.sub(r"\s*```\s*$", "", stripped)
-                m = re.search(r"\{.*\}", stripped, flags=re.S)
+                m = re.search(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}", stripped, flags=re.S)
+                if not m:
+                    m = re.search(r"\{.*\}", stripped, flags=re.S)
                 if not m:
                     # Parse miss — model returned text but no JSON. Log it
                     # (so a recurring pattern is visible) and break out of
@@ -1826,8 +1828,14 @@ def main() -> int:
             print(f"[fit_scorer] --only-url merge: rewrote {len(scored)} "
                   f"row(s) into {json_out.name}; total rows in file: "
                   f"{len(merged)}.", file=sys.stderr)
-            json_out.write_text(json.dumps(out, indent=2), encoding="utf-8")
-            # Skip prev-snapshot AND skip the bottom-of-function rewrite below.
+            # Atomic replace, not raw write_text — the UI Action Plan reader
+            # polls this file every Streamlit rerun. A truncate-then-write
+            # window here defeats the whole copy-then-replace hardening
+            # introduced for the full-run snapshot.
+            _atomic_write_json(json_out, out)
+            # Skip the prev-snapshot (it would overwrite the previous full
+            # run's baseline with this single-row merge) and skip MD (would
+            # render a one-row report over the full one).
             return 0
     # Snapshot the previous scored output so the UI can diff this run vs prior
     # (Action Plan: NEW / UPGRADED / DOWNGRADED / STABLE badges). Best-effort —

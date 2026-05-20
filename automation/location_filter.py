@@ -44,9 +44,17 @@ _GTA_WITH_US_STATE_RE = re.compile(
 # matched company names ("Canada Goose"), UK streets ("Canada Square, London"),
 # and explicit negations ("CA, not Canada"). Parenthesised forms require canada
 # be the sole meaningful token in the parens — "(Canada too)" doesn't qualify.
+#
+# `in canada` and `across canada` are anchored to a clause boundary
+# (start-of-string OR after `,;|/(-—`) so JD-body prose like "Headquartered
+# in Canada, role is in NYC" or "Operating across Canada and the US" doesn't
+# false-keep when scraper noise leaks into the location field.
+_CLAUSE_PREFIX = r"(?:^|[,;|/(\-—]\s*)"
 _CANADA_ANCHOR_RE = re.compile(
     r"(remote\s*[-—,/]\s*canada\b|canada\s*[-—,/]\s*remote\b|"
-    r"\bin\s+canada\b|\bacross\s+canada\b|\bremote\s+canada\b|"
+    + _CLAUSE_PREFIX + r"in\s+canada\b|"
+    + _CLAUSE_PREFIX + r"across\s+canada\b|"
+    + r"\bremote\s+canada\b|"
     r"canada\s*\(\s*remote\s*\)|remote\s*\(\s*canada\s*\))",
     re.IGNORECASE,
 )

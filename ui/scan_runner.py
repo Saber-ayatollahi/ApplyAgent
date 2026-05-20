@@ -130,10 +130,19 @@ def _pid_alive(pid: int) -> bool:
 
 
 def refresh_state(rec_path: Path) -> dict:
-    """Read a run record; if it claims 'running' but the PID is dead, mark finished."""
+    """Read a run record; if it claims 'running' but the PID is dead, mark finished/failed."""
     rec = json.loads(rec_path.read_text(encoding="utf-8"))
     if rec.get("state") == "running" and not _pid_alive(rec.get("pid", 0)):
-        rec["state"] = "finished"
+        log_path = rec.get("log_path", "")
+        crashed = True
+        if log_path and Path(log_path).exists():
+            try:
+                tail = Path(log_path).read_bytes()[-2048:]
+                if b"nightly_refresh finished" in tail or b"finished ===" in tail:
+                    crashed = False
+            except OSError:
+                pass
+        rec["state"] = "failed" if crashed else "finished"
         rec["finished_at"] = datetime.now().isoformat(timespec="seconds")
         rec_path.write_text(json.dumps(rec, indent=2), encoding="utf-8")
     return rec

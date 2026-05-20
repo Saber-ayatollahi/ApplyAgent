@@ -30,9 +30,28 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 
 
+# Patterns for scan_*.json artifacts that are NOT user-pickable web scrapes
+# (Gmail harvests, base/checkpoint scans, merged sets). Mirror of
+# worklist._NON_SCRAPE_PATTERNS. Without this filter, scan_delta's
+# `_latest_current` could pick a Gmail harvest as the current/baseline,
+# producing a meaningless delta where every web scrape row appears
+# "removed".
+_NON_SCRAPE_PATTERNS = (
+    "scan_gmail_", "scan_base_", "scan_checkpoint",
+    "_merged", "working_set", "gmail_pool",
+)
+
+
+def _is_web_scrape(p: Path) -> bool:
+    name = p.name
+    if "_scored" in name:
+        return False
+    return not any(pat in name for pat in _NON_SCRAPE_PATTERNS)
+
+
 def _list_scans() -> list[Path]:
     files = sorted(OUT_DIR.glob("scan_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    return [f for f in files if "_scored" not in f.name]
+    return [f for f in files if _is_web_scrape(f)]
 
 
 def _latest_current() -> Path | None:
