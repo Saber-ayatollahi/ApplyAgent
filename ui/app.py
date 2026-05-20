@@ -4687,121 +4687,8 @@ elif page == "🎯 Pipeline":
                 )
                 st.rerun()
 
-    # ---------- Action Plan panel ----------
-    # The decision-oriented surface for a fresh scoring run: top apply_now
-    # cards, top tailor_and_apply cards, suspicious skips, plus a diff
-    # against the previous scored snapshot. Renders nothing when
-    # worklist_scored.json is absent.
-    _action_plan_panel()
-
-    # ---------- Ready-to-promote banner ----------
-    # When worklist_scored exists with ≥1 apply_now/tailor verdicts AND
-    # the user hasn't recently dismissed/committed it, nudge with one
-    # banner instead of forcing them to navigate to the advanced form.
-    # Auto-detection trumps the old "click promote button after score"
-    # ritual — closing this loop is the single highest-leverage UX win
-    # because previously promote was an afterthought (most scored runs
-    # never made it to the tracker until a manual button push).
-    _wls_path = OUT_DIR / "worklist_scored.json"
-    if _wls_path.exists():
-        try:
-            _wls = json.loads(_wls_path.read_text(encoding="utf-8"))
-            _verdicts: dict = {}
-            for _r in _wls.get("results", []):
-                _v = (_r.get("fit") or {}).get("fit_verdict", "")
-                if _v:
-                    _verdicts[_v] = _verdicts.get(_v, 0) + 1
-            _apply_now = _verdicts.get("apply_now", 0)
-            _tailor = _verdicts.get("tailor_and_apply", 0)
-            _ready = _apply_now + _tailor
-        except Exception:
-            _ready = 0
-            _apply_now = 0
-            _tailor = 0
-
-        # Has the user already dismissed this scored file? Track via
-        # a session-state key keyed by the scored file's mtime so a
-        # fresh score (new mtime) re-prompts.
-        _wls_mtime = int(_wls_path.stat().st_mtime)
-        _dismiss_key = f"_promote_banner_dismissed_{_wls_mtime}"
-        _already_committed = any(
-            j.get("source", "").endswith("+fit_scorer")
-            and parse_date(j.get("date_found")) == date.today()
-            for j in jobs
-        )
-
-        if (_ready >= 1
-            and not st.session_state.get(_dismiss_key)
-            and not _already_committed):
-            with st.container(border=True):
-                st.markdown(
-                    f"### 🎯 **{_ready} role"
-                    f"{'s' if _ready != 1 else ''} ready to promote** "
-                    f"to your tracker"
-                )
-                _msg_parts = []
-                if _apply_now:
-                    _msg_parts.append(f"**{_apply_now} apply_now**")
-                if _tailor:
-                    _msg_parts.append(f"**{_tailor} tailor_and_apply**")
-                st.caption(
-                    f"Latest scoring run found {' + '.join(_msg_parts)}. "
-                    f"Promote stamps them into the tracker so you can "
-                    f"act, follow up, and tailor."
-                )
-                _pb1, _pb2, _pb3 = st.columns([2, 2, 1])
-                with _pb1:
-                    if st.button(
-                        f"📋 Commit promote ({_ready})",
-                        type="primary",
-                        width='stretch',
-                        key=f"promote_commit_{_wls_mtime}",
-                        help="Run auto_promote --commit. Writes the tracker, "
-                             "creates a promote_report_*.md, and stamps "
-                             "every promoted role with date_found=today.",
-                    ):
-                        rec = scan_runner.start_run("pipeline", [
-                            sys.executable,
-                            str(ROOT / "automation" / "run_pipeline.py"),
-                            "--skip-scrape", "--skip-score",
-                            "--commit-promote",
-                        ])
-                        st.session_state["_last_launch"] = {
-                            "run_id": rec.run_id,
-                            "label": f"Promote {_ready}",
-                        }
-                        st.session_state[_dismiss_key] = True
-                        st.toast(f"📋 Promoting {_ready} roles…", icon="🚀")
-                        st.rerun()
-                with _pb2:
-                    if st.button(
-                        "👀 Review first (dry-run)",
-                        width='stretch',
-                        key=f"promote_dry_{_wls_mtime}",
-                        help="Run auto_promote without --commit. Writes the "
-                             "preview report; tracker stays untouched.",
-                    ):
-                        rec = scan_runner.start_run("pipeline", [
-                            sys.executable,
-                            str(ROOT / "automation" / "run_pipeline.py"),
-                            "--skip-scrape", "--skip-score",
-                        ])
-                        st.session_state["_last_launch"] = {
-                            "run_id": rec.run_id,
-                            "label": f"Promote dry-run ({_ready})",
-                        }
-                        st.toast("👀 Promote dry-run launched…", icon="🚀")
-                        st.rerun()
-                with _pb3:
-                    if st.button(
-                        "🙈 Hide",
-                        width='stretch',
-                        key=f"promote_dismiss_{_wls_mtime}",
-                        help="Hide this prompt for the current scored "
-                             "file. Re-prompts after the next score run.",
-                    ):
-                        st.session_state[_dismiss_key] = True
-                        st.rerun()
+    # (Action Plan panel and Ready-to-promote banner removed —
+    #  replaced by the Worklist + Scored tabs below.)
 
     # ---------- Funnel data collection ----------
     scan_f = latest_scan()
@@ -4978,10 +4865,84 @@ elif page == "🎯 Pipeline":
     # (1·Scrape / 2·Score / 4·Promote) were UI wrappers around CLIs that
     # the Run-chain button already invokes -- collapsed so the user sees
     # one page instead of juggling seven.
-    tabs = st.tabs(["🎯 Run", "👁 Inspect", "📜 History", "🕒 Recent Runs"])
+    # Tracker URLs for "already promoted" checks in Scored tab
+    _tracker_urls = set()
+    try:
+        _tr_data = load_tracker()
+        for _j in _tr_data.get("jobs") or []:
+            _u = _j.get("url") or _j.get("link") or _j.get("job_url") or ""
+            if _u:
+                _tracker_urls.add(_u)
+                _tracker_urls.add(_u.rstrip("/").lower())
+    except Exception:
+        pass
+
+    tabs = st.tabs(["📋 Worklist", "🎯 Scored", "🚀 Run", "📜 History"])
+
+    # ================== TAB: Worklist ==================
+    with tabs[0]:
+        _wl_path = OUT_DIR / "worklist.json"
+        if not _wl_path.exists():
+            st.info("No worklist built yet. Run a scrape first.")
+        else:
+            try:
+                _wl_data = json.loads(_wl_path.read_text(encoding="utf-8"))
+                _wl_rows = _wl_data.get("results") or []
+            except Exception:
+                _wl_rows = []
+            if not _wl_rows:
+                st.info("Worklist is empty.")
+            else:
+                _wl_df = pd.DataFrame([{
+                    "company": r.get("company", ""),
+                    "title": r.get("title", ""),
+                    "source": r.get("source", ""),
+                    "location": r.get("location", ""),
+                    "sector": r.get("sector", ""),
+                    "posted": r.get("posted_date", ""),
+                    "new": r.get("is_new_since_last_score", False),
+                    "url": r.get("link") or r.get("url", ""),
+                } for r in _wl_rows])
+
+                wf1, wf2, wf3, wf4 = st.columns([3, 2, 2, 2])
+                with wf1:
+                    _wl_search = st.text_input("Search company/title",
+                                               key="wl_search")
+                with wf2:
+                    _wl_sources = sorted(_wl_df["source"].dropna().unique())
+                    _wl_src_filt = st.multiselect("Source", _wl_sources,
+                                                   key="wl_source")
+                with wf3:
+                    _wl_sectors = sorted(
+                        s for s in _wl_df["sector"].dropna().unique() if s)
+                    _wl_sec_filt = st.multiselect("Sector", _wl_sectors,
+                                                   key="wl_sector")
+                with wf4:
+                    _wl_new_only = st.checkbox("New since last score",
+                                               key="wl_new_only")
+
+                _wl_view = _wl_df.copy()
+                if _wl_search:
+                    _sl = _wl_search.lower()
+                    _wl_view = _wl_view[
+                        _wl_view["company"].str.lower().str.contains(_sl, na=False) |
+                        _wl_view["title"].str.lower().str.contains(_sl, na=False)]
+                if _wl_src_filt:
+                    _wl_view = _wl_view[_wl_view["source"].isin(_wl_src_filt)]
+                if _wl_sec_filt:
+                    _wl_view = _wl_view[_wl_view["sector"].isin(_wl_sec_filt)]
+                if _wl_new_only:
+                    _wl_view = _wl_view[_wl_view["new"] == True]
+
+                st.caption(f"Showing {len(_wl_view)} of {len(_wl_df)} worklist rows")
+                st.dataframe(
+                    _wl_view,
+                    hide_index=True, width='stretch', height=600,
+                    column_config={"url": st.column_config.LinkColumn("url")},
+                )
 
     # ================== TAB: Run ==================
-    with tabs[0]:
+    with tabs[2]:
         # --- Quick actions: the 3 things the user actually does ---
         # Buttons FIRST, config SECOND. Most visits to this page are
         # "launch something" or "check what's running". The detailed
@@ -5297,11 +5258,11 @@ elif page == "🎯 Pipeline":
                         with st.expander("Raw scorer output"):
                             st.code(json.dumps(fit, indent=2), language="json")
 
-    # ================== TAB: Inspect ==================
+    # ================== TAB: Scored ==================
     with tabs[1]:
-        st.subheader("Inspect the scoring funnel")
-        st.caption("What was scraped, what got dropped at rule-triage, "
-                   "what Claude actually scored. Three sub-tabs below.")
+        st.subheader("Scored roles")
+        st.caption("LLM-scored candidates with fit scores. "
+                   "Filter, inspect, and promote to tracker.")
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -5344,10 +5305,12 @@ elif page == "🎯 Pipeline":
                     rows = []
                     for r in results:
                         f = r.get("fit") or {}
+                        _r_url = r.get("link", "")
                         rows.append({
                             "fit": f.get("fit_score", 0),
                             "verdict": f.get("fit_verdict", ""),
                             "tier": f.get("tier", 4),
+                            "in_tracker": "✅" if _r_url in _tracker_urls else "",
                             "sector": r.get("sector", ""),
                             "company": r.get("company", ""),
                             "title": r.get("title", ""),
@@ -5357,7 +5320,7 @@ elif page == "🎯 Pipeline":
                             "source": r.get("source", ""),
                             "posted": r.get("posted_date", ""),
                             "found": r.get("found_at", ""),
-                            "url": r.get("link", ""),
+                            "url": _r_url,
                         })
                     df = pd.DataFrame(rows).sort_values(["fit", "tier"],
                                                          ascending=[False, True])
@@ -5412,6 +5375,25 @@ elif page == "🎯 Pipeline":
                                     st.markdown(f"**Gaps:** {row['gaps']}")
                             with cR:
                                 st.link_button("🔗 Open JD", row["url"], width='stretch')
+                                _promote_url = row["url"]
+                                _in_tracker = _promote_url in _tracker_urls
+                                if _in_tracker:
+                                    st.caption("✅ Already in tracker")
+                                elif _promote_url and _ap_promote_supports_only_url():
+                                    if st.button(
+                                        "📋 Promote",
+                                        key=f"scored_promote_{idx}",
+                                        disabled=any_work_active,
+                                        width='stretch',
+                                    ):
+                                        _prec = scan_runner.start_run("promote", [
+                                            sys.executable,
+                                            str(ROOT / "automation" / "auto_promote.py"),
+                                            "--only-url", _promote_url, "--commit",
+                                        ])
+                                        st.toast(f"Promoting {row['company']}…",
+                                                 icon="📋")
+                                        st.rerun()
 
             # --- Sub-tab 2: dropped (rule-triage) ---------------------------
             with triage_tabs[1]:
@@ -5522,7 +5504,7 @@ elif page == "🎯 Pipeline":
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
     # ================== TAB: History ==================
-    with tabs[2]:
+    with tabs[3]:
         st.subheader("📜 Pipeline run history")
         pipelines = list_pipelines(50)
         if not pipelines:
@@ -5573,13 +5555,8 @@ elif page == "🎯 Pipeline":
         else:
             st.caption("No background runs recorded.")
 
-    # ================== TAB: Recent Runs ==================
-    # Polished "what just happened" view: last 20 pipelines with state
-    # badge, wall time, per-stage line, total cost, and a JSON expander
-    # per run. Complements the dataframe-style History tab above with
-    # something more glanceable. Robust to old/half-written status JSONs
-    # — every field uses .get() with sensible defaults.
-    with tabs[3]:
+        # --- Recent Runs (merged from old tab) ---
+        st.markdown("---")
         st.subheader("🕒 Recent Pipeline Runs")
         _runs = list_pipelines(20)
         if not _runs:
