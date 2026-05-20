@@ -185,9 +185,6 @@ check_gta("Remote, in Canada", True, "comma-then-in-canada OK")
 check_gta("Hybrid — across Canada", True, "dash-then-across-canada OK")
 check_keep("across Canada", True, "keep() bare across canada")
 
-# ----- _compute_diff bucket: newly-scored row detection -----
-# (tested separately in test_compute_diff.py)
-
 # ----- scan_delta: gmail filter -----
 # (integration test — run via test_scan_delta_filter.py)
 

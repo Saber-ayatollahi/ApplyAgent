@@ -1038,53 +1038,6 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
     return state == "running"
 
 
-# =====================================================================
-# Action Plan panel — the single decision-oriented surface that renders
-# after a scoring run. Three bands (apply now / tailor first /
-# suspicious skips) + diff vs previous scored snapshot.
-# =====================================================================
-import hashlib as _ap_hashlib  # noqa: E402
-
-_VERDICT_RANK = {"skip": 0, "watch": 1, "tailor_and_apply": 2, "apply_now": 3}
-_PRIORITY_KEYWORDS = [
-    "ALM", "IRRBB", "balance sheet", "treasury risk", "ALCO",
-    "asset-liability", "liquidity risk", "funding risk", "interest rate risk",
-]
-
-
-def _ap_url(r: dict) -> str:
-    return r.get("link") or r.get("url") or ""
-
-
-def _ap_hash(url: str) -> str:
-    return _ap_hashlib.md5((url or "").encode("utf-8")).hexdigest()[:10]
-
-
-def _compute_diff(current_rows: list, prev_rows: list) -> dict:
-    """Map url -> 'new' | 'upgraded' | 'downgraded' | 'stable'.
-    Upgrade triggers on score delta >=1 OR verdict-ladder move."""
-    cur = {_ap_url(r): r for r in (current_rows or []) if _ap_url(r)}
-    prev = {_ap_url(r): r for r in (prev_rows or []) if _ap_url(r)}
-    out = {}
-    for url, r in cur.items():
-        pr = prev.get(url)
-        if not pr:
-            out[url] = "new"; continue
-        cf, pf = r.get("fit") or {}, pr.get("fit") or {}
-        if cf and not pf:
-            out[url] = "upgraded"; continue
-        cs, ps = cf.get("fit_score") or 0, pf.get("fit_score") or 0
-        cv = _VERDICT_RANK.get(cf.get("fit_verdict", ""), -1)
-        pv = _VERDICT_RANK.get(pf.get("fit_verdict", ""), -1)
-        if cs - ps >= 1 or (cv > pv and pv >= 0):
-            out[url] = "upgraded"
-        elif ps - cs >= 1 or (pv > cv and cv >= 0):
-            out[url] = "downgraded"
-        else:
-            out[url] = "stable"
-    return out
-
-
 def _ap_promote_supports_only_url() -> bool:
     """Probe auto_promote.py --help once per session for the --only-url flag
     (Agent A is adding it in parallel)."""
@@ -1102,311 +1055,6 @@ def _ap_promote_supports_only_url() -> bool:
         supports = False
     st.session_state[key] = supports
     return supports
-
-
-def _ap_render_card(row: dict, idx: int, band: str, diff_label: str,
-                    primary_action: str = "promote"):
-    fit = row.get("fit") or {}
-    url = _ap_url(row)
-    company, title = row.get("company", "—"), row.get("title", "—")
-    score, verdict = fit.get("fit_score", "?"), fit.get("fit_verdict", "?")
-    tier = fit.get("tier", "?")
-    variants = fit.get("applicable_resume_variants") or []
-    reasons = fit.get("top_3_reasons") or []
-    gaps = fit.get("skill_gaps") or []
-    summary = fit.get("summary") or ""
-    marker = "🟢" if band == "apply_now" else "🟡"
-    chip = {"new": " · 🆕 NEW",
-            "upgraded": " · ↗ upgraded vs last run",
-            "downgraded": " · ↘ downgraded vs last run"}.get(diff_label, "")
-    h = _ap_hash(url)
-    with st.container(border=True):
-        st.markdown(f"{marker} **#{idx}** · `{verdict}` · "
-                    f"**{score}/10** · Tier {tier}{chip}")
-        st.markdown(f"**{company} · {title}**")
-        if variants:
-            st.markdown(" ".join(f"`[{v}]`" for v in variants))
-        for r in reasons[:3]:
-            st.markdown(f"- {r}")
-        if gaps:
-            st.caption(f"Gaps: {', '.join(gaps)}")
-        if summary:
-            st.caption(f"_{summary}_")
-        # Concurrency guard — never spawn a promote/tailor while another job is
-        # writing the tracker or worklist_scored.json. Two writers race the
-        # atomic-replace and the second loses; the user sees a green toast but
-        # the row didn't land.
-        _busy = bool(globals().get("any_work_active"))
-        b1, b2, b3, b4 = st.columns(4)
-        with b1:
-            if st.button("📋 Promote", key=f"_ap_promote_{band}_{h}",
-                         type="primary" if primary_action == "promote" else "secondary",
-                         disabled=_busy,
-                         width='stretch',
-                         help=("Disabled while another job is running."
-                               if _busy else
-                               "Promote just this URL to the tracker.")):
-                if _ap_promote_supports_only_url():
-                    rec = scan_runner.start_run("promote_one", [
-                        sys.executable,
-                        str(ROOT / "automation" / "auto_promote.py"),
-                        "--only-url", url, "--commit",
-                    ])
-                    st.session_state["_last_launch"] = {
-                        "run_id": rec.run_id, "label": f"Promote {company}"}
-                    st.toast(f"📋 Promoting {company}…", icon="🚀")
-                    st.rerun()
-                else:
-                    st.warning(
-                        "auto_promote.py doesn't have --only-url yet — use "
-                        "the bulk **Promote N apply_now** button above.",
-                        icon="⚠️")
-        with b2:
-            if st.button("✂️ Tailor", key=f"_ap_tailor_{band}_{h}",
-                         type="primary" if primary_action == "tailor" else "secondary",
-                         disabled=_busy,
-                         width='stretch',
-                         help=("Disabled while another job is running."
-                               if _busy else
-                               "Generate tailored resume + cover letter prompt.")):
-                rec = scan_runner.start_run(f"tailor_{h}", [
-                    sys.executable,
-                    str(ROOT / "automation" / "jd_tailor.py"),
-                    "--jd-url", url,
-                ])
-                st.session_state["_last_launch"] = {
-                    "run_id": rec.run_id, "label": f"Tailor {company}"}
-                st.toast(f"✂️ Tailoring {company}…", icon="🚀")
-                st.rerun()
-        with b3:
-            if url:
-                st.link_button("🔗 Open JD", url, width='stretch')
-        with b4:
-            if st.button("👁 Hide", key=f"_ap_hide_{band}_{h}",
-                         width='stretch',
-                         help="Dismiss this card until the next score run."):
-                st.session_state[f"_action_plan_hidden_{h}"] = True
-                st.rerun()
-
-
-def _ap_rescore_supports_only_url() -> bool:
-    """Probe fit_scorer.py --help once per session for the --only-url flag."""
-    key = "_ap_rescore_supports_only_url"
-    if key in st.session_state:
-        return st.session_state[key]
-    supports = False
-    try:
-        r = subprocess.run(
-            [sys.executable, str(ROOT / "automation" / "fit_scorer.py"), "--help"],
-            capture_output=True, text=True, timeout=5,
-        )
-        supports = "--only-url" in (r.stdout or "") + (r.stderr or "")
-    except Exception:
-        supports = False
-    st.session_state[key] = supports
-    return supports
-
-
-def _ap_render_suspicious(row: dict, hit: str):
-    fit = row.get("fit") or {}
-    url = _ap_url(row)
-    h = _ap_hash(url)
-    company = row.get("company", "—")
-    with st.container(border=True):
-        st.markdown(
-            f"⚠️ **{company} · {row.get('title', '—')}** · "
-            f"score: {fit.get('fit_score', '?')}/10 · "
-            f"verdict: `{fit.get('fit_verdict', '?')}` · keyword hit: `{hit}`"
-        )
-        if fit.get("summary"):
-            st.caption(fit["summary"])
-        b1, b2, _ = st.columns([1, 1, 3])
-        with b1:
-            supports = _ap_rescore_supports_only_url()
-            _busy = bool(globals().get("any_work_active"))
-            if st.button(
-                "👀 Force re-score",
-                key=f"_ap_resc_{h}",
-                disabled=(not (supports and url)) or _busy,
-                width='stretch',
-                help=("Disabled while another job is running."
-                      if _busy else
-                      "Bust the fit cache for this URL and re-call the LLM "
-                      "(merges back into worklist_scored.json without "
-                      "touching the diff baseline)."
-                      if supports else
-                      "fit_scorer.py doesn't have --only-url yet."),
-            ):
-                rec = scan_runner.start_run(f"rescore_{h}", [
-                    sys.executable,
-                    str(ROOT / "automation" / "fit_scorer.py"),
-                    "--only-url", url, "--rescore",
-                ])
-                st.session_state["_last_launch"] = {
-                    "run_id": rec.run_id, "label": f"Re-score {company}"}
-                st.toast(f"👀 Re-scoring {company}…", icon="🚀")
-                st.rerun()
-        with b2:
-            if url:
-                st.link_button("🔗 Open JD", url, width='stretch')
-
-
-def _ap_render_band(rows: list, band: str, header: str, primary_action: str,
-                    diff: dict, limit: int = 5):
-    rows = sorted(
-        [r for r in rows
-         if (r.get("fit") or {}).get("fit_verdict") == band],
-        key=lambda r: (r.get("fit") or {}).get("fit_score") or 0, reverse=True)
-    if not rows:
-        return
-    st.markdown(header)
-    shown = 0
-    for r in rows:
-        if shown >= limit:
-            break
-        url = _ap_url(r)
-        if st.session_state.get(f"_action_plan_hidden_{_ap_hash(url)}"):
-            continue
-        shown += 1
-        _ap_render_card(r, shown, band, diff.get(url, "stable"),
-                        primary_action=primary_action)
-
-
-def _action_plan_panel():
-    """Render the Action Plan panel for the latest scored run.
-    No-op when worklist_scored.json doesn't exist. Hidden cards reset on
-    new scored-file mtime."""
-    wls_path = OUT_DIR / "worklist_scored.json"
-    if not wls_path.exists():
-        return
-    try:
-        wls = json.loads(wls_path.read_text(encoding="utf-8"))
-    except Exception:
-        return
-    scored_rows = [r for r in (wls.get("results") or [])
-                   if isinstance(r.get("fit"), dict)]
-    if not scored_rows:
-        return
-
-    # Exclude rows already promoted to the tracker
-    _tracker_urls = set()
-    try:
-        _tr = load_tracker()
-        for _j in _tr.get("jobs") or []:
-            _u = _j.get("url") or _j.get("link") or _j.get("job_url") or ""
-            if _u:
-                _tracker_urls.add(_u)
-                _tracker_urls.add(_u.rstrip("/").lower())
-    except Exception:
-        pass
-    _total_scored = len(scored_rows)
-    scored_rows = [r for r in scored_rows
-                   if _ap_url(r) not in _tracker_urls]
-    if not scored_rows:
-        st.caption("All scored roles are already in the tracker.")
-        return
-
-    # Wipe hidden-card flags whenever a fresher scored file appears.
-    mtime = int(wls_path.stat().st_mtime)
-    if st.session_state.get("_action_plan_last_mtime") != mtime:
-        for k in [k for k in list(st.session_state.keys())
-                  if k.startswith("_action_plan_hidden_")]:
-            st.session_state.pop(k, None)
-        st.session_state["_action_plan_last_mtime"] = mtime
-
-    prev_path = OUT_DIR / "worklist_scored.prev.json"
-    prev_rows = []
-    if prev_path.exists():
-        try:
-            prev_rows = (json.loads(prev_path.read_text(encoding="utf-8"))
-                         .get("results") or [])
-        except Exception:
-            prev_rows = []
-    diff = _compute_diff(scored_rows, prev_rows)
-    cur_urls = {_ap_url(r) for r in scored_rows if _ap_url(r)}
-    dropped = sum(1 for r in prev_rows
-                  if _ap_url(r) and _ap_url(r) not in cur_urls)
-
-    counts = {"apply_now": 0, "tailor_and_apply": 0, "watch": 0, "skip": 0}
-    for r in scored_rows:
-        v = (r.get("fit") or {}).get("fit_verdict", "")
-        if v in counts:
-            counts[v] += 1
-    diff_counts = {"new": 0, "upgraded": 0, "downgraded": 0, "stable": 0}
-    for v in diff.values():
-        if v in diff_counts:
-            diff_counts[v] += 1
-
-    with st.container(border=True):
-        st.markdown("### 🎯 Action plan from this scoring run")
-        st.markdown(
-            f"scored **{len(scored_rows)}** · "
-            f"**{counts['apply_now']}** apply_now · "
-            f"**{counts['tailor_and_apply']}** tailor_and_apply · "
-            f"**{counts['watch']}** watch · **{counts['skip']}** skip"
-        )
-        if prev_rows:
-            st.caption(
-                f"vs last run: 🆕 {diff_counts['new']} new · "
-                f"↗ {diff_counts['upgraded']} upgraded · "
-                f"↘ {diff_counts['downgraded']} downgraded · "
-                f"✓ {diff_counts['stable']} stable · {dropped} dropped"
-            )
-            st.caption(
-                "new = URL not in prior scored file. "
-                "upgraded = score/verdict improved or first-time scored. "
-                "stable = same score. dropped = URL removed from worklist."
-            )
-        else:
-            st.caption("No previous scored snapshot on file — first run, "
-                       "all rows treated as stable.")
-        h1, h2, _ = st.columns([2, 2, 1])
-        _busy_panel = bool(globals().get("any_work_active"))
-        with h1:
-            if counts["apply_now"] >= 1 and st.button(
-                f"📋 Promote {counts['apply_now']} apply_now",
-                key="_ap_header_promote", type="primary", width='stretch',
-                disabled=_busy_panel,
-                help=("Disabled while another job is running."
-                      if _busy_panel else None),
-            ):
-                rec = scan_runner.start_run("promote", [
-                    sys.executable,
-                    str(ROOT / "automation" / "run_pipeline.py"),
-                    "--skip-scrape", "--skip-score", "--commit-promote",
-                ])
-                st.session_state["_last_launch"] = {
-                    "run_id": rec.run_id,
-                    "label": f"Promote {counts['apply_now']}"}
-                st.toast(f"📋 Promoting {counts['apply_now']} roles…",
-                         icon="🚀")
-                st.rerun()
-        with h2:
-            st.caption("→ Pipeline → Inspect tab for the full filterable table")
-
-        _ap_render_band(scored_rows, "apply_now",
-                        "#### 🟢 Apply this session",
-                        primary_action="promote", diff=diff)
-        _ap_render_band(scored_rows, "tailor_and_apply",
-                        "#### 🟡 Tailor first",
-                        primary_action="tailor", diff=diff)
-
-        # Band 3 — suspicious skips (skip + score>=5 + priority kw hit)
-        suspicious: list[tuple[dict, str]] = []
-        for r in scored_rows:
-            f = r.get("fit") or {}
-            if f.get("fit_verdict") != "skip" or (f.get("fit_score") or 0) < 5:
-                continue
-            haystack = ((r.get("title") or "") + " "
-                        + " ".join(f.get("top_3_reasons") or [])).lower()
-            for kw in _PRIORITY_KEYWORDS:
-                if kw.lower() in haystack:
-                    suspicious.append((r, kw))
-                    break
-        if suspicious:
-            st.markdown("#### ⚠️ Worth a second look")
-            for r, hit in suspicious[:3]:
-                _ap_render_suspicious(r, hit)
 
 
 def _resolve_pipeline_staleness(data: dict, path: Path) -> dict:
@@ -2502,10 +2150,7 @@ if page == "🏠 Dashboard":
         with st.container(border=True):
             st.markdown(f"### 🎯 Today's queue · **{_total_today} action"
                          f"{'s' if _total_today != 1 else ''}**")
-            st.caption(
-                "What to do right now, ranked. Each row has a one-click "
-                "action — you should be able to drive your day from here."
-            )
+            st.caption("Ranked by urgency. One-click actions below each role.")
 
             if _today_apply_now:
                 st.markdown(
@@ -2569,237 +2214,6 @@ if page == "🏠 Dashboard":
         # applied. Inline (not a modal) so the page state isn't lost.
         render_tailor_drawer(jobs, tr, TRACKER)
         st.markdown("")  # tiny breather before campaign progress
-
-    # ── Campaign progress + pipeline funnel ──────────────────────────────────
-    _camp_start_str = meta.get("campaign_start", "2026-05-03")
-    _camp_end_str   = meta.get("campaign_end", "2026-07-12")
-    try:
-        _camp_start = datetime.strptime(_camp_start_str, "%Y-%m-%d").date()
-        _camp_end   = datetime.strptime(_camp_end_str,   "%Y-%m-%d").date()
-        _camp_total = max((_camp_end - _camp_start).days, 1)
-        _camp_done  = max(min((today - _camp_start).days, _camp_total), 0)
-        _camp_pct   = int(_camp_done / _camp_total * 100)
-        _camp_left  = max((_camp_end - today).days, 0)
-    except Exception:
-        _camp_pct = 0; _camp_left = 0
-
-    # Pipeline funnel — quick glance at jobs in each active stage
-    _stage_counts = {}
-    _ACTIVE_STAGES = ["Tailoring", "Applied", "Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite", "Offer"]
-    for _j in jobs:
-        _s = _j.get("status", "")
-        if _s in _ACTIVE_STAGES:
-            _stage_counts[_s] = _stage_counts.get(_s, 0) + 1
-
-    _cprog_col, _funnel_col = st.columns([1, 1], gap="large")
-    with _cprog_col:
-        with st.container(border=True):
-            st.markdown("##### 📅 Campaign Progress")
-            st.progress(_camp_pct / 100, text=f"{_camp_pct}% · {_camp_left} days remaining")
-            st.caption(
-                f"{_camp_start_str} → {_camp_end_str}  ·  "
-                f"Week {(_camp_done // 7) + 1} of {(_camp_total // 7) + 1}"
-            )
-    with _funnel_col:
-        with st.container(border=True):
-            st.markdown("##### 🔽 Active Pipeline")
-            if _stage_counts:
-                _stage_labels = {
-                    "Tailoring": "✍️ Tailoring",
-                    "Applied": "📤 Applied",
-                    "Recruiter_Screen": "📞 Recruiter",
-                    "Phone_Screen": "📱 Phone Screen",
-                    "Take_Home": "💻 Take-Home",
-                    "Onsite": "🏢 Onsite",
-                    "Offer": "🎉 Offer",
-                }
-                _funnel_parts = []
-                for _st_key in _ACTIVE_STAGES:
-                    if _st_key in _stage_counts:
-                        _funnel_parts.append(
-                            f"**{_stage_labels.get(_st_key, _st_key)}** {_stage_counts[_st_key]}"
-                        )
-                st.markdown("  ·  ".join(_funnel_parts))
-            else:
-                st.caption("No jobs in active stages yet — start applying!")
-
-    # ── 7-day activity strip ──────────────────────────────────────────────────
-    _act_days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
-    _act_applied  = {d: 0 for d in _act_days}
-    _act_outreach = {d: 0 for d in _act_days}
-    for _aj in jobs:
-        _ad = parse_date(_aj.get("date_applied"))
-        if _ad and _ad in _act_applied:
-            _act_applied[_ad] += 1
-        for _ol in (_aj.get("outreach_log") or []):
-            _od = parse_date(_ol.get("date"))
-            if _od and _od in _act_outreach:
-                _act_outreach[_od] += 1
-    with st.container(border=True):
-        st.markdown("##### 📆 Last 7 days")
-        _sp_cols = st.columns(7)
-        for _di, _dd in enumerate(_act_days):
-            _n_app = _act_applied[_dd]
-            _n_out = _act_outreach[_dd]
-            _lbl = "**Today**" if _dd == today else f"{_dd.strftime('%a')} {_dd.day}"
-            _delta_str = f"+{_n_out} outreach" if _n_out else None
-            _sp_cols[_di].metric(
-                _lbl,
-                f"{_n_app} app{'s' if _n_app != 1 else ''}",
-                delta=_delta_str,
-                delta_color="normal" if _n_out else "off",
-                help=f"{_dd.strftime('%B %d')}: {_n_app} applied, {_n_out} outreach",
-            )
-
-    st.markdown("---")
-
-    # ── Today's Game Plan ─────────────────────────────────────────────────
-    # Action-first band: surfaces the highest-priority things to do RIGHT NOW
-    # before the informational sections. Overdue follow-ups first, then review
-    # queue, then weekly progress. Empty = nothing to do = great news.
-    _gp_fu = followup_buckets(jobs)
-    _gp_overdue    = len(_gp_fu["overdue"])
-    _gp_due_today  = len(_gp_fu["due_today"])
-    _gp_no_sched   = len(_gp_fu["no_schedule"])
-    _gp_review_ct  = sum(1 for _j in jobs if _j.get("status") == "Found")
-    _gp_target_wk  = targets.get("applications_per_week", 5)
-    _gp_applied_wk = _applied_this_week
-
-    _gp_items = []
-    if _gp_overdue:
-        _gp_items.append(("#ef4444", "OVERDUE",
-            f"{_gp_overdue} follow-up{'s' if _gp_overdue!=1 else ''} past due — send a note today",
-            "🔔 Follow-ups"))
-    if _gp_due_today:
-        _gp_items.append(("#f59e0b", "TODAY",
-            f"{_gp_due_today} follow-up{'s' if _gp_due_today!=1 else ''} due today",
-            "🔔 Follow-ups"))
-    if _gp_no_sched:
-        _gp_items.append(("#f59e0b", "ACTION",
-            f"{_gp_no_sched} applied job{'s' if _gp_no_sched!=1 else ''} with no follow-up scheduled",
-            "🔔 Follow-ups"))
-    if _gp_review_ct:
-        _gp_items.append(("#8b5cf6", "QUEUE",
-            f"{_gp_review_ct} unreviewed match{'es' if _gp_review_ct!=1 else ''} waiting for triage",
-            "📬 Review Queue"))
-    _gp_remaining = max(0, _gp_target_wk - _gp_applied_wk)
-    if _gp_remaining > 0:
-        _gp_items.append(("#10b981", "GOAL",
-            f"{_gp_applied_wk}/{_gp_target_wk} applications this week — {_gp_remaining} to go",
-            "📬 Review Queue"))
-
-    if _gp_items:
-        with st.container(border=True):
-            st.markdown("#### 🎯 Today's game plan")
-            for _gp_col, _gp_pri, _gp_text, _gp_dest in _gp_items:
-                st.markdown(
-                    f"<div style='padding:7px 12px;margin:3px 0;"
-                    f"background:{_gp_col}15;border-left:3px solid {_gp_col};"
-                    f"border-radius:4px;display:flex;justify-content:space-between;'"
-                    f"><span><span style='font-size:10px;font-weight:700;"
-                    f"color:{_gp_col};letter-spacing:.05em'>{_gp_pri}</span> "
-                    f"<span style='font-size:13px;margin-left:6px'>{_gp_text}</span></span>"
-                    f"<span style='font-size:11px;opacity:.55'>→ {_gp_dest}</span></div>",
-                    unsafe_allow_html=True,
-                )
-    else:
-        st.success(
-            "🎉 All caught up — no overdue follow-ups, review queue empty, weekly goal met!",
-            icon="✅"
-        )
-    st.markdown("")
-    st.markdown("---")
-
-    # ── Today's top picks preview ─────────────────────────────────────────
-    # Shows the top 3 brief entries as compact action cards RIGHT at the top
-    # so the user sees what to work on the moment they open the Dashboard.
-    if _brief_is_today and _brief_entries_top:
-        st.markdown("#### 🌅 Today's top picks")
-        _VERDICT_COLOR = {"apply_now": "#10b981", "tailor_and_apply": "#f59e0b", "watch": "#6366f1"}
-        _VERDICT_LABEL = {"apply_now": "✅ Apply now", "tailor_and_apply": "✍️ Tailor & apply", "watch": "👀 Watch"}
-        for _bi, _br in enumerate(_brief_entries_top, 1):
-            _bf = _br.get("fit") or {}
-            _bscore = int(_bf.get("fit_score") or 0)
-            _bverdict = _bf.get("fit_verdict", "")
-            _bcolor = _VERDICT_COLOR.get(_bverdict, "#6b7280")
-            _bvlabel = _VERDICT_LABEL.get(_bverdict, _bverdict)
-            _bfb = freshness_badge(_br.get("posted_date"), _br.get("found_at"))
-            _bsummary = _bf.get("summary", "")
-            _bgaps = _bf.get("gaps", "")
-            _blink = _br.get("link", "")
-            with st.container(border=True):
-                _hcol, _scol, _acol = st.columns([6, 2, 1])
-                with _hcol:
-                    st.markdown(
-                        f"<div style='font-size:1.05em;font-weight:600;margin-bottom:2px'>"
-                        f"<span style='color:{_bcolor};font-size:1.3em;margin-right:6px'>{_bi}.</span>"
-                        f"{_br.get('company','')} — {_br.get('title','')}</div>"
-                        f"<div style='font-size:0.82em;opacity:0.65'>{_bfb}</div>",
-                        unsafe_allow_html=True,
-                    )
-                    if _bsummary:
-                        st.caption(_bsummary)
-                    if _bgaps:
-                        st.caption(f"⚠️ Gaps: {_bgaps}")
-                with _scol:
-                    st.metric("Fit score", f"{_bscore}/10")
-                    st.markdown(
-                        f"<div style='font-size:0.78em;color:{_bcolor};font-weight:600'>"
-                        f"{_bvlabel}</div>",
-                        unsafe_allow_html=True,
-                    )
-                with _acol:
-                    if _blink:
-                        st.link_button("🔗 Open", _blink, width='stretch')
-        st.caption(
-            "↓ Scroll to **Today's fresh matches** below for full detail, "
-            "gap analysis, and tracker actions."
-        )
-        st.markdown("---")
-
-    elif not _brief_is_today:
-        # No today brief — clear call to action
-        _brief_age_msg = ""
-        if _brief_now and _brief_date_raw_top:
-            try:
-                _bd = datetime.strptime(_brief_date_raw_top, "%Y%m%d").date()
-                _days_old = (date.today() - _bd).days
-                _brief_age_msg = f" (last brief: {_days_old}d ago)"
-            except ValueError:
-                pass
-        elif not _brief_now:
-            _brief_age_msg = " — no brief on file yet"
-        st.info(
-            f"No brief for today{_brief_age_msg}. "
-            "Hit **🌅 Nightly refresh** below to generate today's picks.",
-            icon="🌅",
-        )
-        st.markdown("---")
-
-    # ── CRM urgency alert ─────────────────────────────────────────────────
-    if _crm_badge_count > 0:
-        _crm_high_list = [
-            c for c in _crm_early_all
-            if c.get("priority") == "High"
-            and c.get("status") == "Not_Contacted"
-            and not c.get("last_touchpoint")
-        ][:5]  # show at most 5
-        with st.expander(
-            f"🤝 {_crm_badge_count} high-priority recruiter"
-            f"{'s' if _crm_badge_count != 1 else ''} awaiting outreach",
-            expanded=False,
-        ):
-            st.caption(
-                "Recruiter relationships drive ~70% of Director+ moves in Toronto finance. "
-                "These high-priority firms haven't been contacted yet:"
-            )
-            for _crec in _crm_high_list:
-                _cname = _crec.get("firm") or _crec.get("name") or "?"
-                _cnext = _crec.get("next_action") or "—"
-                st.markdown(f"**{_cname}** — {_crec.get('firm_type','').replace('_',' ')}")
-                st.caption(f"Next action: {_cnext[:200]}")
-            st.caption("→ Navigate to 🤝 Recruiter CRM in the sidebar to log outreach.")
-        st.markdown("---")
 
     # ---------- Quick actions — one-click entry points ----------
     # Before this, the landing page had metrics and banners but no way
@@ -2953,35 +2367,158 @@ if page == "🏠 Dashboard":
             f"Inspect tab on Pipeline for results."
         )
 
-    # KPIs
-    c1, c2, c3, c4, c5 = st.columns(5)
-    applied_all = [j for j in jobs if parse_date(j.get("date_applied"))]
-    applied_wk = [j for j in applied_all
-                  if parse_date(j.get("date_applied")) and
-                  week_start <= parse_date(j["date_applied"]) <= week_end]
-    outreach_wk = []
-    for j in jobs:
-        for log in j.get("outreach_log", []):
-            d = parse_date(log.get("date"))
-            if d and week_start <= d <= week_end:
-                outreach_wk.append(log)
-    in_process = [j for j in jobs if j.get("status") in
-                  ("Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite", "Offer")]
-    stale_threshold = today - timedelta(days=21)
-    stale = [j for j in jobs
-             if parse_date(j.get("date_applied"))
-             and parse_date(j["date_applied"]) < stale_threshold
-             and j.get("status") in ("Applied", "Recruiter_Screen", "Phone_Screen")]
+    # ── Today's top picks preview ─────────────────────────────────────────
+    # Shows the top 3 brief entries as compact action cards RIGHT at the top
+    # so the user sees what to work on the moment they open the Dashboard.
+    if _brief_is_today and _brief_entries_top:
+        st.markdown("#### 🌅 Today's top picks")
+        _VERDICT_COLOR = {"apply_now": "#10b981", "tailor_and_apply": "#f59e0b", "watch": "#6366f1"}
+        _VERDICT_LABEL = {"apply_now": "✅ Apply now", "tailor_and_apply": "✍️ Tailor & apply", "watch": "👀 Watch"}
+        for _bi, _br in enumerate(_brief_entries_top, 1):
+            _bf = _br.get("fit") or {}
+            _bscore = int(_bf.get("fit_score") or 0)
+            _bverdict = _bf.get("fit_verdict", "")
+            _bcolor = _VERDICT_COLOR.get(_bverdict, "#6b7280")
+            _bvlabel = _VERDICT_LABEL.get(_bverdict, _bverdict)
+            _bfb = freshness_badge(_br.get("posted_date"), _br.get("found_at"))
+            _bsummary = _bf.get("summary", "")
+            _bgaps = _bf.get("gaps", "")
+            _blink = _br.get("link", "")
+            with st.container(border=True):
+                _hcol, _scol, _acol = st.columns([6, 2, 1])
+                with _hcol:
+                    st.markdown(
+                        f"<div style='font-size:1.05em;font-weight:600;margin-bottom:2px'>"
+                        f"<span style='color:{_bcolor};font-size:1.3em;margin-right:6px'>{_bi}.</span>"
+                        f"{_br.get('company','')} — {_br.get('title','')}</div>"
+                        f"<div style='font-size:0.82em;opacity:0.65'>{_bfb}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    if _bsummary:
+                        st.caption(_bsummary)
+                    if _bgaps:
+                        st.caption(f"⚠️ Gaps: {_bgaps}")
+                with _scol:
+                    st.metric("Fit score", f"{_bscore}/10")
+                    st.markdown(
+                        f"<div style='font-size:0.78em;color:{_bcolor};font-weight:600'>"
+                        f"{_bvlabel}</div>",
+                        unsafe_allow_html=True,
+                    )
+                with _acol:
+                    if _blink:
+                        st.link_button("🔗 Open", _blink, width='stretch')
 
-    c1.metric("This week applied", len(applied_wk),
-              delta=len(applied_wk) - targets.get("tailored_applications", 8))
-    c2.metric("This week outreach", len(outreach_wk),
-              delta=len(outreach_wk) - targets.get("outreach_messages", 10))
-    c3.metric("Active interviews", len(in_process))
-    c4.metric("Total applied", len(applied_all))
-    c5.metric("Stale (>21d)", len(stale), delta_color="inverse")
+        st.markdown("---")
+
+    elif not _brief_is_today:
+        # No today brief — clear call to action
+        _brief_age_msg = ""
+        if _brief_now and _brief_date_raw_top:
+            try:
+                _bd = datetime.strptime(_brief_date_raw_top, "%Y%m%d").date()
+                _days_old = (date.today() - _bd).days
+                _brief_age_msg = f" (last brief: {_days_old}d ago)"
+            except ValueError:
+                pass
+        elif not _brief_now:
+            _brief_age_msg = " — no brief on file yet"
+        st.info(
+            f"No brief for today{_brief_age_msg}. "
+            "Hit **🌅 Nightly refresh** above to generate today's picks.",
+            icon="🌅",
+        )
+        st.markdown("---")
+
+    # ── Campaign progress + pipeline funnel ──────────────────────────────────
+    _camp_start_str = meta.get("campaign_start", "2026-05-03")
+    _camp_end_str   = meta.get("campaign_end", "2026-07-12")
+    try:
+        _camp_start = datetime.strptime(_camp_start_str, "%Y-%m-%d").date()
+        _camp_end   = datetime.strptime(_camp_end_str,   "%Y-%m-%d").date()
+        _camp_total = max((_camp_end - _camp_start).days, 1)
+        _camp_done  = max(min((today - _camp_start).days, _camp_total), 0)
+        _camp_pct   = int(_camp_done / _camp_total * 100)
+        _camp_left  = max((_camp_end - today).days, 0)
+    except Exception:
+        _camp_pct = 0; _camp_left = 0
+
+    # Pipeline funnel — quick glance at jobs in each active stage
+    _stage_counts = {}
+    _ACTIVE_STAGES = ["Tailoring", "Applied", "Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite", "Offer"]
+    for _j in jobs:
+        _s = _j.get("status", "")
+        if _s in _ACTIVE_STAGES:
+            _stage_counts[_s] = _stage_counts.get(_s, 0) + 1
+
+    _cprog_col, _funnel_col = st.columns([1, 1], gap="large")
+    with _cprog_col:
+        with st.container(border=True):
+            st.markdown("##### 📅 Campaign Progress")
+            st.progress(_camp_pct / 100, text=f"{_camp_pct}% · {_camp_left} days remaining")
+            st.caption(
+                f"{_camp_start_str} → {_camp_end_str}  ·  "
+                f"Week {(_camp_done // 7) + 1} of {(_camp_total // 7) + 1}"
+            )
+    with _funnel_col:
+        with st.container(border=True):
+            st.markdown("##### 🔽 Active Pipeline")
+            if _stage_counts:
+                _stage_labels = {
+                    "Tailoring": "✍️ Tailoring",
+                    "Applied": "📤 Applied",
+                    "Recruiter_Screen": "📞 Recruiter",
+                    "Phone_Screen": "📱 Phone Screen",
+                    "Take_Home": "💻 Take-Home",
+                    "Onsite": "🏢 Onsite",
+                    "Offer": "🎉 Offer",
+                }
+                _funnel_parts = []
+                for _st_key in _ACTIVE_STAGES:
+                    if _st_key in _stage_counts:
+                        _funnel_parts.append(
+                            f"**{_stage_labels.get(_st_key, _st_key)}** {_stage_counts[_st_key]}"
+                        )
+                st.markdown("  ·  ".join(_funnel_parts))
+            else:
+                st.caption("No jobs in active stages yet — start applying!")
+
+    # ── 7-day activity strip ──────────────────────────────────────────────────
+    _act_days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
+    _act_applied  = {d: 0 for d in _act_days}
+    _act_outreach = {d: 0 for d in _act_days}
+    for _aj in jobs:
+        _ad = parse_date(_aj.get("date_applied"))
+        if _ad and _ad in _act_applied:
+            _act_applied[_ad] += 1
+        for _ol in (_aj.get("outreach_log") or []):
+            _od = parse_date(_ol.get("date"))
+            if _od and _od in _act_outreach:
+                _act_outreach[_od] += 1
+    with st.container(border=True):
+        st.markdown("##### 📆 Last 7 days")
+        _sp_cols = st.columns(7)
+        for _di, _dd in enumerate(_act_days):
+            _n_app = _act_applied[_dd]
+            _n_out = _act_outreach[_dd]
+            _lbl = "**Today**" if _dd == today else f"{_dd.strftime('%a')} {_dd.day}"
+            _delta_str = f"+{_n_out} outreach" if _n_out else None
+            _sp_cols[_di].metric(
+                _lbl,
+                f"{_n_app} app{'s' if _n_app != 1 else ''}",
+                delta=_delta_str,
+                delta_color="normal" if _n_out else "off",
+                help=f"{_dd.strftime('%B %d')}: {_n_app} applied, {_n_out} outreach",
+            )
 
     st.markdown("---")
+
+    # (Game Plan removed -- Today's Queue hero card above already covers
+    # overdue follow-ups, review queue count, and weekly goal.)
+
+    # (CRM urgency alert removed -- stat row metric + sidebar badge cover this)
+
+    # (KPI row removed -- stat row above already shows this week's numbers)
 
     # ---------- Attention queue — consolidated 'needs your eyes today' ----------
     # Five buckets, each with a default action the user can see at a glance:
@@ -3285,61 +2822,7 @@ if page == "🏠 Dashboard":
                               width='stretch', height=min(400, 40 + 30 * len(rows)))
         st.markdown("---")
 
-    # ---------- Urgent widget — roles posted in the last 48h ----------
-    # Union of (brief top N) + (tracker Found/Watch entries with posted_date).
-    brief_preview = load_morning_brief()
-    urgent_rows: list[tuple[float, dict, str]] = []  # (hours, row, kind)
-    for r in urgent_from_brief(brief_preview, 48):
-        urgent_rows.append((hours_since_posted(r.get("posted_date")) or 0.0, r, "brief"))
-    for j in jobs:
-        if j.get("status") not in ("Found", "Watch"):
-            continue
-        hrs = hours_since_posted(j.get("posted_date"))
-        if hrs is None or hrs > 48:
-            continue
-        # Avoid double-counting: skip if already in urgent_rows by URL
-        if any(r.get("link") == j.get("url") for _, r, _ in urgent_rows):
-            continue
-        urgent_rows.append((hrs, j, "tracker"))
-    urgent_rows.sort(key=lambda t: t[0])
-
-    if urgent_rows:
-        st.error(
-            f"🔴 **{len(urgent_rows)} urgent role(s) posted in the last 48h** — "
-            "apply-speed matters; callback rate drops sharply after 72h.",
-            icon="⚡",
-        )
-        with st.expander(f"⚡ Urgent queue ({len(urgent_rows)})",
-                          expanded=len(urgent_rows) <= 5):
-            urgent_table = []
-            for hrs, r, kind in urgent_rows:
-                if kind == "brief":
-                    fit = r.get("fit") or {}
-                    urgent_table.append({
-                        "source": "🌅 brief",
-                        "hours_ago": f"{hrs:.0f}h",
-                        "company": r.get("company", ""),
-                        "title": r.get("title", "")[:70],
-                        "verdict": fit.get("fit_verdict", ""),
-                        "fit": fit.get("fit_score", ""),
-                        "url": r.get("link", ""),
-                    })
-                else:
-                    urgent_table.append({
-                        "source": f"📋 {r.get('status', '')}",
-                        "hours_ago": f"{hrs:.0f}h",
-                        "company": r.get("company", ""),
-                        "title": r.get("title", "")[:70],
-                        "verdict": r.get("fit_score", ""),
-                        "fit": r.get("fit_score_numeric", ""),
-                        "url": r.get("url", ""),
-                    })
-            st.dataframe(
-                pd.DataFrame(urgent_table),
-                hide_index=True, width='stretch',
-                column_config={"url": st.column_config.LinkColumn("open")},
-            )
-        st.markdown("---")
+    # (Urgent widget removed -- Today's Queue already shows apply-now roles with freshness)
 
     # ---------- Morning brief widget — today's 2-3 fresh matches ----------
     # Today's brief is always-visible (no expander). Stale briefs (>0 days)
@@ -3373,9 +2856,7 @@ if page == "🏠 Dashboard":
       with _brief_outer:
         if is_stale:
             st.caption(
-                f"⚠ Latest brief is from `{brief_date_raw}`. "
-                "Run the nightly scrape + morning brief to refresh. "
-                "See bottom of Pipeline → Run for a one-click button."
+                f"⚠ Brief is from `{brief_date_raw}` — run Nightly refresh to update."
             )
 
         # Distinguish API-failure from genuinely quiet day
@@ -3405,7 +2886,7 @@ if page == "🏠 Dashboard":
         else:
             st.caption(
                 f"Ranked from **{brief.get('total_new', 0)} jobs new since yesterday**. "
-                f"Apply to the top 1-2 today; the pipeline queue is already saturated."
+                f"Apply to the top 1-2 today."
             )
             for i, r in enumerate(top, 1):
                 f = r.get("fit") or {}
@@ -3630,105 +3111,7 @@ if page == "🏠 Dashboard":
                            "signals — open Kanban and move the role accordingly.")
         st.markdown("---")
 
-    # ---------- Follow-up nudge widget ----------
-    fb = followup_buckets(jobs)
-    overdue_n = len(fb["overdue"])
-    today_n = len(fb["due_today"])
-    week_n = len(fb["due_this_week"])
-    needs_seed_n = len(fb["no_schedule"])
-    total_active = overdue_n + today_n + week_n + needs_seed_n
-
-    if total_active:
-        if overdue_n or today_n:
-            st.error(
-                f"🔔 **Follow-ups needed** — "
-                + (f"**{overdue_n} overdue**" if overdue_n else "")
-                + (f" · {today_n} due today" if today_n else "")
-                + (f" · {week_n} due this week" if week_n else "")
-                + (f" · {needs_seed_n} need a schedule" if needs_seed_n else ""),
-                icon="⚠️",
-            )
-        else:
-            st.info(
-                f"🔔 {week_n} follow-up(s) due this week"
-                + (f" · {needs_seed_n} need a schedule" if needs_seed_n else ""),
-                icon="📅",
-            )
-
-        with st.expander(f"👀 Follow-up queue ({total_active} active)", expanded=bool(overdue_n or today_n)):
-            t_overdue, t_today, t_week, t_noschd = st.tabs([
-                f"🔴 Overdue ({overdue_n})",
-                f"🟡 Due today ({today_n})",
-                f"🟢 This week ({week_n})",
-                f"⚪ No schedule ({needs_seed_n})",
-            ])
-
-            def _render_followup_rows(items, tab, mode):
-                if not items:
-                    tab.caption("Nothing here. 🎉")
-                    return
-                # Build rows
-                rows = []
-                for item in items:
-                    if isinstance(item, tuple):
-                        days, j = item
-                    else:
-                        days, j = 0, item
-                    sched = j.get("followup_schedule") or {}
-                    rows.append({
-                        "id": j["id"],
-                        "company": j.get("company", ""),
-                        "title": j.get("title", "")[:60],
-                        "applied": j.get("date_applied", ""),
-                        "next_due": sched.get("next_due") or "(not set)",
-                        "days": (f"+{days} overdue" if mode == "overdue"
-                                 else f"in {days}d" if mode == "upcoming"
-                                 else "today" if mode == "today"
-                                 else "—"),
-                        "url": j.get("url", ""),
-                    })
-                tab.dataframe(
-                    pd.DataFrame(rows),
-                    hide_index=True, width='stretch',
-                    column_config={"url": st.column_config.LinkColumn("open")},
-                )
-                # Action row — log follow-up on N selected
-                pick = tab.selectbox("Log follow-up for", [r["id"] for r in rows],
-                                      key=f"fu_pick_{mode}")
-                msg = tab.text_input("Note (optional, saved to outreach_log)",
-                                      key=f"fu_note_{mode}",
-                                      placeholder="Emailed recruiter re: status")
-                ca, cb = tab.columns(2)
-                if ca.button(f"✅ Log follow-up & advance cadence",
-                             key=f"fu_log_{mode}", width='stretch'):
-                    for j in tr["jobs"]:
-                        if j["id"] == pick:
-                            j.setdefault("outreach_log", []).append({
-                                "date": date.today().isoformat(),
-                                "type": "followup",
-                                "note": msg or "followup",
-                            })
-                            advance_followup(j)
-                            break
-                    save_tracker(tr)
-                    st.success(f"Logged follow-up on {pick} and advanced next_due.")
-                    st.rerun()
-                if cb.button(f"⏭ Skip this rung (push +7d)",
-                             key=f"fu_skip_{mode}", width='stretch'):
-                    for j in tr["jobs"]:
-                        if j["id"] == pick:
-                            sched = j.setdefault("followup_schedule", {"cadence_days": [3, 10, 21]})
-                            cur = parse_date(sched.get("next_due")) or date.today()
-                            sched["next_due"] = (cur + timedelta(days=7)).isoformat()
-                            break
-                    save_tracker(tr)
-                    st.success(f"Pushed {pick} +7 days.")
-                    st.rerun()
-
-            _render_followup_rows(fb["overdue"], t_overdue, "overdue")
-            _render_followup_rows(fb["due_today"], t_today, "today")
-            _render_followup_rows(fb["due_this_week"], t_week, "upcoming")
-            _render_followup_rows(fb["no_schedule"], t_noschd, "noschedule")
+    # (Follow-up nudge removed -- Today's Queue + Follow-ups subpage cover this)
 
     # ---------- Collapsed: pipeline bar-chart + apply-this-week ----------
     # Both are reference-only. Fold into a single expander so they don't
@@ -4687,9 +4070,6 @@ elif page == "🎯 Pipeline":
                 )
                 st.rerun()
 
-    # (Action Plan panel and Ready-to-promote banner removed —
-    #  replaced by the Worklist + Scored tabs below.)
-
     # ---------- Funnel data collection ----------
     scan_f = latest_scan()
     scored_f = latest_scored()
@@ -4833,12 +4213,7 @@ elif page == "🎯 Pipeline":
                     sub=f"{tracker_applied} applied · {tailored_docs} tailored")
 
         st.caption(
-            "**Scraped** = raw results from all portals/LinkedIn. "
-            "**Unique** = after URL + near-duplicate removal. "
-            "**Triaged** = passed keyword pre-filter (ALM/IRRBB/model-risk/etc) "
-            "before spending LLM tokens. "
-            "**Scored** = full LLM fit assessment. "
-            "**Tracker** = promoted roles you're actively pursuing."
+            "Scraped → deduplicated → keyword pre-filter → LLM scored → promoted to tracker."
         )
 
     if pipeline_running:
@@ -4896,11 +4271,11 @@ elif page == "🎯 Pipeline":
                 _wl_df = pd.DataFrame([{
                     "company": r.get("company", ""),
                     "title": r.get("title", ""),
-                    "source": r.get("source", ""),
                     "location": r.get("location", ""),
                     "sector": r.get("sector", ""),
-                    "posted": r.get("posted_date", ""),
                     "new": r.get("is_new_since_last_score", False),
+                    "posted": r.get("posted_date", ""),
+                    "source": r.get("source", ""),
                     "url": r.get("link") or r.get("url", ""),
                 } for r in _wl_rows])
 
@@ -4934,7 +4309,11 @@ elif page == "🎯 Pipeline":
                 if _wl_new_only:
                     _wl_view = _wl_view[_wl_view["new"] == True]
 
-                st.caption(f"Showing {len(_wl_view)} of {len(_wl_df)} worklist rows")
+                _wl_new_ct = int(_wl_df["new"].sum()) if "new" in _wl_df.columns else 0
+                _wm1, _wm2, _wm3 = st.columns(3)
+                _wm1.metric("Rows shown", f"{len(_wl_view):,}")
+                _wm2.metric("Total worklist", f"{len(_wl_df):,}")
+                _wm3.metric("New since last score", f"{_wl_new_ct:,}")
                 st.dataframe(
                     _wl_view,
                     hide_index=True, width='stretch', height=600,
@@ -4964,12 +4343,7 @@ elif page == "🎯 Pipeline":
                 icon="🔑",
             )
 
-        # The five canonical actions. Each one operates on the SAME contract:
-        # the worklist (latest scrape ∪ rolling 30d Gmail). Scrape and Gmail
-        # rebuild the worklist on completion. Score reads worklist.json,
-        # writes worklist_scored.json. Promote reads worklist_scored.json.
-        # Full refresh chains everything.
-        st.markdown("#### ⚡ Quick launch")
+        st.markdown("#### ⚡ Launch")
         _ws_total = _wstats.get("total", 0)
         _ws_scored_exists = _wstatus.get("worklist_scored_exists", False)
 
@@ -5104,7 +4478,6 @@ elif page == "🎯 Pipeline":
         # --- Advanced config (collapsed by default) ---
         st.markdown("---")
         with st.expander("⚙️ Advanced pipeline configuration", expanded=False):
-            st.caption("Fine-tune scrape strategy, scorer settings, and promote options.")
             cA, cB = st.columns([1, 1])
             with cA:
                 scrape_mode = st.selectbox(
@@ -5169,12 +4542,7 @@ elif page == "🎯 Pipeline":
         st.markdown("---")
         with st.expander("🔗 Score a single URL (ad-hoc, no scan needed)",
                           expanded=False):
-            st.caption(
-                "Paste any job URL (jobs.citi.com, OSFI careers, company "
-                "career site, even a LinkedIn you found outside the scan) "
-                "and get a fresh LLM fit score against your Master "
-                "Repository. Takes ~5s and costs ~$0.001."
-            )
+            st.caption("Paste any job URL for a fresh LLM fit score. ~5s, ~$0.001.")
             url_key_ok = api_key.is_key_valid()
             if not url_key_ok:
                 st.warning("🔑 API key required. Set it in the sidebar.")
@@ -5260,10 +4628,6 @@ elif page == "🎯 Pipeline":
 
     # ================== TAB: Scored ==================
     with tabs[1]:
-        st.subheader("Scored roles")
-        st.caption("LLM-scored candidates with fit scores. "
-                   "Filter, inspect, and promote to tracker.")
-
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
         if not scored_files:
@@ -5301,7 +4665,7 @@ elif page == "🎯 Pipeline":
                             "either the scorer was dry-run, the API key "
                             "preflight failed, or all roles dropped at stage 1.")
                 else:
-                    # Flatten
+                    # Flatten — column order: score → identity → details → metadata
                     rows = []
                     for r in results:
                         f = r.get("fit") or {}
@@ -5311,9 +4675,9 @@ elif page == "🎯 Pipeline":
                             "verdict": f.get("fit_verdict", ""),
                             "tier": f.get("tier", 4),
                             "in_tracker": "✅" if _r_url in _tracker_urls else "",
-                            "sector": r.get("sector", ""),
                             "company": r.get("company", ""),
                             "title": r.get("title", ""),
+                            "sector": r.get("sector", ""),
                             "variants": "/".join(f.get("applicable_resume_variants") or []),
                             "summary": f.get("summary", ""),
                             "gaps": ", ".join(f.get("skill_gaps") or []),
@@ -5437,9 +4801,7 @@ elif page == "🎯 Pipeline":
                                          height=200)
                     with rm2:
                         st.markdown("**Top negative-title terms**")
-                        st.caption("Phrases that hard-failed stage-1 "
-                                    "(e.g. 'intern', 'teller', 'software engineer'). "
-                                    "Tune fit_scorer.NEG_TITLE_TERMS to change.")
+                        st.caption("Tune NEG_TITLE_TERMS in fit_scorer to adjust.")
                         _neg_df = pd.DataFrame(
                             [{"term": k, "hits": v} for k, v in _neg_term_ct.most_common(20)]
                         )
@@ -5482,11 +4844,7 @@ elif page == "🎯 Pipeline":
 
             # --- Sub-tab 3: by-company breakdown ----------------------------
             with triage_tabs[2]:
-                st.caption(
-                    "Roles per company at each stage of the funnel. "
-                    "'Scraped' is the raw count before triage; 'Passed' made "
-                    "it to LLM scoring; 'Dropped' were filtered by rule_triage."
-                )
+                st.caption("Roles per company: scraped → passed (LLM) vs dropped (rule).")
                 from collections import Counter as _Counter
                 _passed_ct = _Counter(r.get("company", "?") for r in results)
                 _dropped_ct = _Counter((d.get("company") or "?") for d in sc.get("triage_drops") or [])
@@ -5510,7 +4868,6 @@ elif page == "🎯 Pipeline":
 
     # ================== TAB: History ==================
     with tabs[3]:
-        st.subheader("📜 Pipeline run history")
         pipelines = list_pipelines(50)
         if not pipelines:
             st.caption("No pipeline runs yet.")
@@ -5640,17 +4997,27 @@ elif page == "📋 Jobs Kanban":
         ("Found","🔍"), ("Watch","👀"), ("Tailoring","✍️"), ("Applied","📤"),
         ("Recruiter_Screen","📞"), ("Phone_Screen","📱"), ("Take_Home","💻"),
         ("Onsite","🏢"), ("Offer","🎉"), ("Rejected","❌"), ("Withdrawn","⚪"),
+        ("Expired","🕐"),
     ]
+    _ACTIVE_STATUSES = {"Found", "Watch", "Tailoring", "Applied",
+                        "Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite"}
+    _fu_overdue_count = 0
     for _jj in jobs:
         _ss = _jj.get("status", "?")
         _kan_statuses[_ss] = _kan_statuses.get(_ss, 0) + 1
+        _fu_next = _jj.get("followup_schedule", {}).get("next_due")
+        if _fu_next and parse_date(_fu_next) and parse_date(_fu_next) < date.today():
+            _fu_overdue_count += 1
+    _active_total = sum(v for k, v in _kan_statuses.items() if k in _ACTIVE_STATUSES)
     _active_stages = [s for s, _ in _STATUS_ORDER if s in _kan_statuses]
     if _active_stages:
         _ks_cols = st.columns(min(len(_active_stages), 8))
         for _kci, (_ks, _ke) in enumerate([(s, e) for s, e in _STATUS_ORDER if s in _kan_statuses]):
             _kci_mod = _kci % 8
             _ks_cols[_kci_mod].metric(f"{_ke} {_ks.replace('_', ' ')}", _kan_statuses[_ks])
-    st.caption("Your promoted-to-tracker roles — update status, add notes, launch tailor.")
+    if _fu_overdue_count:
+        st.warning(f"**{_fu_overdue_count} role{'s' if _fu_overdue_count != 1 else ''} with overdue follow-ups** — filter Status = Applied to find them.", icon="🔴")
+    st.caption(f"{_active_total} active · {len(jobs)} total tracked")
     st.markdown("---")
 
     if jobs_df.empty:
@@ -5699,7 +5066,7 @@ elif page == "📋 Jobs Kanban":
         sel_tier = st.multiselect("Tier", sorted(jobs_df["tier"].dropna().unique()) if "tier" in jobs_df.columns else [])
     with f5:
         sel_area = st.multiselect("GTA area", areas, default=[])
-    q = st.text_input("Search (company/title)", "")
+    q = st.text_input("Search (company/title)", "", placeholder="e.g. Scotiabank, ALM...")
 
     view = jobs_df.copy()
     if sel_sector:
@@ -5717,7 +5084,8 @@ elif page == "📋 Jobs Kanban":
         view = view[view["company"].str.lower().str.contains(qlo, na=False) |
                     view["title"].str.lower().str.contains(qlo, na=False)]
 
-    st.caption(f"Showing {len(view)} of {len(jobs_df)} roles")
+    _filter_active = any([sel_sector, sel_status, sel_fit, sel_tier, sel_area, q])
+    st.caption(f"Showing {len(view)} of {len(jobs_df)} roles" + (" (filtered)" if _filter_active else ""))
 
     # Enrich view with a "draft" indicator based on whether a tailor output
     # exists for this role. jd_tailor.py writes:
@@ -5796,11 +5164,7 @@ elif page == "📋 Jobs Kanban":
             return ""
         view = view.assign(src=view["source"].apply(_src_badge))
 
-    # Warm-intro column: rows where the CRM has at least one matching
-    # contact get a 🤝N badge. 70%+ of director-level finance hires in
-    # Toronto come via recruiter intros — surfacing the warm path at the
-    # row level (not buried in the inspector) is the highest-leverage
-    # cheap win for application strategy.
+    # Warm-intro column: compact badge for CRM matches.
     if "company" in view.columns:
         def _warm_count(co):
             if not isinstance(co, str) or not co:
@@ -5809,23 +5173,71 @@ elif page == "📋 Jobs Kanban":
             return f"🤝{n}" if n else ""
         view = view.assign(warm=view["company"].apply(_warm_count))
 
-    cols = [c for c in ["id", "draft", "freshness", "src", "warm",
-                        "company", "title", "gta_area",
-                        "sector", "tier", "status", "fit_score", "fit_score_numeric",
-                        "primary_variant", "urgency",
-                        "date_found", "date_applied", "url"]
+    # Follow-up due indicator — surfaces overdue/upcoming follow-ups
+    # directly in the table so they are visible without opening inspector.
+    if "followup_schedule" in view.columns:
+        def _fu_badge(fs):
+            if not isinstance(fs, dict):
+                return ""
+            nxt = parse_date(fs.get("next_due"))
+            if not nxt:
+                return ""
+            delta = (nxt - date.today()).days
+            if delta < 0:
+                return f"🔴 {abs(delta)}d ago"
+            if delta == 0:
+                return "🟡 today"
+            if delta <= 3:
+                return f"🟡 in {delta}d"
+            return ""
+        view = view.assign(follow_up=view["followup_schedule"].apply(_fu_badge))
+
+    # Column ordering: actionable info first, low-value fields trimmed.
+    # Dropped: id (visible in inspector), fit_score text (redundant with numeric).
+    cols = [c for c in ["draft", "follow_up", "warm",
+                        "company", "title", "status", "urgency",
+                        "tier", "fit_score_numeric", "primary_variant",
+                        "gta_area", "sector",
+                        "date_found", "date_applied", "src", "freshness", "url"]
             if c in view.columns]
-    st.dataframe(
+    _col_config = {
+        "url": st.column_config.LinkColumn("Link", width="small"),
+        "fit_score_numeric": st.column_config.NumberColumn("Fit", width="small"),
+        "tier": st.column_config.NumberColumn("T", width="small"),
+        "primary_variant": st.column_config.TextColumn("Variant", width="small"),
+        "urgency": st.column_config.TextColumn("Urg", width="small"),
+        "draft": st.column_config.TextColumn("Draft", width="small"),
+        "follow_up": st.column_config.TextColumn("Follow-up", width="medium"),
+        "warm": st.column_config.TextColumn("Warm", width="small"),
+        "src": st.column_config.TextColumn("Src", width="small"),
+        "freshness": st.column_config.TextColumn("Age", width="small"),
+        "gta_area": st.column_config.TextColumn("Area", width="small"),
+        "date_found": st.column_config.TextColumn("Found", width="small"),
+        "date_applied": st.column_config.TextColumn("Applied", width="small"),
+    }
+    _sorted_view = (
         view[cols].sort_values(["tier", "fit_score_numeric"], ascending=[True, False])
-        if "fit_score_numeric" in cols else view[cols],
-        hide_index=True, width='stretch', height=500,
-        column_config={"url": st.column_config.LinkColumn()},
+        if "fit_score_numeric" in cols else view[cols]
+    )
+    st.dataframe(
+        _sorted_view,
+        hide_index=True, use_container_width=True, height=540,
+        column_config=_col_config,
     )
 
     st.markdown("---")
-    st.subheader("Inspect / edit a single role")
+    st.subheader("Inspect / edit")
     if len(view):
-        sel_id = st.selectbox("Choose role id", view["id"].tolist())
+        # Human-readable labels for the role selector
+        _id_list = view["id"].tolist()
+        _label_map = {}
+        for _rid in _id_list:
+            _rj = next((j for j in jobs if j["id"] == _rid), {})
+            _label_map[_rid] = f"{_rj.get('company', '?')} — {_rj.get('title', '?')}"
+        sel_id = st.selectbox(
+            "Role", _id_list,
+            format_func=lambda x: _label_map.get(x, x),
+        )
         job = next((j for j in jobs if j["id"] == sel_id), None)
         if job:
             c1, c2 = st.columns(2)
@@ -5864,13 +5276,13 @@ elif page == "📋 Jobs Kanban":
                     job, key_prefix="kanban_inspect", tracker_data=tr,
                     tracker_path=TRACKER,
                 )
-                _fit_notes = job.get("fit_notes", "")
-                if _fit_notes:
-                    with st.expander("📊 Fit notes", expanded=False):
-                        st.write(_fit_notes)
                 _nxt = job.get("next_action") or ""
                 if _nxt:
-                    st.info(f"**Next action:** {_nxt}", icon="🎯")
+                    st.info(f"**Next:** {_nxt}", icon="🎯")
+                _fit_notes = job.get("fit_notes", "")
+                if _fit_notes:
+                    with st.expander("Fit notes", expanded=False):
+                        st.write(_fit_notes)
                 # ── Outreach / activity timeline ───────────────────────────
                 _olog = job.get("outreach_log") or []
                 _fsched = job.get("followup_schedule") or {}
