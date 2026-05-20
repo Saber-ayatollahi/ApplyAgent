@@ -1931,6 +1931,34 @@ def _pipeline_live_panel_inner():
 
     render_scorer_progress()
 
+    # Also show recently-failed runs so fast crashes are visible to the user
+    _recent_failed = None
+    if not _live_runs:
+        _all_recent = scan_runner.list_runs(limit=3)
+        for _rr in _all_recent:
+            if _rr.get("state") == "failed":
+                _fin = _rr.get("finished_at", "")
+                if _fin:
+                    try:
+                        _age = (datetime.now() -
+                                datetime.fromisoformat(_fin)).total_seconds()
+                        if _age < 60:
+                            _recent_failed = _rr
+                            break
+                    except Exception:
+                        pass
+
+    if _recent_failed:
+        st.markdown("---")
+        with st.container(border=True):
+            st.markdown(f"#### ❌ `{_recent_failed['label']}` failed")
+            _log_text = scan_runner.tail_log(_recent_failed.get("log_path", "")) or ""
+            if _log_text:
+                st.code(_log_text, language="text", height=300)
+            else:
+                st.warning("No log output captured.")
+            st.caption(f"Run ID: `{_recent_failed['run_id']}`")
+
     if _live_pipeline_running or _live_runs:
         st.markdown("---")
         _current = next(
@@ -3847,12 +3875,7 @@ elif page == "🎯 Pipeline":
                                    "same options as the checkpointed run."):
                     opts = (pc.get("options") or {})
                     cmd = [sys.executable, str(ROOT / "automation" / "jd_scraper.py"),
-                           "--resume"]
-                    # Use the same scrape mode as the original run so the
-                    # checkpoint signature matches. Hardcoding --expansion here
-                    # caused a signature mismatch that wiped scraped results.
-                    _ckpt_mode = opts.get("scrape_mode") or opts.get("mode") or "expansion"
-                    cmd.append(f"--scrape-mode={_ckpt_mode}")
+                           "--resume", "--expansion"]
                     if opts.get("linkedin_only"):
                         cmd.append("--linkedin-only")
                     if opts.get("workday_only"):
