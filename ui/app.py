@@ -1288,6 +1288,24 @@ def _action_plan_panel():
     if not scored_rows:
         return
 
+    # Exclude rows already promoted to the tracker
+    _tracker_urls = set()
+    try:
+        _tr = load_tracker()
+        for _j in _tr.get("jobs") or []:
+            _u = _j.get("url") or _j.get("link") or _j.get("job_url") or ""
+            if _u:
+                _tracker_urls.add(_u)
+                _tracker_urls.add(_u.rstrip("/").lower())
+    except Exception:
+        pass
+    _total_scored = len(scored_rows)
+    scored_rows = [r for r in scored_rows
+                   if _ap_url(r) not in _tracker_urls]
+    if not scored_rows:
+        st.caption("All scored roles are already in the tracker.")
+        return
+
     # Wipe hidden-card flags whenever a fresher scored file appears.
     mtime = int(wls_path.stat().st_mtime)
     if st.session_state.get("_action_plan_last_mtime") != mtime:
