@@ -1134,11 +1134,10 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
     companies = list(companies)
 
     # -------- Connectivity pre-flight --------
-    if not resume:
-        conn_err = _preflight_connectivity_check(skip_linkedin=skip_linkedin)
-        if conn_err:
-            print(f"[scan] ABORT: {conn_err['message']}", file=sys.stderr)
-            return [], {"error": "connectivity_preflight_failed", **conn_err}
+    conn_err = _preflight_connectivity_check(skip_linkedin=skip_linkedin)
+    if conn_err:
+        print(f"[scan] ABORT: {conn_err['message']}", file=sys.stderr)
+        return [], {"error": "connectivity_preflight_failed", **conn_err}
 
     # -------- Resume setup --------
     sig = _targets_signature(companies)
