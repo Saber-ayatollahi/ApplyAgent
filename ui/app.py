@@ -2846,9 +2846,15 @@ if page == "🏠 Dashboard":
                 expanded=False,
             )
         else:
-            # Today's brief: always-visible card header, no click required
-            st.markdown("#### 🌅 Today's fresh matches")
-            _brief_outer = st.container()
+            # Today's brief: top picks preview (above) already shows today's
+            # entries in compact form, so skip the full rendering here.
+            # Only show if there's content NOT already covered by top picks.
+            if _brief_is_today and _brief_entries_top:
+                # Top picks already rendered above — just add a brief summary line
+                _brief_outer = None
+            else:
+                st.markdown("#### 🌅 Today's fresh matches")
+                _brief_outer = st.container()
     else:
         _brief_outer = None
 
