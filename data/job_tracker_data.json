@@ -13,6 +13,11 @@
         "date": "2026-05-19",
         "event": "auto_promote: +64 new, 0 upgraded, 0 expired (min_score=7)",
         "roles": 64
+      },
+      {
+        "date": "2026-05-19",
+        "event": "geo_scrub: -8 historical leaks soft-marked Expired (rejection_reason=geo_gate_historical_leak)",
+        "roles": 64
       }
     ],
     "status_enum": [
@@ -879,7 +884,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Found",
+      "status": "Expired",
       "fit_score": "High",
       "fit_score_numeric": 9,
       "resume_variants": [
@@ -911,10 +916,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-td-bank-senior-group-risk-analyst-ath-",
@@ -1549,7 +1554,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Watch",
+      "status": "Expired",
       "fit_score": "High",
       "fit_score_numeric": 8,
       "resume_variants": [
@@ -1581,10 +1586,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No direct U.S. banking regulator experience (Saber's Canadian pension/insurer/vendor backdrop); can learn on engagement\", 'Credit Risk and PD/LGD/EAD modelling not in evidence inventory; not required but preferred', 'No prior Dodd-Frank / Fed / OCC compliance hands-on track record (consulting framing can bridge this)']"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No direct U.S. banking regulator experience (Saber's Canadian pension/insurer/vendor backdrop); can learn on engagement\", 'Credit Risk and PD/LGD/EAD modelling not in evidence inventory; not required but preferred', 'No prior Dodd-Frank / Fed / OCC compliance hands-on track record (consulting framing can bridge this)'] | geo_scrub 2026-05-19: location='Raleigh, NC' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-cathay-bank-vp-capital-liquidity-manager",
@@ -1601,7 +1606,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Found",
+      "status": "Expired",
       "fit_score": "High",
       "fit_score_numeric": 8,
       "resume_variants": [
@@ -1632,10 +1637,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='El Monte, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-treasury-manager-treasury-manager-koho-canada-r",
@@ -1704,7 +1709,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Found",
+      "status": "Expired",
       "fit_score": "High",
       "fit_score_numeric": 8,
       "resume_variants": [
@@ -1736,10 +1741,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['U.S. regulatory ecosystem (Dodd-Frank, Fed/OCC/CFTC) familiarity — Canadian OSFI background, not U.S. banking regulator experience.', 'Credit Risk and CECL/ECL modeling — not in evidence base; ALM/IRRBB focus is orthogonal.', 'SAS and data-warehouse tools (Snowflake, etc.) — Python/SQL proficient but not SAS-fluent.']"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['U.S. regulatory ecosystem (Dodd-Frank, Fed/OCC/CFTC) familiarity — Canadian OSFI background, not U.S. banking regulator experience.', 'Credit Risk and CECL/ECL modeling — not in evidence base; ALM/IRRBB focus is orthogonal.', 'SAS and data-warehouse tools (Snowflake, etc.) — Python/SQL proficient but not SAS-fluent.'] | geo_scrub 2026-05-19: location='Deloitte · Charlotte, NC (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-scotiabank-manager-ifrs9-modelling-enterp",
@@ -2584,7 +2589,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Watch",
+      "status": "Expired",
       "fit_score": "Medium",
       "fit_score_numeric": 7,
       "resume_variants": [
@@ -2616,10 +2621,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Express / TypeScript / Node.js production delivery (not required for this role; gap is low-severity)']"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Express / TypeScript / Node.js production delivery (not required for this role; gap is low-severity)'] | geo_scrub 2026-05-19: location='Deloitte · New York, NY (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-senior-director-tota-senior-director-total-portfoli",
@@ -3154,7 +3159,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Watch",
+      "status": "Expired",
       "fit_score": "Medium",
       "fit_score_numeric": 7,
       "resume_variants": [
@@ -3186,10 +3191,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Aladdin hands-on platform experience (gap); RiskMetrics / BarraOne / Clearwater user fluency (gap) — Saber's platform work spans Moody's Analytics and PFaroe, not BlackRock/MSCI ecosystem.\", \"OCIO/wealth-management context (contextual gap, not skill); Saber's OCIO exposure is indirect (institutional portfolio oversight); strength lies in asset-owner / pension / insurance ALM, not discretionary family-office mandate management.\"]"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Aladdin hands-on platform experience (gap); RiskMetrics / BarraOne / Clearwater user fluency (gap) — Saber's platform work spans Moody's Analytics and PFaroe, not BlackRock/MSCI ecosystem.\", \"OCIO/wealth-management context (contextual gap, not skill); Saber's OCIO exposure is indirect (institutional portfolio oversight); strength lies in asset-owner / pension / insurance ALM, not discretionary family-office mandate management.\"] | geo_scrub 2026-05-19: location='$140K-$180K / year' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-deloitte-toronto-on-manager-senior-manager-quantit",
@@ -3206,7 +3211,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Watch",
+      "status": "Expired",
       "fit_score": "Medium",
       "fit_score_numeric": 7,
       "resume_variants": [
@@ -3238,10 +3243,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap noted; Saber has Java/C++ familiarity only, not shipped production code). Highlight Python depth and willingness to ramp C++ for the role if required.']"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap noted; Saber has Java/C++ familiarity only, not shipped production code). Highlight Python depth and willingness to ramp C++ for the role if required.'] | geo_scrub 2026-05-19: location='17 connections' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     },
     {
       "id": "auto-senior-director-mode-senior-director-model-validati",
@@ -3310,7 +3315,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Watch",
+      "status": "Expired",
       "fit_score": "Medium",
       "fit_score_numeric": 7,
       "resume_variants": [
@@ -3342,10 +3347,10 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
-      "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD calls for C/C++, C#, Java, FORTRAN as primary programming stack; Saber has not shipped production code in Java or C++, though proficiency in Python and MATLAB mitigates significantly)']"
+      "rejection_reason": "geo_gate_historical_leak",
+      "rejection_date": "2026-05-19",
+      "next_action": null,
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD calls for C/C++, C#, Java, FORTRAN as primary programming stack; Saber has not shipped production code in Java or C++, though proficiency in Python and MATLAB mitigates significantly)'] | geo_scrub 2026-05-19: location='BNY · Los Angeles, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
     }
   ]
 }
