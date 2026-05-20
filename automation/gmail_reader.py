@@ -410,6 +410,11 @@ def _clean_alert_fields(title: str, company: str, location: str
         co_re = re.escape(company)
         title = re.sub(rf"\s+{co_re}\s*$", "", title, flags=re.IGNORECASE).strip()
 
+    # Location may also contain "<company> · <city>" from LinkedIn's
+    # misrouted cell text. Keep only the rightmost segment (the actual geo).
+    if location and re.search(_ALERT_SEP, location):
+        location = re.split(_ALERT_SEP, location)[-1].strip()
+
     # Strip work-mode tail off location for parity with web scrape
     location = _ALERT_MODE_TAIL.sub("", location or "").strip()
 
@@ -469,6 +474,9 @@ def parse_linkedin_alert(body: str) -> list[dict]:
                 if cell is not None:
                     cell_text = cell.get_text("\n", strip=True)
                     cell_lines = [l.strip() for l in cell_text.split("\n") if l.strip()]
+                elif a is not None:
+                    anchor_text = a.get_text("\n", strip=True)
+                    cell_lines = [l.strip() for l in anchor_text.split("\n") if l.strip()]
 
                 if not title and cell_lines:
                     # Without <strong>, the first cell line is the title

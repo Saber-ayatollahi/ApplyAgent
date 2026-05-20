@@ -117,6 +117,7 @@ def _normalize_title(title: str) -> str:
     # "Sr Analyst - AVP" and "Senior Analyst - Assistant Vice President").
     t = re.sub(r"\bsr\.?(?=\s|$)", "senior", t)
     t = re.sub(r"\bsnr(?=\s|$)", "senior", t)
+    t = re.sub(r"\bassistant\s+vice[\s\-]+president\b", "avp", t)
     t = re.sub(r"\bvice[\s\-]+president\b", "vp", t)
     t = t.replace("&", "and")
     t = re.sub(r"[,/\-–—_]+", " ", t)

@@ -200,8 +200,9 @@ rows = parse_linkedin_alert(html)
 # URL-encoded job URL inside redirect — _LI_JOB_RE searches the WHOLE href
 # string. URL-encoded "%2F" won't match "linkedin.com/jobs/view/" pattern.
 # So this likely yields 0 rows = potential parse miss.
-check("encoded redirect = parse miss (KNOWN LIMITATION)", len(rows) == 0,
-      detail=f"got {rows} — if this passes, parser DOES handle %-encoded redirects")
+check("encoded redirect handled (redirect URL contains /jobs/view/ in clear text)",
+      len(rows) == 1,
+      detail=f"got {rows}")
 
 # ---------------------------------------------------------------------------
 # Summary

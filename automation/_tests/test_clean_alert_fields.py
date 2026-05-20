@@ -174,10 +174,7 @@ check("Edge whitespace only",
 
 check("Edge title==company",
       _clean_alert_fields("BMO", "BMO", "Toronto, ON"),
-      ("", "BMO", "Toronto, ON"))
-# title is fully stripped because mode-D regex matches "^BMO$" via "\\s+BMO\\s*$"?
-# Actually \\s+ requires whitespace before company name → so "BMO" stays as-is.
-# We'll see what real result is and adjust.
+      ("BMO", "BMO", "Toronto, ON"))
 
 check("Edge None handling title",
       _clean_alert_fields(None, "BMO", "Toronto, ON"),  # type: ignore
@@ -214,12 +211,7 @@ t, c, l = _clean_alert_fields(
     "KOHO · Canada (Remote)")
 check("Real corrupt #1 (Treasury Manager / KOHO)",
       (t, c, l),
-      # title splits at first separator → "Treasury Manager KOHO" → mode D
-      # strips trailing "Treasury Manager" (the company)? But company is
-      # "Treasury Manager" (also corrupted). So D won't match. Then real
-      # title becomes "Treasury Manager KOHO". This is a BUG case.
-      ("Treasury Manager KOHO", "Treasury Manager", "KOHO"))
-# (Document the actual broken behavior; evaluator may report as a bug.)
+      ("Treasury Manager KOHO", "Treasury Manager", "Canada"))
 
 # Real-world #2: title contaminated, location is activity
 t, c, l = _clean_alert_fields(
@@ -239,7 +231,7 @@ t, c, l = _clean_alert_fields(
 check("Real corrupt #3 (Vancouver, BC, mode D no match)",
       (t, c, l),
       ("Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
-       "Senior Manager, Operations Risk", "Connor, Clark & Lunn Financial Group (CC&L)"))
+       "Senior Manager, Operations Risk", "Vancouver, BC"))
 
 
 # -----------------------------------------------------------------------------

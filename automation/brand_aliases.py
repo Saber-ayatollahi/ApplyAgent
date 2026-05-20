@@ -42,6 +42,10 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "td bank group": "td",
     "td securities": "td",
     "td asset management": "td",
+    "td insurance": "td",
+    "td ameritrade": "td",
+    "td wealth": "td",
+    "td direct investing": "td",
     "toronto-dominion": "td",
     "toronto dominion": "td",
     "the toronto-dominion bank": "td",
@@ -60,6 +64,8 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "manulife": "manulife",
     "manulife financial": "manulife",
     "manulife investment management": "manulife",
+    "manulife real estate": "manulife",
+    "manulife wealth": "manulife",
     "sun life": "sunlife",
     "sun life financial": "sunlife",
     "sunlife": "sunlife",
@@ -188,9 +194,16 @@ def canonical_brand(name: str) -> str:
 
     for key in sorted(_NORMALIZED_ALIASES.keys(), key=len, reverse=True):
         if norm.startswith(key + " ") or norm == key:
-            return _NORMALIZED_ALIASES[key]
+            if len(key) >= len(norm) * 0.6:
+                return _NORMALIZED_ALIASES[key]
 
     tokens = [t for t in norm.split(" ") if t and t not in _GENERIC_TOKENS]
     if tokens:
-        return tokens[0]
+        candidate = tokens[0]
+        _canonical_values = set(_NORMALIZED_ALIASES.values())
+        if candidate in _canonical_values and len(tokens) > 1:
+            remaining = set(norm.split(" ")) - {candidate} - _GENERIC_TOKENS
+            if remaining:
+                return norm
+        return candidate
     return norm
