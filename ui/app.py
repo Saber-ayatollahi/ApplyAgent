@@ -5352,48 +5352,54 @@ elif page == "🎯 Pipeline":
                         view = view[view["company"].str.lower().str.contains(sl, na=False) |
                                     view["title"].str.lower().str.contains(sl, na=False)]
 
-                    st.caption(f"Showing {len(view)} of {len(df)} scored candidates")
-                    st.dataframe(view, hide_index=True, width='stretch', height=500,
-                                 column_config={"url": st.column_config.LinkColumn("open")})
+                    # Add select column for promotion
+                    _promotable = view[view["in_tracker"] != "✅"].copy()
+                    _not_promotable = view[view["in_tracker"] == "✅"]
 
-                    # Inspect one
-                    if not view.empty:
-                        titles = [f"{r.company} — {r.title[:60]}" for r in view.itertuples()]
-                        idx = st.selectbox("Inspect candidate", range(len(view)),
-                                            format_func=lambda i: titles[i],
-                                            key="triage_pick")
-                        row = view.iloc[idx]
-                        with st.container(border=True):
-                            cL, cR = st.columns([3, 1])
-                            with cL:
-                                st.markdown(f"### {row['company']} — {row['title']}")
-                                st.caption(f"Sector: {row['sector']} · Source: {row['source']}")
-                                st.markdown(f"**Verdict:** `{row['verdict']}` · "
-                                            f"**Fit:** {row['fit']}/10 · **Tier:** {row['tier']}")
-                                st.markdown(f"**Summary:** {row['summary']}")
-                                if row["gaps"]:
-                                    st.markdown(f"**Gaps:** {row['gaps']}")
-                            with cR:
-                                st.link_button("🔗 Open JD", row["url"], width='stretch')
-                                _promote_url = row["url"]
-                                _in_tracker = _promote_url in _tracker_urls
-                                if _in_tracker:
-                                    st.caption("✅ Already in tracker")
-                                elif _promote_url and _ap_promote_supports_only_url():
-                                    if st.button(
-                                        "📋 Promote",
-                                        key=f"scored_promote_{idx}",
-                                        disabled=any_work_active,
-                                        width='stretch',
-                                    ):
-                                        _prec = scan_runner.start_run("promote", [
-                                            sys.executable,
-                                            str(ROOT / "automation" / "auto_promote.py"),
-                                            "--only-url", _promote_url, "--commit",
-                                        ])
-                                        st.toast(f"Promoting {row['company']}…",
-                                                 icon="📋")
-                                        st.rerun()
+                    st.caption(
+                        f"Showing {len(view)} of {len(df)} scored candidates "
+                        f"({len(_not_promotable)} already in tracker)"
+                    )
+
+                    if not _promotable.empty:
+                        _promotable.insert(0, "promote", False)
+                        _edited = st.data_editor(
+                            _promotable,
+                            hide_index=True, width='stretch', height=500,
+                            column_config={
+                                "promote": st.column_config.CheckboxColumn(
+                                    "📋", help="Select to promote to tracker",
+                                    default=False, width="small"),
+                                "url": st.column_config.LinkColumn("url"),
+                            },
+                            disabled=[c for c in _promotable.columns if c != "promote"],
+                            key="scored_editor",
+                        )
+                        _selected = _edited[_edited["promote"] == True]
+                        if not _selected.empty:
+                            _sel_urls = _selected["url"].tolist()
+                            if st.button(
+                                f"📋 Promote {len(_sel_urls)} selected to tracker",
+                                type="primary",
+                                disabled=any_work_active,
+                                key="scored_bulk_promote",
+                            ):
+                                _url_args = []
+                                for _u in _sel_urls:
+                                    _url_args += ["--only-url", _u]
+                                _prec = scan_runner.start_run("promote", [
+                                    sys.executable,
+                                    str(ROOT / "automation" / "auto_promote.py"),
+                                    *_url_args, "--commit",
+                                ])
+                                st.toast(
+                                    f"Promoting {len(_sel_urls)} roles…",
+                                    icon="📋")
+                                st.rerun()
+                    else:
+                        st.dataframe(view, hide_index=True, width='stretch',
+                                     height=500,
+                                     column_config={"url": st.column_config.LinkColumn("url")})
 
             # --- Sub-tab 2: dropped (rule-triage) ---------------------------
             with triage_tabs[1]:
