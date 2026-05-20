@@ -5395,7 +5395,6 @@ elif page == "🎯 Pipeline":
                                 st.toast(
                                     f"Promoting {len(_sel_urls)} roles…",
                                     icon="📋")
-                                st.rerun()
                     else:
                         st.dataframe(view, hide_index=True, width='stretch',
                                      height=500,
