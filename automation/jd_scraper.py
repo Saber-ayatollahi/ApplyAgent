@@ -1064,6 +1064,54 @@ def _pause_requested() -> bool:
     return PAUSE_FLAG_PATH.exists()
 
 
+# ---------------------------------------------------------------------------
+# Connectivity pre-flight & circuit breaker
+# ---------------------------------------------------------------------------
+_PREFLIGHT_URLS = [
+    ("https://boards-api.greenhouse.io/v1/boards/test/jobs", "Greenhouse"),
+    ("https://www.linkedin.com/robots.txt", "LinkedIn"),
+]
+
+_CIRCUIT_BREAKER_THRESHOLD = 5  # consecutive all-error companies before aborting
+
+
+def _preflight_connectivity_check(skip_linkedin: bool = False) -> dict | None:
+    """Quick HTTPS probe before scanning 159 companies.
+
+    Returns None if connectivity is fine, or a dict describing the failure
+    (suitable for inclusion in diagnostics/checkpoint)."""
+    import ssl
+    targets = _PREFLIGHT_URLS if not skip_linkedin else _PREFLIGHT_URLS[:1]
+    ssl_failures = []
+    for url, label in targets:
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=15)
+            # Any HTTP response (even 404) means SSL/network is fine
+            return None
+        except requests.exceptions.SSLError as e:
+            ssl_failures.append((label, str(e)[:200]))
+        except requests.exceptions.ConnectionError as e:
+            if "SSL" in str(e) or "CERTIFICATE_VERIFY_FAILED" in str(e):
+                ssl_failures.append((label, str(e)[:200]))
+            else:
+                # Non-SSL connection error (DNS, firewall) — still try next
+                continue
+        except Exception:
+            continue
+    if ssl_failures:
+        return {
+            "error": "ssl_blocked",
+            "message": (
+                "HTTPS connections are being intercepted (SSL certificate "
+                "verification failed). This usually means a corporate VPN or "
+                "proxy (Zscaler, Netskope, etc.) is doing SSL inspection. "
+                "Disconnect from VPN and retry."
+            ),
+            "details": ssl_failures,
+        }
+    return None
+
+
 def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
          skip_linkedin: bool = False, resume: bool = False) -> tuple[list[dict], dict]:
     """Run the scan. Returns (candidates, diagnostics) where diagnostics lists
@@ -1084,6 +1132,13 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
     # tripped it, we want to retry this run from clean state.
     _linkedin_throttle_reset()
     companies = list(companies)
+
+    # -------- Connectivity pre-flight --------
+    if not resume:
+        conn_err = _preflight_connectivity_check(skip_linkedin=skip_linkedin)
+        if conn_err:
+            print(f"[scan] ABORT: {conn_err['message']}", file=sys.stderr)
+            return [], {"error": "connectivity_preflight_failed", **conn_err}
 
     # -------- Resume setup --------
     sig = _targets_signature(companies)
@@ -1119,6 +1174,8 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
 
     seen = load_tracker_urls()
     paused = False
+    circuit_breaker_count = 0  # consecutive companies with zero results from ALL sources
+    abort_reason: dict | None = None
     # TARGETS has shared Workday tenants (TD Bank + TD Asset Management both
     # use ("td","wd3","TD_Bank_Careers"); same for BMO). Without memoization
     # we issue every keyword query twice. Key on the validated 3-tuple form
@@ -1242,6 +1299,31 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         print(f"  -> {added} new candidate(s) [{', '.join(sources_used) or 'none'}]",
               file=sys.stderr)
 
+        # Circuit breaker: if many consecutive companies return 0 from all
+        # configured sources, network is probably broken (VPN/proxy/SSL).
+        has_any_source = (c.get("workday") or c.get("greenhouse") or
+                          c.get("lever") or c.get("successfactors") or
+                          c.get("phenom") or (not workday_only and not skip_linkedin))
+        if added == 0 and has_any_source:
+            circuit_breaker_count += 1
+        else:
+            circuit_breaker_count = 0
+
+        if circuit_breaker_count >= _CIRCUIT_BREAKER_THRESHOLD:
+            abort_reason = {
+                "error": "circuit_breaker_tripped",
+                "message": (
+                    f"Aborted: {_CIRCUIT_BREAKER_THRESHOLD} consecutive companies "
+                    f"returned 0 results from all sources. This typically means "
+                    f"network connectivity is blocked (VPN/proxy/SSL inspection). "
+                    f"Check your connection and retry."
+                ),
+                "failed_at_company": c["name"],
+                "failed_at_index": i,
+            }
+            print(f"[scan] ABORT: {abort_reason['message']}", file=sys.stderr)
+            break
+
         # Checkpoint AFTER finishing this company so a kill at any point
         # from this moment until the next company starts is safely resumable.
         completed.add(c["name"])
@@ -1272,6 +1354,7 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         "zero_result_companies": [c["name"] for c in per_company if c["total"] == 0],
         "linkedin_throttled": _linkedin_globally_throttled,
         "paused": paused,
+        "aborted": abort_reason,
         "completed_count": len(completed),
         "total_companies": len(companies),
     }
@@ -1328,7 +1411,22 @@ def main() -> int:
 
     raw, diagnostics = scan(targets, linkedin_only=args.linkedin_only,
                              workday_only=args.workday_only,
+                             skip_linkedin=getattr(args, "skip_linkedin", False),
                              resume=args.resume)
+
+    # Connectivity or circuit-breaker failure — abort with clear message.
+    if diagnostics.get("error"):
+        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"SCAN FAILED: {diagnostics.get('message', diagnostics['error'])}",
+              file=sys.stderr)
+        print(f"{'='*60}\n", file=sys.stderr)
+        return 1
+    if diagnostics.get("aborted"):
+        info = diagnostics["aborted"]
+        print(f"\n{'='*60}", file=sys.stderr)
+        print(f"SCAN ABORTED: {info['message']}", file=sys.stderr)
+        print(f"{'='*60}\n", file=sys.stderr)
+        return 1
 
     # If the user paused mid-scan we stop here. The checkpoint file holds
     # everything we've captured so far; the scored/promote pipeline should
