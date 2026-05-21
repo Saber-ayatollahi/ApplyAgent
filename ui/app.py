@@ -90,6 +90,13 @@ CRM_STATUS_COLORS = {
     "Closed":         _C_RED,
 }
 
+LANE_MULTIPLIERS = {"ALM": 1.5, "VAL": 1.2}
+
+
+def lane_mult(job: dict) -> float:
+    pv = (job.get("primary_variant") or "").upper()
+    return LANE_MULTIPLIERS.get(pv, 1.0)
+
 
 @st.cache_data(ttl=15)
 def load_tracker():
@@ -301,11 +308,11 @@ def compute_next_best_action(
             continue
         urgency = (j.get("urgency") or "").lower()
         pv = (j.get("primary_variant") or "").upper()
-        lane_mult = 1.5 if pv == "ALM" else (1.2 if pv == "VAL" else 1.0)
+        lm = lane_mult(j)
         urgency_bonus = 3 if urgency == "high" else 0
         has_draft = bool(_find_tailor_docs(j))
-        verb = "Open application" if has_draft else "Tailor"
-        score = (fit * 0.8 + urgency_bonus) * lane_mult
+        verb = "View tailor & apply" if has_draft else "Tailor"
+        score = (fit * 0.8 + urgency_bonus) * lm
         candidates.append({
             "kind": "tailor_or_apply",
             "score": score,
@@ -314,6 +321,12 @@ def compute_next_best_action(
                         + (f" · {pv}" if pv else ""),
             "page": "🏠 Today",
             "job": j,
+            "_breakdown": {
+                "fit": fit,
+                "lane": pv or "—",
+                "lane_mult": lm,
+                "urgency_bonus": urgency_bonus,
+            },
         })
 
     # Most overdue follow-up.
@@ -2111,6 +2124,16 @@ if page == "🏠 Dashboard":
                         st.session_state["_applyagent_nav"] = "🏠 Today"
                         st.session_state["_nav_sub_🏠 Today"] = "Replies"
                         st.rerun()
+            # Explainability line — score breakdown in one glance
+            _bk = _nba.get("_breakdown")
+            if _bk:
+                st.caption(
+                    f"Score {_nba['score']:.1f} · fit {_bk['fit']} · "
+                    f"{_bk['lane']} {_bk['lane_mult']}× · "
+                    f"urgency +{_bk['urgency_bonus']}"
+                )
+            else:
+                st.caption(f"Score {_nba['score']:.1f} · {_nba.get('kind', '')}")
 
     # ── Since-you-last-looked strip ───────────────────────────────────────
     # Persist last_visit_at to ~/.applyagent/session.json. On render: count
@@ -2218,11 +2241,11 @@ if page == "🏠 Dashboard":
                 )
                 _today_followups.append(_j)
 
-    # Sort each bucket by urgency / staleness
+    # Sort each bucket by urgency / staleness, lane-weighted
     _today_apply_now.sort(
         key=lambda j: (
             0 if (j.get("urgency") or "").lower() == "high" else 1,
-            -int(j.get("fit_score_numeric") or 0),
+            -int(j.get("fit_score_numeric") or 0) * lane_mult(j),
         )
     )
     _today_followups.sort(
@@ -2280,6 +2303,12 @@ if page == "🏠 Dashboard":
                     _vcolor = VERDICT_COLORS.get(_verdict or "", "")
                     _vlabel = _VERDICT_LABEL.get(_verdict or "", "")
                     _badges = []
+                    _tq_pv = (_j.get("primary_variant") or "").upper()
+                    if _tq_pv in LANE_MULTIPLIERS:
+                        _badges.append(
+                            f"<span style='color:{_C_INDIGO if _tq_pv == 'ALM' else _C_BLUE};"
+                            f"font-weight:700'>{_tq_pv}</span>"
+                        )
                     if _vlabel and _vcolor:
                         _badges.append(
                             f"<span style='color:{_vcolor};font-weight:600'>"
@@ -2312,9 +2341,18 @@ if page == "🏠 Dashboard":
                     _co = _j.get("company", "?")
                     _ti = _j.get("title", "?")[:80]
                     _reason = _j.get("_followup_reason", "")
+                    _tq_log = _j.get("outreach_log") or []
+                    _tq_touch_n = len(_tq_log)
+                    _tq_cadence = (_j.get("followup_schedule") or {}).get("cadence_days") or [3, 10, 21]
+                    _tq_ctx = f"touch {_tq_touch_n} of [{','.join(str(d) for d in _tq_cadence)}]d"
+                    if _tq_log:
+                        _tq_last_d = parse_date(_tq_log[-1].get("date"))
+                        if _tq_last_d:
+                            _tq_ctx += f" · last {(today - _tq_last_d).days}d ago"
                     st.markdown(
                         f"**{_co}** — {_ti}  ·  _{_reason}_"
                     )
+                    st.caption(_tq_ctx)
 
             if _today_reach_out:
                 st.markdown(f"#### 🤝 Reach out · {len(_today_reach_out)}")
@@ -7143,7 +7181,7 @@ elif page == "📬 Review Queue":
     _rq_queue = sorted(
         [j for j in _rq_jobs if j.get("status") == "Found"],
         key=lambda j: (
-            -(j.get("fit_score_numeric") or 0),
+            -(j.get("fit_score_numeric") or 0) * lane_mult(j),
             -({"High": 3, "Medium": 2, "Low": 1}.get(j.get("urgency", ""), 0)),
         ),
     )
@@ -7219,6 +7257,13 @@ elif page == "📬 Review Queue":
 
         # Tag row
         _rq_tags = []
+        _rq_pv = (_rq_job.get("primary_variant") or "").upper()
+        if _rq_pv in ("ALM", "VAL"):
+            _rq_lane_color = _C_INDIGO if _rq_pv == "ALM" else _C_BLUE
+            _rq_tags.append(
+                f"<span style='color:{_rq_lane_color};font-weight:700'>"
+                f"{_rq_pv} {LANE_MULTIPLIERS[_rq_pv]}×</span>"
+            )
         if _rq_tier:
             _rq_tags.append(f"\U0001f3c5 Tier {_rq_tier}")
         _rq_tags.append(f"\U0001f4c2 {_rq_sector}")
@@ -7471,6 +7516,23 @@ elif page == "🔔 Follow-ups":
                 if _fj_rec:
                     _fu_meta += f" · Recruiter: {_fj_rec}"
                 st.caption(_fu_meta)
+
+                # Cadence context — "Touch N of [3,10,21]d · last touch Xd · type"
+                _fj_cadence = _fj_sched.get("cadence_days") or [3, 10, 21]
+                _fj_touch_n = len(_fj_log)
+                _fj_cadence_str = ",".join(str(d) for d in _fj_cadence)
+                _cadence_parts = [f"Touch {_fj_touch_n} of [{_fj_cadence_str}]d cadence"]
+                if _fj_log:
+                    _last_entry = _fj_log[-1]
+                    _last_d = parse_date(_last_entry.get("date"))
+                    if _last_d:
+                        _since = (date.today() - _last_d).days
+                        _cadence_parts.append(f"last touch {_since}d ago")
+                    _last_type = _last_entry.get("type", "")
+                    if _last_type:
+                        _cadence_parts.append(f"prior: {_last_type.replace('_', ' ')}")
+                st.caption(" · ".join(_cadence_parts))
+
             with _fc2:
                 st.markdown(
                     f"<div style='text-align:center;padding:6px;"
@@ -7496,8 +7558,11 @@ elif page == "🔔 Follow-ups":
             with _fa1.expander("✉️ Draft email"):
                 _draft_touch = len(_fj_log) + 1
                 _draft_key   = f"draft_{_fj_id}_{_draft_touch}"
+                _tone_options = ["Standard follow-up", "Warm / brief nudge", "Value-add angle"]
+                _tone_default = min(_draft_touch - 1, 2)
                 _draft_type  = st.selectbox(
-                    "Tone", ["Standard follow-up", "Warm / brief nudge", "Value-add angle"],
+                    "Tone", _tone_options,
+                    index=_tone_default,
                     key=f"dt_{_fj_id}"
                 )
                 if st.button("✨ Generate draft", key=f"gen_{_fj_id}",

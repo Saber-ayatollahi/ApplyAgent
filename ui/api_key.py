@@ -26,6 +26,7 @@ import streamlit as st
 
 CONFIG_DIR = Path.home() / ".applyagent"
 CONFIG_PATH = CONFIG_DIR / "config.json"
+VALIDATION_CACHE_PATH = CONFIG_DIR / "api_validation.json"
 ENV_VAR = "ANTHROPIC_API_KEY"
 
 # Re-validation cadence — mirrors gmail_ui. Without this, a key that worked
@@ -44,6 +45,62 @@ def _validation_age_s(v: "ValidationResult | None") -> "float | None":
         return max(_t.time() - ts, 0.0)
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------------------
+# Disk-backed validation cache
+# ---------------------------------------------------------------------------
+# Kills the first-render limitation: is_key_valid() returns False on first
+# paint per session because session_state is empty. With disk cache, the
+# module hydrates session_state from the last successful validation on import,
+# so compact-sidebar and all is_key_valid() gates work immediately.
+
+def _write_validation_cache(result: "ValidationResult"):
+    try:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "ok": result.ok,
+            "message": result.message,
+            "checked_at": result.checked_at,
+            "category": result.category,
+            "model_count": result.model_count,
+            "preflight_ok": result.preflight_ok,
+        }
+        VALIDATION_CACHE_PATH.write_text(json.dumps(payload), encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _read_validation_cache() -> "ValidationResult | None":
+    try:
+        if not VALIDATION_CACHE_PATH.exists():
+            return None
+        data = json.loads(VALIDATION_CACHE_PATH.read_text(encoding="utf-8"))
+        result = ValidationResult(
+            ok=data["ok"],
+            message=data["message"],
+            checked_at=data["checked_at"],
+            category=data.get("category", CATEGORY_OTHER),
+            model_count=data.get("model_count", 0),
+            preflight_ok=data.get("preflight_ok", False),
+        )
+        age = _validation_age_s(result)
+        ttl = (_VALIDATE_TTL_OK_S if (result.ok and result.preflight_ok)
+               else _VALIDATE_TTL_FAIL_S)
+        if age is not None and age > ttl:
+            return None
+        return result
+    except Exception:
+        return None
+
+
+def _hydrate_from_disk():
+    """Populate session_state from disk cache if empty. Called on first render."""
+    if st.session_state.get("_anth_validation") is not None:
+        return
+    cached = _read_validation_cache()
+    if cached is not None:
+        st.session_state["_anth_validation"] = cached
 
 
 # ---------------------------------------------------------------------------
@@ -226,10 +283,12 @@ def validate(key: str, preflight: bool = True) -> ValidationResult:
         return ValidationResult(False, f"Preflight failed: {msg}",
                                  now(), category=cat, model_count=model_count)
 
-    return ValidationResult(
+    result = ValidationResult(
         True, f"Valid & credits OK — {model_count} models, billing works",
         now(), category=CATEGORY_OK, model_count=model_count, preflight_ok=True,
     )
+    _write_validation_cache(result)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +297,7 @@ def validate(key: str, preflight: bool = True) -> ValidationResult:
 def render_sidebar():
     """Render the API-key section in the Streamlit sidebar."""
     hydrate_env()
+    _hydrate_from_disk()
     key = load_key()
     validation: ValidationResult | None = st.session_state.get("_anth_validation")
 
@@ -254,6 +314,7 @@ def render_sidebar():
         if validation is None or (age is not None and age > ttl):
             validation = validate(key)
             st.session_state["_anth_validation"] = validation
+            _write_validation_cache(validation)
 
     # Header badge — category-aware. "Not set" is a normal first-run state,
     # not an error — only AUTH/CREDIT/INVALID warrant the red banner. The
@@ -365,6 +426,7 @@ def is_key_valid() -> bool:
     Scorer / tailor / pipeline buttons depend on this. Returning False when credits are
     exhausted is what prevents the 482-skip-verdicts silent-failure scenario.
     """
+    _hydrate_from_disk()
     v: ValidationResult | None = st.session_state.get("_anth_validation")
     return bool(v and v.ok and v.preflight_ok)
 
@@ -378,6 +440,7 @@ def render_compact_status() -> None:
     `🔑 ✅ Key valid` so the user still has confirmation without the bulk.
     No expander, no buttons, no preflight side-effects.
     """
+    _hydrate_from_disk()
     key = load_key()
     validation: ValidationResult | None = st.session_state.get("_anth_validation")
     if not key:
