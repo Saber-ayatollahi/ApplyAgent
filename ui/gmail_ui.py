@@ -287,3 +287,27 @@ def render_sidebar():
 def is_connected() -> bool:
     check: gr.GmailCheck | None = st.session_state.get("_gmail_check")
     return bool(check and check.ok)
+
+
+def render_compact_status() -> None:
+    """One-line caption for the sidebar footer when Gmail is healthy.
+
+    Mirrors api_key.render_compact_status — when IMAP is verified and creds
+    are loaded, the full card adds nothing actionable. This helper renders a
+    single tiny caption (e.g. `📬 ✅ Gmail OK`) so we keep visual
+    confirmation without the expander/buttons. No IMAP probe.
+    """
+    email_addr, _pw = gr.load_credentials()
+    check: gr.GmailCheck | None = st.session_state.get("_gmail_check")
+    if not email_addr:
+        st.sidebar.caption("📬 ⚠ Not connected")
+        return
+    if check and check.ok:
+        st.sidebar.caption("📬 ✅ Gmail OK")
+    elif check and not check.ok:
+        if _is_login_rejected(check):
+            st.sidebar.caption("📬 ❌ Login rejected")
+        else:
+            st.sidebar.caption("📬 ⚠ unreachable")
+    else:
+        st.sidebar.caption("📬 ❓ Unchecked")

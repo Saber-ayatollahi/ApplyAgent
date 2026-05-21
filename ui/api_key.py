@@ -367,3 +367,33 @@ def is_key_valid() -> bool:
     """
     v: ValidationResult | None = st.session_state.get("_anth_validation")
     return bool(v and v.ok and v.preflight_ok)
+
+
+def render_compact_status() -> None:
+    """One-line caption for the sidebar footer when the key is healthy.
+
+    Pairs with render_sidebar(): when the key is valid + credits OK, the full
+    card eats ~15% of sidebar height for no actionable info. This helper is
+    what `app.py` falls back to in that case — a single tiny caption such as
+    `🔑 ✅ Key valid` so the user still has confirmation without the bulk.
+    No expander, no buttons, no preflight side-effects.
+    """
+    key = load_key()
+    validation: ValidationResult | None = st.session_state.get("_anth_validation")
+    if not key:
+        st.sidebar.caption("🔑 ⚠ No key set")
+        return
+    if validation and validation.ok and validation.category == CATEGORY_OK:
+        st.sidebar.caption("🔑 ✅ Key valid")
+    elif validation and validation.category == CATEGORY_CREDIT:
+        st.sidebar.caption("💳 ⚠ Credits exhausted")
+    elif validation and validation.category == CATEGORY_AUTH:
+        st.sidebar.caption("🔑 ❌ Key rejected")
+    elif validation and validation.category == CATEGORY_NETWORK:
+        st.sidebar.caption("🔑 🌐 Network issue")
+    elif validation and validation.ok:
+        st.sidebar.caption("🔑 ℹ Authenticated")
+    elif validation and not validation.ok:
+        st.sidebar.caption("🔑 ❌ Key invalid")
+    else:
+        st.sidebar.caption("🔑 ❓ Unchecked")
