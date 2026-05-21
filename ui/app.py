@@ -98,6 +98,28 @@ def lane_mult(job: dict) -> float:
     return LANE_MULTIPLIERS.get(pv, 1.0)
 
 
+def extract_bridge(job: dict, max_len: int = 130) -> str:
+    """Extract a one-line 'your X → their Y' bridge from fit_notes.
+
+    Uses the first item from the '| Top reasons:' section which the scorer
+    writes for every scored job. Falls back to the first sentence of the
+    verdict if the delimiter is missing.
+    """
+    fn = job.get("fit_notes") or ""
+    if not fn:
+        return ""
+    if "| Top reasons:" in fn:
+        reasons = fn.split("| Top reasons:", 1)[1].strip()
+        first = reasons.split(";")[0].strip()
+    else:
+        first = fn.split(".")[0].strip()
+    if not first:
+        return ""
+    if len(first) > max_len:
+        first = first[:max_len].rsplit(" ", 1)[0] + "..."
+    return first
+
+
 @st.cache_data(ttl=15)
 def load_tracker():
     if not TRACKER.exists():
@@ -2326,6 +2348,9 @@ if page == "🏠 Dashboard":
                         f"{('· ' + _badge_str) if _badge_str else ''}",
                         unsafe_allow_html=True,
                     )
+                    _tq_bridge = extract_bridge(_j)
+                    if _tq_bridge:
+                        st.caption(f"\U0001f517 {_tq_bridge}")
                     render_tailor_action_row(
                         _j, key_prefix="today_q", tracker_data=tr,
                         tracker_path=TRACKER,
@@ -7275,7 +7300,20 @@ elif page == "📬 Review Queue":
         if _rq_comp:
             _rq_tags.append(f"\U0001f4b0 {_rq_comp}")
         st.markdown("  ·  ".join(_rq_tags), unsafe_allow_html=True)
-        st.markdown("")
+
+        # Bridge-from-stack — one-line "why this fits YOU" accelerator
+        _rq_bridge = extract_bridge(_rq_job)
+        if _rq_bridge:
+            st.markdown(
+                f"<div style='margin:6px 0 10px 0;padding:6px 12px;"
+                f"background:#6366f10d;border-left:3px solid #6366f1;"
+                f"border-radius:0 6px 6px 0;font-size:0.85em;"
+                f"color:#4f46e5'>"
+                f"\U0001f517 <b>Bridge:</b> {_rq_bridge}</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown("")
 
         # Body columns
         _rq_b1, _rq_b2 = st.columns([3, 2])
