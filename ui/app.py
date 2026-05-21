@@ -2229,6 +2229,47 @@ if page == "🏠 Dashboard":
         help="High-priority recruiters not yet contacted. Go to 🤝 Recruiter CRM.",
     )
 
+    # ── Pipeline-health pill ──
+    # Compact funnel visualization: "Found 28 → Applied 0 → Interview 0 → Offer 0"
+    # Amber warning if no jobs have progressed past Watch; green otherwise.
+    _funnel_stages = [
+        ("Found", "Found"),
+        ("Watch", "Watch"),
+        ("Applied", "Applied"),
+        ("Interview", ("Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite")),
+        ("Offer", ("Offer",)),
+    ]
+    _funnel_counts = {}
+    for label, match in _funnel_stages:
+        if isinstance(match, tuple):
+            _funnel_counts[label] = sum(
+                1 for j in jobs if j.get("status") in match
+            )
+        else:
+            _funnel_counts[label] = sum(
+                1 for j in jobs if j.get("status") == match
+            )
+    _funnel_active = _funnel_counts["Applied"] + _funnel_counts["Interview"]
+    _funnel_color = _C_GREEN if _funnel_active > 0 else _C_AMBER
+    _funnel_parts = []
+    for label, _ in _funnel_stages:
+        n = _funnel_counts[label]
+        weight = "700" if n > 0 else "400"
+        opacity = "1" if n > 0 else "0.5"
+        _funnel_parts.append(
+            f"<span style='font-weight:{weight};opacity:{opacity}'>"
+            f"{label} {n}</span>"
+        )
+    _funnel_html = " → ".join(_funnel_parts)
+    _funnel_icon = "✅" if _funnel_active > 0 else "⚠️"
+    st.markdown(
+        f"<div style='padding:6px 12px;background:{_funnel_color}0d;"
+        f"border:1px solid {_funnel_color}33;border-radius:6px;"
+        f"font-size:0.82em;margin-bottom:12px'>"
+        f"{_funnel_icon} <b>Pipeline:</b> {_funnel_html}</div>",
+        unsafe_allow_html=True,
+    )
+
     # ── Today's queue ──
     _APPLY_STATUSES = {"Found", "Watch", "Tailoring"}
     _NO_FOLLOWUP_STATUSES = {"Rejected", "Withdrawn", "Offer", "Expired"}
