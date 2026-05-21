@@ -17,9 +17,6 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-# Auto-refresh component — polling, not websocket. Only installed as a dep
-# when streamlit-autorefresh is listed in requirements.txt. If missing we
-# degrade to no-auto-refresh (user clicks Refresh manually).
 try:
     from streamlit_autorefresh import st_autorefresh  # type: ignore
     _HAVE_AUTOREFRESH = True
@@ -35,19 +32,14 @@ import scan_runner  # noqa: E402
 import api_key  # noqa: E402
 import gmail_ui  # noqa: E402
 
-# The lifetime cost ledger lives in automation/ so it can be imported by
-# scorer/tailor without those having a sibling dependency on ui/.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
 import cost_ledger  # noqa: E402
 
-# Error log — populated by the automation modules. Guarded import so the
-# UI still loads even if the module was renamed / broken.
 try:
     import error_log  # noqa: E402
 except Exception:
     error_log = None  # type: ignore
 
-# Ensure stored key is in env before anything launches a subprocess
 api_key.hydrate_env()
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -58,7 +50,47 @@ RUNS_DIR = OUT_DIR / "runs"
 PIPELINE_DIR = OUT_DIR / "pipelines"
 
 
-# ----------------------------- helpers ------------------------------------
+# ── UI palette ──────────────────────────────────────────────────────────
+# Centralized color tokens. Two semantic axes are intentionally separate:
+#
+#   URGENCY (job listing)   — Low=green ("not on fire"). This is the
+#                              listing's heat: how time-sensitive is it.
+#   PRIORITY (recruiter CRM) — Low=gray  ("not in focus right now"). This
+#                              is *our* attention budget for the contact.
+#
+# Don't unify these — they encode different things, and merging them
+# would reverse the meaning of "Low" on either CRM or Analytics. Tier
+# (1-4) and verdict palettes are also kept here so cross-page rendering
+# stays consistent if the design ever needs a global retheming pass.
+_C_RED, _C_AMBER, _C_GREEN = "#ef4444", "#f59e0b", "#10b981"
+_C_BLUE, _C_INDIGO, _C_GRAY, _C_SLATE = "#3b82f6", "#6366f1", "#6b7280", "#94a3b8"
+
+URGENCY_COLORS = {
+    "High":    _C_RED,
+    "Medium":  _C_AMBER,
+    "Low":     _C_GREEN,
+    "Unknown": _C_SLATE,
+}
+PRIORITY_COLORS = {
+    "High":    _C_RED,
+    "Medium":  _C_AMBER,
+    "Low":     _C_GRAY,
+}
+TIER_COLORS = {1: _C_GREEN, 2: _C_BLUE, 3: _C_AMBER, 4: _C_GRAY}
+VERDICT_COLORS = {
+    "apply_now":         _C_GREEN,
+    "tailor_and_apply":  _C_AMBER,
+    "watch":             _C_INDIGO,
+}
+CRM_STATUS_COLORS = {
+    "Not_Contacted":  _C_GRAY,
+    "Outreach_Sent":  _C_BLUE,
+    "Active":         _C_GREEN,
+    "Paused":         _C_AMBER,
+    "Closed":         _C_RED,
+}
+
+
 @st.cache_data(ttl=15)
 def load_tracker():
     if not TRACKER.exists():
@@ -86,7 +118,9 @@ def save_tracker(d: dict):
         _sj_write(TRACKER, d)
     except ImportError:
         TRACKER.write_text(json.dumps(d, indent=2), encoding="utf-8")
-    st.cache_data.clear()
+    # Invalidate ONLY the tracker cache. `st.cache_data.clear()` would also
+    # nuke the 1h _ai_draft cache and 2min _load_inbox_signals cache.
+    load_tracker.clear()
 
 
 def save_crm(d: dict):
@@ -101,7 +135,7 @@ def save_crm(d: dict):
         _sj_write(CRM, d)
     except ImportError:
         CRM.write_text(json.dumps(d, indent=2), encoding="utf-8")
-    st.cache_data.clear()
+    load_crm.clear()
 
 
 def parse_date(s):
@@ -113,12 +147,6 @@ def parse_date(s):
         return None
 
 
-# ---------------------------------------------------------------------------
-# Follow-up nudge logic — reads job_tracker_data.json
-# followup_schedule = {"next_due": "YYYY-MM-DD", "cadence_days": [3, 10, 21]}
-# A role enters the follow-up loop when it gets date_applied. On each follow-up,
-# next_due advances through cadence_days until the last rung, then we stop nudging.
-# ---------------------------------------------------------------------------
 FOLLOWUP_TERMINAL_STATUSES = {
     "Rejected", "Offer", "Hired", "Withdrawn", "Expired", "Declined",
 }
@@ -202,14 +230,160 @@ def seed_followup(job: dict, applied_on: date | None = None) -> None:
     job["date_applied"] = applied_on.isoformat()
 
 
-# ---------------------------------------------------------------------------
-# Outreach digest — computes staleness from CRM last_touchpoint
-# ---------------------------------------------------------------------------
+@st.cache_data(ttl=120)
+def _load_inbox_signals(days: int):
+    """Inbox signals fetch — module-scope so the @cache_data decorator survives
+    page reruns. Defined inside the Dashboard block previously, which created
+    a fresh function identity on every render and defeated the 2-min cache."""
+    sys.path.insert(0, str(ROOT / "automation"))
+    import gmail_reader as gr
+    msgs = gr.fetch_inbox_signals(days=days, limit=50)
+    return [
+        {"uid": m.uid, "date": m.date, "kind": m.kind,
+         "sender": m.sender or m.sender_email,
+         "sender_email": m.sender_email,
+         "subject": m.subject, "snippet": m.snippet}
+        for m in msgs
+    ]
 
-# ---------------------------------------------------------------------------
-# AI inline helpers — lightweight Claude Haiku calls for drafts & prep notes
-# Cached by a caller-supplied cache_key so reruns don't re-call the API.
-# ---------------------------------------------------------------------------
+
+_SESSION_STATE_PATH = Path.home() / ".applyagent" / "session.json"
+
+
+def read_last_visit() -> datetime | None:
+    """Read last-visit timestamp from `~/.applyagent/session.json`. None on
+    first visit / corrupted file. Used to render the 'since you last looked'
+    strip on the Dashboard."""
+    try:
+        raw = _SESSION_STATE_PATH.read_text(encoding="utf-8")
+        ts = json.loads(raw).get("last_visit_at")
+        return datetime.fromisoformat(ts) if ts else None
+    except Exception:
+        return None
+
+
+def write_last_visit() -> None:
+    """Stamp now() into the session file. Called once per Dashboard render
+    AFTER the strip has rendered, so the next visit's delta is bounded by
+    THIS visit's load time."""
+    try:
+        _SESSION_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _SESSION_STATE_PATH.write_text(
+            json.dumps({"last_visit_at": datetime.now().isoformat()}),
+            encoding="utf-8",
+        )
+    except Exception:
+        pass
+
+
+def compute_next_best_action(
+    jobs: list[dict],
+    crm_recruiters: list[dict],
+    proposals_path: Path,
+) -> dict | None:
+    """Pick the single highest-priority action across all surfaces.
+
+    Returns a dict {kind, score, label, sublabel, page, ...payload} or None
+    if nothing qualifies. Lane multiplier privileges ALM-primary per
+    feedback_positioning.md (1.5x), vendor-secondary 1.2x, other 1.0x.
+    """
+    today_d = date.today()
+    candidates: list[dict] = []
+
+    # Tier-1 Found roles (top-fit, ALM-primary first) — recommend Tailor.
+    for j in jobs:
+        if j.get("status") not in ("Found", "Watch"):
+            continue
+        if j.get("date_applied"):
+            continue
+        fit = int(j.get("fit_score_numeric") or 0)
+        if fit < 7:
+            continue
+        urgency = (j.get("urgency") or "").lower()
+        pv = (j.get("primary_variant") or "").upper()
+        lane_mult = 1.5 if pv == "ALM" else (1.2 if pv == "VAL" else 1.0)
+        urgency_bonus = 3 if urgency == "high" else 0
+        has_draft = bool(_find_tailor_docs(j))
+        verb = "Open application" if has_draft else "Tailor"
+        score = (fit * 0.8 + urgency_bonus) * lane_mult
+        candidates.append({
+            "kind": "tailor_or_apply",
+            "score": score,
+            "label": f"✍️ {verb} {j.get('company', '?')}",
+            "sublabel": f"{j.get('title', '?')} · fit {fit}/10"
+                        + (f" · {pv}" if pv else ""),
+            "page": "🏠 Today",
+            "job": j,
+        })
+
+    # Most overdue follow-up.
+    most_overdue = None
+    most_overdue_days = 0
+    for j in jobs:
+        if j.get("status") in ("Rejected", "Withdrawn", "Offer", "Hired", "Expired"):
+            continue
+        nd = parse_date((j.get("followup_schedule") or {}).get("next_due"))
+        if nd and (today_d - nd).days > most_overdue_days:
+            most_overdue_days = (today_d - nd).days
+            most_overdue = j
+    if most_overdue is not None and most_overdue_days >= 1:
+        score = min(most_overdue_days, 10) * 1.0
+        candidates.append({
+            "kind": "followup",
+            "score": score,
+            "label": f"📨 Follow up with {most_overdue.get('company', '?')}",
+            "sublabel": f"{most_overdue_days}d overdue · "
+                        f"{most_overdue.get('title', '?')}",
+            "page": "🏠 Today",
+            "job": most_overdue,
+        })
+
+    # Top high-priority uncontacted recruiter.
+    for c in crm_recruiters:
+        if c.get("priority") != "High":
+            continue
+        if c.get("status") not in ("Not_Contacted", None):
+            continue
+        if c.get("last_touchpoint"):
+            continue
+        candidates.append({
+            "kind": "recruiter",
+            "score": 5.0,
+            "label": f"🤝 Reach out to {c.get('firm', c.get('name', '?'))}",
+            "sublabel": (c.get("next_action") or "")[:140],
+            "page": "🤝 Network",
+            "contact": c,
+        })
+        break  # only surface ONE
+
+    # Pending high-confidence outcome proposal.
+    try:
+        if proposals_path.exists():
+            props = json.loads(proposals_path.read_text(encoding="utf-8")) or []
+            for p in props:
+                if p.get("status") != "pending":
+                    continue
+                conf = float(p.get("confidence") or 0)
+                if conf < 0.7:
+                    continue
+                candidates.append({
+                    "kind": "outcome",
+                    "score": 4.0 + conf * 2,
+                    "label": f"✅ Accept proposal: {p.get('company', '?')} → "
+                             f"{p.get('proposed_status', '?')}",
+                    "sublabel": (p.get("evidence") or {}).get("summary", "")[:140],
+                    "page": "🏠 Today",
+                    "proposal": p,
+                })
+                break
+    except Exception:
+        pass
+
+    if not candidates:
+        return None
+    return max(candidates, key=lambda c: c["score"])
+
+
 @st.cache_data(show_spinner=False, ttl=3600)
 def _ai_draft(cache_key: str, prompt: str) -> str:
     """Call Claude Haiku and return text. Returns error string if key missing."""
@@ -363,21 +537,10 @@ def render_tailor_action_row(job: dict, key_prefix: str,
                            "Closes the loop without leaving the page."):
             for _tj in tracker_data.get("jobs", []):
                 if _tj.get("id") == job_id:
-                    _tj["date_applied"] = date.today().isoformat()
                     _tj["status"] = "Applied"
-                    # Schedule first follow-up at +3 days
-                    _fs = _tj.setdefault("followup_schedule", {})
-                    _fs.setdefault("cadence_days", [3, 10, 21])
-                    _fs["next_due"] = (date.today() + timedelta(days=3)).isoformat()
+                    seed_followup(_tj, applied_on=date.today())
                     break
-            try:
-                from safe_json import write_json as _sj_write  # type: ignore
-                _sj_write(tracker_path, tracker_data)
-            except ImportError:
-                tracker_path.write_text(
-                    json.dumps(tracker_data, indent=2, ensure_ascii=False),
-                    encoding="utf-8",
-                )
+            save_tracker(tracker_data)
             st.toast(f"✅ Marked {job.get('company', '')} as applied",
                       icon="🎯")
             st.rerun()
@@ -472,20 +635,10 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                               key=f"drawer_apply_btn_{_kk}"):
                     for _tj in tracker_data.get("jobs", []):
                         if _tj.get("id") == job_id:
-                            _tj["date_applied"] = date.today().isoformat()
                             _tj["status"] = "Applied"
-                            _fs = _tj.setdefault("followup_schedule", {})
-                            _fs.setdefault("cadence_days", [3, 10, 21])
-                            _fs["next_due"] = (date.today() + timedelta(days=3)).isoformat()
+                            seed_followup(_tj, applied_on=date.today())
                             break
-                    try:
-                        from safe_json import write_json as _sj_write  # type: ignore
-                        _sj_write(tracker_path, tracker_data)
-                    except ImportError:
-                        tracker_path.write_text(
-                            json.dumps(tracker_data, indent=2, ensure_ascii=False),
-                            encoding="utf-8",
-                        )
+                    save_tracker(tracker_data)
                     st.session_state.pop("_active_tailor_job_id", None)
                     st.session_state.pop("_active_tailor_run_id", None)
                     st.toast(f"✅ {job.get('company', '?')} marked applied",
@@ -706,21 +859,6 @@ def hours_since_posted(posted_date: str | None) -> float | None:
         dt = dt.replace(tzinfo=timezone.utc)
     delta = datetime.now(timezone.utc) - dt
     return max(0.0, delta.total_seconds() / 3600.0)
-
-
-def urgent_from_brief(brief: dict | None, hours_threshold: int = 48) -> list[dict]:
-    """Return brief rows posted within the threshold, newest first.
-    Used to power the Dashboard's '🔴 Urgent' widget."""
-    if not brief:
-        return []
-    out: list[tuple[float, dict]] = []
-    for r in brief.get("top") or []:
-        hrs = hours_since_posted(r.get("posted_date"))
-        if hrs is None or hrs > hours_threshold:
-            continue
-        out.append((hrs, r))
-    out.sort(key=lambda t: t[0])
-    return [r for _, r in out]
 
 
 def freshness_badge(posted_date: str | None, found_at: str | None) -> str:
@@ -1036,25 +1174,6 @@ def render_scorer_progress(container=None, title: str = "🤖 Scoring in progres
         }.get(state, f"State: {state}")
         st.caption(status_caption)
     return state == "running"
-
-
-def _ap_promote_supports_only_url() -> bool:
-    """Probe auto_promote.py --help once per session for the --only-url flag
-    (Agent A is adding it in parallel)."""
-    key = "_ap_promote_supports_only_url"
-    if key in st.session_state:
-        return st.session_state[key]
-    supports = False
-    try:
-        r = subprocess.run(
-            [sys.executable, str(ROOT / "automation" / "auto_promote.py"), "--help"],
-            capture_output=True, text=True, timeout=5,
-        )
-        supports = "--only-url" in (r.stdout or "") + (r.stderr or "")
-    except Exception:
-        supports = False
-    st.session_state[key] = supports
-    return supports
 
 
 def _resolve_pipeline_staleness(data: dict, path: Path) -> dict:
@@ -1464,12 +1583,6 @@ def list_pipelines(limit: int = 20) -> list[dict]:
     return out
 
 
-# ---------------------------------------------------------------------------
-# Source-of-truth job pool. Logic lives in automation/worklist.py so the UI
-# and the nightly CLI share ONE implementation. Three concepts:
-#   scrape source (pinned, stable) | gmail pool (rolling 30d) | working set
-#   (derived = dedup(scrape u gmail), what the scorer consumes).
-# ---------------------------------------------------------------------------
 sys.path.insert(0, str(ROOT / "automation"))
 import worklist  # noqa: E402
 
@@ -1484,7 +1597,6 @@ def latest_scored() -> Path | None:
     return files[0] if files else None
 
 
-# ----------------------------- page config --------------------------------
 st.set_page_config(
     page_title="ApplyAgent — Saber's Job Search",
     page_icon="🎯",
@@ -1492,27 +1604,35 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-PAGES = [
-    "🏠 Dashboard",
-    "🎯 Pipeline",
-    "📥 Outcome Inbox",
-    "📋 Jobs Kanban",
-    "🤝 Recruiter CRM",
-    "📅 Weekly Plan",
-    "📝 Content & Memory",
-    "📜 Scan History",
-    "⚙️ Admin",
-]
+st.markdown("""<style>
+/* Typography hierarchy. h2 (st.header) is intentionally omitted — no page
+   currently uses it; if you reintroduce st.header somewhere, add a rule. */
+[data-testid="stAppViewContainer"] h1 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+[data-testid="stAppViewContainer"] h3 { font-size: 1.05rem; margin-bottom: 0.15rem; }
+[data-testid="stAppViewContainer"] h4 { font-size: 0.95rem; margin-bottom: 0.1rem; font-weight: 600; }
+/* Tighter vertical spacing */
+[data-testid="stMetric"] { padding: 0.3rem 0 !important; }
+/* Sidebar tighter */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { margin-bottom: 0.2rem; }
+[data-testid="stSidebar"] hr { margin: 0.4rem 0; }
+[data-testid="stSidebar"] [data-testid="stExpander"] { margin-bottom: 0.3rem; }
+</style>""", unsafe_allow_html=True)
 
+# Density polish: when a panel is healthy, defer to a one-line caption at the
+# bottom of the sidebar (see compact-status footer below). Render the full
+# card here only when something needs the user's attention.
+if api_key.is_key_valid():
+    _api_compact = True
+else:
+    api_key.render_sidebar()
+    _api_compact = False
 
-# API key manager — always on top of sidebar
-api_key.render_sidebar()
-gmail_ui.render_sidebar()
+if gmail_ui.is_connected():
+    _gmail_compact = True
+else:
+    gmail_ui.render_sidebar()
+    _gmail_compact = False
 
-# -------- Lifetime LLM spend (never-reset ledger) --------
-# Reads data/lifetime_cost.json; written by fit_scorer._cost_tick (and any
-# future scorer/tailor calls that import cost_ledger). Always visible so the
-# user has an anchor on cumulative spend across sessions + machines.
 try:
     _ledger = cost_ledger.load()
     _lt_tot = _ledger.get("totals", {})
@@ -1521,102 +1641,52 @@ try:
     _lt_in = _lt_tot.get("input_tokens", 0) or 0
     _lt_out = _lt_tot.get("output_tokens", 0) or 0
     _lt_tokens = _lt_in + _lt_out
-
-    # Today + 7-day rollups so the user can see "is this run going to
-    # blow my budget?" at a glance. Without this, lifetime numbers were
-    # the only signal — useless when one bad rescore can spike $5 in
-    # an hour. Thresholds: yellow at $5/day, red at $10/day.
     _daily = _ledger.get("daily", {}) or {}
     _today_key = datetime.now().strftime("%Y-%m-%d")
-    _today_cost = float((_daily.get(_today_key) or {}).get("estimated_cost_usd", 0.0))
+    # cost_ledger writes daily entries with key `cost_usd` (not `estimated_cost_usd`).
+    # totals uses `estimated_cost_usd`. Don't unify these casually — the on-disk
+    # schema is the source of truth.
+    _today_cost = float((_daily.get(_today_key) or {}).get("cost_usd", 0.0))
     _week_cost = 0.0
     for _i in range(7):
         _k = (datetime.now() - timedelta(days=_i)).strftime("%Y-%m-%d")
-        _week_cost += float((_daily.get(_k) or {}).get("estimated_cost_usd", 0.0))
-
+        _week_cost += float((_daily.get(_k) or {}).get("cost_usd", 0.0))
     if _today_cost >= 10.0:
         _today_emoji = "🔴"
     elif _today_cost >= 5.0:
         _today_emoji = "🟡"
     else:
         _today_emoji = "🟢"
+except Exception:
+    _lt_cost = _lt_calls = _lt_tokens = 0
+    _today_cost = _week_cost = 0.0
+    _today_emoji = "🟢"
 
-    # Escape $ as \$ in markdown text — Streamlit's renderer hands runs of
-    # text containing pairs of $ to KaTeX, which then chokes on emoji
-    # ('No character metrics for "🔴" in style "Main-Regular"'). Metric
-    # widgets render their values as text not markdown so they're safe.
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(
-        f"### 💰 Spend · {_today_emoji} today **\\${_today_cost:.2f}** · "
-        f"week \\${_week_cost:.2f}"
-    )
-    _lsc1, _lsc2 = st.sidebar.columns(2)
-    _lsc1.metric("Lifetime", f"${_lt_cost:.2f}")
-    _lsc2.metric("Calls", f"{_lt_calls:,}")
-    st.sidebar.caption(
-        f"{_lt_tokens:,} tokens · 🟡 ≥\\$5/day · 🔴 ≥\\$10/day · "
-        f"see ⚙️ Admin → Cost ledger"
-    )
-except Exception as _e:
-    st.sidebar.caption(f"Ledger unavailable: {_e}")
-
-# ---------------------------- Error log badge ----------------------------
-# logs/errors.jsonl records silent failures from scorer/tracker/scraper
-# (progress-write hiccups, fit-cache corruption, ledger writes, etc.).
-# Before this badge, users had no way to know something was degrading
-# silently. Now: green if quiet, yellow if recent errors, red if
-# accumulating. Click-through opens the Admin page.
+_err_last_hour = _err_last_day = 0
 if error_log is not None:
     try:
         _err_last_hour = error_log.count_recent(since_minutes=60)
         _err_last_day = error_log.count_recent(since_minutes=60 * 24)
-        st.sidebar.markdown("### 🪵 Error log")
-        if _err_last_hour == 0 and _err_last_day == 0:
-            st.sidebar.success("No errors logged", icon="✅")
-        elif _err_last_hour == 0:
-            st.sidebar.info(f"{_err_last_day} in last 24h · 0 in last hour",
-                             icon="ℹ️")
-        elif _err_last_hour < 5:
-            st.sidebar.warning(
-                f"{_err_last_hour} in last hour · {_err_last_day} in 24h",
-                icon="⚠️",
-            )
-        else:
-            st.sidebar.error(
-                f"{_err_last_hour} in last hour · {_err_last_day} in 24h",
-                icon="🔴",
-            )
-        st.sidebar.caption("See ⚙️ Admin → Error log for details.")
-    except Exception as _ee:
-        st.sidebar.caption(f"Error log unavailable: {_ee}")
+    except Exception:
+        pass
+_err_caption = ""
+if _err_last_hour >= 5:
+    _err_caption = f"🔴 {_err_last_hour} error(s) last hour · {_err_last_day} 24h — see Admin"
+elif _err_last_hour > 0:
+    _err_caption = f"⚠️ {_err_last_hour} last hour · {_err_last_day} 24h — see Admin"
+elif _err_last_day > 0:
+    _err_caption = f"ℹ️ {_err_last_day} error(s) in last 24h — see Admin"
 
 st.sidebar.markdown("---")
 
-# -------- Grouped sidebar nav --------
-# Sidebar radio with visual section dividers. Streamlit's radio doesn't
-# support true section headers natively, so we use non-selectable separator
-# strings inserted between groups. If the user somehow lands on one,
-# page-routing treats it as Dashboard so nothing breaks.
-# Pre-load CRM before nav so we can show urgency badge in sidebar.
-# load_crm() is @st.cache_data(ttl=15) so this call is cheap on reruns.
 _crm_early = load_crm()
 _crm_early_all = (_crm_early.get("recruiters") or []) + (_crm_early.get("alumni_warm_intros") or [])
-# High-priority contacts not yet reached — this is the "call to action" count
 _crm_badge_count = sum(
     1 for c in _crm_early_all
     if c.get("priority") == "High"
     and c.get("status") in ("Not_Contacted",)
     and not c.get("last_touchpoint")
 )
-
-# Legacy separators kept (referenced elsewhere) but the consolidated nav
-# below doesn't use them — its 5 top-level entries each fold related
-# pages under a sub-radio. The original 12 page bodies stay untouched;
-# this is purely a routing change.
-_SEP_WORK    = "── Work ──"
-_SEP_TRACKER = "── Tracker ──"
-_SEP_ADMIN   = "── Admin ──"
-_SEPARATORS = {_SEP_WORK, _SEP_TRACKER, _SEP_ADMIN}
 
 # Top-level groups + their children. Each child label maps to the EXACT
 # page-name string the if/elif router downstream expects — that way the
@@ -1646,9 +1716,6 @@ _NAV_GROUPS = {
         ("Content",     "📝 Content & Memory"),
     ],
 }
-_NAV_OPTIONS = list(_NAV_GROUPS.keys())  # legacy alias — some sidebar
-                                          # widgets read this.
-
 # Map every old page-name back to its new (group, child) so a directly-set
 # session_state still routes correctly. AppTest does this; users who had
 # a deep nav state from the previous nav layout do too.
@@ -1658,42 +1725,6 @@ _LEGACY_PAGE_TO_GROUP = {
     for (child_label, child_page) in items
 }
 
-# ── Campaign quick stats in sidebar ──────────────────────────────────────
-try:
-    _sb_meta = load_tracker().get("meta", {})
-    _sb_camp_start = _sb_meta.get("campaign_start", "")
-    _sb_camp_end   = _sb_meta.get("campaign_end", "")
-    _sb_today = date.today()
-    if _sb_camp_start and _sb_camp_end:
-        _sb_cs = datetime.strptime(_sb_camp_start, "%Y-%m-%d").date()
-        _sb_ce = datetime.strptime(_sb_camp_end,   "%Y-%m-%d").date()
-        _sb_total = max((_sb_ce - _sb_cs).days, 1)
-        _sb_done  = max(min((_sb_today - _sb_cs).days, _sb_total), 0)
-        _sb_pct   = int(_sb_done / _sb_total * 100)
-        _sb_left  = max((_sb_ce - _sb_today).days, 0)
-        st.sidebar.markdown("---")
-        st.sidebar.markdown(
-            f"<div style='font-size:11px;opacity:0.7;margin-bottom:3px'>Campaign · {_sb_pct}% · {_sb_left}d left</div>",
-            unsafe_allow_html=True,
-        )
-        st.sidebar.progress(_sb_pct / 100)
-except Exception:
-    pass
-
-# ── Targeting lanes strip ─────────────────────────────────────────────
-st.sidebar.markdown("---")
-st.sidebar.markdown(
-    "<div style='font-size:11px;color:var(--text-color);opacity:0.75;margin-bottom:4px'>"
-    "<strong>Active search lanes</strong></div>"
-    "<div style='font-size:11px;padding:4px 8px;margin:2px 0;"
-    "background:rgba(59,130,246,0.12);border-left:2px solid #3b82f6;border-radius:3px'>"
-    "🔵 <strong>PRIMARY</strong> — ALM / IRRBB / Model Governance</div>"
-    "<div style='font-size:11px;padding:4px 8px;margin:2px 0;"
-    "background:rgba(245,158,11,0.12);border-left:2px solid #f59e0b;border-radius:3px'>"
-    "🟡 SECONDARY — Vendor-Platform / Client Solutions</div>",
-    unsafe_allow_html=True,
-)
-st.sidebar.markdown("---")
 
 # Backwards-compat: if the user (or the AppTest harness) wrote one of
 # the 12 OLD page names directly into _applyagent_nav, translate that
@@ -1709,7 +1740,7 @@ if _nav_state in _LEGACY_PAGE_TO_GROUP:
 
 _nav_pick = st.sidebar.radio(
     "Navigate",
-    _NAV_OPTIONS,
+    list(_NAV_GROUPS.keys()),
     index=0,                                    # default: 🏠 Today
     label_visibility="collapsed",
     key="_applyagent_nav",
@@ -1764,6 +1795,34 @@ try:
 except Exception:
     _fu_badge_count = 0
 
+# Scan-freshness pill — silent if 0-1d, yellow at 2-6d, red at ≥7d. Without
+# this, a 10-day-old scan looks the same as one minutes old; the campaign is
+# 70 days, so multi-day staleness genuinely matters.
+try:
+    _scan_path = latest_scan()
+    if _scan_path and _scan_path.exists():
+        _scan_age_days = int(
+            (datetime.now().timestamp() - _scan_path.stat().st_mtime) // 86400
+        )
+        if _scan_age_days >= 7:
+            st.sidebar.markdown(
+                f"<div style='margin:4px 0 6px 0;padding:7px 10px;"
+                f"background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);"
+                f"border-radius:6px;font-size:12px;color:#f87171;line-height:1.4'>"
+                f"🛰 Web scan <strong>{_scan_age_days}d</strong> stale — refresh</div>",
+                unsafe_allow_html=True,
+            )
+        elif _scan_age_days >= 2:
+            st.sidebar.markdown(
+                f"<div style='margin:4px 0 6px 0;padding:7px 10px;"
+                f"background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);"
+                f"border-radius:6px;font-size:12px;color:#fbbf24;line-height:1.4'>"
+                f"🛰 Web scan <strong>{_scan_age_days}d</strong> old</div>",
+                unsafe_allow_html=True,
+            )
+except Exception:
+    pass
+
 # Active-runs badge in sidebar
 active_runs = scan_runner.active_runs()
 pipe = latest_pipeline_status()
@@ -1805,30 +1864,18 @@ if any_work_active and _HAVE_AUTOREFRESH and not _HAS_FRAGMENT:
     st_autorefresh(interval=5000, key=f"_autorefresh_{page}")
 
 if any_work_active:
-    st.sidebar.markdown("### 🟢 Active work")
+    st.sidebar.markdown("---")
+    st.sidebar.caption("**Active**")
     if pipeline_running:
         st.sidebar.caption(
-            f"**Pipeline** `{pipe['pipeline_id']}` · {human_elapsed(pipe.get('started_at'))}"
+            f"Pipeline `{pipe['pipeline_id']}` · {human_elapsed(pipe.get('started_at'))}"
         )
     if scorer_running:
-        st.sidebar.caption("**Scorer** running — progress updates every 5s")
+        st.sidebar.caption("Scorer running")
     for r in active_runs:
         st.sidebar.caption(
-            f"**{r['label']}** · {human_elapsed(r['started_at'])} · pid {r['pid']}"
+            f"{r['label']} · {human_elapsed(r['started_at'])} · pid {r['pid']}"
         )
-    if _HAVE_AUTOREFRESH:
-        st.sidebar.caption("↻ auto-refresh every 5s while work is active")
-    else:
-        st.sidebar.caption(
-            "⚠️ streamlit-autorefresh not installed — pages won't auto-refresh. "
-            "pip install streamlit-autorefresh"
-        )
-else:
-    st.sidebar.caption("No active runs")
-
-# Global manual refresh — clears data caches so tracker/CRM reload. Works
-# whether or not streamlit-autorefresh is installed. Distinct from the
-# backend-log refresh below, which only touches the session log.
 if st.sidebar.button("🔄 Refresh now", key="sidebar_refresh_now",
                       width='stretch',
                       help="Clear data caches and re-read tracker, CRM, "
@@ -1836,80 +1883,26 @@ if st.sidebar.button("🔄 Refresh now", key="sidebar_refresh_now",
     st.cache_data.clear()
     st.rerun()
 
-# -------- Backend session log (written by start.ps1) --------
-# `logs/current.log` is a pointer file with the path to the active session
-# log. If the app was launched via start.ps1 we'll tail it here so the user
-# has one place to see everything stdout/stderr that Streamlit + backend
-# subprocesses have printed.
-_LOGS_DIR = ROOT / "logs"
-_pointer = _LOGS_DIR / "current.log"
-_session_log = None
-if _pointer.exists():
-    try:
-        _p = _pointer.read_text(encoding="utf-8-sig").strip()  # utf-8-sig strips BOM
-        if _p and Path(_p).exists():
-            _session_log = Path(_p)
-    except Exception:
-        _session_log = None
-
+# Compact spend + error line. The `\$` escapes are LOAD-BEARING — Streamlit
+# hands runs of `$...$` in markdown to KaTeX, which crashes on emoji
+# ("No character metrics for '🔴' in style 'Main-Regular'"). Don't unescape.
 st.sidebar.markdown("---")
-with st.sidebar.expander("🪵 Backend log", expanded=False):
-    if _session_log is None:
-        st.caption(
-            "No active session log. Launch via `start.ps1` to capture "
-            "Streamlit + backend stdout/stderr here."
-        )
-    else:
-        st.caption(f"`{_session_log.name}`")
-        try:
-            import re as _re
-            _size = _session_log.stat().st_size
-            _cap = 12_000  # keep the sidebar render fast
-            with open(_session_log, "rb") as _lf:
-                if _size > _cap:
-                    _lf.seek(_size - _cap)
-                    _raw = b"...[truncated]\n" + _lf.read()
-                else:
-                    _raw = _lf.read()
-            # PowerShell writes logs as UTF-16 LE (BOM \xff\xfe); fall back to UTF-8
-            if _raw[:2] in (b'\xff\xfe', b'\xfe\xff'):
-                _txt = _raw.decode("utf-16", errors="replace")
-            else:
-                _txt = _raw.decode("utf-8", errors="replace")
-            # Strip ANSI escape codes (colors, cursor moves, etc.)
-            _txt = _re.sub(r'\x1b\[[0-9;]*[mGKHF]', '', _txt)
-            # Strip carriage returns left by Windows line endings
-            _txt = _txt.replace('\r', '')
-            st.code(_txt or "(empty)", language="text", height=300)
-        except Exception as _e:
-            st.caption(f"(read error: {_e})")
-        if st.button("🔄 Refresh log", key="sidebar_log_refresh",
-                     width='stretch'):
-            st.rerun()
+st.sidebar.caption(
+    f"{_today_emoji} today **\\${_today_cost:.2f}** · "
+    f"**\\${_lt_cost:.2f}** lifetime · {_lt_calls:,} calls"
+)
+if _err_caption:
+    st.sidebar.caption(_err_caption)
 
-# -------- Recent background runs (agent subprocesses) --------
-with st.sidebar.expander("📜 Recent background runs", expanded=False):
-    _recent = scan_runner.list_runs(limit=8)
-    if not _recent:
-        st.caption("No runs recorded yet.")
-    else:
-        for _r in _recent:
-            _state = _r.get("state", "?")
-            _icon = {"running": "🟢", "finished": "✅",
-                     "failed": "❌", "stopped": "⚪"}.get(_state, "•")
-            st.caption(
-                f"{_icon} **{_r.get('label', '?')}** · {_r.get('started_at', '')}"
-            )
-        if st.button("Open Admin → Runs for details",
-                     key="sidebar_go_admin_runs",
-                     width='stretch'):
-            # Streamlit doesn't have programmatic page switching for radios;
-            # nudge the user.
-            st.info("Pick ⚙️ Admin from the navigator above.")
-
-st.sidebar.markdown("---")
-st.sidebar.caption("Project root")
-st.sidebar.code(str(ROOT), language="text")
+# Compact API + Gmail status footer. When the API key + Gmail are both
+# healthy, we deferred the full cards (top of sidebar) — surface them here
+# as one-line captions so the user still has at-a-glance confirmation.
+if _api_compact or _gmail_compact:
+    st.sidebar.markdown("---")
+    if _api_compact:
+        api_key.render_compact_status()
+    if _gmail_compact:
+        gmail_ui.render_compact_status()
 
 tr = load_tracker()
 crm = load_crm()
@@ -2023,7 +2016,6 @@ if page == "🏠 Dashboard":
     week_end = week_start + timedelta(days=6)
     targets = meta.get("weekly_kpi_targets", {})
 
-    # ── Personalized greeting ─────────────────────────────────────────────
     _now = datetime.now()
     _greet = ("Good morning" if _now.hour < 12
               else "Good afternoon" if _now.hour < 17 else "Good evening")
@@ -2070,19 +2062,105 @@ if page == "🏠 Dashboard":
         _brief_ts_str = f"Brief refreshed {_bts.strftime('%b %d at %I:%M %p')}"
 
     # Greeting row
-    _gh1, _gh2 = st.columns([3, 1])
-    with _gh1:
-        st.markdown(f"## {_greet}, Saber 👋")
-        st.caption(
-            f"{today.strftime('%A, %B %d')} · {_brief_ts_str}"
-            if _brief_ts_str else today.strftime('%A, %B %d')
-        )
-    with _gh2:
-        if any_work_active and active_runs:
-            _running_lbl = active_runs[0].get("label", "job")
-            st.info(f"🟡 **{_running_lbl}** is running", icon="🚀")
-        elif any_work_active:
-            st.info("🟡 Pipeline running", icon="🚀")
+    st.markdown(f"## {_greet}, Saber 👋")
+    st.caption(
+        f"{today.strftime('%A, %B %d')} · {_brief_ts_str}"
+        if _brief_ts_str else today.strftime('%A, %B %d')
+    )
+
+    # ── Next Best Action hero ────────────────────────────────────────────
+    # ONE thing across all surfaces — picks the single highest-priority item
+    # so the answer to "what should I do right now" is decided pre-click.
+    # Lane multiplier privileges ALM-primary per feedback_positioning.md.
+    _nba_recs = (crm.get("recruiters") or []) + (crm.get("alumni_warm_intros") or [])
+    _nba = compute_next_best_action(jobs, _nba_recs, OUT_DIR / "outcome_proposals.json")
+    if _nba:
+        with st.container(border=True):
+            _nba_c1, _nba_c2 = st.columns([5, 2])
+            with _nba_c1:
+                st.markdown(
+                    f"<div style='font-size:0.78em;opacity:0.75;letter-spacing:0.04em;"
+                    f"text-transform:uppercase;font-weight:600;color:#6366f1'>"
+                    f"NEXT BEST ACTION</div>"
+                    f"<div style='font-size:1.15em;font-weight:600;margin:2px 0 4px 0'>"
+                    f"{_nba['label']}</div>"
+                    f"<div style='font-size:0.85em;opacity:0.75'>{_nba['sublabel']}</div>",
+                    unsafe_allow_html=True,
+                )
+            with _nba_c2:
+                _nba_kind = _nba.get("kind")
+                if _nba_kind == "tailor_or_apply" and _nba.get("job"):
+                    render_tailor_action_row(
+                        _nba["job"], key_prefix="nba",
+                        tracker_data=tr, tracker_path=TRACKER,
+                    )
+                elif _nba_kind == "followup" and _nba.get("job"):
+                    if st.button("📨 Open Follow-ups", key="nba_followup_btn",
+                                  width='stretch', type="primary"):
+                        st.session_state["_applyagent_nav"] = "🏠 Today"
+                        st.session_state["_nav_sub_🏠 Today"] = "Follow-ups"
+                        st.rerun()
+                elif _nba_kind == "recruiter":
+                    if st.button("🤝 Open Network", key="nba_recruiter_btn",
+                                  width='stretch', type="primary"):
+                        st.session_state["_applyagent_nav"] = "🤝 Network"
+                        st.rerun()
+                elif _nba_kind == "outcome":
+                    if st.button("✅ Open Replies", key="nba_outcome_btn",
+                                  width='stretch', type="primary"):
+                        st.session_state["_applyagent_nav"] = "🏠 Today"
+                        st.session_state["_nav_sub_🏠 Today"] = "Replies"
+                        st.rerun()
+
+    # ── Since-you-last-looked strip ───────────────────────────────────────
+    # Persist last_visit_at to ~/.applyagent/session.json. On render: count
+    # changes since that timestamp across 4 axes (new Founds, recruiter
+    # responses, new follow-up overdues, new Gmail outcome proposals) and
+    # render a compact line. First-visit ever: silent.
+    _last_visit = read_last_visit()
+    if _last_visit is not None and (datetime.now() - _last_visit).total_seconds() >= 1800:
+        # Only render if ≥30min since last visit — otherwise it's just a refresh.
+        _slv_new_found = 0
+        _slv_new_overdue = 0
+        _slv_new_responses = 0
+        _slv_proposals = 0
+        for _j in jobs:
+            _df = parse_date(_j.get("date_found"))
+            if _df and datetime.combine(_df, datetime.min.time()) >= _last_visit:
+                if int(_j.get("fit_score_numeric") or 0) >= 4:
+                    _slv_new_found += 1
+            for _o in (_j.get("outreach_log") or []):
+                _od = parse_date(_o.get("date"))
+                if (_od and datetime.combine(_od, datetime.min.time()) >= _last_visit
+                        and _o.get("type") == "response"):
+                    _slv_new_responses += 1
+            _next_due = parse_date((_j.get("followup_schedule") or {}).get("next_due"))
+            if _next_due and _last_visit.date() <= _next_due < today:
+                # next_due crossed into "overdue" territory in this window
+                _slv_new_overdue += 1
+        try:
+            _slv_props_path = OUT_DIR / "outcome_proposals.json"
+            if _slv_props_path.exists():
+                _slv_props = json.loads(_slv_props_path.read_text(encoding="utf-8"))
+                _slv_proposals = sum(
+                    1 for p in (_slv_props or [])
+                    if (p.get("evidence") or {}).get("checked_at", "") >= _last_visit.isoformat()
+                )
+        except Exception:
+            pass
+        _slv_parts = []
+        if _slv_new_found:    _slv_parts.append(f"**{_slv_new_found}** new Found")
+        if _slv_new_responses: _slv_parts.append(f"**{_slv_new_responses}** recruiter response{'s' if _slv_new_responses != 1 else ''}")
+        if _slv_new_overdue:  _slv_parts.append(f"**{_slv_new_overdue}** follow-up{'s' if _slv_new_overdue != 1 else ''} now overdue")
+        if _slv_proposals:    _slv_parts.append(f"**{_slv_proposals}** outcome proposal{'s' if _slv_proposals != 1 else ''}")
+        if _slv_parts:
+            _hrs = (datetime.now() - _last_visit).total_seconds() / 3600
+            _ago = f"{int(_hrs)}h" if _hrs >= 1 else f"{int(_hrs * 60)}m"
+            st.info(
+                f"📌 Since you last looked ({_ago} ago) · " + " · ".join(_slv_parts),
+                icon="✨",
+            )
+    write_last_visit()
 
     # Stat row
     _sc1, _sc2, _sc3, _sc4 = st.columns(4)
@@ -2106,16 +2184,7 @@ if page == "🏠 Dashboard":
         help="High-priority recruiters not yet contacted. Go to 🤝 Recruiter CRM.",
     )
 
-    # ── 🎯 TODAY'S QUEUE ─────────────────────────────────────────────────────
-    # Hero card: the answer to "what should I do right now?". Three buckets,
-    # ranked. Each item has a one-click action so the daily session can be
-    # driven from this card alone instead of bouncing across 4 pages.
-    #
-    #   Apply now: tracker rows in Found/Watch with high fit, ordered by
-    #              urgency (urgency=High first, then by fit_score_numeric).
-    #   Follow up: tracker rows past followup_schedule.next_due, OR
-    #              applied ≥3d ago with no recent outreach.
-    #   Reach out: high-priority CRM recruiters not yet contacted.
+    # ── Today's queue ──
     _APPLY_STATUSES = {"Found", "Watch", "Tailoring"}
     _NO_FOLLOWUP_STATUSES = {"Rejected", "Withdrawn", "Offer", "Expired"}
     _today_apply_now = []
@@ -2186,6 +2255,18 @@ if page == "🏠 Dashboard":
                     + (f" of {len(_today_apply_now)}"
                        if len(_today_apply_now) > 5 else "")
                 )
+                # Brief-by-url lookup: if a queue entry matches today's brief
+                # entry, surface the brief's verdict-color pill so the merged
+                # card has both the verdict AND the action rows.
+                _brief_by_url = {}
+                if _brief_is_today and _brief_entries_top:
+                    for _br in _brief_entries_top:
+                        _u = _br.get("link") or ""
+                        if _u:
+                            _brief_by_url[_u] = _br
+                _VERDICT_LABEL = {"apply_now": "✅ Apply now",
+                                  "tailor_and_apply": "✍️ Tailor & apply",
+                                  "watch": "👀 Watch"}
                 for _j in _today_apply_now[:5]:
                     _co = _j.get("company", "?")
                     _ti = _j.get("title", "?")[:80]
@@ -2193,7 +2274,17 @@ if page == "🏠 Dashboard":
                     _urg = _j.get("urgency", "")
                     _crm_n = len(crm_contacts_at_company(crm, _co))
                     _has_t = bool(_find_tailor_docs(_j))
+                    _br_match = _brief_by_url.get(_j.get("url", ""))
+                    _verdict = (_br_match.get("fit", {}).get("fit_verdict")
+                                if _br_match else None)
+                    _vcolor = VERDICT_COLORS.get(_verdict or "", "")
+                    _vlabel = _VERDICT_LABEL.get(_verdict or "", "")
                     _badges = []
+                    if _vlabel and _vcolor:
+                        _badges.append(
+                            f"<span style='color:{_vcolor};font-weight:600'>"
+                            f"{_vlabel}</span>"
+                        )
                     if _urg == "High":
                         _badges.append("🔴 urgent")
                     if _crm_n:
@@ -2203,7 +2294,8 @@ if page == "🏠 Dashboard":
                     _badge_str = "  ·  ".join(_badges) if _badges else ""
                     st.markdown(
                         f"**{_co}** — {_ti}  ·  fit **{_fit}/10**  "
-                        f"{('· ' + _badge_str) if _badge_str else ''}"
+                        f"{('· ' + _badge_str) if _badge_str else ''}",
+                        unsafe_allow_html=True,
                     )
                     render_tailor_action_row(
                         _j, key_prefix="today_q", tracker_data=tr,
@@ -2243,16 +2335,10 @@ if page == "🏠 Dashboard":
         render_tailor_drawer(jobs, tr, TRACKER)
         st.markdown("")  # tiny breather before campaign progress
 
-    # ---------- Quick actions — one-click entry points ----------
-    # Before this, the landing page had metrics and banners but no way
-    # to START work without navigating to 🎯 Pipeline first. Now the
-    # three most-used agents are one click from load. Disabled states
-    # and tooltips explain why a button is unavailable (key missing,
-    # pipeline already running, Gmail not connected).
+    # ── Quick actions ──
     _dash_key_ok = api_key.is_key_valid()
     _dash_gmail_ok = gmail_ui.is_connected()
     _dash_can_run_llm = _dash_key_ok and not pipeline_running
-    # --- Active-run banner in main content (persists across reruns) ---
     _last = st.session_state.get("_last_launch")
     if _last:
         _banner_run = next((r for r in active_runs if r["run_id"] == _last["run_id"]), None)
@@ -2362,11 +2448,6 @@ if page == "🏠 Dashboard":
     # at the natural next-step location.
     render_gmail_trash_panel()
 
-    # ---------- Compact status strip ----------
-    # Previously three stacked banners. Now: one caption line if nothing is
-    # running, or a progress bar for live scoring, or a one-line "X running"
-    # banner. Eliminates 3 banners' worth of vertical chrome on every page
-    # load when nothing interesting is happening.
     _sp = load_scorer_progress()
     _scorer_live = bool(_sp and _sp.get("state") == "running")
     if _scorer_live:
@@ -2395,51 +2476,7 @@ if page == "🏠 Dashboard":
             f"Inspect tab on Pipeline for results."
         )
 
-    # ── Today's top picks preview ─────────────────────────────────────────
-    # Shows the top 3 brief entries as compact action cards RIGHT at the top
-    # so the user sees what to work on the moment they open the Dashboard.
-    if _brief_is_today and _brief_entries_top:
-        st.markdown("#### 🌅 Today's top picks")
-        _VERDICT_COLOR = {"apply_now": "#10b981", "tailor_and_apply": "#f59e0b", "watch": "#6366f1"}
-        _VERDICT_LABEL = {"apply_now": "✅ Apply now", "tailor_and_apply": "✍️ Tailor & apply", "watch": "👀 Watch"}
-        for _bi, _br in enumerate(_brief_entries_top, 1):
-            _bf = _br.get("fit") or {}
-            _bscore = int(_bf.get("fit_score") or 0)
-            _bverdict = _bf.get("fit_verdict", "")
-            _bcolor = _VERDICT_COLOR.get(_bverdict, "#6b7280")
-            _bvlabel = _VERDICT_LABEL.get(_bverdict, _bverdict)
-            _bfb = freshness_badge(_br.get("posted_date"), _br.get("found_at"))
-            _bsummary = _bf.get("summary", "")
-            _bgaps = _bf.get("gaps", "")
-            _blink = _br.get("link", "")
-            with st.container(border=True):
-                _hcol, _scol, _acol = st.columns([6, 2, 1])
-                with _hcol:
-                    st.markdown(
-                        f"<div style='font-size:1.05em;font-weight:600;margin-bottom:2px'>"
-                        f"<span style='color:{_bcolor};font-size:1.3em;margin-right:6px'>{_bi}.</span>"
-                        f"{_br.get('company','')} — {_br.get('title','')}</div>"
-                        f"<div style='font-size:0.82em;opacity:0.65'>{_bfb}</div>",
-                        unsafe_allow_html=True,
-                    )
-                    if _bsummary:
-                        st.caption(_bsummary)
-                    if _bgaps:
-                        st.caption(f"⚠️ Gaps: {_bgaps}")
-                with _scol:
-                    st.metric("Fit score", f"{_bscore}/10")
-                    st.markdown(
-                        f"<div style='font-size:0.78em;color:{_bcolor};font-weight:600'>"
-                        f"{_bvlabel}</div>",
-                        unsafe_allow_html=True,
-                    )
-                with _acol:
-                    if _blink:
-                        st.link_button("🔗 Open", _blink, width='stretch')
-
-        st.markdown("---")
-
-    elif not _brief_is_today:
+    if not _brief_is_today:
         # No today brief — clear call to action
         _brief_age_msg = ""
         if _brief_now and _brief_date_raw_top:
@@ -2458,7 +2495,6 @@ if page == "🏠 Dashboard":
         )
         st.markdown("---")
 
-    # ── Campaign progress + pipeline funnel ──────────────────────────────────
     _camp_start_str = meta.get("campaign_start", "2026-05-03")
     _camp_end_str   = meta.get("campaign_end", "2026-07-12")
     try:
@@ -2509,61 +2545,62 @@ if page == "🏠 Dashboard":
                         )
                 st.markdown("  ·  ".join(_funnel_parts))
             else:
-                st.caption("No jobs in active stages yet — start applying!")
+                st.caption("No jobs in active stages yet — apply to get started.")
 
-    # ── 7-day activity strip ──────────────────────────────────────────────────
+    # ── 7-day activity strip — lane-split (ALM / Vendor / Other) ─────────────
+    # Per feedback_positioning.md, Saber wants ALM-primary throughput visible
+    # separately from vendor-platform secondary. Stack the daily applied bar
+    # by lane so a glance shows whether the week's volume is hitting the
+    # ALM-primary target or skewing toward vendor/other.
+    import altair as _alt_strip
     _act_days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
-    _act_applied  = {d: 0 for d in _act_days}
+    _act_lane_map = {"ALM": "ALM", "VAL": "Vendor"}
+    _act_applied: dict[tuple, int] = {(d, lane): 0 for d in _act_days
+                                      for lane in ("ALM", "Vendor", "Other")}
     _act_outreach = {d: 0 for d in _act_days}
     for _aj in jobs:
         _ad = parse_date(_aj.get("date_applied"))
-        if _ad and _ad in _act_applied:
-            _act_applied[_ad] += 1
+        if _ad and _ad in _act_outreach:
+            _lane = _act_lane_map.get((_aj.get("primary_variant") or "").upper(), "Other")
+            _act_applied[(_ad, _lane)] += 1
         for _ol in (_aj.get("outreach_log") or []):
             _od = parse_date(_ol.get("date"))
             if _od and _od in _act_outreach:
                 _act_outreach[_od] += 1
     with st.container(border=True):
-        st.markdown("##### 📆 Last 7 days")
-        _sp_cols = st.columns(7)
-        for _di, _dd in enumerate(_act_days):
-            _n_app = _act_applied[_dd]
-            _n_out = _act_outreach[_dd]
-            _lbl = "**Today**" if _dd == today else f"{_dd.strftime('%a')} {_dd.day}"
-            _delta_str = f"+{_n_out} outreach" if _n_out else None
-            _sp_cols[_di].metric(
-                _lbl,
-                f"{_n_app} app{'s' if _n_app != 1 else ''}",
-                delta=_delta_str,
-                delta_color="normal" if _n_out else "off",
-                help=f"{_dd.strftime('%B %d')}: {_n_app} applied, {_n_out} outreach",
+        _total_app = sum(_act_applied.values())
+        _total_out = sum(_act_outreach.values())
+        st.markdown(f"##### 📆 Last 7 days — **{_total_app}** applied · "
+                    f"**{_total_out}** outreach")
+        _strip_df = pd.DataFrame([
+            {"day": _dd.strftime("%a %d"), "lane": _lane, "n": _act_applied[(_dd, _lane)],
+             "order": {"ALM": 0, "Vendor": 1, "Other": 2}[_lane]}
+            for _dd in _act_days for _lane in ("ALM", "Vendor", "Other")
+        ])
+        _strip_chart = (
+            _alt_strip.Chart(_strip_df)
+            .mark_bar()
+            .encode(
+                x=_alt_strip.X("day:N", title=None, sort=None),
+                y=_alt_strip.Y("n:Q", title="Applied", stack="zero"),
+                color=_alt_strip.Color("lane:N", title="Lane",
+                    scale=_alt_strip.Scale(
+                        domain=["ALM", "Vendor", "Other"],
+                        range=["#16a34a", "#f59e0b", "#94a3b8"])),
+                order=_alt_strip.Order("order:Q", sort="ascending"),
+                tooltip=["day:N", "lane:N", "n:Q"],
             )
+            .properties(height=140)
+        )
+        st.altair_chart(_strip_chart, use_container_width=True)
+        st.caption(" · ".join(
+            f"**{_dd.strftime('%a')}** {sum(_act_applied[(_dd, l)] for l in ('ALM','Vendor','Other'))}a / {_act_outreach[_dd]}o"
+            for _dd in _act_days
+        ))
 
     st.markdown("---")
 
-    # (Game Plan removed -- Today's Queue hero card above already covers
-    # overdue follow-ups, review queue count, and weekly goal.)
-
-    # (CRM urgency alert removed -- stat row metric + sidebar badge cover this)
-
-    # (KPI row removed -- stat row above already shows this week's numbers)
-
-    # ---------- Attention queue — consolidated 'needs your eyes today' ----------
-    # Five buckets, each with a default action the user can see at a glance:
-    #   1. Tier-1 Found without tailor draft → run tailor
-    #   2. Tier-1 promoted with CRM contact at company → warm intro before cold apply
-    #   3. High-scored roles with no/short JD → verify JD, consider rescore
-    #   4. Tracker entries that errored during scoring → rescore
-    #   5. Tracker entries missing primary_variant (pre-variant-upgrade) → rescore
-    # This is the "first thing you should look at" list — all other widgets support it.
-
-    # Bucket 1 — Tier-1 Found, no tailor draft.
-    # jd_tailor.py writes {safe_company}_{safe_role}_{stamp}.md — it does NOT
-    # embed the job_id. The old job_id substring-glob returned [] for almost
-    # every role (false NEGATIVE — said "no draft" when a draft existed, or
-    # said "draft exists" when another role's company name collided). Reproduce
-    # jd_tailor's safe-name transform and check for the final .md (dry-run
-    # previews with _prompt.md suffix don't count as a real draft).
+    # ── Attention queue ──
     def _tailor_safe_dash(s: str, cap: int | None = None) -> str:
         out = re.sub(r"[^a-zA-Z0-9]+", "_", s or "").strip("_")
         return out[:cap] if cap else out
@@ -2736,9 +2773,7 @@ if page == "🏠 Dashboard":
 
         st.markdown("---")
 
-    # ---------- Pipeline health — freshness + coverage gaps ----------
-    # Surfaces scan age, zero-result companies, scored-file health so Saber
-    # can see if data is stale or the scraper is quietly failing somewhere.
+    # ── Pipeline health ──
     scan_p = latest_scan()
     scored_p = latest_scored()
     scan_age_days = None
@@ -2790,10 +2825,6 @@ if page == "🏠 Dashboard":
             "may be down."
         )
 
-    # Only render the health block when there is a genuine ISSUE. A fresh
-    # scan with no problems used to trigger the full 4-metric widget; now
-    # it stays silent. Sidebar auto-refresh and freshness on Quick-actions
-    # already show "fresh scan" without taking a full row.
     if health_issues:
         st.subheader("📊 Pipeline health")
         hc1, hc2, hc3, hc4 = st.columns(4)
@@ -2818,17 +2849,8 @@ if page == "🏠 Dashboard":
                 st.info(issue, icon="📊")
         if scan_zero_cos:
             with st.expander(
-                f"⚠ {len(scan_zero_cos)} companies returned 0 candidates "
-                "— possible ATS gaps"
+                f"⚠ {len(scan_zero_cos)} companies returned 0 candidates"
             ):
-                st.caption(
-                    "Companies where the scraper found nothing this run. "
-                    "Usually means: (a) the ATS adapter isn't configured, "
-                    "(b) LinkedIn guest search hides their listings, or "
-                    "(c) LinkedIn rate-limited the run. If one recurs weekly, "
-                    "it's worth adding a dedicated ATS adapter."
-                )
-                # Group by sector if we have the per-company diag
                 try:
                     diag = json.loads(scan_p.read_text(encoding="utf-8"))\
                                 .get("diagnostics") or {}
@@ -2850,11 +2872,8 @@ if page == "🏠 Dashboard":
                               width='stretch', height=min(400, 40 + 30 * len(rows)))
         st.markdown("---")
 
-    # (Urgent widget removed -- Today's Queue already shows apply-now roles with freshness)
 
-    # ---------- Morning brief widget — today's 2-3 fresh matches ----------
-    # Today's brief is always-visible (no expander). Stale briefs (>0 days)
-    # are collapsed into a small expander to save space.
+
     brief = load_morning_brief()
     if brief:
         brief_date_raw = brief.get("brief_date", "")
@@ -3003,34 +3022,15 @@ if page == "🏠 Dashboard":
                                 st.warning("Already in tracker.")
         st.markdown("---")
 
-    # ---------- Inbox signals widget (Gmail) ----------
     if gmail_ui.is_connected():
-        # Cache for 2 min so page reruns don't hammer IMAP
-        @st.cache_data(ttl=120)
-        def _load_inbox(days: int):
-            sys.path.insert(0, str(ROOT / "automation"))
-            import gmail_reader as gr
-            msgs = gr.fetch_inbox_signals(days=days, limit=50)
-            return [
-                {"uid": m.uid, "date": m.date, "kind": m.kind,
-                 "sender": m.sender or m.sender_email,
-                 "sender_email": m.sender_email,
-                 "subject": m.subject, "snippet": m.snippet}
-                for m in msgs
-            ]
         try:
-            inbox = _load_inbox(14)
+            inbox = _load_inbox_signals(14)
         except Exception as e:
             inbox = []
             st.caption(f"Gmail load failed: {e}")
         alerts = [x for x in inbox if x["kind"] == "alert"]
         recruiters = [x for x in inbox if x["kind"] == "recruiter"]
 
-        # Build a quick "which tracker roles plausibly sent this email" lookup.
-        # Match on either (a) tracker URL host matches sender domain, or
-        # (b) tracker company name token appears in subject/sender text.
-        # Generic ATS hosts (myworkdayjobs.com, greenhouse.io, lever.co) are
-        # NOT used as domain matches — they'd match every company.
         _GENERIC_ATS_HOSTS = {
             "myworkdayjobs.com", "workdayjobs.com", "wd3.myworkdayjobs.com",
             "greenhouse.io", "lever.co", "icims.com", "successfactors.com",
@@ -3078,17 +3078,12 @@ if page == "🏠 Dashboard":
                     hits.append(entry["job"])
             return hits
 
-        # Pre-compute matches so we can report how many recruiter emails
-        # plausibly map to applied roles.
         recruiter_matches = [
             (r, _match_mail_to_tracker(r["sender_email"], r["subject"]))
             for r in recruiters
         ]
         matched_n = sum(1 for _, hits in recruiter_matches if hits)
 
-        # Highlight: recruiter emails matched to Applied roles are likely
-        # status-change signals. ONLY render the banner when there are real
-        # matches — otherwise the Inbox section stays collapsed and quiet.
         applied_matches = [
             (r, [j for j in hits if j.get("status") in (
                 "Applied", "Recruiter_Screen", "Phone_Screen",
@@ -3103,8 +3098,6 @@ if page == "🏠 Dashboard":
                 icon="📨",
             )
 
-        # Compact: single outer expander, metrics inside. When there are
-        # no applied-matches the whole section stays collapsed.
         _inbox_title = (f"📬 Inbox signals (14d) · "
                          f"{len(recruiters)} recruiter · "
                          f"{matched_n} tracker-match · "
@@ -3145,13 +3138,6 @@ if page == "🏠 Dashboard":
                            "signals — open Kanban and move the role accordingly.")
         st.markdown("---")
 
-    # (Follow-up nudge removed -- Today's Queue + Follow-ups subpage cover this)
-
-    # ---------- Collapsed: pipeline bar-chart + apply-this-week ----------
-    # Both are reference-only. Fold into a single expander so they don't
-    # chew two full screens of vertical space on load. Quick-actions block
-    # at the top of the page already covers the "run something" need; the
-    # older duplicate set (Run full / Fast / Weekly report) was removed.
     with st.expander("📈 Pipeline chart · apply-this-week queue", expanded=False):
         status_counts = (jobs_df["status"].value_counts()
                            if "status" in jobs_df.columns else pd.Series())
@@ -3181,13 +3167,9 @@ if page == "🏠 Dashboard":
 
 
 # ============================================================================
-# 📥 OUTCOME INBOX  — recruiter-email + dead-URL proposals → tracker
 # ============================================================================
-# Surfaces every pending outcome_proposals.json entry (from gmail_outcome.py
-# AND url_check.py — both write the same file under safe_json locks) so the
-# user can accept / reject status transitions in one place. Turns the
-# tracker from write-only into a learning loop: replies become Phone_Screen,
-# dead URLs become Expired, all without manual JSON editing.
+# 📥 OUTCOME INBOX
+# ============================================================================
 elif page == "📥 Outcome Inbox":
     st.title("📥 Outcome Inbox")
     st.caption(
@@ -3198,8 +3180,6 @@ elif page == "📥 Outcome Inbox":
 
     _OI_PROPOSALS_PATH = OUT_DIR / "outcome_proposals.json"
 
-    # --- Load proposals (reads via safe_json lock so a concurrent gmail
-    # ---  fetch doesn't tear the file under us). ---
     try:
         from safe_json import read_json as _oi_read, mutate_json as _oi_mutate
     except ImportError:
@@ -3293,9 +3273,7 @@ elif page == "📥 Outcome Inbox":
                     _oi_log = scan_runner.tail_log(_oi_rec.get("log_path", ""), 6000)
                     st.code(_oi_log or "(no output yet)", language="text")
                     if _oi_state == "running":
-                        st.caption("↻ refreshing while running")
-                        # Light auto-refresh while the job is in flight
-                        st_autorefresh(interval=3000, key="_oi_log_autorefresh")
+                        st.caption("↻ refreshing while running (sidebar handles cadence)")
             except Exception:
                 pass
 
@@ -3382,7 +3360,7 @@ elif page == "📥 Outcome Inbox":
                           not in _oi_accepted_keys
                       ],
                       default=[])
-            st.cache_data.clear()
+            load_tracker.clear()
             st.toast(f"✅ Accepted {len(_oi_changed)} transition(s)", icon="📨")
             st.rerun()
 
@@ -3486,7 +3464,7 @@ elif page == "📥 Outcome Inbox":
                 if st.button("✅", key=_oi_acc_key,
                               help="Accept this transition — applies to "
                                    "tracker + removes from inbox",
-                              use_container_width=True):
+                              width='stretch'):
                     from safe_json import mutate_json as _oi_mut4
                     if not _oi_jid:
                         st.error("Proposal has no job_id; cannot apply.")
@@ -3528,7 +3506,7 @@ elif page == "📥 Outcome Inbox":
                                     != _oi_my_key]
 
                         _oi_mut4(_OI_PROPOSALS_PATH, _oi_drop_one, default=[])
-                        st.cache_data.clear()
+                        load_tracker.clear()
                         st.toast(f"✅ {_oi_company}: {_oi_cur} → {_oi_prop}",
                                   icon="📨")
                         st.rerun()
@@ -3536,7 +3514,7 @@ elif page == "📥 Outcome Inbox":
                 _oi_rej_key = f"_oi_reject_{_oi_idx}_{_oi_jid}"
                 if st.button("❌ Reject", key=_oi_rej_key,
                               help="Drop this proposal. Tracker unchanged.",
-                              use_container_width=True):
+                              width='stretch'):
                     from safe_json import mutate_json as _oi_mut5
                     _oi_my_key = (_oi_jid, _oi_prop, _oi_src_raw,
                                    _oi_ev.get("email_id", ""))
@@ -3683,7 +3661,7 @@ elif page == "🎯 Pipeline":
                 st.markdown(f"{_state_icon} **{_last_event_label}**")
                 st.caption(f"{_last_event_state} · {fmt_dt(_last_event_time)}")
             else:
-                st.caption("No runs recorded yet.")
+                st.caption("No background runs yet — launch one from 🎯 Pipeline.")
         with la2:
             if _last_event_detail:
                 st.caption(_last_event_detail)
@@ -4175,17 +4153,18 @@ elif page == "🎯 Pipeline":
 
         def _big_number(col, emoji, label, value, sub=""):
             col.markdown(f"<div style='text-align:center'>"
-                         f"<div style='font-size:1.6em'>{emoji}</div>"
-                         f"<div style='font-size:2em; font-weight:600'>{value if value is not None else '—'}</div>"
-                         f"<div style='font-size:0.85em; opacity:0.8'>{label}</div>"
-                         f"<div style='font-size:0.75em; opacity:0.6'>{sub}</div>"
+                         f"<div style='font-size:1.2em'>{emoji}</div>"
+                         f"<div style='font-size:1.4em; font-weight:600; line-height:1.2'>"
+                         f"{value if value is not None else '—'}</div>"
+                         f"<div style='font-size:0.8em; opacity:0.8'>{label}</div>"
+                         f"<div style='font-size:0.7em; opacity:0.6'>{sub}</div>"
                          f"</div>",
                          unsafe_allow_html=True)
 
         def _arrow(col, label=""):
-            col.markdown(f"<div style='text-align:center; padding-top:18px'>"
-                         f"<div style='font-size:1.8em; opacity:0.4'>→</div>"
-                         f"<div style='font-size:0.75em; opacity:0.7'>{label}</div>"
+            col.markdown(f"<div style='text-align:center; padding-top:14px'>"
+                         f"<div style='font-size:1.3em; opacity:0.4'>→</div>"
+                         f"<div style='font-size:0.7em; opacity:0.7'>{label}</div>"
                          f"</div>",
                          unsafe_allow_html=True)
 
@@ -4281,10 +4260,12 @@ elif page == "🎯 Pipeline":
     except Exception:
         pass
 
-    tabs = st.tabs(["📋 Worklist", "🎯 Scored", "🚀 Run", "📜 History"])
+    _tab_worklist, _tab_scored, _tab_run, _tab_history = st.tabs(
+        ["📋 Worklist", "🎯 Scored", "🚀 Run", "📜 History"]
+    )
 
     # ================== TAB: Worklist ==================
-    with tabs[0]:
+    with _tab_worklist:
         _wl_path = OUT_DIR / "worklist.json"
         if not _wl_path.exists():
             st.info("No worklist built yet. Run a scrape first.")
@@ -4350,7 +4331,7 @@ elif page == "🎯 Pipeline":
                 )
 
     # ================== TAB: Run ==================
-    with tabs[2]:
+    with _tab_run:
         # --- Quick actions: the 3 things the user actually does ---
         # Buttons FIRST, config SECOND. Most visits to this page are
         # "launch something" or "check what's running". The detailed
@@ -4502,7 +4483,7 @@ elif page == "🎯 Pipeline":
             st.dataframe(pd.DataFrame(_rr_rows), hide_index=True, width='stretch',
                          height=min(220, 40 + 36 * len(_rr_rows)))
         else:
-            st.caption("No runs recorded. Launch something above.")
+            st.caption("No background runs yet — launch one above.")
 
         # --- Advanced config (collapsed by default) ---
         st.markdown("---")
@@ -4567,7 +4548,6 @@ elif page == "🎯 Pipeline":
                 st.rerun()
 
         # ---------- Score a single URL (expander inside Run tab) ----------
-        # Kept from the old tabs[1]. Paste any URL → fresh LLM fit score.
         st.markdown("---")
         with st.expander("🔗 Score a single URL (ad-hoc, no scan needed)",
                           expanded=False):
@@ -4651,16 +4631,16 @@ elif page == "🎯 Pipeline":
                                 st.markdown("**Gaps:** " + "; ".join(gaps))
                         if add_to_tr and "Added" in (res.stderr or ""):
                             st.success("✅ Added to tracker. Reload the Kanban to see it.")
-                            st.cache_data.clear()
+                            load_tracker.clear()
                         with st.expander("Raw scorer output"):
                             st.code(json.dumps(fit, indent=2), language="json")
 
     # ================== TAB: Scored ==================
-    with tabs[1]:
+    with _tab_scored:
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
         if not scored_files:
-            st.info("No scored scan available. Run the scorer first.")
+            st.info("No scored scan yet — run the scorer first.")
         else:
             which = st.selectbox("Scored file", [p.name for p in scored_files], key="triage_file")
             sc = json.loads((OUT_DIR / which).read_text(encoding="utf-8"))
@@ -4896,10 +4876,10 @@ elif page == "🎯 Pipeline":
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
     # ================== TAB: History ==================
-    with tabs[3]:
+    with _tab_history:
         pipelines = list_pipelines(50)
         if not pipelines:
-            st.caption("No pipeline runs yet.")
+            st.caption("No pipeline runs yet — launch one from the Run tab.")
         else:
             rows = []
             for p in pipelines:
@@ -4951,7 +4931,7 @@ elif page == "🎯 Pipeline":
         st.subheader("🕒 Recent Pipeline Runs")
         _runs = list_pipelines(20)
         if not _runs:
-            st.info("No pipeline runs yet. Hit **Run pipeline** to start one.")
+            st.info("No pipeline runs yet — launch one from the Run tab above.")
         else:
             _badge = {"finished": "✅ finished", "failed": "❌ failed",
                       "crashed": "💥 crashed", "running": "🔄 running",
@@ -5050,7 +5030,7 @@ elif page == "📋 Jobs Kanban":
     st.markdown("---")
 
     if jobs_df.empty:
-        st.warning("Tracker is empty.")
+        st.info("Tracker is empty — promote a scored job from 🎯 Pipeline.")
         st.stop()
 
     # Derive gta_area for every row — prefer explicit location, fall back to
@@ -5117,39 +5097,9 @@ elif page == "📋 Jobs Kanban":
     st.caption(f"Showing {len(view)} of {len(jobs_df)} roles" + (" (filtered)" if _filter_active else ""))
 
     # Enrich view with a "draft" indicator based on whether a tailor output
-    # exists for this role. jd_tailor.py writes:
-    #   {safe_company}_{safe_role}_{YYYYMMDD}.md        (final, real run)
-    #   {safe_company}_{safe_role}_{YYYYMMDD}_prompt.md (dry-run preview)
-    # where safe_company/safe_role use re.sub(r"[^a-zA-Z0-9]+", "_", ...).
-    # Job_id is NOT in the filename — the previous implementation globbed on
-    # a job_id substring, which almost always returned [] (false NEGATIVE).
-    # Fix: reproduce jd_tailor's safe-name transform from the tracker's
-    # company + title and match exact-prefix, preferring final over dry-run.
-    def _tailor_safe(s: str, cap: int | None = None) -> str:
-        out = re.sub(r"[^a-zA-Z0-9]+", "_", s or "").strip("_")
-        return out[:cap] if cap else out
-
-    # Tailor outputs moved to outputs/tailored/ in May 2026 — check there
-    # first, fall back to outputs/ for legacy *.md files written before the
-    # split. Eventually outputs/ fallback can be removed.
-    _tailored_dir = OUT_DIR / "tailored"
-
-    def _has_draft_for(company: str, title: str) -> str:
-        sc = _tailor_safe(company, None)
-        sr = _tailor_safe(title, 60)
-        if not sc or not sr:
-            return ""
-        for _root in (_tailored_dir, OUT_DIR):
-            if not _root.exists():
-                continue
-            final = [p for p in _root.glob(f"{sc}_{sr}_*.md")
-                     if not p.name.endswith("_prompt.md")]
-            if final:
-                return "📄 ready"
-            if list(_root.glob(f"{sc}_{sr}_*_prompt.md")):
-                return "📝 preview"
-        return ""
-
+    # exists for this role. Uses the canonical _find_tailor_docs() helper
+    # (defined near the top of this file) so the lookup matches every other
+    # tailor-doc check across the UI.
     # Load url_history once and enrich rows with posted/found
     _url_hist_path = OUT_DIR / "url_history.json"
     try:
@@ -5164,7 +5114,7 @@ elif page == "📋 Jobs Kanban":
     if "company" in view.columns and "title" in view.columns:
         view = view.assign(
             draft=view.apply(
-                lambda row: _has_draft_for(row.get("company", ""), row.get("title", "")),
+                lambda row: "📄 ready" if bool(_find_tailor_docs(row)) else "",
                 axis=1,
             )
         )
@@ -5250,7 +5200,7 @@ elif page == "📋 Jobs Kanban":
     )
     st.dataframe(
         _sorted_view,
-        hide_index=True, use_container_width=True, height=540,
+        hide_index=True, width='stretch', height=540,
         column_config=_col_config,
     )
 
@@ -5272,9 +5222,8 @@ elif page == "📋 Jobs Kanban":
             c1, c2 = st.columns(2)
             with c1:
                 # ── Header with tier badge ──────────────────────────────────
-                _tier_colors = {1: "#10b981", 2: "#3b82f6", 3: "#f59e0b", 4: "#6b7280"}
                 _job_tier = int(job.get("tier") or 4)
-                _tier_color = _tier_colors.get(_job_tier, "#6b7280")
+                _tier_color = TIER_COLORS.get(_job_tier, _C_GRAY)
                 _fit_num = int(job.get("fit_score_numeric") or 0)
                 _score_color = "#10b981" if _fit_num >= 8 else "#f59e0b" if _fit_num >= 6 else "#ef4444" if _fit_num > 0 else "#6b7280"
                 st.markdown(
@@ -5386,11 +5335,11 @@ elif page == "📋 Jobs Kanban":
                     st.success(f"Tailor started (`{rec.run_id}`). See Admin → Outputs.")
             with c2:
                 with st.form(f"edit_{sel_id}"):
-                    new_status = st.selectbox(
-                        "Status",
-                        options=tr["meta"].get("status_enum", ["Watch", "Found", "Applied"]),
-                        index=(tr["meta"].get("status_enum", []).index(job["status"])
-                               if job.get("status") in tr["meta"].get("status_enum", []) else 0))
+                    _kb_meta = tr.get("meta") or {}
+                    _kb_enum = _kb_meta.get("status_enum", ["Watch", "Found", "Applied"])
+                    _kb_status = job.get("status")
+                    _kb_idx = _kb_enum.index(_kb_status) if _kb_status in _kb_enum else 0
+                    new_status = st.selectbox("Status", options=_kb_enum, index=_kb_idx)
                     new_urgency = st.selectbox("Urgency", ["High", "Medium", "Low"],
                                                 index=["High", "Medium", "Low"].index(job.get("urgency", "Medium")))
                     new_date_applied = st.date_input("Date applied", parse_date(job.get("date_applied")) or None,
@@ -5418,7 +5367,7 @@ elif page == "📋 Jobs Kanban":
                     for j in tr["jobs"]:
                         if j["id"] == sel_id:
                             j["status"] = "Applied"
-                            seed_followup(j, date.today())
+                            seed_followup(j, applied_on=date.today())
                             break
                     save_tracker(tr)
                     st.success("Marked Applied; first follow-up in 3 days.")
@@ -5571,14 +5520,8 @@ elif page == "🤝 Recruiter CRM":
             sel = st.selectbox("Pick firm id to inspect/edit", rdf["id"].tolist())
             r = next((x for x in recs if x["id"] == sel), None)
             if r:
-                # Status pill
-                _crm_s_colors = {
-                    "Not_Contacted": "#6b7280", "Outreach_Sent": "#3b82f6",
-                    "Active": "#10b981", "Paused": "#f59e0b", "Closed": "#ef4444",
-                }
-                _crm_sc = _crm_s_colors.get(r.get("status",""), "#6b7280")
-                _crm_pri_colors = {"High": "#ef4444", "Medium": "#f59e0b", "Low": "#6b7280"}
-                _crm_pc = _crm_pri_colors.get(r.get("priority",""), "#6b7280")
+                _crm_sc = CRM_STATUS_COLORS.get(r.get("status", ""), _C_GRAY)
+                _crm_pc = PRIORITY_COLORS.get(r.get("priority", ""), _C_GRAY)
                 st.markdown(
                     f"<div style='margin:6px 0'>"
                     f"<span style='font-size:1.1em;font-weight:700'>{r['firm']}</span>"
@@ -5597,10 +5540,11 @@ elif page == "🤝 Recruiter CRM":
                 st.markdown(f"**Coverage:** {r.get('coverage','')}")
                 st.markdown(f"**Next action:** {r.get('next_action','')}")
                 with st.form(f"rec_{sel}"):
-                    new_status = st.selectbox("Status",
-                        crm.get("meta", {}).get("status_enum", ["Not_Contacted", "Outreach_Sent"]),
-                        index=max(0, crm.get("meta", {}).get("status_enum", []).index(r["status"]))
-                        if r.get("status") in crm.get("meta", {}).get("status_enum", []) else 0)
+                    _rec_enum = crm.get("meta", {}).get("status_enum",
+                                                          ["Not_Contacted", "Outreach_Sent"])
+                    _rec_status = r.get("status")
+                    _rec_idx = _rec_enum.index(_rec_status) if _rec_status in _rec_enum else 0
+                    new_status = st.selectbox("Status", _rec_enum, index=_rec_idx)
                     new_last = st.date_input("Last touchpoint", parse_date(r.get("last_touchpoint")))
                     new_notes = st.text_area("Notes", r.get("notes", ""))
                     if st.form_submit_button("Save"):
@@ -5911,7 +5855,7 @@ elif page == "📜 Scan History":
     st.markdown("### Pipeline runs")
     pipelines = list_pipelines(limit=200)
     if not pipelines:
-        st.info("No pipeline runs yet. Launch one from the 🎯 Pipeline page.")
+        st.info("No pipeline runs yet — launch one from the 🎯 Pipeline page.")
     else:
         pipe_rows = []
         for p in pipelines:
@@ -5947,7 +5891,7 @@ elif page == "📜 Scan History":
         key=lambda p: p.stat().st_mtime, reverse=True,
     )
     if not scan_files:
-        st.info("No scan files. Run the scraper.")
+        st.info("No scan files yet — run the scraper in 🎯 Pipeline.")
     else:
         scan_rows = []
         for f in scan_files:
@@ -6008,7 +5952,7 @@ elif page == "📜 Scan History":
     scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                           key=lambda p: p.stat().st_mtime, reverse=True)
     if not scored_files:
-        st.info("No scored files yet.")
+        st.info("No scored files yet — run the scorer in 🎯 Pipeline.")
     else:
         scored_rows = []
         for f in scored_files:
@@ -6126,6 +6070,48 @@ elif page == "⚙️ Admin":
                    f"updated {_ledger.get('updated_at', '—')}")
     except Exception as _le:
         st.error(f"Ledger read failed: {_le}")
+    st.markdown("---")
+
+    # ---------- Backend session log (start.ps1) ----------
+    # `logs/current.log` is a pointer file written by start.ps1 with the
+    # path to the active session log (Streamlit + backend stdout/stderr).
+    # PowerShell writes the pointer as UTF-8-with-BOM; the log itself is
+    # UTF-16 LE. Guard the decode either way and strip ANSI before display.
+    st.subheader("🪵 Backend session log")
+    _logs_dir = ROOT / "logs"
+    _pointer = _logs_dir / "current.log"
+    _session_log = None
+    if _pointer.exists():
+        try:
+            _p = _pointer.read_text(encoding="utf-8-sig").strip()
+            if _p and Path(_p).exists():
+                _session_log = Path(_p)
+        except Exception:
+            _session_log = None
+    if _session_log is None:
+        st.caption("No active session log. Launch via `start.ps1` to capture "
+                   "Streamlit + backend stdout/stderr here.")
+    else:
+        st.caption(f"`{_session_log.name}`")
+        try:
+            _size = _session_log.stat().st_size
+            _cap = 16_000
+            with open(_session_log, "rb") as _lf:
+                if _size > _cap:
+                    _lf.seek(_size - _cap)
+                    _raw = b"...[truncated]\n" + _lf.read()
+                else:
+                    _raw = _lf.read()
+            if _raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+                _txt = _raw.decode("utf-16", errors="replace")
+            else:
+                _txt = _raw.decode("utf-8", errors="replace")
+            _txt = re.sub(r"\x1b\[[0-9;]*[mGKHF]", "", _txt).replace("\r", "")
+            st.code(_txt or "(empty)", language="text", height=320)
+        except Exception as _le2:
+            st.caption(f"(read error: {_le2})")
+        if st.button("🔄 Refresh log", key="admin_session_log_refresh"):
+            st.rerun()
     st.markdown("---")
 
     # ---------- Error log ----------
@@ -6365,7 +6351,7 @@ elif page == "⚙️ Admin":
                 "size_kb": round(p.stat().st_size / 1024, 1),
                 "age_days": round((datetime.now().timestamp() - p.stat().st_mtime) / 86400, 1),
             } for p in sorted(_old_logs, key=lambda x: x.stat().st_mtime)]
-            st.dataframe(pd.DataFrame(_log_rows), hide_index=True, use_container_width=True)
+            st.dataframe(pd.DataFrame(_log_rows), hide_index=True, width='stretch')
 
             if st.button(
                 f"🗑 Delete {len(_old_logs)} old log files ({_total_log_kb:.0f} KB)",
@@ -6598,7 +6584,7 @@ elif page == "⚙️ Admin":
         with reset_tabs[0]:
             scans = reset_ops.list_scans()
             if not scans:
-                st.info("No scans on disk.")
+                st.info("No scans on disk yet — run the scraper in 🎯 Pipeline.")
             else:
                 labels = [
                     f"{s['stem']} · {s['rows']:,} rows · "
@@ -6844,7 +6830,7 @@ elif page == "⚙️ Admin":
 
     elif agent == "JD tailor":
         if jobs_df.empty:
-            st.warning("Tracker empty.")
+            st.info("Tracker is empty — nothing to archive yet.")
         else:
             c1, c2 = st.columns([3, 1])
             with c1:
@@ -6978,7 +6964,7 @@ elif page == "📊 Analytics":
                 if _an_score_counts.get(k)
             ))
         else:
-            st.info("No scored jobs yet — run the scoring stage in Pipeline.")
+            st.info("No scored jobs yet — run the scorer in 🎯 Pipeline.")
 
     st.markdown("---")
 
@@ -7012,15 +6998,13 @@ elif page == "📊 Analytics":
     with _an_col2_r:
         st.markdown("#### 🚦 Urgency breakdown")
         _an_urg_order  = ["High", "Medium", "Low", "Unknown"]
-        _an_urg_colors = {"High": "#ef4444", "Medium": "#f59e0b",
-                          "Low": "#10b981", "Unknown": "#94a3b8"}
         _an_urg_counts: dict = {}
         for _j in _an_jobs:
             _u = _j.get("urgency") or "Unknown"
             _an_urg_counts[_u] = _an_urg_counts.get(_u, 0) + 1
         _an_urg_df = pd.DataFrame([
             {"Urgency": k, "Jobs": _an_urg_counts.get(k, 0),
-             "Color": _an_urg_colors.get(k, "#94a3b8")}
+             "Color": URGENCY_COLORS.get(k, _C_SLATE)}
             for k in _an_urg_order if _an_urg_counts.get(k, 0) > 0
         ])
         if not _an_urg_df.empty:
@@ -7138,7 +7122,7 @@ elif page == "📊 Analytics":
                 f"(scan {_an_scans[-1].get('scan_date', 'unknown')})."
             )
     else:
-        st.info("No scan files found. Run the nightly pipeline to generate scan data.")
+        st.info("No scan files yet — run the nightly pipeline to generate scan data.")
 
 
 # ===========================================================================
@@ -7210,9 +7194,7 @@ elif page == "📬 Review Queue":
     _rq_score_color = {"5": "#6366f1", "4": "#10b981", "3": "#f59e0b"}.get(
         str(int(_rq_score_num)), "#94a3b8"
     )
-    _rq_urg_color = {"High": "#ef4444", "Medium": "#f59e0b", "Low": "#10b981"}.get(
-        _rq_urgency, "#94a3b8"
-    )
+    _rq_urg_color = URGENCY_COLORS.get(_rq_urgency, _C_SLATE)
 
     with st.container(border=True):
         # Title row
@@ -7261,7 +7243,8 @@ elif page == "📬 Review Queue":
                     with st.expander("Read full fit notes"):
                         st.markdown(_rq_fit_notes)
             if _rq_osfi:
-                st.markdown(f"\U0001f3db **OSFI hook:** {_rq_osfi}")
+                with st.expander("\U0001f4dc Regulatory hook", expanded=False):
+                    st.caption(_rq_osfi)
 
         with _rq_b2:
             if _rq_kw:
@@ -7314,21 +7297,21 @@ elif page == "📬 Review Queue":
             )
 
         if _rq_a1.button(
-            "\U0001f4cc Watch", use_container_width=True,
+            "\U0001f4cc Watch", width='stretch',
             help="Move to Watch - monitor without committing to apply"
         ):
             _rq_apply_action("Watch")
             st.rerun()
 
         if _rq_a2.button(
-            "✅ Apply", type="primary", use_container_width=True,
+            "✅ Apply", type="primary", width='stretch',
             help="Record application — sets date_applied and seeds follow-up schedule"
         ):
             st.session_state["_rq_apply_open"] = _rq_job_id
             st.rerun()
 
         if _rq_a3.button(
-            "❌ Expire", use_container_width=True,
+            "❌ Expire", width='stretch',
             help="Mark as Expired - not pursuing"
         ):
             _rq_apply_action("Expired")
@@ -7336,9 +7319,9 @@ elif page == "📬 Review Queue":
 
         if _rq_url:
             if _rq_url:
-                _rq_a4.link_button("🔗 Open JD", _rq_url, use_container_width=True)
+                _rq_a4.link_button("🔗 Open JD", _rq_url, width='stretch')
 
-        if _rq_a5.button("⏭", use_container_width=True, help="Skip - come back later"):
+        if _rq_a5.button("⏭", width='stretch', help="Skip - come back later"):
             st.session_state["_rq_idx"] = _rq_idx + 1
             st.rerun()
 
@@ -7364,15 +7347,15 @@ elif page == "📬 Review Queue":
                     help="Requires API key. Runs jd_tailor.py for this job ID."
                 )
                 _ap_c1, _ap_c2 = st.columns(2)
-                _ap_submit = _ap_c1.form_submit_button("✅ Confirm application", type="primary", use_container_width=True)
-                _ap_cancel = _ap_c2.form_submit_button("Cancel", use_container_width=True)
+                _ap_submit = _ap_c1.form_submit_button("✅ Confirm application", type="primary", width='stretch')
+                _ap_cancel = _ap_c2.form_submit_button("Cancel", width='stretch')
 
             if _ap_submit:
                 _td = json.loads(TRACKER.read_text(encoding="utf-8"))
                 for _j2 in _td.get("jobs", []):
                     if _j2.get("id") == _rq_job_id:
                         _j2["status"] = "Applied"
-                        seed_followup(_j2, _ap_date)
+                        seed_followup(_j2, applied_on=_ap_date)
                         _log_entry = {
                             "date": _ap_date.isoformat(),
                             "type": "applied",
@@ -7576,19 +7559,38 @@ elif page == "🔔 Follow-ups":
             # Got response
             with _fa3.expander("📨 Response"):
                 with st.form(key=f"fu_resp_{_fj_id}"):
+                    # Build progression options aligned with the tracker's actual status_enum.
+                    # Filter out non-progression statuses (Found/Watch/Applied/Hired/Expired)
+                    # and surface the rest with friendly labels.
+                    _resp_enum = _fu_all.get("meta", {}).get("status_enum", [])
+                    _resp_label_to_enum = [
+                        ("Recruiter screen scheduled", "Recruiter_Screen"),
+                        ("Phone screen scheduled",     "Phone_Screen"),
+                        ("Take-home received",         "Take_Home"),
+                        ("Onsite scheduled",           "Onsite"),
+                        ("Interview scheduled",        "Onsite"),  # Interview not in enum; Onsite is closest active-interview parent
+                        ("Offer received",             "Offer"),
+                        ("Rejected",                   "Rejected"),
+                        ("Ghosted / withdrawn",        "Withdrawn"),
+                    ]
+                    _status_map = {}
+                    _resp_options = []
+                    for _lbl, _target in _resp_label_to_enum:
+                        # Use the target if it's in the enum; otherwise fall back to a sensible parent.
+                        if _target in _resp_enum:
+                            _status_map[_lbl] = _target
+                        elif "Onsite" in _resp_enum:
+                            _status_map[_lbl] = "Onsite"
+                        else:
+                            _status_map[_lbl] = _target  # last-resort: use the label's intended value as-is
+                        _resp_options.append(_lbl)
                     _resp_type = st.selectbox(
                         "Outcome",
-                        ["Interview scheduled", "Rejected", "Offer received", "Ghosted / withdrawn"],
+                        _resp_options,
                         key=f"fu_r_{_fj_id}"
                     )
                     _resp_note = st.text_input("Notes", key=f"fu_rn_{_fj_id}")
                     if st.form_submit_button("Save", type="primary"):
-                        _status_map = {
-                            "Interview scheduled": "Interview",
-                            "Rejected":            "Rejected",
-                            "Offer received":      "Offer",
-                            "Ghosted / withdrawn": "Withdrawn",
-                        }
                         _td3 = json.loads(TRACKER.read_text(encoding="utf-8"))
                         for _j4 in _td3.get("jobs", []):
                             if _j4.get("id") == _fj_id:
@@ -7600,7 +7602,9 @@ elif page == "🔔 Follow-ups":
                                     "type":  "response",
                                     "notes": f"{_resp_type}" + (f" — {_resp_note}" if _resp_note else ""),
                                 })
-                                _j4.setdefault("followup_schedule", {})["next_due"] = None
+                                # Clear next_due only on terminal stages; otherwise let the cadence continue.
+                                if _j4["status"] in ("Rejected", "Offer", "Withdrawn", "Hired"):
+                                    _j4.setdefault("followup_schedule", {})["next_due"] = None
                                 break
                         save_tracker(_td3)
                         st.toast(f"📨 Response recorded: {_resp_type}", icon="✅")
@@ -7608,7 +7612,7 @@ elif page == "🔔 Follow-ups":
 
             if _fj_url:
                 with _fa4:
-                    st.link_button("🔗 Open JD", _fj_url, use_container_width=True)
+                    st.link_button("🔗 Open JD", _fj_url, width='stretch')
 
             # Tailored docs — show if jd_tailor has run for this job
             _fj_docs = _find_tailor_docs(job)
