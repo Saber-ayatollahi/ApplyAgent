@@ -286,6 +286,10 @@ def rebuild(quarantine: bool = True) -> dict:
 
     by_url: dict[str, dict] = {}
     by_ct: dict[tuple[str, str], str] = {}  # ct_key → url (for near-dup merge)
+    # Audit-pack trail. Records every collision we silently merge so users can
+    # see WHICH gmail/scrape URL pair collapsed into one row, with company +
+    # title context. Consumed by audit_pack.py.
+    merged_pairs: list[dict] = []
 
     def _add(row: dict, src: str):
         u = norm_url(row)
@@ -297,11 +301,29 @@ def rebuild(quarantine: bool = True) -> dict:
         if ct and ct in by_ct and by_ct[ct] != u:
             existing_url = by_ct[ct]
             existing = by_url[existing_url]
+            merged_pairs.append({
+                "kept_url": existing_url,
+                "kept_source": existing.get("source", ""),
+                "dropped_url": u,
+                "dropped_source": src,
+                "company": row.get("company", ""),
+                "title": row.get("title", ""),
+                "reason": "near_dup_company_title",
+            })
             if existing["source"] != src and existing["source"] != "both":
                 existing["source"] = "both"
             return
         if u in by_url:
             entry = by_url[u]
+            merged_pairs.append({
+                "kept_url": u,
+                "kept_source": entry.get("source", ""),
+                "dropped_url": u,
+                "dropped_source": src,
+                "company": row.get("company", ""),
+                "title": row.get("title", ""),
+                "reason": "exact_url",
+            })
             if entry["source"] != src and entry["source"] != "both":
                 entry["source"] = "both"
             return
@@ -383,8 +405,10 @@ def rebuild(quarantine: bool = True) -> dict:
                 for p in gmail_files
             ),
             "output": stats["total"],
-            "dropped_url": 0, "dropped_near": 0,
+            "dropped_url": sum(1 for m in merged_pairs if m["reason"] == "exact_url"),
+            "dropped_near": sum(1 for m in merged_pairs if m["reason"] == "near_dup_company_title"),
         },
+        "merged_pairs": merged_pairs,
         "results": rows,
     }
     _atomic_write_json(WORKLIST, envelope)

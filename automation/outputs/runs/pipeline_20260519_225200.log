@@ -1,0 +1,15 @@
+# pipeline
+# cmd: C:\Program Files\Python313\python.exe C:\Dev\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-score --commit-promote
+# started: 2026-05-19T22:52:00.996028
+
+=== ApplyAgent pipeline 20260519_225201 ===
+Mode: scrape=full skip_scrape=True skip_score=True skip_promote=False
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 1246 rows (1100 scrape, 116 gmail, 30 both) · 696 new since last score
+[stage 2] SKIPPED
+[promote] [auto_promote] COMMIT: added 27, upgraded 1, expired 0, geo-skipped 17
+[promote] [auto_promote] Tracker backed up to job_tracker_data.bak.20260519.json
+[promote] [auto_promote] Report: C:\Dev\ApplyAgent\automation\outputs\promote_report_20260519.md
+
+=== Pipeline 20260519_225201 complete ===

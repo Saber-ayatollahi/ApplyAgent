@@ -291,20 +291,41 @@ def main() -> int:
         existing_ids = {j["id"] for j in tr.get("jobs", []) or []}
         new_entries: list[dict] = []
         upgrades: list[tuple[str, dict, int]] = []  # (canonical_url, e, score)
+        # Audit-pack trail: every row we skip, with reason. Consumed by
+        # audit_pack.py so users can see WHICH roles got rejected at promote.
+        skipped_rows: list[dict] = []
         added = updated = skipped_dupe = skipped_verdict = skipped_score = 0
         skipped_geo = 0
+
+        def _audit(r: dict, reason: str, score: int, verdict: str,
+                   extra: str = "") -> None:
+            skipped_rows.append({
+                "reason": reason,
+                "company": r.get("company", ""),
+                "title": r.get("title", ""),
+                "url": r.get("url") or r.get("link", ""),
+                "location": r.get("location", ""),
+                "score": score,
+                "verdict": verdict,
+                "note": extra,
+            })
+
         for r in scored.get("results", []) or []:
             f = r.get("fit") or {}
             verdict = f.get("fit_verdict") or "skip"
             score = int(f.get("fit_score") or 0)
             if verdict not in VERDICT_DEFAULTS or VERDICT_DEFAULTS[verdict] is None:
                 skipped_verdict += 1
+                _audit(r, "verdict", score, verdict)
                 continue
             if verdict == "watch" and not args.include_watch:
                 skipped_verdict += 1
+                _audit(r, "verdict_watch_excluded", score, verdict)
                 continue
             if score < args.min_score:
                 skipped_score += 1
+                _audit(r, "below_min_score", score, verdict,
+                       f"min={args.min_score}")
                 continue
             # Promote-time geo gate. The pool gate at gmail_fetch /
             # jd_scraper / worklist.rebuild keeps rows with empty/garbled
@@ -315,6 +336,7 @@ def main() -> int:
             # still passes (LinkedIn omits loc for some Toronto jobs).
             if not _keep_geo(r.get("location") or ""):
                 skipped_geo += 1
+                _audit(r, "geo", score, verdict, r.get("location") or "")
                 continue
             e = make_entry(r)
             # Dedupe via canonical URL — raw j["url"] vs scan link can drift
@@ -328,6 +350,8 @@ def main() -> int:
                     updated += 1
                 else:
                     skipped_dupe += 1
+                    _audit(r, "duplicate_lower_score", score, verdict,
+                           f"existing={existing.get('fit_score_numeric', 0)}")
                 continue
             if e["id"] in existing_ids:
                 e["id"] = e["id"] + "-" + str(score)
@@ -362,6 +386,7 @@ def main() -> int:
             "skipped_verdict": skipped_verdict,
             "skipped_score": skipped_score,
             "skipped_geo": skipped_geo,
+            "skipped_rows": skipped_rows,
         }
 
     # Phase 1 — preview against current tracker
@@ -411,6 +436,47 @@ def main() -> int:
         )
     report_path = OUT_DIR / f"promote_report_{stamp}.md"
     report_path.write_text("\n".join([l for l in report_lines if l is not None]), encoding="utf-8")
+
+    # JSON sibling for audit-pack export. Carries structured `skipped_rows[]`
+    # so the xlsx download can show users WHICH rows the promote stage
+    # rejected and why (verdict / below_min / geo / duplicate_lower_score).
+    report_json_path = OUT_DIR / f"promote_report_{stamp}.json"
+    report_json_path.write_text(
+        json.dumps(
+            {
+                "scan_date": stamp,
+                "source": str(args.scan),
+                "min_score": args.min_score,
+                "include_watch": args.include_watch,
+                "mode": "commit" if args.commit else "dry_run",
+                "summary": {
+                    "added": added,
+                    "updated": updated,
+                    "expired": expired,
+                    "skipped_verdict": skipped_verdict,
+                    "skipped_score": skipped_score,
+                    "skipped_dupe": skipped_dupe,
+                    "skipped_geo": skipped_geo,
+                },
+                "skipped_rows": preview["skipped_rows"],
+                "new_entries": [
+                    {
+                        "id": e["id"],
+                        "company": e["company"],
+                        "title": e["title"],
+                        "score": e["fit_score_numeric"],
+                        "tier": e.get("tier"),
+                        "sector": e.get("sector"),
+                        "url": e["url"],
+                    }
+                    for e in new_entries
+                ],
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
 
     # Captured by the mutator closure for the commit log message.
     final_counts = {"added": 0, "updated": 0, "expired": 0, "geo": 0}

@@ -1,0 +1,55 @@
+{
+  "pipeline_id": "20260519_225201",
+  "started_at": "2026-05-19T22:52:01",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": true,
+    "skip_promote": false,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 2,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": true
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 1246,
+      "scrape_only": 1100,
+      "gmail_only": 116,
+      "both": 30,
+      "new_since_last_score": 696
+    },
+    "score": {
+      "state": "skipped"
+    },
+    "promote": {
+      "cmd": [
+        "C:\\Program Files\\Python313\\python.exe",
+        "C:\\Dev\\ApplyAgent\\automation\\auto_promote.py",
+        "--scan",
+        "worklist_scored.json",
+        "--min-score",
+        "7",
+        "--commit"
+      ],
+      "started_at": "2026-05-19T22:52:01",
+      "state": "finished",
+      "finished_at": "2026-05-19T22:52:02",
+      "elapsed_sec": 0.6,
+      "returncode": 0,
+      "last_line": "[auto_promote] Report: C:\\Dev\\ApplyAgent\\automation\\outputs\\promote_report_20260519.md",
+      "committed": true
+    }
+  },
+  "finished_at": "2026-05-19T22:52:02"
+}

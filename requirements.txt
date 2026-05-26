@@ -13,6 +13,8 @@ anthropic>=0.40
 
 # Data frames + UI
 pandas>=2.0
+# Excel writer used by audit-pack download (per-stage xlsx export)
+openpyxl>=3.0
 streamlit>=1.30
 # Poll-based auto-refresh for live progress pages (scraper/scorer running)
 streamlit-autorefresh>=1.0

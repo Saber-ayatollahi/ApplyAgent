@@ -1,0 +1,158 @@
+{
+  "scan_date": "2026-05-25",
+  "scan_timestamp": "2026-05-25T18:07:46Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 12,
+    "output": 12,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "69748",
+      "69805"
+    ],
+    "deleted": false,
+    "deleted_at": null,
+    "delete_result": null
+  },
+  "results": [
+    {
+      "title": "Manager/Director, Model Risk Management",
+      "company": "Manulife",
+      "link": "https://www.linkedin.com/jobs/view/4368270079",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4367062101",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Director of Finance",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4400691516",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4368084295",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Manager, Valuations & Modelling",
+      "company": "BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4418618690",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4409497618",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805"
+    },
+    {
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4418039414",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    },
+    {
+      "title": "Director, Senior Project Manager",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4408526858",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    },
+    {
+      "title": "Senior Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4398906586",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    },
+    {
+      "title": "Senior Manager",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4398977053",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    },
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4417715517",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    },
+    {
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4416598905",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-23",
+      "gmail_uid": "69748"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 2,
+    "linkedin_alerts_seen": 2,
+    "digests_with_rows": 2,
+    "digests_without_rows": 0,
+    "rows_parsed": 12,
+    "rows_dropped_location": 0,
+    "rows_kept": 12,
+    "dropped_location_examples": []
+  }
+}

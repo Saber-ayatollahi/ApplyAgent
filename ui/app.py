@@ -134,6 +134,42 @@ def load_crm():
     return {}
 
 
+def _web_scan_age_hours() -> float | None:
+    """Age of the most recent web scan in hours, or None if no scan exists."""
+    files = sorted(
+        [f for f in OUT_DIR.glob("scan_*.json")
+         if "_scored" not in f.name
+         and "scan_gmail_" not in f.name
+         and "scan_checkpoint" not in f.name],
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    if not files:
+        return None
+    return (datetime.now().timestamp() - files[0].stat().st_mtime) / 3600
+
+
+def _file_age_hours(path: Path) -> float | None:
+    """Age of a file in hours, or None if it doesn't exist."""
+    if not path.exists():
+        return None
+    return (datetime.now().timestamp() - path.stat().st_mtime) / 3600
+
+
+def _latest_glob_age_hours(pattern: str, base: Path = None) -> float | None:
+    """Age (hours) of the most recent file matching glob `pattern` under `base`
+    (defaults to OUT_DIR). None if no match."""
+    base = base or OUT_DIR
+    files = sorted(base.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        return None
+    return (datetime.now().timestamp() - files[0].stat().st_mtime) / 3600
+
+
+def _today_brief_exists() -> bool:
+    """True if a brief_<today>.json already exists for today."""
+    return (OUT_DIR / f"brief_{datetime.now().strftime('%Y%m%d')}.json").exists()
+
+
 def save_tracker(d: dict):
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     bak = TRACKER.with_suffix(f".bak.{stamp}.json")
@@ -1911,10 +1947,11 @@ if any_work_active:
         st.sidebar.caption(
             f"{r['label']} · {human_elapsed(r['started_at'])} · pid {r['pid']}"
         )
-if st.sidebar.button("🔄 Refresh now", key="sidebar_refresh_now",
+if st.sidebar.button("🔄 Reload page", key="sidebar_refresh_now",
                       width='stretch',
-                      help="Clear data caches and re-read tracker, CRM, "
-                           "progress, and run state."):
+                      help="Clear Streamlit caches and re-read tracker, CRM, "
+                           "progress, and run state from disk. "
+                           "Does NOT launch a scrape or any background job."):
     st.cache_data.clear()
     st.rerun()
 
@@ -1956,6 +1993,16 @@ def _pipeline_live_panel_inner():
     _live_runs = scan_runner.active_runs()
     _live_pipeline = latest_pipeline_status()
     _live_pipeline_running = _live_pipeline and _live_pipeline.get("state") == "running"
+
+    # Detect transition from "running" → "idle". When a background job finishes,
+    # the fragment keeps polling for one more cycle and sees nothing active.
+    # At that point, trigger a full-page rerun so the rest of the page (which
+    # rendered with stale data) re-reads from disk.
+    _was_active = st.session_state.get("_live_panel_was_active", False)
+    _is_active = bool(_live_runs or _live_pipeline_running)
+    st.session_state["_live_panel_was_active"] = _is_active
+    if _was_active and not _is_active:
+        st.rerun()
 
     render_scorer_progress()
 
@@ -2459,15 +2506,46 @@ if page == "🏠 Dashboard":
             # Run finished — clear the banner
             del st.session_state["_last_launch"]
 
+    # Blocker banners — surface BEFORE Quick Actions so the user knows why
+    # buttons are disabled instead of clicking and getting silence. Mirrors
+    # the Pipeline page's gold-standard `st.error` block (line ~4450).
+    if not _dash_key_ok:
+        st.error(
+            "**🔑 API key missing or invalid** — scoring, nightly refresh, "
+            "and tailor all require a working Anthropic key. "
+            "Open the **sidebar → Manage Anthropic API key** expander, "
+            "paste your `sk-ant-...` key, and hit Save & validate. "
+            "Scraping and Gmail fetch work without a key.",
+            icon="🔑",
+        )
+    if not _dash_gmail_ok:
+        st.info(
+            "**📬 Gmail not connected** — Pull Gmail alerts and Outcome Inbox "
+            "need a Gmail OAuth/app-password setup. "
+            "Open the **sidebar → Gmail** section to connect.",
+            icon="📬",
+        )
+    if any_work_active and active_runs:
+        _aw_run = active_runs[0]
+        st.warning(
+            f"⏳ **{_aw_run.get('label', 'job')}** is running "
+            f"({human_elapsed(_aw_run.get('started_at'))}) — "
+            "launch buttons are disabled until it finishes. "
+            "Go to **🎯 Pipeline** to view live output or stop it.",
+            icon="⚠️",
+        )
+
     with st.container(border=True):
         st.markdown("#### ⚡ Quick actions")
         qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
+        _dash_scrape_age_h = _web_scan_age_hours()
+        _dash_scrape_fresh = _dash_scrape_age_h is not None and _dash_scrape_age_h < 24
         with qa1:
             _help_core = ("Scrape the 77 core targets (no expansion list). "
                           "~15-30 min. Writes scan_<date>.json only; no LLM "
                           "call until you score. No API key needed.")
             if st.button("🛰 Core scrape", width='stretch',
-                          disabled=bool(pipeline_running or any_work_active),
+                          disabled=bool(pipeline_running or any_work_active) or _dash_scrape_fresh,
                           help=_help_core, key="dash_qa_core"):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable,
@@ -2478,12 +2556,19 @@ if page == "🏠 Dashboard":
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
                 st.toast("🛰 Core scrape launched!", icon="🚀")
                 st.rerun()
+            if _dash_scrape_fresh:
+                st.caption(f"🟢 Scan is {_dash_scrape_age_h:.0f}h old")
         with qa2:
+            _dash_gmail_age_h = _latest_glob_age_hours("scan_gmail_*.json")
+            _dash_gmail_fresh = _dash_gmail_age_h is not None and _dash_gmail_age_h < 1
             _help_gmail = (
                 "Pull LinkedIn/Indeed job alert emails from the last 14 "
                 "days. ~10-30s. Doesn't call the API. Produces "
                 "scan_gmail_<stamp>.json that you can score or promote."
             )
+            if _dash_gmail_fresh:
+                _help_gmail += (f" ⚠️ Last fetch {_dash_gmail_age_h*60:.0f}m ago — "
+                                "likely no new mail.")
             if st.button("📬 Pull Gmail alerts", width='stretch',
                           disabled=(not _dash_gmail_ok) or bool(any_work_active),
                           help=_help_gmail, key="dash_qa_gmail"):
@@ -2497,10 +2582,18 @@ if page == "🏠 Dashboard":
                 st.rerun()
             if not _dash_gmail_ok:
                 st.caption("🔌 Connect Gmail in the sidebar.")
+            elif _dash_gmail_fresh:
+                st.caption(f"⚠️ Fetched {_dash_gmail_age_h*60:.0f}m ago")
         with qa3:
+            _dash_brief_today = _today_brief_exists()
             _help_nightly = ("Scrape + find new roles since last scan + "
                               "score only those + emit top-3 brief. "
                               "Cheap (~$0.03), ~25 min. Needs API key.")
+            if _dash_scrape_fresh:
+                _help_nightly += (f" ⚠️ Scan is only {_dash_scrape_age_h:.0f}h old — "
+                                   "scrape step will likely find nothing new.")
+            if _dash_brief_today:
+                _help_nightly += " ⚠️ Today's brief already exists — will overwrite."
             if st.button("🌅 Nightly refresh", width='stretch',
                           disabled=(not _dash_can_run_llm) or bool(any_work_active),
                           help=_help_nightly, key="dash_qa_nightly"):
@@ -2511,6 +2604,10 @@ if page == "🏠 Dashboard":
                 st.rerun()
             if not _dash_key_ok:
                 st.caption("🔑 Set API key in the sidebar.")
+            elif _dash_scrape_fresh:
+                st.caption(f"⚠️ Scan {_dash_scrape_age_h:.0f}h old — scrape will be a no-op")
+            elif _dash_brief_today:
+                st.caption("⚠️ Today's brief exists — will overwrite")
         with qa4:
             _help_pipe = ("Go to the 🎯 Pipeline page to configure and launch "
                           "a full end-to-end run (choose scrape strategy, "
@@ -2551,6 +2648,8 @@ if page == "🏠 Dashboard":
     # Quick Actions so a freshly-pulled scan surfaces the cleanup prompt
     # at the natural next-step location.
     render_gmail_trash_panel()
+
+    _pipeline_live_panel()
 
     _sp = load_scorer_progress()
     _scorer_live = bool(_sp and _sp.get("state") == "running")
@@ -3326,18 +3425,24 @@ elif page == "📥 Outcome Inbox":
     _oi_gmail_ok = gmail_ui.is_connected()
     _oi_key_ok = api_key.is_key_valid()
     _oi_can_run = _oi_gmail_ok and _oi_key_ok
+    _oi_age_h = _latest_glob_age_hours("runs/gmail_outcome_*.json")
+    _oi_fresh = _oi_age_h is not None and _oi_age_h < 2
     with _oi_h2:
+        _oi_help = (
+            "Runs `automation/gmail_outcome.py --days 7` in the "
+            "background. Pulls recruiter emails, classifies via "
+            "Haiku, appends new proposals to this list. "
+            "~$0.001 per email; capped at $0.20/run."
+        )
+        if _oi_fresh:
+            _oi_help += (f" ⚠️ Last pull {_oi_age_h:.1f}h ago — "
+                         "re-running may produce duplicates.")
         if st.button(
             "📥 Pull latest from Gmail",
             type="primary" if _oi_can_run else "secondary",
             disabled=not _oi_can_run,
             width='stretch',
-            help=(
-                "Runs `automation/gmail_outcome.py --days 7` in the "
-                "background. Pulls recruiter emails, classifies via "
-                "Haiku, appends new proposals to this list. "
-                "~$0.001 per email; capped at $0.20/run."
-            ),
+            help=_oi_help,
         ):
             _oi_cmd = [sys.executable,
                        str(ROOT / "automation" / "gmail_outcome.py"),
@@ -3353,6 +3458,8 @@ elif page == "📥 Outcome Inbox":
             st.caption("🔌 Connect Gmail in sidebar")
         elif not _oi_key_ok:
             st.caption("🔑 Set API key in sidebar")
+        elif _oi_fresh:
+            st.caption(f"⚠️ Pulled {_oi_age_h:.1f}h ago")
 
     with _oi_h3:
         if st.button("🔄 Refresh", width='stretch',
@@ -4364,8 +4471,11 @@ elif page == "🎯 Pipeline":
     except Exception:
         pass
 
-    _tab_worklist, _tab_scored, _tab_run, _tab_history = st.tabs(
-        ["📋 Worklist", "🎯 Scored", "🚀 Run", "📜 History"]
+    # Live panel ABOVE tabs so active-job output is always visible
+    _pipeline_live_panel()
+
+    _tab_run, _tab_worklist, _tab_scored, _tab_history = st.tabs(
+        ["🚀 Run", "📋 Worklist", "🎯 Scored", "📜 History"]
     )
 
     # ================== TAB: Worklist ==================
@@ -4461,10 +4571,13 @@ elif page == "🎯 Pipeline":
         _ws_total = _wstats.get("total", 0)
         _ws_scored_exists = _wstatus.get("worklist_scored_exists", False)
 
+        _scrape_age_h = _web_scan_age_hours()
+        _scrape_fresh = _scrape_age_h is not None and _scrape_age_h < 24
+
         qa1, qa2, qa3, qa4, qa5 = st.columns(5)
         with qa1:
             if st.button("🛰 Refresh scrape", width='stretch',
-                         disabled=not _can_run,
+                         disabled=(not _can_run or _scrape_fresh),
                          help="Re-scrape the 77 core targets. ~15-30 min, no "
                               "API key needed. Auto-rebuilds the worklist "
                               "when done so the scorer sees the new rows."):
@@ -4475,11 +4588,19 @@ elif page == "🎯 Pipeline":
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Refresh scrape"}
                 st.toast("🛰 Scrape launched!", icon="🚀")
                 st.rerun()
+            if _scrape_fresh:
+                st.caption(f"🟢 Scan is {_scrape_age_h:.0f}h old — fresh enough")
         with qa2:
+            _gmail_age_h = _latest_glob_age_hours("scan_gmail_*.json")
+            _gmail_fresh = _gmail_age_h is not None and _gmail_age_h < 1
+            _gmail_help = ("Pull LinkedIn alert emails from last 30d. "
+                           "~10-30s, free. Auto-rebuilds the worklist.")
+            if _gmail_fresh:
+                _gmail_help += (f" ⚠️ Last fetch {_gmail_age_h*60:.0f}m ago — "
+                                "likely no new mail.")
             if st.button("📬 Refresh Gmail", width='stretch',
                          disabled=(not _gmail_ok or not _can_run),
-                         help="Pull LinkedIn alert emails from last 30d. "
-                              "~10-30s, free. Auto-rebuilds the worklist."):
+                         help=_gmail_help):
                 rec = scan_runner.start_run("gmail_fetch", [
                     sys.executable,
                     str(ROOT / "automation" / "gmail_fetch.py"), "--days", "30",
@@ -4489,17 +4610,25 @@ elif page == "🎯 Pipeline":
                 st.rerun()
             if not _gmail_ok:
                 st.caption("🔌 Connect Gmail in sidebar")
+            elif _gmail_fresh:
+                st.caption(f"⚠️ Fetched {_gmail_age_h*60:.0f}m ago")
         with qa3:
+            _scored_age_h = _file_age_hours(OUT_DIR / "worklist_scored.json")
+            _scored_fresh = _scored_age_h is not None and _scored_age_h < 0.5
             _score_label = (
                 f"🤖 Score worklist ({_ws_total})" if _ws_total
                 else "🤖 Score (no rows)"
             )
+            _score_help = (f"Score the {_ws_total}-row worklist. "
+                           "~5-15 min on first run, near-free on re-runs "
+                           "(fit_cache is persistent). Requires API key.")
+            if _scored_fresh:
+                _score_help += (f" ⚠️ Last score {_scored_age_h*60:.0f}m ago — "
+                                "rescore only if rows changed.")
             if st.button(_score_label, width='stretch',
                          type="primary" if (key_ok_here and _ws_total) else "secondary",
                          disabled=(not _can_run or not key_ok_here or not _ws_total),
-                         help=f"Score the {_ws_total}-row worklist. "
-                              "~5-15 min on first run, near-free on re-runs "
-                              "(fit_cache is persistent). Requires API key."):
+                         help=_score_help):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                     "--skip-scrape", "--skip-promote",
@@ -4508,13 +4637,21 @@ elif page == "🎯 Pipeline":
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Score worklist"}
                 st.toast("🤖 Scorer launched!", icon="🚀")
                 st.rerun()
+            if _scored_fresh:
+                st.caption(f"⚠️ Scored {_scored_age_h*60:.0f}m ago")
         with qa4:
+            _promote_age_h = _latest_glob_age_hours("promote_report_*.md")
+            _promote_fresh = _promote_age_h is not None and _promote_age_h < 24
             _promote_label = "📋 Promote scored" if _ws_scored_exists else "📋 (score first)"
+            _promote_help = ("Promote scored roles into the tracker. "
+                             "Reads worklist_scored.json. Dry-run first; "
+                             "use the advanced form below for --commit.")
+            if _promote_fresh:
+                _promote_help += (f" ⚠️ Last promote {_promote_age_h:.0f}h ago — "
+                                  "review the report before re-running.")
             if st.button(_promote_label, width='stretch',
                          disabled=(not _can_run or not _ws_scored_exists),
-                         help="Promote scored roles into the tracker. "
-                              "Reads worklist_scored.json. Dry-run first; "
-                              "use the advanced form below for --commit."):
+                         help=_promote_help):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                     "--skip-scrape", "--skip-score",
@@ -4522,16 +4659,29 @@ elif page == "🎯 Pipeline":
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Promote scored"}
                 st.toast("📋 Promote launched!", icon="🚀")
                 st.rerun()
+            if _promote_fresh:
+                st.caption(f"⚠️ Promoted {_promote_age_h:.0f}h ago")
         with qa5:
+            _brief_today = _today_brief_exists()
+            _full_help = ("Scrape → rebuild worklist → score → morning brief. "
+                          "~25 min, ~$0.03. Requires API key.")
+            if _scrape_fresh:
+                _full_help += (f" ⚠️ Scan is only {_scrape_age_h:.0f}h old — "
+                               "scrape step will likely find nothing new.")
+            if _brief_today:
+                _full_help += " ⚠️ Today's brief already exists — will overwrite."
             if st.button("🌅 Full refresh", width='stretch',
                          disabled=(not key_ok_here or not _can_run),
-                         help="Scrape → rebuild worklist → score → morning brief. "
-                              "~25 min, ~$0.03. Requires API key."):
+                         help=_full_help):
                 nightly_cmd_list = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
                 rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full refresh"}
                 st.toast("🌅 Full refresh launched!", icon="🚀")
                 st.rerun()
+            if _scrape_fresh:
+                st.caption(f"⚠️ Scan {_scrape_age_h:.0f}h old — scrape will be a no-op")
+            elif _brief_today:
+                st.caption("⚠️ Today's brief exists — will overwrite")
 
         # Stop button — shown whenever any job is active (all launch buttons are
         # disabled then, so this is the only way the user can unblock).
@@ -4548,12 +4698,7 @@ elif page == "🎯 Pipeline":
                 st.warning("⏹ Stop signal sent — job will exit after the current step.")
                 st.rerun()
 
-        # --- Live progress panel (fragment or fallback) ---
-        # _pipeline_live_panel() is defined before this page block and is
-        # decorated with @st.fragment(run_every=3) when Streamlit ≥1.33.
-        # With fragments: only this widget refreshes — zero full-page flash.
-        # Without fragments: page-wide autorefresh handles the 5s polling.
-        _pipeline_live_panel()
+        # Live panel moved above tabs — always visible when a job is active.
 
         # Gmail trash cleanup panel — only renders when there's an
         # un-trashed scan_gmail_*.json. Same widget as the Dashboard,
@@ -5008,6 +5153,31 @@ elif page == "🎯 Pipeline":
             sel = next((p for p in pipelines if p["pipeline_id"] == pick_id), None)
             if sel:
                 st.json(sel, expanded=False)
+                # Audit-pack download — multi-sheet xlsx covering every pipeline
+                # stage (raw scrape, title/geo drops, gmail, worklist, merges,
+                # Stage-1 drops, scored, promote skips). Lets Saber see exactly
+                # which roles got dropped where so he can give the agent feedback.
+                try:
+                    import sys as _sys
+                    _automation_dir = str(ROOT / "automation")
+                    if _automation_dir not in _sys.path:
+                        _sys.path.insert(0, _automation_dir)
+                    from audit_pack import build_audit_pack as _build_pack
+                    # pipeline_YYYYMMDD_HHMMSS → derive YYYYMMDD
+                    _stamp = pick_id.split("_")[1] if "_" in pick_id else "latest"
+                    if st.button("📦 Build audit pack (xlsx)", key=f"build_pack_{pick_id}"):
+                        with st.spinner("Building multi-sheet xlsx…"):
+                            st.session_state[f"_pack_bytes_{pick_id}"] = _build_pack(_stamp)
+                    if st.session_state.get(f"_pack_bytes_{pick_id}"):
+                        st.download_button(
+                            "⬇ Download audit_pack.xlsx",
+                            data=st.session_state[f"_pack_bytes_{pick_id}"],
+                            file_name=f"audit_pack_{_stamp}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key=f"dl_pack_{pick_id}",
+                        )
+                except Exception as _pack_err:
+                    st.caption(f"Audit pack unavailable: {_pack_err}")
 
         st.markdown("---")
         st.subheader("🛠 Background run history (scan_runner)")
@@ -5103,6 +5273,21 @@ elif page == "🎯 Pipeline":
 # ============================================================================
 elif page == "📋 Jobs Kanban":
     st.title("📋 Jobs Tracker")
+
+    # Live panel: tracker mutates during pipeline runs. Surface progress here
+    # so users on Kanban don't act on stale data.
+    _pipeline_live_panel()
+
+    # Stale-scan banner: warn when underlying source data is aging.
+    _kan_scan_age_h = _web_scan_age_hours()
+    if _kan_scan_age_h is not None and _kan_scan_age_h >= 48:
+        _days = _kan_scan_age_h / 24
+        st.info(
+            f"🛰 Web scan is **{_days:.0f}d old**. New roles you'd see in "
+            "Found may be missing. Consider running a scrape from the "
+            "🎯 Pipeline page.",
+            icon="⏰",
+        )
 
     # ── Kanban summary strip ──────────────────────────────────────────────────
     _kan_statuses = {}
@@ -5955,6 +6140,33 @@ elif page == "📜 Scan History":
         "pipeline runs (`pipeline_*.json`) are all logged here forever."
     )
 
+    # Quick-access: build an audit pack for the most recent scan in one click.
+    # Per-scan packs are wired further down on the inspector.
+    try:
+        import sys as _sys
+        _automation_dir = str(ROOT / "automation")
+        if _automation_dir not in _sys.path:
+            _sys.path.insert(0, _automation_dir)
+        from audit_pack import build_audit_pack as _build_pack_latest
+        _lc1, _lc2 = st.columns([1, 3])
+        with _lc1:
+            if st.button("📦 Audit pack — latest scan",
+                         key="build_pack_latest_top"):
+                with st.spinner("Building multi-sheet xlsx…"):
+                    st.session_state["_pack_bytes_latest"] = (
+                        _build_pack_latest("latest"))
+        with _lc2:
+            if st.session_state.get("_pack_bytes_latest"):
+                st.download_button(
+                    "⬇ Download audit_pack_latest.xlsx",
+                    data=st.session_state["_pack_bytes_latest"],
+                    file_name="audit_pack_latest.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="dl_pack_latest_top",
+                )
+    except Exception as _pack_err:
+        st.caption(f"Audit pack unavailable: {_pack_err}")
+
     # -------- Pipeline runs (from PIPELINE_DIR/*.json) --------
     st.markdown("### Pipeline runs")
     pipelines = list_pipelines(limit=200)
@@ -6046,6 +6258,33 @@ elif page == "📜 Scan History":
                 if scored.exists():
                     st.success(f"📊 Scored counterpart: `{scored.name}` "
                                f"({round(scored.stat().st_size / 1024, 1)} KB)")
+                # Audit-pack download — multi-sheet xlsx covering scrape raw,
+                # title/geo drops, gmail, worklist + merges, Stage-1 drops,
+                # scored, promote skips. Lets Saber give the agent feedback
+                # on which roles got dropped where and why.
+                try:
+                    import sys as _sys
+                    _automation_dir = str(ROOT / "automation")
+                    if _automation_dir not in _sys.path:
+                        _sys.path.insert(0, _automation_dir)
+                    from audit_pack import build_audit_pack as _build_pack
+                    _stamp = (d.get("scan_date")
+                              or Path(pick).stem.replace("scan_", ""))
+                    if st.button("📦 Build audit pack (xlsx)",
+                                 key=f"build_pack_scanhist_{pick}"):
+                        with st.spinner("Building multi-sheet xlsx…"):
+                            st.session_state[f"_pack_bytes_scanhist_{pick}"] = (
+                                _build_pack(_stamp))
+                    if st.session_state.get(f"_pack_bytes_scanhist_{pick}"):
+                        st.download_button(
+                            "⬇ Download audit_pack.xlsx",
+                            data=st.session_state[f"_pack_bytes_scanhist_{pick}"],
+                            file_name=f"audit_pack_{_stamp}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key=f"dl_pack_scanhist_{pick}",
+                        )
+                except Exception as _pack_err:
+                    st.caption(f"Audit pack unavailable: {_pack_err}")
             except Exception as e:
                 st.error(f"Could not read {pick}: {e}")
 
@@ -6895,10 +7134,16 @@ elif page == "⚙️ Admin":
             "schtasks /delete /tn ApplyAgent_NightlyRefresh /f",
             language="powershell",
         )
+    _admin_scrape_age = _web_scan_age_hours()
+    _admin_scrape_fresh = _admin_scrape_age is not None and _admin_scrape_age < 24
+    _admin_nr_help = "Disabled while another job is running." if any_work_active else None
+    if _admin_scrape_fresh and not any_work_active:
+        _admin_nr_help = (f"⚠️ Scan is only {_admin_scrape_age:.0f}h old — "
+                          "scrape step will likely find nothing new.")
     if st.button("🌅 Run nightly refresh now (background)",
                  width='content',
                  disabled=bool(any_work_active),
-                 help="Disabled while another job is running." if any_work_active else None):
+                 help=_admin_nr_help):
         _nr_cmd = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
         _nr_rec = scan_runner.start_run("nightly_refresh", _nr_cmd)
         st.session_state["_last_launch"] = {"run_id": _nr_rec.run_id, "label": "Nightly refresh"}
@@ -6906,6 +7151,8 @@ elif page == "⚙️ Admin":
         st.rerun()
     if any_work_active:
         st.caption("⏳ A job is already running — button re-enables when it finishes.")
+    elif _admin_scrape_fresh:
+        st.caption(f"⚠️ Scan {_admin_scrape_age:.0f}h old — scrape step will be a no-op")
 
     st.markdown("---")
 
@@ -7240,6 +7487,21 @@ elif page == "📬 Review Queue":
         "Each card shows fit, keywords, and the suggested next action. "
         "Promote to Watch, Shortlist, or Expire your choice."
     )
+
+    # Live panel: review queue is populated by the pipeline; surface
+    # in-flight runs so the user knows new rows may be incoming.
+    _pipeline_live_panel()
+
+    # Stale-scan banner: review queue draws from "Found" rows promoted
+    # off the latest scan; warn if that scan is aging.
+    _rq_scan_age_h = _web_scan_age_hours()
+    if _rq_scan_age_h is not None and _rq_scan_age_h >= 48:
+        _days = _rq_scan_age_h / 24
+        st.info(
+            f"🛰 Web scan is **{_days:.0f}d old**. The cards below may be "
+            "missing recent roles. Run a scrape from 🎯 Pipeline to refresh.",
+            icon="⏰",
+        )
 
     # Pull jobs needing review (Found, highest fit first)
     _rq_all   = load_tracker()

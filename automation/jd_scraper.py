@@ -58,7 +58,34 @@ TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
 sys.path.insert(0, str(ROOT / "automation"))
-from location_filter import keep_for_toronto_pipeline as _keep_geo  # noqa: E402
+from location_filter import keep_for_toronto_pipeline as _keep_geo_raw  # noqa: E402
+
+# Per-stage drop audit. Populated by `_keep_geo`/`_is_negative` wrappers below;
+# emitted in the scan envelope under `filter_drops` so the audit-pack export
+# can show users WHICH roles got rejected by title/geo filters and why.
+_DROP_LOG_TITLE: list[dict] = []
+_DROP_LOG_GEO: list[dict] = []
+# Set per-company in run_scan() so drop entries can attribute to the right
+# tenant; fetchers don't take company as a parameter, so this avoids an
+# invasive signature change across 6 fetcher functions.
+_current_company_ctx: str = ""
+_current_sector_ctx: str = ""
+
+
+def _keep_geo(loc: str, *, title: str = "", link: str = "",
+              source: str = "") -> bool:
+    """Wrap location_filter; log rejections to _DROP_LOG_GEO."""
+    if _keep_geo_raw(loc):
+        return True
+    _DROP_LOG_GEO.append({
+        "company": _current_company_ctx,
+        "sector": _current_sector_ctx,
+        "title": title,
+        "link": link,
+        "location": loc,
+        "source": source,
+    })
+    return False
 
 # Keyword tiers. "Any" match in a title or JD makes the role a candidate.
 KEYWORDS_STRONG = [
@@ -493,7 +520,9 @@ def fetch_greenhouse_jobs(token: str) -> list[dict]:
         for j in data.get("jobs", []):
             title = j.get("title", "")
             loc = (j.get("location", {}) or {}).get("name", "")
-            if not _keep_geo(loc):
+            if not _keep_geo(loc, title=title,
+                             link=j.get("absolute_url", ""),
+                             source=f"greenhouse:{token}"):
                 continue
             if not keyword_match(title):
                 continue
@@ -527,7 +556,9 @@ def fetch_lever_jobs(slug: str) -> list[dict]:
             title = j.get("text", "")
             categories = j.get("categories", {}) or {}
             loc = categories.get("location", "") or ""
-            if "toronto" not in loc.lower() and "canada" not in loc.lower():
+            if not _keep_geo(loc, title=title,
+                             link=j.get("hostedUrl", ""),
+                             source=f"lever:{slug}"):
                 continue
             if not keyword_match(title):
                 continue
@@ -642,7 +673,9 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                         path = p.get("externalPath", "") or ""
                         if path in seen_paths:
                             continue
-                        if not _keep_geo(loc):
+                        if not _keep_geo(loc, title=title,
+                                         link=f"https://{host}{path}",
+                                         source=f"workday:{tenant_key}"):
                             continue
                         jobs.append({
                             "title": title,
@@ -709,7 +742,8 @@ def fetch_successfactors_jobs(sf_base: str) -> list[dict]:
                 location = paren.group(1) if paren else ""
                 title = re.sub(r"\s*\(([^()]+)\)\s*$", "", full_title).strip()
                 loc_lower = location.lower()
-                if not _keep_geo(loc_lower):
+                if not _keep_geo(loc_lower, title=title, link=link,
+                                 source=f"successfactors:{base.replace('https://', '')}"):
                     continue
                 posted = None
                 if pub_m:
@@ -814,11 +848,15 @@ def fetch_phenom_jobs(base_url: str, tenant_name: str = "") -> list[dict]:
                     full_path = f"/job/{city_slug}/{role_slug}/{tenant_id}/{job_id}"
                     if full_path in seen_paths:
                         continue
+                    title = role_slug.replace("-", " ").title()
                     if city_slug not in _PHENOM_CANADA_CITY_SLUGS:
                         seen_paths.add(full_path)  # still mark so we don't re-evaluate
+                        _keep_geo(city_slug.replace("-", " ").title(),
+                                  title=title,
+                                  link=f"{base}{full_path}",
+                                  source=f"phenom:{tenant}")
                         continue
                     # Extract title from the slug (role_slug uses dashes for spaces)
-                    title = role_slug.replace("-", " ").title()
                     # Fine-tune a few title-cased corner cases
                     title = (title.replace(" Vp", " VP").replace(" Svp", " SVP")
                                   .replace(" Avp", " AVP").replace("Irrbb", "IRRBB")
@@ -929,6 +967,27 @@ def stamp_found_at(results: list[dict], today_iso: str | None = None) -> dict:
 def _is_negative(title: str) -> bool:
     tl = title.lower()
     return any(n in tl for n in NEGATIVE_TERMS)
+
+
+def _is_negative_log(j: dict) -> bool:
+    """Same as _is_negative() but records dropped rows to _DROP_LOG_TITLE.
+    Use at the per-source iteration in run_scan(); skip for internal callers
+    that just need a boolean (e.g. dedup helpers)."""
+    title = j.get("title", "") or ""
+    tl = title.lower()
+    matched = [n for n in NEGATIVE_TERMS if n in tl]
+    if not matched:
+        return False
+    _DROP_LOG_TITLE.append({
+        "company": _current_company_ctx,
+        "sector": _current_sector_ctx,
+        "title": title,
+        "link": j.get("link", ""),
+        "location": j.get("location", ""),
+        "source": j.get("source", ""),
+        "matched_terms": ",".join(matched[:5]),
+    })
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -1131,6 +1190,11 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
     # Reset the scan-wide LinkedIn throttle — even if the previous run
     # tripped it, we want to retry this run from clean state.
     _linkedin_throttle_reset()
+    # Audit-pack drop logs are populated by `_keep_geo`/`_is_negative_log`
+    # using these context strings; we update them per-company below.
+    global _current_company_ctx, _current_sector_ctx
+    _DROP_LOG_TITLE.clear()
+    _DROP_LOG_GEO.clear()
     companies = list(companies)
 
     # -------- Connectivity pre-flight --------
@@ -1191,6 +1255,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             paused = True
             break
         print(f"[scan {i}/{len(companies)}] {c['name']} (sector: {c.get('sector', '—')})", file=sys.stderr)
+        # Audit-pack attribution: filter wrappers read these to label drop rows.
+        _current_company_ctx = c["name"]
+        _current_sector_ctx = c.get("sector", "")
         before = len(found)
         sources_used = []
 
@@ -1204,7 +1271,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
                 wd_jobs = fetch_workday_jobs(c["workday"])
                 _wd_cache[wd_key] = wd_jobs
             for src_j in wd_jobs:
-                if src_j["link"] in seen or _is_negative(src_j["title"]):
+                if src_j["link"] in seen:
+                    continue
+                if _is_negative_log(src_j):
                     continue
                 # Shallow-copy so mutating company/sector for THIS company
                 # doesn't overwrite the same fields when a sibling brand
@@ -1220,7 +1289,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         if c.get("greenhouse") and not linkedin_only:
             gh_before = len(found)
             for j in fetch_greenhouse_jobs(c["greenhouse"]):
-                if j["link"] in seen or _is_negative(j["title"]):
+                if j["link"] in seen:
+                    continue
+                if _is_negative_log(j):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
@@ -1232,7 +1303,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         if c.get("lever") and not linkedin_only:
             lv_before = len(found)
             for j in fetch_lever_jobs(c["lever"]):
-                if j["link"] in seen or _is_negative(j["title"]):
+                if j["link"] in seen:
+                    continue
+                if _is_negative_log(j):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
@@ -1244,7 +1317,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         if c.get("successfactors") and not linkedin_only:
             sf_before = len(found)
             for j in fetch_successfactors_jobs(c["successfactors"]):
-                if j["link"] in seen or _is_negative(j["title"]):
+                if j["link"] in seen:
+                    continue
+                if _is_negative_log(j):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
@@ -1257,7 +1332,9 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             ph_before = len(found)
             tenant_name = c.get("name", "").lower().split()[0]
             for j in fetch_phenom_jobs(c["phenom"], tenant_name=tenant_name):
-                if j["link"] in seen or _is_negative(j["title"]):
+                if j["link"] in seen:
+                    continue
+                if _is_negative_log(j):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
@@ -1271,7 +1348,7 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
             for j in fetch_linkedin_jobs(c):
                 if j["link"] in seen:
                     continue
-                if _is_negative(j["title"]):
+                if _is_negative_log(j):
                     continue
                 j["company"] = c["name"]; j["sector"] = c.get("sector", "")
                 found.append(j)
@@ -1451,13 +1528,18 @@ def main() -> int:
             gmail_rows = scrape_from_inbox(days=args.gmail_days)
             # Drop alerts already in tracker + obvious negatives
             seen_tracker = load_tracker_urls()
+            # Re-stamp audit context so gmail drops aren't attributed to
+            # whichever company finished last in the per-company loop.
+            global _current_company_ctx, _current_sector_ctx
+            _current_company_ctx = "(gmail)"
+            _current_sector_ctx = ""
             kept: list[dict] = []
             for g in gmail_rows:
                 if not g.get("link"):
                     continue
                 if g["link"] in seen_tracker:
                     continue
-                if _is_negative(g.get("title", "")):
+                if _is_negative_log(g):
                     continue
                 # Attach minimal sector/company plumbing so downstream diagnostics work.
                 # Company comes from the email; we can't sector it confidently here,
@@ -1507,6 +1589,13 @@ def main() -> int:
 
     if gmail_diag is not None:
         diagnostics["gmail"] = gmail_diag
+    # Per-stage drop audit. Consumed by audit_pack.py for the xlsx export so
+    # users can see WHICH titles/locations the scraper rejected and why
+    # (matched_terms for title; raw location string for geo).
+    filter_drops = {
+        "title": list(_DROP_LOG_TITLE),
+        "geo": list(_DROP_LOG_GEO),
+    }
     json_path.write_text(
         json.dumps(
             {
@@ -1516,6 +1605,7 @@ def main() -> int:
                 "dedup_stats": dedupe_stats,
                 "by_sector": sector_counts,
                 "diagnostics": diagnostics,
+                "filter_drops": filter_drops,
                 "results": results,
             },
             indent=2,
