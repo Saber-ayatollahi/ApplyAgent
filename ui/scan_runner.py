@@ -134,14 +134,18 @@ def refresh_state(rec_path: Path) -> dict:
     rec = json.loads(rec_path.read_text(encoding="utf-8"))
     if rec.get("state") == "running" and not _pid_alive(rec.get("pid", 0)):
         log_path = rec.get("log_path", "")
-        crashed = True
+        # Default to finished. Only call it a crash if the log tail contains
+        # a Python Traceback or other obvious failure signal — the previous
+        # default of 'failed unless a hardcoded success marker matches' was
+        # marking every short script (gmail_fetch, etc.) as failed.
+        crashed = False
         if log_path and Path(log_path).exists():
             try:
-                tail = Path(log_path).read_bytes()[-2048:]
-                if (b"nightly_refresh finished" in tail
-                        or b"finished ===" in tail
-                        or b"complete ===" in tail):
-                    crashed = False
+                tail = Path(log_path).read_bytes()[-4096:]
+                if (b"Traceback (most recent call last)" in tail
+                        or b"\nFATAL:" in tail
+                        or b"\nABORT:" in tail):
+                    crashed = True
             except OSError:
                 pass
         rec["state"] = "failed" if crashed else "finished"
