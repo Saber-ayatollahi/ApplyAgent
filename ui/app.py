@@ -4611,6 +4611,64 @@ elif page == "🎯 Pipeline":
         "One flow; one click runs the whole chain. Each stage can also be run in isolation."
     )
 
+    # ---------- Banner state machine (priority ladder) ---------
+    # The single primary CTA, computed every render from on-disk state per
+    # `pipeline_redesign.md` § "Banner state machine". Pure function in
+    # `pipeline_state.compute_next_action`; this is the Streamlit wrapper.
+    # Severity → Streamlit container affordance (st.error/warning/info/success).
+    try:
+        from automation import suppressions as _bn_supp  # noqa: WPS433
+        try:
+            _bn_state = _bn_supp.load_active()
+        except Exception:
+            _bn_state = {"sectors": [], "companies": []}
+        try:
+            _bn_recent = _bn_supp.load_recently_expired(window_days=7)
+        except Exception:
+            _bn_recent = []
+        _bn_active_runs = []
+        try:
+            _bn_active_runs = scan_runner.active_runs()
+        except Exception:
+            pass
+        _bn_snap = pipeline_state.derive_snapshot(
+            out_dir=OUT_DIR,
+            fit_cache_dir=OUT_DIR / "fit_cache",
+            tracker_path=TRACKER,
+            suppressions_state=_bn_state,
+            suppressions_recently_expired=_bn_recent,
+            api_key_valid=api_key.is_key_valid(),
+            gmail_connected=gmail_ui.is_connected(),
+            active_runs=_bn_active_runs,
+        )
+        _bn = pipeline_state.compute_next_action(_bn_snap)
+
+        with st.container(border=True):
+            _bn_c1, _bn_c2 = st.columns([5, 2], vertical_alignment="center")
+            with _bn_c1:
+                st.markdown(f"### {_bn.icon} {_bn.headline}")
+                if _bn.detail:
+                    st.caption(_bn.detail)
+                if _bn.chips:
+                    chip_md = "  ".join(
+                        f"{c.icon} {c.label}" for c in _bn.chips
+                    )
+                    st.caption(chip_md)
+            with _bn_c2:
+                if _bn.cta_label:
+                    # CTA is informational anchor for now — clicking sets a
+                    # session-state hint the rest of the page can react to.
+                    # No shell-outs from the banner itself; the existing
+                    # stage buttons do the work. (Phase 8 may route directly.)
+                    if st.button(
+                        _bn.cta_label, key=f"_banner_cta_{_bn.state}",
+                        type="primary", width="stretch",
+                    ):
+                        st.session_state["_banner_cta_clicked"] = _bn.cta_action
+                        st.toast(f"Scroll to the {_bn.cta_action} stage below.")
+    except Exception as _bn_err:  # noqa: BLE001
+        st.caption(f"Banner unavailable: {_bn_err}")
+
     # ---------- Data freshness + last activity summary ---------
     def _latest_web_scan():
         files = sorted(OUT_DIR.glob("scan_*.json"),
