@@ -4173,6 +4173,9 @@ if page == "🏠 Dashboard":
         st.markdown("---")
 
     with st.expander("📈 Pipeline chart · apply-this-week queue", expanded=False):
+        # Phase 6 P0 fix: empty-tracker (fresh clone, no jobs) crashed here
+        # because fd was a no-column DataFrame and set_index('status') raised
+        # KeyError. Guard explicitly so new users see a graceful empty state.
         status_counts = (jobs_df["status"].value_counts()
                            if "status" in jobs_df.columns else pd.Series())
         status_order = meta.get("status_enum", list(status_counts.index))
@@ -4180,11 +4183,15 @@ if page == "🏠 Dashboard":
             [{"status": s, "count": int(status_counts.get(s, 0))}
              for s in status_order]
         )
-        d1, d2 = st.columns([2, 1])
-        with d1:
-            st.bar_chart(fd.set_index("status"))
-        with d2:
-            st.dataframe(fd, hide_index=True, width='stretch')
+        if fd.empty or "status" not in fd.columns:
+            st.info("No jobs in tracker yet — promote a scored role from "
+                    "🎯 Pipeline to populate the chart.")
+        else:
+            d1, d2 = st.columns([2, 1])
+            with d1:
+                st.bar_chart(fd.set_index("status"))
+            with d2:
+                st.dataframe(fd, hide_index=True, width='stretch')
 
         st.markdown("**🎯 Apply this week**")
         apply_ids = meta.get("kanban_targets_week1", {}).get("apply_this_week", [])

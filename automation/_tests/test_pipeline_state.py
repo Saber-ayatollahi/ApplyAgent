@@ -1155,3 +1155,50 @@ def test_migration_preserves_existing_jobs(tmp_path):
     assert out["jobs"][0]["fit_score_numeric"] == 8
     assert out["jobs"][0]["outreach_log"] == [{"date": "2026-05-01"}]
     assert out["meta"]["weekly_target"] == {"applies": 5}
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 — parse_archive_reason whitespace + collision edge cases
+# (Agent 3 coverage gap)
+# ---------------------------------------------------------------------------
+
+def test_parse_archive_reason_whitespace_only_name():
+    """`muted_sector_   ` (whitespace after the prefix) → None.
+
+    A name that's purely whitespace is not a usable canonical key. The
+    caller (Phase 5 context-aware Restore) treats this as "no parseable
+    suppression to lift", which is the right behaviour."""
+    out = ps.parse_archive_reason("muted_sector_   ")
+    assert out is None
+
+
+def test_parse_archive_reason_empty_after_prefix():
+    """`muted_sector_` with nothing after → None. Same reasoning."""
+    assert ps.parse_archive_reason("muted_sector_") is None
+    assert ps.parse_archive_reason("muted_company_") is None
+
+
+def test_parse_archive_reason_prefix_collision_resilient():
+    """A company name that starts with 'muted_sector_' (pathological but
+    possible) must still parse as a COMPANY mute, not silently mis-parse
+    as a sector. The implementation should match the longer/more-specific
+    prefix first OR honour the actual prefix order."""
+    # `muted_company_muted_sector_X` is unambiguous if the parser anchors
+    # on the OUTER prefix (muted_company_) before stripping.
+    out = ps.parse_archive_reason("muted_company_muted_sector_X")
+    assert out is not None
+    scope, name = out
+    assert scope == "company"
+    assert name == "muted_sector_X"
+
+
+def test_parse_archive_reason_multi_underscore_sector_name():
+    """Sector names with underscores (e.g. 'US_Banks') round-trip cleanly."""
+    out = ps.parse_archive_reason("muted_sector_US_Banks")
+    assert out == ("sector", "US_Banks")
+
+
+def test_parse_archive_reason_unicode_name():
+    """Sector / company names with non-ASCII (accents, etc.) preserved."""
+    out = ps.parse_archive_reason("muted_company_Société Générale")
+    assert out == ("company", "Société Générale")

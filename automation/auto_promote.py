@@ -461,6 +461,10 @@ def main() -> int:
                     r, _suppression_snapshot
                 )
                 if supp_hit:
+                    # Phase 6 P2 fix: include title/score/verdict so the
+                    # audit pack's "Suppressed (race)" sheet has the columns
+                    # populated, not blank. The xlsx writer always declared
+                    # the columns; the appended dict was missing them.
                     if is_manual:
                         override_suppression_reason = supp_reason or "suppressed"
                         # Record the override in suppressed_after_score for
@@ -469,7 +473,10 @@ def main() -> int:
                         suppressed_after_score.append({
                             "url": r.get("link") or r.get("url") or "",
                             "company": r.get("company", ""),
+                            "title": r.get("title", ""),
                             "sector": r.get("sector", ""),
+                            "score": score,
+                            "verdict": verdict,
                             "drop_reason": supp_reason or "suppressed",
                             "selection_mode": "manual_override_suppression",
                             "promoted_anyway": True,
@@ -478,7 +485,10 @@ def main() -> int:
                         suppressed_after_score.append({
                             "url": r.get("link") or r.get("url") or "",
                             "company": r.get("company", ""),
+                            "title": r.get("title", ""),
                             "sector": r.get("sector", ""),
+                            "score": score,
+                            "verdict": verdict,
                             "drop_reason": supp_reason or "suppressed",
                             "selection_mode": "threshold",
                             "promoted_anyway": False,

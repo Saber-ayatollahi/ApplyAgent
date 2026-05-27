@@ -570,3 +570,95 @@ def test_threshold_row_in_muted_sector_still_dropped(isolated, monkeypatch):
     assert sup[0]["url"] == bank_url
     assert sup[0]["selection_mode"] == "threshold"
     assert sup[0]["promoted_anyway"] is False
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 — adversarial --only-urls branches (Agent 3 coverage gap)
+# ---------------------------------------------------------------------------
+
+def test_only_urls_file_not_found_returns_1(isolated, monkeypatch):
+    """Pointing --only-urls at a non-existent file should exit 1 with stderr
+    explaining what's wrong, NOT silently succeed."""
+    rc = _run_main(monkeypatch, [
+        "--commit",
+        "--only-urls", str(isolated["tmp"] / "does_not_exist.txt"),
+    ])
+    assert rc == 1
+
+
+def test_only_urls_empty_file_returns_zero_no_promotion(isolated, monkeypatch):
+    """An empty file is a valid edge case (user cleared the selection).
+    Expected: rc=0, no promotion, no crash."""
+    rows = [_scored_row("RBC", "Risk Analyst",
+                         "https://example.com/jobs/1", fit_score=8)]
+    _write_scored(isolated["out_dir"], "worklist_scored.json", rows)
+    empty = _write_urls_file(isolated["tmp"], [], "empty.txt")
+    rc = _run_main(monkeypatch, [
+        "--commit",
+        "--only-urls", str(empty),
+    ])
+    assert rc == 0
+    tr = json.loads(isolated["tracker"].read_text(encoding="utf-8"))
+    assert len(tr.get("jobs", [])) == 0
+
+
+def test_only_urls_comment_only_file_returns_zero_no_promotion(isolated,
+                                                                  monkeypatch):
+    """Comment-only / blank-only file → no usable URLs → rc=0, no promotion."""
+    rows = [_scored_row("RBC", "Risk Analyst",
+                         "https://example.com/jobs/1", fit_score=8)]
+    _write_scored(isolated["out_dir"], "worklist_scored.json", rows)
+    p = isolated["tmp"] / "comments.txt"
+    p.write_text("# this is a comment\n\n   \n# another comment\n",
+                  encoding="utf-8")
+    rc = _run_main(monkeypatch, [
+        "--commit", "--only-urls", str(p),
+    ])
+    assert rc == 0
+    tr = json.loads(isolated["tracker"].read_text(encoding="utf-8"))
+    assert len(tr.get("jobs", [])) == 0
+
+
+def test_only_urls_zero_match_in_scored_returns_zero(isolated, monkeypatch):
+    """User selects URLs that are not in the scored file — should exit 0
+    with stderr noting the miss, NOT crash."""
+    rows = [_scored_row("RBC", "Risk Analyst",
+                         "https://example.com/jobs/in-scored", fit_score=8)]
+    _write_scored(isolated["out_dir"], "worklist_scored.json", rows)
+    picks = _write_urls_file(isolated["tmp"],
+                              ["https://example.com/jobs/not-in-scored"],
+                              "miss.txt")
+    rc = _run_main(monkeypatch, [
+        "--commit", "--only-urls", str(picks),
+    ])
+    assert rc == 0
+    tr = json.loads(isolated["tracker"].read_text(encoding="utf-8"))
+    assert len(tr.get("jobs", [])) == 0
+
+
+def test_suppressed_after_score_carries_title_score_verdict(isolated,
+                                                              monkeypatch):
+    """Phase 6 P2 fix: the audit-pack's Suppressed (race) sheet declared
+    title/score/verdict columns but auto_promote never populated them.
+    After the fix, every appended dict has these fields filled."""
+    bank_url = "https://example.com/jobs/bank-alm"
+    rows = [_scored_row("RBC", "Director ALM", bank_url, fit_score=9,
+                         verdict="apply_now",
+                         sector="Canadian Big 6 Banks")]
+    _write_scored(isolated["out_dir"], "worklist_scored.json", rows)
+
+    from datetime import date, timedelta
+    supp.add_sector("Canadian Big 6 Banks",
+                     date.today() + timedelta(days=60),
+                     "phase6 test")
+
+    rc = _run_main(monkeypatch, ["--commit", "--min-score", "7"])
+    assert rc == 0
+    rep = _read_promote_report(isolated["out_dir"])
+    sup = rep["suppressed_after_score"]
+    assert len(sup) == 1
+    entry = sup[0]
+    # The fix: these fields must be present and populated.
+    assert entry.get("title") == "Director ALM"
+    assert entry.get("score") == 9
+    assert entry.get("verdict") == "apply_now"
