@@ -74,6 +74,16 @@ data/job_tracker_data.bak*.json
 data/recruiter_crm.bak*.json
 
 # ============================================================================
+# Suppressions — live state, audit log, history, recovery queue
+# Reasons can be candid; never sync across machines. Seed via
+# data/suppressions.example.json (which IS committed).
+# ============================================================================
+data/suppressions.json
+data/suppressions_events.jsonl
+data/suppressions_history.json
+data/suppressions_pending_archives.jsonl
+
+# ============================================================================
 # App runtime logs — written by start.ps1
 # ============================================================================
 logs/
