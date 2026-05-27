@@ -47,6 +47,48 @@ python automation/weekly_report.py
 
 Everything is cached — re-runs on the same scan cost $0.
 
+### Suppressions (mute a sector or company)
+
+Tell the scoring pipeline to skip rows from a sector or company you don't want
+to spend time on this week. Mutes auto-expire on the date you choose, leaving an
+audit trail in `data/suppressions_events.jsonl`.
+
+```bash
+# Mute a whole sector for 30 days (lenient name matching)
+python -m automation.suppressions add-sector "Canadian Big 6 Banks" \
+  --days 30 --reason "Q2 cooldown after rejection wave"
+
+# Mute a single company until a specific date
+python -m automation.suppressions add-company "Acme Corp" \
+  --until 2026-08-01 --reason "bad recruiter experience"
+
+# See what's currently muted (and last 20 expired entries)
+python -m automation.suppressions list --include-expired
+
+# Lift a mute early
+python -m automation.suppressions lift sector "Canadian Big 6 Banks"
+
+# Read the audit log
+python -m automation.suppressions audit --limit 20
+```
+
+Manual selection beats suppression: if you pass `--only-urls picks.txt` to
+`auto_promote.py` and one of those URLs is currently suppressed, it still
+promotes — tagged `selection_mode: "manual_override_suppression"` for audit.
+Bulk threshold-mode promotion still respects mutes.
+
+### Manual promotion (`--only-urls`)
+
+```bash
+# Promote ONLY these URLs, ignoring threshold rules
+python automation/auto_promote.py --commit \
+  --only-urls automation/outputs/picks.txt
+```
+
+`picks.txt` is one URL per line. Empty lines and `#` comments are ignored.
+Manual selection is **exclusive**: rows above the threshold that are not in
+`picks.txt` are NOT promoted.
+
 ---
 
 ## Start of day — the 60-second ritual

@@ -298,6 +298,213 @@ def list_available_scans() -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Per-artifact xlsx builders — invoked from the inline download buttons next
+# to each pipeline action (Gmail/scrape/score/promote). Keeps each click cheap
+# (~50KB-2MB) vs. the full multi-sheet pack (~300KB-5MB).
+# ---------------------------------------------------------------------------
+
+
+def _single_sheet_xlsx(df: pd.DataFrame, sheet_name: str) -> bytes:
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(df).to_excel(xw, sheet_name=sheet_name, index=False)
+    return buf.getvalue()
+
+
+def gmail_scan_to_xlsx(path: Path) -> bytes:
+    """xlsx for one scan_gmail_<stamp>.json — full input-output funnel.
+
+    Sheets:
+      Summary       — funnel counts (alerts seen → parsed → kept after each
+                      filter), so the user can see exactly where rows went.
+      Kept rows     — the rows that survived all filters; what the worklist
+                      and scorer actually see.
+      Geo drops     — rows dropped because location was outside the Toronto
+                      pipeline (Raleigh, NYC, BC, etc.). Includes the raw
+                      location string and link so user can spot-check.
+      Quarantined   — rows the parser-regression guard rejected (title
+                      starts with company prefix). Empty on healthy runs.
+    """
+    env = _read_json(path)
+    diag = env.get("harvest_diagnostics") or {}
+
+    kept_rows = env.get("results", []) or []
+    geo_rows = diag.get("geo_dropped_rows", []) or []
+    quarantine_rows = diag.get("quarantine", []) or []
+
+    # ── Summary funnel ────────────────────────────────────────────────────
+    summary = [
+        ("Source file", path.name),
+        ("Scan timestamp", env.get("scan_timestamp", "—")),
+        ("Days window", diag.get("days_window", "—")),
+        ("", ""),
+        ("─── INPUT ───", ""),
+        ("IMAP messages matched", diag.get("imap_messages_matched", "—")),
+        ("LinkedIn alerts seen", diag.get("linkedin_alerts_seen", "—")),
+        ("Digests with rows", diag.get("digests_with_rows", "—")),
+        ("Digests with zero rows (parse miss)",
+         diag.get("digests_without_rows", "—")),
+        ("Rows extracted by parser", diag.get("rows_parsed", "—")),
+        ("", ""),
+        ("─── FILTERS ───", ""),
+        ("Quarantined (parser-regression guard)", len(quarantine_rows)),
+        ("Geo-dropped (outside Toronto pipeline)", len(geo_rows)),
+        ("", ""),
+        ("─── OUTPUT ───", ""),
+        ("Kept rows (passed all filters)", len(kept_rows)),
+    ]
+    summary_df = pd.DataFrame(summary, columns=["Metric", "Value"])
+
+    # ── Kept rows (the survivors) ─────────────────────────────────────────
+    kept_df = _df_from_rows(
+        kept_rows,
+        columns=["company", "title", "location", "posted_date",
+                 "source", "sector", "gmail_uid", "link"],
+    )
+
+    # ── Geo drops ─────────────────────────────────────────────────────────
+    geo_df = _df_from_rows(
+        geo_rows,
+        columns=["company", "title", "location", "posted_date",
+                 "source", "gmail_uid", "drop_reason", "link"],
+    )
+
+    # ── Quarantined (parser regression) ───────────────────────────────────
+    q_df = _df_from_rows(
+        quarantine_rows,
+        columns=["company", "title", "reason", "link"],
+    )
+
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        for name, df in [("Summary", summary_df),
+                         ("Kept rows", kept_df),
+                         ("Geo drops", geo_df),
+                         ("Quarantined", q_df)]:
+            _truncate_str_cells(df).to_excel(xw, sheet_name=name, index=False)
+    return buf.getvalue()
+
+
+def scan_to_xlsx(path: Path) -> bytes:
+    """xlsx for one scan_<stamp>.json — three sheets: results + title/geo drops."""
+    env = _read_json(path)
+    rows_df = _df_from_rows(
+        env.get("results", []),
+        columns=["sector", "company", "title", "location", "source",
+                 "posted_date", "found_at", "newly_seen", "keyword_hit", "link"],
+    )
+    title_df = _df_from_rows(
+        (env.get("filter_drops") or {}).get("title", []),
+        columns=["sector", "company", "title", "location", "source",
+                 "matched_terms", "link"],
+    )
+    geo_df = _df_from_rows(
+        (env.get("filter_drops") or {}).get("geo", []),
+        columns=["sector", "company", "title", "location", "source", "link"],
+    )
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        for name, df in [("Scrape rows", rows_df),
+                         ("Title drops", title_df),
+                         ("Geo drops", geo_df)]:
+            _truncate_str_cells(df).to_excel(xw, sheet_name=name, index=False)
+    return buf.getvalue()
+
+
+def scored_to_xlsx(path: Path) -> bytes:
+    """xlsx for worklist_scored.json — Scored sheet + Stage-1 drops sheet."""
+    env = _read_json(path)
+    scored_rows = []
+    for r in env.get("results", []) or []:
+        f = r.get("fit") or {}
+        scored_rows.append({
+            "company": r.get("company", ""),
+            "title": r.get("title", ""),
+            "location": r.get("location", ""),
+            "fit_verdict": f.get("fit_verdict", ""),
+            "fit_score": f.get("fit_score", ""),
+            "tier": f.get("tier", ""),
+            "summary": f.get("summary", ""),
+            "top_3_reasons": "; ".join(f.get("top_3_reasons", []) or []),
+            "skill_gaps": "; ".join(f.get("skill_gaps", []) or []),
+            "stage1_score": (r.get("_triage") or {}).get("score", ""),
+            "source": r.get("source", ""),
+            "link": r.get("link", ""),
+        })
+    scored_df = _df_from_rows(
+        scored_rows,
+        columns=["company", "title", "location", "fit_verdict", "fit_score",
+                 "tier", "summary", "top_3_reasons", "skill_gaps",
+                 "stage1_score", "source", "link"],
+    )
+    s1_rows = []
+    for d in env.get("triage_drops", []) or []:
+        bd = d.get("hits_breakdown") or {}
+        s1_rows.append({
+            "company": d.get("company", ""),
+            "title": d.get("title", ""),
+            "score": d.get("score", ""),
+            "rule_reasons": "; ".join(d.get("rule_reasons", []) or []),
+            "strong": ",".join(bd.get("strong", []) or []),
+            "medium": ",".join(bd.get("medium", []) or []),
+            "weak": ",".join(bd.get("weak", []) or []),
+            "level": ",".join(bd.get("level", []) or []),
+            "source": d.get("source", ""),
+            "link": d.get("link", ""),
+        })
+    s1_df = _df_from_rows(
+        s1_rows,
+        columns=["company", "title", "score", "rule_reasons", "strong",
+                 "medium", "weak", "level", "source", "link"],
+    )
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(scored_df).to_excel(xw, sheet_name="Scored", index=False)
+        _truncate_str_cells(s1_df).to_excel(xw, sheet_name="Stage-1 drops", index=False)
+    return buf.getvalue()
+
+
+def worklist_to_xlsx(path: Path) -> bytes:
+    """xlsx for worklist.json — pool sheet + merge-pairs sheet."""
+    env = _read_json(path)
+    pool_df = _df_from_rows(
+        env.get("results", []),
+        columns=["sector", "company", "title", "location", "source",
+                 "first_seen", "in_pool_since", "is_new_since_last_score",
+                 "posted_date", "link"],
+    )
+    merges_df = _df_from_rows(
+        env.get("merged_pairs", []),
+        columns=["company", "title", "reason", "kept_source",
+                 "dropped_source", "kept_url", "dropped_url"],
+    )
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(pool_df).to_excel(xw, sheet_name="Pool", index=False)
+        _truncate_str_cells(merges_df).to_excel(xw, sheet_name="Merges", index=False)
+    return buf.getvalue()
+
+
+def promote_to_xlsx(json_path: Path) -> bytes:
+    """xlsx for promote_report_<stamp>.json — new entries + skipped rows."""
+    env = _read_json(json_path)
+    new_df = _df_from_rows(
+        env.get("new_entries", []),
+        columns=["id", "tier", "score", "sector", "company", "title", "url"],
+    )
+    skip_df = _df_from_rows(
+        env.get("skipped_rows", []),
+        columns=["reason", "company", "title", "location", "score",
+                 "verdict", "note", "url"],
+    )
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(new_df).to_excel(xw, sheet_name="Promoted", index=False)
+        _truncate_str_cells(skip_df).to_excel(xw, sheet_name="Skipped", index=False)
+    return buf.getvalue()
+
+
 if __name__ == "__main__":
     import sys
     target = sys.argv[1] if len(sys.argv) > 1 else "latest"

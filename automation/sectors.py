@@ -53,18 +53,14 @@ def _normalize(s: str) -> str:
 _NORM_TO_DISPLAY: dict[str, str] = {_normalize(d): d for d in KNOWN}
 
 
-def canonical(name: str) -> str | None:
+def canonical(name: str | None) -> str | None:
     """Lenient match: case- and punctuation-insensitive lookup against the
     registry. Returns the canonical display name on hit, None on miss.
 
-    "big 6 banks" → "Canadian Big 6 Banks"  (no — too lossy; we don't drop
-                                              the "Canadian" prefix).
-    "Canadian Big 6 Banks" → "Canadian Big 6 Banks"
-    "canadian big 6 banks" → "Canadian Big 6 Banks"
-    "Canadian Big-6 Banks" → "Canadian Big 6 Banks"
-    "Big 4 Risk Advisory"  → "Big 4 Risk Advisory"
-    "unknown sector"       → None
-    """
+    Defensively returns None for non-string inputs (None, int, list, etc.) so
+    a malformed worklist row doesn't crash the scoring hot path."""
+    if not isinstance(name, str):
+        return None
     return _NORM_TO_DISPLAY.get(_normalize(name))
 
 

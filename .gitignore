@@ -28,6 +28,14 @@ Thumbs.db
 # ============================================================================
 .claude/worktrees/
 
+# Review-agent scratch dirs (E2E drills, migration probes, etc.). Each agent
+# writes its harness scripts here; nothing inside is meant to be sourced or
+# imported by the real codebase.
+.tmp_e2e/
+.tmp_e2e_round2/
+.tmp_migration_drill/
+.tmp_*/
+
 # ============================================================================
 # Agent outputs — tracked so both machines stay in sync
 # ============================================================================

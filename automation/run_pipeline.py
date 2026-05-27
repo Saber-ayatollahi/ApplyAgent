@@ -28,6 +28,7 @@ Scrape modes:
 from __future__ import annotations
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -57,7 +58,8 @@ SCRAPE_MODE_ARGS = {
 }
 
 
-def _stream(cmd: list[str], prefix: str, status: dict, stage: str) -> int:
+def _stream(cmd: list[str], prefix: str, status: dict, stage: str,
+            env: dict | None = None) -> int:
     """Run cmd, stream output with prefix, update `status["stages"][stage]`.
 
     Previously this wrote to the FLAT `status[stage]` key, but every other
@@ -79,6 +81,7 @@ def _stream(cmd: list[str], prefix: str, status: dict, stage: str) -> int:
         cmd, cwd=str(ROOT),
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, bufsize=1,
+        env=env,
     )
     last_line = ""
     assert proc.stdout is not None
@@ -101,6 +104,26 @@ def _write_status(status: dict):
     PIPELINE_DIR.mkdir(parents=True, exist_ok=True)
     status_path = PIPELINE_DIR / f"pipeline_{status['pipeline_id']}.json"
     status_path.write_text(json.dumps(status, indent=2), encoding="utf-8")
+
+
+def _snapshot_suppressions(pipeline_id: str) -> Path:
+    """Freeze active suppression state alongside the pipeline status JSON.
+
+    Empty live state still produces a snapshot ({version,sectors,companies})
+    so downstream subprocesses can rely on the env var pointing at a real,
+    parseable file."""
+    PIPELINE_DIR.mkdir(parents=True, exist_ok=True)
+    snapshot_path = PIPELINE_DIR / f"pipeline_{pipeline_id}_suppressions.json"
+    try:
+        from automation import suppressions as _supp  # type: ignore
+    except ImportError:
+        from . import suppressions as _supp  # type: ignore
+    return _supp.snapshot_to(snapshot_path)
+
+
+def _subprocess_env(snapshot_path: Path) -> dict:
+    """Child env with absolute snapshot path injected; subprocesses cwd may differ."""
+    return {**os.environ, "APPLYAGENT_SUPPRESSIONS_SNAPSHOT": str(Path(snapshot_path).resolve())}
 
 
 def _find_latest_scan() -> Path | None:
@@ -167,6 +190,15 @@ def main() -> int:
         "state": "running",
         "stages": {},
     }
+
+    # Freeze suppression state for the duration of this run. Sibling to the
+    # status JSON; absolute path passed to subprocesses via env so a mid-run
+    # mute via the UI cannot retroactively rewrite the run's drop reasons.
+    snapshot_path = _snapshot_suppressions(pipeline_id)
+    try:
+        status["suppressions_snapshot"] = str(snapshot_path.relative_to(ROOT))
+    except ValueError:
+        status["suppressions_snapshot"] = str(snapshot_path)
     _write_status(status)
 
     print(f"=== ApplyAgent pipeline {pipeline_id} ===", flush=True)
@@ -200,6 +232,9 @@ def _run(args, status: dict, pipeline_id: str) -> int:
         import worklist  # type: ignore
     except ImportError:
         from . import worklist  # type: ignore
+
+    snapshot_path = PIPELINE_DIR / f"pipeline_{pipeline_id}_suppressions.json"
+    child_env = _subprocess_env(snapshot_path)
 
     # -------- [1] SCRAPE --------
     if args.skip_scrape:
@@ -280,7 +315,7 @@ def _run(args, status: dict, pipeline_id: str) -> int:
             cmd += ["--limit", str(args.score_limit)]
         if args.score_dry_run:
             cmd.append("--dry-run")
-        rc = _stream(cmd, "score", status, "score")
+        rc = _stream(cmd, "score", status, "score", env=child_env)
         if rc != 0:
             status["state"] = "failed"
             _write_status(status)
@@ -327,7 +362,7 @@ def _run(args, status: dict, pipeline_id: str) -> int:
             cmd.append("--include-watch")
         if args.commit_promote:
             cmd.append("--commit")
-        rc = _stream(cmd, "promote", status, "promote")
+        rc = _stream(cmd, "promote", status, "promote", env=child_env)
         if rc != 0:
             status["state"] = "failed"
             _write_status(status)

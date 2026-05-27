@@ -311,7 +311,7 @@ The single most damaging pattern in the original v3.1 was **silent failure**: th
 1. **Selection source-of-truth = `st.session_state["scoring_selected_urls"]: set[str]`**, keyed on URL (the only stable identity). Each render derives the checkbox column by `df["promote"] = df["url"].isin(state_set)`. On `st.data_editor` callback, diff the edited frame back into the set: `state_set ^= edited_urls_changed`. Filter changes become non-destructive.
 2. **`--only-urls` honors every selection.** `verdict=skip` rows are promoted as `status=Watch, urgency=Low, tier=4` with `manual_override_skip_verdict: true` in notes. Below-threshold rows promote normally with `selection_mode: "manual_below_threshold"`. Never silently drop a user's explicit pick.
 3. **Drop the N≥25 confirm modal.** Replace with always-on `st.caption` beneath the button: *"Will send 27 (4 below fit≥7, 1 will skip on suppression, 0 geo)"*. Threshold-based ceremony patronizes a solo user who knows what they selected.
-4. **Per-row `selection_mode` in promote report.** Values: `threshold | manual | manual_below_threshold | manual_override_skip`. Report-level mode is `"mixed"` when both present. The Pipeline headline ("12 ready at fit≥7") derives from current `worklist_scored.json` post-suppression — never from `last_run_state.added`, which conflates threshold and manual runs.
+4. **Per-row `selection_mode` in promote report.** Values: `threshold | manual | manual_below_threshold | manual_override_skip`. Report-level mode is `"threshold"` for a default run, `"manual"` when `--only-urls` is used, or `"mixed"` if both modes contributed rows in the same run. **`--only-urls` is EXCLUSIVE** — it pre-filters the scored input down to the URLs in the file (mirroring `--only-url`'s contract). Threshold-eligible rows the user did NOT pick are NOT silently included. Consequently `"mixed"` is unreachable from `--only-urls` alone in current invocations; the field is preserved for forward compatibility with future invocation modes that explicitly combine both populations. The Pipeline headline ("12 ready at fit≥7") derives from current `worklist_scored.json` post-suppression — never from `last_run_state.added`, which conflates threshold and manual runs.
 
 ### Cluster B — Suppression matching must use canonical keys + must be visible
 
@@ -384,6 +384,38 @@ Original §v3 left four open questions. Updated answers given v3.1.1:
 2. **Recent runs:** thin expander at bottom of Pipeline; deep-links to Scan History page. Confirmed.
 3. **Bundle the Review Queue race fix:** must bundle. The race fix is a one-line consequence of routing through `tracker_ops` + `mutate_json`, and the prominent `[Apply to tracker]` invites the race.
 4. **TRIAGE rescue UX:** checkbox + bulk. Same pattern as scoring-card selection (Cluster A) — same `set[str]` keyed on URL state; same `[Rescue N selected]` action that shells `fit_scorer.py --only-url` per URL.
+
+### Manual-selection vs. suppression precedence (resolved during E2E Round 2)
+
+Two questions arose during integration testing that the spec didn't initially answer. Recording the decisions here so the Phase 3 UI builds against a single, documented contract.
+
+**Q1: When `--only-urls` is passed, are threshold-eligible rows in the scored file ALSO promoted, or excluded?**
+
+**Decision: EXCLUDED (exclusive semantics).** `--only-urls` pre-filters the scored input down to the URLs in the file, mirroring `--only-url`'s contract. The user's mental model is *"I picked these N; promote N"*. Additive behavior would silently include threshold-eligible rows the user did NOT pick — a P0 violation of the `[Send N selected]` UX. As a consequence, the run-level `selection_mode = "mixed"` is unreachable from `--only-urls` alone in current invocations; the field is preserved for forward compatibility with hypothetical future modes that explicitly combine populations.
+
+**Q2: When the user manually selects a row via `--only-urls` that is currently suppressed by a sector or company mute, what happens?**
+
+**Decision: PROMOTE WITH AUDIT.** The row goes to the tracker tagged `selection_mode: "manual_override_suppression"` with the would-be drop reason (`suppressed_sector_60d`) recorded in the row's `notes` field. The promote report's `suppressed_after_score` bucket also records the override with `promoted_anyway: true`. This mirrors `fit_scorer --only-url`'s rescue behavior (Cluster B item 6) — manual selection is explicit user intent, suppression is a preference signal that is *softer* than explicit selection. The user can lift the mute if they want a permanent fix; the override gives them an immediate exception with a clean audit trail.
+
+**Threshold-mode rows in a muted sector still drop into `suppressed_after_score` (race-window catch).** The asymmetry is the design: bulk threshold promotion is implicit / automatic, so suppression wins by default; manual selection is explicit, so user intent wins. Same row, two outcomes depending on how the user invoked the run.
+
+### Phase 2.5 — Suppressions CLI (operator UX)
+
+The fresh-clone reviewer flagged that Phase 2 shipped the suppressions *engine* but no command-line surface, forcing the user to write Python (`from automation import suppressions; suppressions.add_sector(...)`) just to add a mute. That breaks the "tomorrow-ready" bar for the only persona who matters here.
+
+`automation/suppressions.py` now exposes a subcommand CLI with seven verbs:
+
+| Command | What it does |
+|---|---|
+| `add-sector NAME [--days N | --until DATE] --reason ...` | Mute a sector (lenient name match via `sectors.canonical`) |
+| `add-company NAME [--days N | --until DATE] --reason ...` | Mute a company (canonicalized via `brand_aliases.canonical_brand`) |
+| `list [--scope sector|company|all] [--include-expired] [--json]` | Inspect active mutes; pull last 20 expired from history if asked |
+| `lift {sector|company} NAME` | Remove an active mute (no-op + audit event if absent) |
+| `extend {sector|company} NAME --days N` | Push the `until` date forward |
+| `edit-reason {sector|company} NAME --reason ...` | Update the reason field in place |
+| `audit [--limit N]` | Tail the JSONL audit log |
+
+Every verb supports `--json` so future UI work in Phase 3 (the SUPPRESSIONS section of the Pipeline page) can shell out instead of importing the module. The subprocess + in-process tests in `automation/_tests/test_suppressions_cli.py` lock the contract: 18 cases covering round-trips, mutual-exclusion guards (`--days` vs `--until`), no-op lift semantics, and the `__main__` entrypoint.
 
 ## Implementation scope
 

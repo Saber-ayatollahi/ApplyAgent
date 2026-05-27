@@ -129,22 +129,81 @@ def _pid_alive(pid: int) -> bool:
         return False
 
 
+def _process_returncode(pid: int) -> Optional[int]:
+    """Return the exit code of `pid` if it has exited, else None.
+
+    The detach pattern in start_run() means we can't proc.wait() — the OS
+    cleans up the parent handle. Re-open the process by PID and read the
+    exit code directly. Windows: GetExitCodeProcess. POSIX: not generally
+    possible without ptrace; we fall back to the log-grep heuristic there.
+    """
+    if pid <= 0:
+        return None
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            from ctypes import wintypes
+            PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+            STILL_ACTIVE = 259
+            kernel32 = ctypes.windll.kernel32
+            h = kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            if not h:
+                return None
+            try:
+                code = wintypes.DWORD()
+                ok = kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+                if not ok:
+                    return None
+                rc = int(code.value)
+                # If still active OR the slot was recycled, treat as unknown.
+                # _pid_alive() should have already returned True in that case.
+                if rc == STILL_ACTIVE:
+                    return None
+                return rc
+            finally:
+                kernel32.CloseHandle(h)
+        except Exception:
+            return None
+    return None
+
+
 def refresh_state(rec_path: Path) -> dict:
-    """Read a run record; if it claims 'running' but the PID is dead, mark finished/failed."""
+    """Read a run record; if it claims 'running' but the PID is dead, mark finished/failed.
+
+    State detection priority:
+      1. Recorded `returncode` from the OS (authoritative when available).
+      2. Log-tail markers (legacy fallback for cases where we can't read
+         the returncode — different Windows API failure, POSIX, etc).
+
+    Previously this used ONLY the log-tail check, which falsely flagged
+    gmail_fetch + jd_scraper runs as 'failed' because their final log line
+    doesn't contain the magic strings the pipeline driver emits.
+    """
     rec = json.loads(rec_path.read_text(encoding="utf-8"))
     if rec.get("state") == "running" and not _pid_alive(rec.get("pid", 0)):
-        log_path = rec.get("log_path", "")
-        crashed = True
-        if log_path and Path(log_path).exists():
-            try:
-                tail = Path(log_path).read_bytes()[-2048:]
-                if (b"nightly_refresh finished" in tail
-                        or b"finished ===" in tail
-                        or b"complete ===" in tail):
-                    crashed = False
-            except OSError:
-                pass
-        rec["state"] = "failed" if crashed else "finished"
+        rc = _process_returncode(rec.get("pid", 0))
+        if rc is not None:
+            rec["returncode"] = rc
+            rec["state"] = "finished" if rc == 0 else "failed"
+        else:
+            # Fallback: tail the log for known success markers.
+            log_path = rec.get("log_path", "")
+            crashed = True
+            if log_path and Path(log_path).exists():
+                try:
+                    tail = Path(log_path).read_bytes()[-2048:]
+                    if (b"nightly_refresh finished" in tail
+                            or b"finished ===" in tail
+                            or b"complete ===" in tail
+                            or b"[gmail_fetch] worklist rebuilt" in tail
+                            or b"[gmail_fetch] \xe2\x9c\x93 wrote" in tail
+                            or b"[scan] worklist rebuilt" in tail
+                            or b"new candidates across" in tail):
+                        crashed = False
+                except OSError:
+                    pass
+            rec["state"] = "failed" if crashed else "finished"
         rec["finished_at"] = datetime.now().isoformat(timespec="seconds")
         rec_path.write_text(json.dumps(rec, indent=2), encoding="utf-8")
     return rec

@@ -131,6 +131,16 @@ except ImportError:
     except Exception:
         _ledger_record = None  # type: ignore
 
+# Suppression registry — sector/company mutes consulted at triage. Dormant when
+# the live file is empty (default state); short-circuits with no extra work.
+try:
+    import suppressions as _suppressions  # type: ignore
+except ImportError:
+    try:
+        from . import suppressions as _suppressions  # type: ignore
+    except Exception:
+        _suppressions = None  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 JD_CACHE = OUT_DIR / "jd_cache"
@@ -653,10 +663,60 @@ def _distinct_hits(title_lower: str, phrases: list[str]) -> list[str]:
     return hits
 
 
-def rule_triage(title: str) -> dict:
+# Module-level cache for the suppression snapshot — loaded once per process so
+# a 1,400-row scoring run reads the registry exactly once. Sentinel `_UNSET`
+# distinguishes "not yet loaded" from "loaded as None" (env var unset).
+_UNSET = object()
+_suppression_snapshot_cache: object = _UNSET
+
+
+def _load_suppression_snapshot() -> dict | None:
+    """Read the suppression snapshot pointed to by APPLYAGENT_SUPPRESSIONS_SNAPSHOT.
+
+    Returns the parsed dict on success; None when the env var is unset OR the
+    file is missing/unreadable — graceful degradation, never crashes the run.
+    Cached module-level so a 1,400-row scoring loop reads the registry once."""
+    global _suppression_snapshot_cache
+    if _suppression_snapshot_cache is not _UNSET:
+        return _suppression_snapshot_cache  # type: ignore[return-value]
+    path_str = os.environ.get("APPLYAGENT_SUPPRESSIONS_SNAPSHOT")
+    if not path_str:
+        _suppression_snapshot_cache = None
+        return None
+    p = Path(path_str)
+    if not p.exists():
+        _suppression_snapshot_cache = None
+        return None
+    try:
+        snap = json.loads(p.read_text(encoding="utf-8"))
+        _suppression_snapshot_cache = snap if isinstance(snap, dict) else None
+    except Exception as _e:
+        if _log_error is not None:
+            _log_error("suppression_snapshot_load", _e, module="fit_scorer")
+        _suppression_snapshot_cache = None
+    return _suppression_snapshot_cache  # type: ignore[return-value]
+
+
+def _snapshot_has_entries(snap: dict | None) -> bool:
+    """True if the snapshot contains any active sector or company entries."""
+    if not snap:
+        return False
+    return bool(snap.get("sectors")) or bool(snap.get("companies"))
+
+
+def rule_triage(title: str,
+                row: dict | None = None,
+                suppression_snapshot: dict | None = None,
+                only_url_override: bool = False) -> dict:
     """Weighted stage-1 triage. Passes if total score >= STAGE1_THRESHOLD.
 
     Returns {stage1_pass, rough_tier, score, rule_reasons, hits_breakdown}.
+
+    Triage ordering: negative_term -> suppression -> keyword/level. Suppression
+    consults `suppression_snapshot` (or live state if None and the suppressions
+    module is available); when `only_url_override` is True, a suppressed match
+    is recorded as `override_reason: manual_only_url` in `rule_reasons` instead
+    of dropping the row.
     """
     t = (title or "").lower()
     # Hard-fail on negative term
@@ -664,6 +724,33 @@ def rule_triage(title: str) -> dict:
         if n in t:
             return {"stage1_pass": False, "rough_tier": 5, "score": 0,
                     "rule_reasons": [f"neg:{n}"], "hits_breakdown": {}}
+
+    # Suppression check — applied after neg-term (correctness) but before the
+    # keyword/level scoring (taste). Short-circuits cleanly when the snapshot
+    # is empty so the dormant default state stays byte-identical to legacy.
+    suppression_override_reason: str | None = None
+    if row is not None and _suppressions is not None:
+        snap = suppression_snapshot
+        if snap is None:
+            # Caller didn't pre-load a snapshot; consult the env-var path or
+            # fall back to live state once (live load itself is cheap; the
+            # caller is expected to pass the result into per-row calls so we
+            # don't reload 1,400 times — main() does this).
+            snap = _load_suppression_snapshot()
+        if _snapshot_has_entries(snap):
+            try:
+                suppressed, drop_reason = _suppressions.is_suppressed(row, snapshot=snap)
+            except Exception as _e:
+                if _log_error is not None:
+                    _log_error("suppression_check", _e, module="fit_scorer")
+                suppressed, drop_reason = False, None
+            if suppressed and drop_reason:
+                if only_url_override:
+                    # Record the override; row continues into keyword scoring.
+                    suppression_override_reason = drop_reason
+                else:
+                    return {"stage1_pass": False, "rough_tier": 5, "score": 0,
+                            "rule_reasons": [drop_reason], "hits_breakdown": {}}
 
     strong = _distinct_hits(t, STRONG_POS)
     # Medium and weak are matched against the remaining (post-strong) title
@@ -680,6 +767,10 @@ def rule_triage(title: str) -> dict:
     score = 3 * len(strong) + 2 * len(medium) + 1 * len(weak) + 1 * min(len(level), 2)
     breakdown = {"strong": strong, "medium": medium, "weak": weak, "level": level}
     reasons = []
+    # Audit trail for --only-url overriding a would-be suppression drop.
+    if suppression_override_reason is not None:
+        reasons.append("override_reason:manual_only_url")
+        reasons.append(f"would_have_dropped:{suppression_override_reason}")
     if strong: reasons.append(f"strong={strong[:3]}")
     if medium: reasons.append(f"medium={medium[:3]}")
     if weak: reasons.append(f"weak={weak[:3]}")
@@ -1620,8 +1711,23 @@ def main() -> int:
     triaged: list[dict] = []
     triage_drops: list[dict] = []   # compact records of stage-1 failures
     only_filtered: list[dict] = []  # dropped via --only regex
+    # Load the suppression snapshot once for the whole run; the helper caches
+    # module-level so subsequent calls are no-ops. None when the env var is
+    # unset or the file is missing — fall back to live state in that path so
+    # per-row triage doesn't re-read the registry 1,400 times.
+    _supp_snapshot = _load_suppression_snapshot()
+    if _supp_snapshot is None and _suppressions is not None:
+        try:
+            _supp_snapshot = _suppressions.load_active()
+        except Exception as _e:
+            if _log_error is not None:
+                _log_error("suppression_live_load", _e, module="fit_scorer")
+            _supp_snapshot = None
+    _only_url_active = bool(only_url_targets)
     for r in roles:
-        tri = rule_triage(r["title"])
+        tri = rule_triage(r["title"], row=r,
+                          suppression_snapshot=_supp_snapshot,
+                          only_url_override=_only_url_active)
         r["_triage"] = tri
         if not tri["stage1_pass"]:
             triage_drops.append({

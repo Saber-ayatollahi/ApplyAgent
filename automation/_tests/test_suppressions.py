@@ -345,3 +345,66 @@ def test_replace_existing_entry_for_same_canonical_key(isolated):
     assert len(state["sectors"]) == 1
     assert state["sectors"][0]["reason"] == "second"
     assert state["sectors"][0]["until"] == until2.isoformat()
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for v3.1.1 review findings (2026-05-27)
+# ---------------------------------------------------------------------------
+
+def test_is_expired_fail_closed_on_malformed_until(isolated):
+    """Malformed `until` is treated as expired (fail-closed) so the registry
+    self-cleans rather than silently keeping a stale mute alive forever."""
+    bad_entry = {"until": "not-a-date", "reason": "broken"}
+    assert supp._is_expired(bad_entry, date.today()) is True
+
+    bad_entry2 = {"until": "2026-13-45", "reason": "broken month"}
+    assert supp._is_expired(bad_entry2, date.today()) is True
+
+
+def test_is_suppressed_handles_non_string_company(isolated):
+    """A row with int/list/dict in company or sector must NOT crash the
+    scoring loop; one malformed row would otherwise kill the whole run."""
+    supp.add_sector("Canadian Big 6 Banks", date.today() + timedelta(days=60), "test")
+    snap = supp.load_active()
+    for bad_row in [
+        {"company": 12345, "sector": "Canadian Big 6 Banks"},
+        {"company": ["RBC"], "sector": None},
+        {"company": {"name": "RBC"}, "sector": 0},
+        {"company": "RBC", "sector": [1, 2]},
+    ]:
+        # Must not raise; sector match still works when sector_raw is non-string
+        # because we coerce to "" and skip.
+        supp.is_suppressed(bad_row, snapshot=snap)
+
+
+def test_queue_pending_archive_is_locked(isolated):
+    """queue_pending_archive must take an exclusive lock so concurrent
+    queue+drain doesn't lose entries to the read-then-truncate window."""
+    # Sequential sanity: queue then drain returns the entry.
+    supp.queue_pending_archive("job-001", "test reason")
+    drained = supp.drain_pending_archives()
+    assert len(drained) == 1
+    assert drained[0]["job_id"] == "job-001"
+    # The lock primitive is the same one drain uses; if it is missing the
+    # `_FileLock` wrapper this test asserts at least the basic contract.
+    import inspect
+    src = inspect.getsource(supp.queue_pending_archive)
+    assert "_FileLock" in src, "queue_pending_archive must use _FileLock"
+
+
+def test_event_appended_inside_live_file_lock(isolated):
+    """Audit-trail order must match commit order. The event append is
+    invoked from inside the live-file mutate_json closure; this test reads
+    the source as a guard against future regressions that move it out."""
+    import inspect
+    src = inspect.getsource(supp._add)
+    # The event-emission call must appear BEFORE `return state` inside `_mut`.
+    assert "_append_event(" in src
+    # Ensure the append is no longer after `mutate_json(...)`. A naive way:
+    # find both, ensure mutate_json appears LATER in the source than _append_event.
+    pos_event = src.index("_append_event(")
+    pos_mutate = src.index("mutate_json(LIVE_PATH")
+    assert pos_event < pos_mutate, (
+        "_append_event must be called inside the _mut closure, before "
+        "mutate_json returns and releases the live-file lock"
+    )

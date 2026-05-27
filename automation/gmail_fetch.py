@@ -133,6 +133,7 @@ def main() -> int:
     alert_msgs = [m for m in messages
                    if m.kind == "alert" and "linkedin.com" in m.sender_email.lower()]
     raw_rows: list[dict] = []
+    quarantined_rows: list[dict] = []  # parser produced corrupt shape
     msgs_with_rows = 0
     msgs_without_rows = 0
     for m in alert_msgs:
@@ -144,7 +145,28 @@ def main() -> int:
         for row in parsed:
             row["posted_date"] = m.date or None
             row["gmail_uid"] = m.uid
+            # AGENTIC GUARD: detect the May-2026 corruption pattern where
+            # the parser collapsed `<title> <company>` into both fields,
+            # storing the title alone as company. If a fresh parse ever
+            # regresses, quarantine instead of letting the row poison the
+            # downstream pool. The repair_misparsed_rows.py heuristic
+            # mirrors this exact check.
+            _c = (row.get("company") or "").strip()
+            _t = (row.get("title") or "").strip()
+            if (len(_c) > 5 and _t.startswith(_c)
+                    and len(_t) > len(_c) + 2):
+                row["_quarantine_reason"] = "title_starts_with_company"
+                quarantined_rows.append(row)
+                continue
             raw_rows.append(row)
+    if quarantined_rows:
+        print(f"[gmail_fetch] ⚠️  quarantined {len(quarantined_rows)} row(s) "
+              "with title==company prefix (parser regression?). "
+              "See harvest_diagnostics.quarantine in the output envelope.",
+              file=sys.stderr)
+        for q in quarantined_rows[:3]:
+            print(f"  · drop: company={q.get('company')!r} "
+                  f"title={(q.get('title') or '')[:80]!r}", file=sys.stderr)
 
     # Geo gate: LinkedIn pads digest emails with "similar roles" pulled from
     # outside the Toronto-anchored saved alert (Raleigh, NYC, etc). Drop rows
@@ -153,14 +175,26 @@ def main() -> int:
     # location field LinkedIn happened to omit. Mirrors the web scraper's
     # _is_gta_or_canada_remote gate at jd_scraper.py.
     rows: list[dict] = []
-    dropped_loc_examples: list[str] = []
+    geo_dropped_rows: list[dict] = []  # full audit trail (every row, not 5)
+    dropped_loc_examples: list[str] = []  # first 5 for stderr summary
     for row in raw_rows:
         if keep_for_toronto_pipeline(row.get("location") or ""):
             rows.append(row)
-        elif len(dropped_loc_examples) < 5:
-            dropped_loc_examples.append(
-                f"{row.get('company','?')} — {row.get('location','?')}"
-            )
+        else:
+            geo_dropped_rows.append({
+                "company": row.get("company", ""),
+                "title": row.get("title", ""),
+                "location": row.get("location", ""),
+                "posted_date": row.get("posted_date", ""),
+                "source": row.get("source", ""),
+                "gmail_uid": row.get("gmail_uid", ""),
+                "link": row.get("link", ""),
+                "drop_reason": "geo_outside_toronto_pipeline",
+            })
+            if len(dropped_loc_examples) < 5:
+                dropped_loc_examples.append(
+                    f"{row.get('company','?')} — {row.get('location','?')}"
+                )
     rows_dropped_location = len(raw_rows) - len(rows)
 
     print(f"[gmail_fetch] inbox match: {len(messages)} sender-classified, "
@@ -201,6 +235,17 @@ def main() -> int:
         "rows_dropped_location": rows_dropped_location,
         "rows_kept": len(rows),
         "dropped_location_examples": dropped_loc_examples,
+        # Full audit trail — every row dropped at each filter stage. Lets the
+        # xlsx export show input → each filter → output, so users can see
+        # WHICH roles got rejected and why (geo vs. parser regression).
+        "geo_dropped_rows": geo_dropped_rows,
+        # Parser-regression guard: any quarantined rows surface here so the
+        # UI / audit-pack can show them. Healthy runs have empty list.
+        "quarantine": [
+            {"company": q.get("company"), "title": q.get("title"),
+             "link": q.get("link"), "reason": q.get("_quarantine_reason")}
+            for q in quarantined_rows
+        ],
     }
     out_path.write_text(json.dumps(envelope, indent=2, ensure_ascii=False),
                          encoding="utf-8")

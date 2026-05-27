@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -363,6 +364,7 @@ def rebuild(quarantine: bool = True) -> dict:
         except Exception:
             _geo_keep = None
     geo_dropped = 0
+    quarantine_dropped: list[dict] = []  # title==company-prefix corruption
     for gp in gmail_files:
         for r in _read_envelope(gp).get("results", []) or []:
             if _clean_alert_fields is not None:
@@ -370,10 +372,31 @@ def rebuild(quarantine: bool = True) -> dict:
                     r.get("title", ""), r.get("company", ""),
                     r.get("location", ""))
                 r = {**r, "title": t, "company": c, "location": l}
+            # AGENTIC GUARD: defense-in-depth against the May-2026 misparse.
+            # If a legacy scan_gmail file still has title-startswith-company
+            # corruption (gmail_fetch's parse-time guard would catch it on
+            # fresh runs, but we also replay old files here), quarantine
+            # rather than poison the pool. The repair script can be re-run
+            # separately to retroactively fix the source files.
+            _c = (r.get("company") or "").strip()
+            _t = (r.get("title") or "").strip()
+            if (len(_c) > 5 and _t.startswith(_c)
+                    and len(_t) > len(_c) + 2):
+                quarantine_dropped.append({
+                    "source_file": gp.name,
+                    "company": _c,
+                    "title": _t,
+                    "link": r.get("link", ""),
+                })
+                continue
             if _geo_keep is not None and not _geo_keep(r.get("location") or ""):
                 geo_dropped += 1
                 continue
             _add(r, "gmail")
+    if quarantine_dropped:
+        print(f"[worklist] quarantined {len(quarantine_dropped)} gmail "
+              f"row(s) with title==company prefix — see merged_pairs/"
+              f"quarantine in worklist.json", file=sys.stderr)
 
     rows: list[dict] = []
     stats = {"scrape": 0, "gmail": 0, "both": 0, "total": 0,
@@ -409,6 +432,10 @@ def rebuild(quarantine: bool = True) -> dict:
             "dropped_near": sum(1 for m in merged_pairs if m["reason"] == "near_dup_company_title"),
         },
         "merged_pairs": merged_pairs,
+        # Misparse quarantine: rows dropped because their `<company>` value
+        # was a title prefix of `<title>` (parser regression sentinel).
+        # Empty list on healthy runs.
+        "quarantine": quarantine_dropped,
         "results": rows,
     }
     _atomic_write_json(WORKLIST, envelope)

@@ -170,6 +170,510 @@ def _today_brief_exists() -> bool:
     return (OUT_DIR / f"brief_{datetime.now().strftime('%Y%m%d')}.json").exists()
 
 
+def _latest_artifact(pattern: str, exclude: tuple[str, ...] = ()) -> Path | None:
+    """Most-recent file matching glob `pattern` (with optional substring excludes)."""
+    files = [p for p in OUT_DIR.glob(pattern)
+             if not any(ex in p.name for ex in exclude)]
+    if not files:
+        return None
+    return max(files, key=lambda p: p.stat().st_mtime)
+
+
+def _humanize_age_h(age_h: float | None) -> str:
+    if age_h is None:
+        return "?"
+    if age_h < 1:
+        return f"{int(age_h * 60)}m ago"
+    if age_h < 48:
+        return f"{age_h:.0f}h ago"
+    return f"{age_h / 24:.0f}d ago"
+
+
+def _content_age_h(json_path: Path) -> float | None:
+    """Read the canonical 'when was this run produced' timestamp from inside
+    the artifact. Falls back to file mtime for legacy artifacts.
+
+    Different artifacts use different fields:
+      - scan_*.json:           scan_timestamp / scan_date
+      - scan_gmail_*.json:     scan_timestamp
+      - worklist.json:         rebuilt_at
+      - worklist_scored.json:  scored_at
+      - promote_report.json:   scan_date
+
+    The file mtime can lag REAL run time when:
+      - a repair script rewrites the file (mtime jumps forward, content stale)
+      - a sync tool touches the file (mtime jumps but content unchanged)
+    """
+    try:
+        import json as _json
+        d = _json.loads(json_path.read_text(encoding="utf-8"))
+    except Exception:
+        return _file_age_hours(json_path)
+    for key in ("scored_at", "rebuilt_at", "scan_timestamp"):
+        v = d.get(key)
+        if v:
+            try:
+                # Strip trailing Z and parse — ISO-8601 with optional Z suffix
+                ts = datetime.fromisoformat(v.replace("Z", "+00:00")
+                                              if v.endswith("Z") else v)
+                # If the ts has no tz, treat it as local
+                if ts.tzinfo is None:
+                    age = (datetime.now() - ts).total_seconds() / 3600
+                else:
+                    from datetime import timezone as _tz
+                    age = (datetime.now(_tz.utc) - ts).total_seconds() / 3600
+                return max(age, 0.0)
+            except Exception:
+                continue
+    # scan_date is YYYYMMDD — coarse but useful
+    sd = d.get("scan_date")
+    if sd and isinstance(sd, str) and len(sd) == 8:
+        try:
+            ts = datetime.strptime(sd, "%Y%m%d")
+            return (datetime.now() - ts).total_seconds() / 3600
+        except Exception:
+            pass
+    return _file_age_hours(json_path)
+
+
+def render_artifact_download(label: str, json_path: Path | None,
+                              xlsx_builder, key_prefix: str,
+                              container=None) -> None:
+    """Render a 3-column row: filename caption + JSON download + xlsx download.
+
+    `xlsx_builder` is a callable taking the json path and returning xlsx bytes
+    (one of the per-artifact builders in audit_pack.py). xlsx is built lazily
+    on click and cached in session_state so re-renders don't rebuild.
+    """
+    target = container or st
+    if json_path is None or not json_path.exists():
+        target.caption(f"⏸ {label} — no artifact yet")
+        return
+    # Two ages: when the run actually produced the data (canonical) vs.
+    # when the file was last touched (mtime). Repair-script writes bump
+    # mtime without changing the underlying run timestamp, so showing
+    # both prevents the "scored 2h ago" lie when the real scoring run
+    # was a week ago.
+    content_age = _content_age_h(json_path)
+    file_age = _file_age_hours(json_path)
+    age_label = _humanize_age_h(content_age)
+    repaired_tag = ""
+    if (content_age is not None and file_age is not None
+            and content_age - file_age > 0.5):  # mtime newer by >30 min
+        repaired_tag = f" · file touched {_humanize_age_h(file_age)}"
+    size_kb = json_path.stat().st_size / 1024
+
+    c1, c2, c3 = target.columns([3, 1, 1])
+    c1.markdown(
+        f"**{label}** · `{json_path.name}` · {age_label}{repaired_tag} "
+        f"· {size_kb:,.0f} KB"
+    )
+    # JSON: eagerly read bytes — cheap (KB range, occasional MB on worklist).
+    # The previous lazy-callable form (data=json_path.read_bytes) only works
+    # on Streamlit ≥1.34; older versions raise "Invalid binary data format".
+    try:
+        c2.download_button(
+            "📄 JSON",
+            data=json_path.read_bytes(),
+            file_name=json_path.name, mime="application/json",
+            key=f"dl_json_{key_prefix}", width='stretch',
+        )
+    except Exception as e:
+        c2.caption(f"JSON err: {e}")
+    # xlsx: lazy build via session_state, single click. Pattern: c3.button
+    # builds the bytes; on the same rerun, st.session_state has the bytes,
+    # so the download_button below renders and the user clicks once more.
+    # Two clicks total but no per-rerun pandas cost.
+    xlsx_state_key = f"_xlsx_bytes_{key_prefix}_{json_path.name}"
+    try:
+        if c3.button("📊 xlsx", key=f"build_xlsx_{key_prefix}",
+                     width='stretch',
+                     help="Build Excel workbook with input/filter/output "
+                          "sheets. Lazy — only runs on click."):
+            with st.spinner(f"Building xlsx for {label}…"):
+                st.session_state[xlsx_state_key] = xlsx_builder(json_path)
+        if st.session_state.get(xlsx_state_key) is not None:
+            target.download_button(
+                f"⬇ Download {json_path.stem}.xlsx",
+                data=st.session_state[xlsx_state_key],
+                file_name=f"{json_path.stem}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key=f"dl_xlsx_{key_prefix}",
+            )
+    except Exception as e:
+        c3.caption(f"xlsx err: {e}")
+
+
+def _classify_worklist_against_cache() -> dict:
+    """Bucket every worklist row by what scoring would do.
+
+    Returns counts:
+      total              — rows in worklist
+      new                — flagged is_new_since_last_score (URL not in
+                            previous scored output)
+      cached             — has a fit_cache_v2 entry on disk (re-score is
+                            free for these)
+      in_scored          — URL exists in worklist_scored.json (previously
+                            scored, even if cache file is missing)
+      needs_llm          — would force a fresh LLM call (no cache, no prev
+                            scored entry). This is what the user pays for.
+      stale_in_scored    — in scored output but cache file missing (orphaned
+                            cache; second-chance read avoids the API call)
+    """
+    out = {
+        "total": 0, "new": 0, "cached": 0, "in_scored": 0,
+        "needs_llm": 0, "stale_in_scored": 0,
+    }
+    wl_path = OUT_DIR / "worklist.json"
+    if not wl_path.exists():
+        return out
+    try:
+        wl = json.loads(wl_path.read_text(encoding="utf-8"))
+    except Exception:
+        return out
+
+    # Lazy-import fit_scorer for the canonical URL hash function so the
+    # buckets line up with what the scorer would actually find.
+    try:
+        import sys as _sys
+        _ad = str(ROOT / "automation")
+        if _ad not in _sys.path:
+            _sys.path.insert(0, _ad)
+        from fit_scorer import _url_hash  # type: ignore
+    except Exception:
+        return out
+    fit_cache_dir = OUT_DIR / "fit_cache"
+
+    scored_urls: set[str] = set()
+    sc_path = OUT_DIR / "worklist_scored.json"
+    if sc_path.exists():
+        try:
+            sc = json.loads(sc_path.read_text(encoding="utf-8"))
+            for r in sc.get("results", []) or []:
+                u = r.get("link") or r.get("url") or ""
+                if u:
+                    scored_urls.add(u)
+        except Exception:
+            pass
+
+    rows = wl.get("results", []) or []
+    out["total"] = len(rows)
+    for r in rows:
+        url = r.get("link") or r.get("url") or ""
+        if not url:
+            continue
+        is_new = bool(r.get("is_new_since_last_score"))
+        try:
+            has_cache = (fit_cache_dir / f"{_url_hash(url)}.v2.json").exists()
+        except Exception:
+            has_cache = False
+        in_scored = url in scored_urls
+        if is_new:
+            out["new"] += 1
+        if has_cache:
+            out["cached"] += 1
+        if in_scored:
+            out["in_scored"] += 1
+            if not has_cache:
+                out["stale_in_scored"] += 1
+        # "Needs LLM": no cache AND not in previous scored output. Anything
+        # already in scored output reuses the prior verdict via the
+        # second-chance fit-cache read in fit_scorer.
+        if not has_cache and not in_scored:
+            out["needs_llm"] += 1
+    return out
+
+
+def render_two_sources_panel(container=None) -> None:
+    """Show how the two job-list sources feed the worklist.
+
+    Layout (3 cards side-by-side):
+      ┌─────────────┐   ┌─────────────┐      ┌─────────────────┐
+      │ 🛰 Web scrape│   │📬 Gmail alerts│ ──► │📋 Merged worklist│
+      │  N rows     │   │  N rows      │      │  N rows         │
+      │  Xh ago     │   │  Xm ago      │      │  scrape: A      │
+      │  drops: …   │   │  filters: …  │      │  gmail:  B      │
+      └─────────────┘   └─────────────┘      │  both:   C      │
+                                              └─────────────────┘
+
+    Each card shows last-run age, row counts, and what each filter dropped
+    so the user can see the funnel at a glance instead of having to dig
+    into the audit pack.
+    """
+    target = container or st
+    out = OUT_DIR
+
+    # ── Web scrape ──────────────────────────────────────────────────────
+    scan_files = sorted(
+        [p for p in out.glob("scan_*.json")
+         if "_scored" not in p.name
+         and "scan_gmail_" not in p.name
+         and "scan_checkpoint" not in p.name],
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    )
+    scan_path = scan_files[0] if scan_files else None
+    scan_d = {}
+    if scan_path:
+        try:
+            scan_d = json.loads(scan_path.read_text(encoding="utf-8"))
+        except Exception:
+            scan_d = {}
+    scan_rows = len(scan_d.get("results", []) or [])
+    scan_companies = scan_d.get("companies_scanned", 0)
+    scan_dedup = scan_d.get("dedup_stats", {}) or {}
+    scan_drops = scan_d.get("filter_drops") or {}
+    scan_title_drops = len(scan_drops.get("title", []) or [])
+    scan_geo_drops = len(scan_drops.get("geo", []) or [])
+    scan_age = (_file_age_hours(scan_path) if scan_path else None)
+
+    # ── Gmail ───────────────────────────────────────────────────────────
+    gmail_files = sorted(out.glob("scan_gmail_*.json"),
+                          key=lambda p: p.stat().st_mtime, reverse=True)
+    gmail_path = gmail_files[0] if gmail_files else None
+    gmail_d = {}
+    if gmail_path:
+        try:
+            gmail_d = json.loads(gmail_path.read_text(encoding="utf-8"))
+        except Exception:
+            gmail_d = {}
+    gmail_diag = gmail_d.get("harvest_diagnostics", {}) or {}
+    gmail_kept = len(gmail_d.get("results", []) or [])
+    gmail_alerts = gmail_diag.get("linkedin_alerts_seen", 0)
+    gmail_parsed = gmail_diag.get("rows_parsed", 0)
+    gmail_geo_drops = gmail_diag.get("rows_dropped_location", 0)
+    gmail_quarantine = len(gmail_diag.get("quarantine", []) or [])
+    gmail_age = (_file_age_hours(gmail_path) if gmail_path else None)
+
+    # ── Worklist ─────────────────────────────────────────────────────────
+    wl_path = out / "worklist.json"
+    wl_d = {}
+    if wl_path.exists():
+        try:
+            wl_d = json.loads(wl_path.read_text(encoding="utf-8"))
+        except Exception:
+            wl_d = {}
+    wl_stats = wl_d.get("stats", {}) or {}
+    wl_total = wl_stats.get("total", 0)
+    wl_scrape = wl_stats.get("scrape", 0)
+    wl_gmail = wl_stats.get("gmail", 0)
+    wl_both = wl_stats.get("both", 0)
+    wl_new = wl_stats.get("new_since_last_score", 0)
+    wl_merges = len(wl_d.get("merged_pairs", []) or [])
+    wl_quarantine = len(wl_d.get("quarantine", []) or [])
+    wl_age = _file_age_hours(wl_path) if wl_path.exists() else None
+
+    target.markdown("#### 🔀 Job-list sources → worklist")
+    target.caption(
+        "Two independent feeds converge into the worklist that the scorer "
+        "reads. Each filter that drops a row is shown — click 📊 xlsx on "
+        "Latest outputs below to see WHICH rows got dropped."
+    )
+    col_scrape, col_arrow1, col_gmail, col_arrow2, col_pool = target.columns(
+        [4, 1, 4, 1, 5]
+    )
+
+    # Web scrape card
+    with col_scrape:
+        with st.container(border=True):
+            st.markdown("**🛰 Web scrape**")
+            if scan_path is None:
+                st.caption("No scrape yet")
+            else:
+                st.metric("Rows kept", f"{scan_rows:,}")
+                st.caption(
+                    f"`{scan_path.name}` · {_humanize_age_h(scan_age)}"
+                )
+                st.caption(f"📡 {scan_companies} companies scanned")
+                if scan_dedup:
+                    st.caption(
+                        f"🔁 {scan_dedup.get('input', 0):,} raw → "
+                        f"{scan_dedup.get('dropped_url', 0)} URL-dup, "
+                        f"{scan_dedup.get('dropped_near', 0)} near-dup"
+                    )
+                if scan_title_drops or scan_geo_drops:
+                    _bits = []
+                    if scan_title_drops:
+                        _bits.append(f"{scan_title_drops} title")
+                    if scan_geo_drops:
+                        _bits.append(f"{scan_geo_drops} geo")
+                    st.caption(f"🚫 dropped: {' / '.join(_bits)}")
+
+    with col_arrow1:
+        st.markdown(
+            "<div style='text-align:center;padding-top:60px;font-size:24px'>+</div>",
+            unsafe_allow_html=True,
+        )
+
+    # Gmail card
+    with col_gmail:
+        with st.container(border=True):
+            st.markdown("**📬 Gmail alerts**")
+            if gmail_path is None:
+                st.caption("No Gmail fetch yet")
+            else:
+                st.metric("Rows kept", f"{gmail_kept:,}")
+                st.caption(
+                    f"`{gmail_path.name}` · {_humanize_age_h(gmail_age)}"
+                )
+                st.caption(
+                    f"📨 {gmail_alerts} alert(s) · {gmail_parsed} parsed"
+                )
+                _bits = []
+                if gmail_geo_drops:
+                    _bits.append(f"{gmail_geo_drops} geo")
+                if gmail_quarantine:
+                    _bits.append(f"{gmail_quarantine} ⚠ quarantine")
+                if _bits:
+                    st.caption(f"🚫 dropped: {' / '.join(_bits)}")
+
+    with col_arrow2:
+        st.markdown(
+            "<div style='text-align:center;padding-top:60px;font-size:24px'>→</div>",
+            unsafe_allow_html=True,
+        )
+
+    # Worklist card
+    with col_pool:
+        with st.container(border=True):
+            st.markdown("**📋 Merged worklist**")
+            if not wl_d:
+                st.caption("No worklist built yet")
+            else:
+                st.metric(
+                    "Pool size", f"{wl_total:,}",
+                    delta=f"{wl_new:,} new since last score" if wl_new else None,
+                    delta_color="off",
+                )
+                st.caption(
+                    f"`worklist.json` · {_humanize_age_h(wl_age)}"
+                )
+                st.caption(
+                    f"🛰 {wl_scrape:,} scrape · 📬 {wl_gmail:,} gmail · "
+                    f"🔁 {wl_both:,} both"
+                )
+                _wl_bits = []
+                if wl_merges:
+                    _wl_bits.append(f"{wl_merges} merges")
+                if wl_quarantine:
+                    _wl_bits.append(f"{wl_quarantine} ⚠ quarantine")
+                if _wl_bits:
+                    st.caption(f"🔧 dedup: {' / '.join(_wl_bits)}")
+
+    # Cache-classification strip — what scoring would do per row. Lives
+    # below the three cards so the user sees scoring economics at a glance:
+    # "If I hit Score now, X rows hit cache (free), Y need LLM (paid)."
+    if wl_d:
+        target.markdown("")  # spacer
+        cls = _classify_worklist_against_cache()
+        bm1, bm2, bm3, bm4 = target.columns(4)
+        bm1.metric(
+            "🆕 New since last score", f"{cls['new']:,}",
+            help="URLs not in the previous worklist_scored output. "
+                 "These are the rows the scorer would re-evaluate.",
+        )
+        bm2.metric(
+            "💾 Cached (free)", f"{cls['cached']:,}",
+            help="Rows with a fit_cache_v2 file on disk — re-scoring "
+                 "reads the cached verdict and pays nothing.",
+        )
+        bm3.metric(
+            "♻️ Reuse from scored", f"{cls['in_scored']:,}",
+            delta=(f"{cls['stale_in_scored']} orphaned cache"
+                   if cls['stale_in_scored'] else None),
+            delta_color="off",
+            help="Rows whose URL is in worklist_scored.json. Even when the "
+                 "fit_cache file is missing, the scorer's second-chance "
+                 "read pulls the verdict from there — still free.",
+        )
+        bm4.metric(
+            "💸 Needs LLM (paid)", f"{cls['needs_llm']:,}",
+            help="No cache AND not in previous scored output → the scorer "
+                 "would make a fresh API call. This is the only bucket "
+                 "that costs money on Score now.",
+        )
+        if cls["needs_llm"] == 0 and cls["total"] > 0:
+            target.success(
+                f"✅ Every row is cached or already scored — clicking "
+                f"**🤖 Score worklist** would be free.",
+                icon="💰",
+            )
+        elif cls["needs_llm"] > 0:
+            target.caption(
+                f"💡 Clicking **🤖 Score worklist** would re-score "
+                f"{cls['cached'] + cls['in_scored']:,} cached rows for free "
+                f"and make ~{cls['needs_llm']:,} API call(s) for the "
+                f"uncached ones."
+            )
+
+
+def render_latest_outputs_row(container=None, key_prefix: str = "out") -> None:
+    """Reusable 'Latest outputs' panel — one row per artifact (scrape, gmail,
+    worklist pool, scored, promote, brief). Each row offers JSON + xlsx
+    downloads via render_artifact_download(). Lazy-imports audit_pack.
+    """
+    target = container or st
+    try:
+        import sys as _sys
+        import importlib as _il
+        _ad = str(ROOT / "automation")
+        if _ad not in _sys.path:
+            _sys.path.insert(0, _ad)
+        # Streamlit holds modules across reruns — if `audit_pack` was imported
+        # before the per-artifact builders shipped, the cached object lacks
+        # them and the `from … import …` below raises ImportError. Force a
+        # reload so a stale cache picks up new functions without a restart.
+        if "audit_pack" in _sys.modules:
+            _il.reload(_sys.modules["audit_pack"])
+        from audit_pack import (
+            gmail_scan_to_xlsx, scan_to_xlsx, scored_to_xlsx,
+            worklist_to_xlsx, promote_to_xlsx,
+        )
+    except Exception as e:
+        target.caption(f"Per-artifact downloads unavailable: {e}")
+        return
+
+    with target.container(border=True):
+        st.markdown("#### 📦 Latest outputs")
+        st.caption(
+            "Every action emits a JSON artifact under `automation/outputs/`. "
+            "Hit 📊 to convert to an Excel workbook on the fly."
+        )
+        # Scrape
+        scan_path = _latest_artifact(
+            "scan_*.json",
+            exclude=("_scored", "scan_gmail_", "scan_checkpoint"),
+        )
+        render_artifact_download(
+            "🛰 Scrape", scan_path, scan_to_xlsx,
+            f"{key_prefix}_scan",
+        )
+        # Gmail fetch
+        gmail_path = _latest_artifact("scan_gmail_*.json")
+        render_artifact_download(
+            "📬 Gmail fetch", gmail_path, gmail_scan_to_xlsx,
+            f"{key_prefix}_gmail",
+        )
+        # Worklist (pool that scoring reads from)
+        wl_path = OUT_DIR / "worklist.json"
+        render_artifact_download(
+            "📋 Worklist pool", wl_path if wl_path.exists() else None,
+            worklist_to_xlsx, f"{key_prefix}_worklist",
+        )
+        # Scored
+        sc_path = OUT_DIR / "worklist_scored.json"
+        render_artifact_download(
+            "🤖 Scored", sc_path if sc_path.exists() else None,
+            scored_to_xlsx, f"{key_prefix}_scored",
+        )
+        # Promote — needs the .json sibling (only emitted by post-this-commit
+        # runs; older promotes only have .md, which has no row data)
+        pr_path = _latest_artifact("promote_report_*.json")
+        render_artifact_download(
+            "📋 Promote report", pr_path, promote_to_xlsx,
+            f"{key_prefix}_promote",
+        )
+
+
 def save_tracker(d: dict):
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     bak = TRACKER.with_suffix(f".bak.{stamp}.json")
@@ -1478,6 +1982,27 @@ def render_gmail_trash_panel(container=None,
             except Exception as e:
                 st.caption(f"(preview unavailable: {e})")
 
+        # ── DOWNLOADS ────────────────────────────────────────────────────
+        # Inline JSON + xlsx for the freshly-pulled scan_gmail file. Saves a
+        # round-trip to Pipeline ▸ History when the user just wants to see
+        # the rows in Excel.
+        try:
+            import sys as _sys
+            import importlib as _il
+            _ad_p = str(ROOT / "automation")
+            if _ad_p not in _sys.path:
+                _sys.path.insert(0, _ad_p)
+            # Force reload so a stale-cached audit_pack picks up new builders.
+            if "audit_pack" in _sys.modules:
+                _il.reload(_sys.modules["audit_pack"])
+            from audit_pack import gmail_scan_to_xlsx as _gmail_to_xlsx
+            render_artifact_download(
+                "📥 Download these rows", latest, _gmail_to_xlsx,
+                f"gmail_panel_{latest.stem}",
+            )
+        except Exception as _e:
+            st.caption(f"(downloads unavailable: {_e})")
+
         # ── ACTIONS ──────────────────────────────────────────────────────
         # Three buttons: Score now (primary, only if not yet scored & key set),
         # Move-to-Trash (secondary, only if uids and not already deleted),
@@ -2648,6 +3173,11 @@ if page == "🏠 Dashboard":
     # Quick Actions so a freshly-pulled scan surfaces the cleanup prompt
     # at the natural next-step location.
     render_gmail_trash_panel()
+
+    # Latest outputs — JSON + xlsx download per artifact (scrape, gmail,
+    # worklist pool, scored, promote). Surfaced on Dashboard so the user
+    # doesn't have to bounce to Pipeline ▸ History.
+    render_latest_outputs_row(key_prefix="dash")
 
     _pipeline_live_panel()
 
@@ -4474,16 +5004,27 @@ elif page == "🎯 Pipeline":
     # Live panel ABOVE tabs so active-job output is always visible
     _pipeline_live_panel()
 
+    # Two-sources panel: visualizes scrape + gmail → worklist funnel so the
+    # user understands at-a-glance where rows come from and what's dropped.
+    render_two_sources_panel()
+
     _tab_run, _tab_worklist, _tab_scored, _tab_history = st.tabs(
         ["🚀 Run", "📋 Worklist", "🎯 Scored", "📜 History"]
     )
 
     # ================== TAB: Worklist ==================
     with _tab_worklist:
-        _wl_path = OUT_DIR / "worklist.json"
-        if not _wl_path.exists():
-            st.info("No worklist built yet. Run a scrape first.")
-        else:
+        # @st.fragment scopes the filter-widget reruns (search box, source/
+        # sector multiselects, 'New since last score' checkbox) to this
+        # fragment body. Without it, every widget click triggers a full-page
+        # rerun and st.tabs re-mounts at tab[0] — making the user lose their
+        # place. With the fragment, only the table re-filters in place.
+        @st.fragment
+        def _render_worklist_tab_body():
+            _wl_path = OUT_DIR / "worklist.json"
+            if not _wl_path.exists():
+                st.info("No worklist built yet. Run a scrape first.")
+                return
             try:
                 _wl_data = json.loads(_wl_path.read_text(encoding="utf-8"))
                 _wl_rows = _wl_data.get("results") or []
@@ -4491,58 +5032,123 @@ elif page == "🎯 Pipeline":
                 _wl_rows = []
             if not _wl_rows:
                 st.info("Worklist is empty.")
-            else:
-                _wl_df = pd.DataFrame([{
-                    "company": r.get("company", ""),
-                    "title": r.get("title", ""),
-                    "location": r.get("location", ""),
-                    "sector": r.get("sector", ""),
-                    "new": r.get("is_new_since_last_score", False),
-                    "posted": r.get("posted_date", ""),
-                    "source": r.get("source", ""),
-                    "url": r.get("link") or r.get("url", ""),
-                } for r in _wl_rows])
+                return
 
-                wf1, wf2, wf3, wf4 = st.columns([3, 2, 2, 2])
-                with wf1:
-                    _wl_search = st.text_input("Search company/title",
-                                               key="wl_search")
-                with wf2:
-                    _wl_sources = sorted(_wl_df["source"].dropna().unique())
-                    _wl_src_filt = st.multiselect("Source", _wl_sources,
-                                                   key="wl_source")
-                with wf3:
-                    _wl_sectors = sorted(
-                        s for s in _wl_df["sector"].dropna().unique() if s)
-                    _wl_sec_filt = st.multiselect("Sector", _wl_sectors,
-                                                   key="wl_sector")
-                with wf4:
-                    _wl_new_only = st.checkbox("New since last score",
-                                               key="wl_new_only")
+            # Per-row cache classification — same logic as the summary
+            # strip on the two-sources panel, applied at row level so the
+            # user can SEE + filter which specific rows the scorer would
+            # call the LLM for.
+            _scored_urls: set[str] = set()
+            _sc_path = OUT_DIR / "worklist_scored.json"
+            if _sc_path.exists():
+                try:
+                    _sc = json.loads(_sc_path.read_text(encoding="utf-8"))
+                    for _r in _sc.get("results", []) or []:
+                        _u = _r.get("link") or _r.get("url") or ""
+                        if _u:
+                            _scored_urls.add(_u)
+                except Exception:
+                    pass
+            _fit_cache_dir = OUT_DIR / "fit_cache"
+            try:
+                import sys as _sys
+                _ad = str(ROOT / "automation")
+                if _ad not in _sys.path:
+                    _sys.path.insert(0, _ad)
+                from fit_scorer import _url_hash as _wl_url_hash  # type: ignore
+            except Exception:
+                _wl_url_hash = None
 
-                _wl_view = _wl_df.copy()
-                if _wl_search:
-                    _sl = _wl_search.lower()
-                    _wl_view = _wl_view[
-                        _wl_view["company"].str.lower().str.contains(_sl, na=False) |
-                        _wl_view["title"].str.lower().str.contains(_sl, na=False)]
-                if _wl_src_filt:
-                    _wl_view = _wl_view[_wl_view["source"].isin(_wl_src_filt)]
-                if _wl_sec_filt:
-                    _wl_view = _wl_view[_wl_view["sector"].isin(_wl_sec_filt)]
-                if _wl_new_only:
-                    _wl_view = _wl_view[_wl_view["new"] == True]
+            def _row_cache_status(url: str) -> str:
+                """Three buckets matching _classify_worklist_against_cache."""
+                if not url or _wl_url_hash is None:
+                    return "❓ unknown"
+                try:
+                    has_cache = (_fit_cache_dir
+                                 / f"{_wl_url_hash(url)}.v2.json").exists()
+                except Exception:
+                    has_cache = False
+                if has_cache:
+                    return "💾 cached"
+                if url in _scored_urls:
+                    return "♻️ reuse"
+                return "💸 needs LLM"
 
-                _wl_new_ct = int(_wl_df["new"].sum()) if "new" in _wl_df.columns else 0
-                _wm1, _wm2, _wm3 = st.columns(3)
-                _wm1.metric("Rows shown", f"{len(_wl_view):,}")
-                _wm2.metric("Total worklist", f"{len(_wl_df):,}")
-                _wm3.metric("New since last score", f"{_wl_new_ct:,}")
-                st.dataframe(
-                    _wl_view,
-                    hide_index=True, width='stretch', height=600,
-                    column_config={"url": st.column_config.LinkColumn("url")},
+            _wl_df = pd.DataFrame([{
+                "company": r.get("company", ""),
+                "title": r.get("title", ""),
+                "location": r.get("location", ""),
+                "sector": r.get("sector", ""),
+                "new": r.get("is_new_since_last_score", False),
+                "cache": _row_cache_status(
+                    r.get("link") or r.get("url", "")
+                ),
+                "posted": r.get("posted_date", ""),
+                "source": r.get("source", ""),
+                "url": r.get("link") or r.get("url", ""),
+            } for r in _wl_rows])
+
+            wf1, wf2, wf3, wf4, wf5 = st.columns([3, 2, 2, 2, 2])
+            with wf1:
+                _wl_search = st.text_input("Search company/title",
+                                           key="wl_search")
+            with wf2:
+                _wl_sources = sorted(_wl_df["source"].dropna().unique())
+                _wl_src_filt = st.multiselect("Source", _wl_sources,
+                                               key="wl_source")
+            with wf3:
+                _wl_sectors = sorted(
+                    s for s in _wl_df["sector"].dropna().unique() if s)
+                _wl_sec_filt = st.multiselect("Sector", _wl_sectors,
+                                               key="wl_sector")
+            with wf4:
+                _wl_new_only = st.checkbox("New since last score",
+                                           key="wl_new_only")
+            with wf5:
+                _wl_needs_llm_only = st.checkbox(
+                    "Needs LLM only",
+                    key="wl_needs_llm",
+                    help="Show only rows whose verdicts the scorer would "
+                         "fetch via a fresh API call. Excludes cached + "
+                         "already-scored rows.",
                 )
+
+            _wl_view = _wl_df.copy()
+            if _wl_search:
+                _sl = _wl_search.lower()
+                _wl_view = _wl_view[
+                    _wl_view["company"].str.lower().str.contains(_sl, na=False) |
+                    _wl_view["title"].str.lower().str.contains(_sl, na=False)]
+            if _wl_src_filt:
+                _wl_view = _wl_view[_wl_view["source"].isin(_wl_src_filt)]
+            if _wl_sec_filt:
+                _wl_view = _wl_view[_wl_view["sector"].isin(_wl_sec_filt)]
+            if _wl_new_only:
+                _wl_view = _wl_view[_wl_view["new"] == True]
+            if _wl_needs_llm_only:
+                _wl_view = _wl_view[_wl_view["cache"] == "💸 needs LLM"]
+
+            _wl_new_ct = int(_wl_df["new"].sum()) if "new" in _wl_df.columns else 0
+            _wl_cached_ct = int((_wl_df["cache"] == "💾 cached").sum())
+            _wl_reuse_ct = int((_wl_df["cache"] == "♻️ reuse").sum())
+            _wl_llm_ct = int((_wl_df["cache"] == "💸 needs LLM").sum())
+            _wm1, _wm2, _wm3, _wm4, _wm5 = st.columns(5)
+            _wm1.metric("Rows shown", f"{len(_wl_view):,}")
+            _wm2.metric("Total worklist", f"{len(_wl_df):,}")
+            _wm3.metric("🆕 New", f"{_wl_new_ct:,}",
+                         help="Not in previous scored output")
+            _wm4.metric("💾 Cached + ♻️", f"{_wl_cached_ct + _wl_reuse_ct:,}",
+                         help=f"{_wl_cached_ct} cached on disk + "
+                              f"{_wl_reuse_ct} reusable from scored output")
+            _wm5.metric("💸 Needs LLM", f"{_wl_llm_ct:,}",
+                         help="Would force a fresh API call on Score now")
+            st.dataframe(
+                _wl_view,
+                hide_index=True, width='stretch', height=600,
+                column_config={"url": st.column_config.LinkColumn("url")},
+            )
+
+        _render_worklist_tab_body()
 
     # ================== TAB: Run ==================
     with _tab_run:
@@ -4699,6 +5305,10 @@ elif page == "🎯 Pipeline":
                 st.rerun()
 
         # Live panel moved above tabs — always visible when a job is active.
+
+        # Latest outputs — every action emits a JSON artifact; this row gives
+        # one-click JSON + xlsx access without bouncing to History.
+        render_latest_outputs_row(key_prefix="pipe_run")
 
         # Gmail trash cleanup panel — only renders when there's an
         # un-trashed scan_gmail_*.json. Same widget as the Dashboard,

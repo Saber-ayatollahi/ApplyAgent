@@ -58,12 +58,23 @@ def _is_expired(entry: dict, today: date) -> bool:
         return False
     try:
         return _parse_until(u) <= today  # type: ignore[operator]
-    except Exception:
-        return False
+    except (ValueError, TypeError):
+        # Fail-closed: malformed `until` is treated as expired so the registry
+        # self-cleans on next read instead of silently keeping a stale mute alive.
+        return True
 
 
 def _append_event(record: dict) -> None:
-    """Append one JSONL line to events log; caller already holds live-file lock."""
+    """Append one JSONL line to the events log.
+
+    MUST be called while holding the live-file lock so the events log's order
+    matches the live-file commit order. The audit trail and the rebuild
+    contract both depend on this — a mismatch makes "rebuild from events"
+    diverge from live state. Two writers releasing the live-file lock and
+    then racing to append events would scramble the order.
+
+    Concretely: every call site invokes this from INSIDE the `_mut` closure
+    passed to `mutate_json` on LIVE_PATH, before the closure returns."""
     EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(record, ensure_ascii=False) + "\n"
     with EVENTS_PATH.open("a", encoding="utf-8") as fh:
@@ -167,7 +178,6 @@ def _add(scope: str, name: str, canonical_key: str,
     _ensure_live_file()
     scope_key = "sectors" if scope == "sector" else "companies"
     new_entry = _make_entry(scope, name, canonical_key, until, reason)
-    old_holder: list[Optional[dict]] = [None]
 
     def _mut(state):
         state = state or dict(_EMPTY_LIVE)
@@ -175,26 +185,30 @@ def _add(scope: str, name: str, canonical_key: str,
         state.setdefault("sectors", [])
         state.setdefault("companies", [])
         kept: list[dict] = []
+        old_entry: Optional[dict] = None
         for e in state.get(scope_key, []) or []:
             if e.get("canonical_key") == canonical_key:
-                old_holder[0] = e
+                old_entry = e
             else:
                 kept.append(e)
         kept.append(new_entry)
         state[scope_key] = kept
+        # Append event INSIDE the live-file lock so events ordering matches
+        # commit ordering. Two writers releasing the live-lock then racing
+        # on the events file would otherwise scramble the audit trail.
+        _append_event({
+            "ts": _now_iso(),
+            "action": "add",
+            "scope": scope,
+            "name": name,
+            "canonical_key": canonical_key,
+            "old": old_entry,
+            "new": new_entry,
+            "actor": "ui",
+        })
         return state
 
     mutate_json(LIVE_PATH, _mut, default=dict(_EMPTY_LIVE))
-    _append_event({
-        "ts": _now_iso(),
-        "action": "add",
-        "scope": scope,
-        "name": name,
-        "canonical_key": canonical_key,
-        "old": old_holder[0],
-        "new": new_entry,
-        "actor": "ui",
-    })
 
 
 def add_sector(name: str, until: date | None, reason: str) -> None:
@@ -237,12 +251,39 @@ def lift(scope: str, name: str) -> None:
         state.setdefault("sectors", [])
         state.setdefault("companies", [])
         kept: list[dict] = []
+        removed: Optional[dict] = None
         for e in state.get(scope_key, []) or []:
             if canon is not None and e.get("canonical_key") == canon:
-                removed_holder[0] = e
+                removed = e
             else:
                 kept.append(e)
         state[scope_key] = kept
+        # Event written under the live-file lock to keep audit-trail order
+        # consistent with commit order; history archive runs after the lock
+        # because it touches a separate file (HISTORY_PATH).
+        if removed is not None:
+            _append_event({
+                "ts": _now_iso(),
+                "action": "lift",
+                "scope": scope,
+                "name": removed.get("name", name),
+                "canonical_key": removed.get("canonical_key", canon or ""),
+                "old": removed,
+                "new": None,
+                "actor": "ui",
+            })
+        else:
+            _append_event({
+                "ts": _now_iso(),
+                "action": "lift_noop",
+                "scope": scope,
+                "name": name,
+                "canonical_key": canon or "",
+                "old": None,
+                "new": None,
+                "actor": "ui",
+            })
+        removed_holder[0] = removed
         return state
 
     mutate_json(LIVE_PATH, _mut, default=dict(_EMPTY_LIVE))
@@ -250,27 +291,6 @@ def lift(scope: str, name: str) -> None:
     if removed_holder[0] is not None:
         archived = {**removed_holder[0], "lifted_at": _now_iso(), "lift_kind": "manual"}
         _archive_to_history([archived])
-        _append_event({
-            "ts": _now_iso(),
-            "action": "lift",
-            "scope": scope,
-            "name": removed_holder[0].get("name", name),
-            "canonical_key": removed_holder[0].get("canonical_key", canon or ""),
-            "old": removed_holder[0],
-            "new": None,
-            "actor": "ui",
-        })
-    else:
-        _append_event({
-            "ts": _now_iso(),
-            "action": "lift_noop",
-            "scope": scope,
-            "name": name,
-            "canonical_key": canon or "",
-            "old": None,
-            "new": None,
-            "actor": "ui",
-        })
 
 
 def extend(scope: str, name: str, days: int) -> None:
@@ -292,21 +312,22 @@ def extend(scope: str, name: str, days: int) -> None:
                 e["until"] = (base + timedelta(days=days)).isoformat()
                 new_holder[0] = dict(e)
                 break
+        if old_holder[0] is not None:
+            _append_event({
+                "ts": _now_iso(),
+                "action": "extend",
+                "scope": scope,
+                "name": old_holder[0].get("name", name),
+                "canonical_key": canon or "",
+                "old": old_holder[0],
+                "new": new_holder[0],
+                "actor": "ui",
+            })
         return state
 
     mutate_json(LIVE_PATH, _mut, default=dict(_EMPTY_LIVE))
     if old_holder[0] is None:
         raise ValueError(f"no {scope} suppression for {name!r}")
-    _append_event({
-        "ts": _now_iso(),
-        "action": "extend",
-        "scope": scope,
-        "name": old_holder[0].get("name", name),
-        "canonical_key": canon or "",
-        "old": old_holder[0],
-        "new": new_holder[0],
-        "actor": "ui",
-    })
 
 
 def edit_reason(scope: str, name: str, new_reason: str) -> None:
@@ -327,30 +348,38 @@ def edit_reason(scope: str, name: str, new_reason: str) -> None:
                 e["reason"] = new_reason
                 new_holder[0] = dict(e)
                 break
+        if old_holder[0] is not None:
+            _append_event({
+                "ts": _now_iso(),
+                "action": "edit_reason",
+                "scope": scope,
+                "name": old_holder[0].get("name", name),
+                "canonical_key": canon or "",
+                "old": old_holder[0],
+                "new": new_holder[0],
+                "actor": "ui",
+            })
         return state
 
     mutate_json(LIVE_PATH, _mut, default=dict(_EMPTY_LIVE))
     if old_holder[0] is None:
         raise ValueError(f"no {scope} suppression for {name!r}")
-    _append_event({
-        "ts": _now_iso(),
-        "action": "edit_reason",
-        "scope": scope,
-        "name": old_holder[0].get("name", name),
-        "canonical_key": canon or "",
-        "old": old_holder[0],
-        "new": new_holder[0],
-        "actor": "ui",
-    })
 
 
 def is_suppressed(row: dict,
                   snapshot: dict | None = None) -> tuple[bool, str | None]:
-    """Return (suppressed, drop_reason). drop_reason is 'suppressed_<scope>_<N>d'."""
+    """Return (suppressed, drop_reason). drop_reason is 'suppressed_<scope>_<N>d'.
+
+    Hot-path: called once per row in a 1,400-row scoring loop. Fast-paths
+    when the snapshot has no entries (the dormant default state). Coerces
+    company/sector to str so a malformed row (int, list, dict) doesn't
+    crash the whole scoring run."""
     state = snapshot if snapshot is not None else load_active()
+    if not state.get("sectors") and not state.get("companies"):
+        return False, None
     today = date.today()
 
-    company_raw = (row.get("company") or "").strip()
+    company_raw = str(row.get("company") or "").strip()
     if company_raw:
         company_key = brand_aliases.canonical_brand(company_raw).lower()
         if company_key:
@@ -359,7 +388,7 @@ def is_suppressed(row: dict,
                     days = _days_left(e, today)
                     return True, f"suppressed_company_{days}d"
 
-    sector_raw = (row.get("sector") or "").strip()
+    sector_raw = str(row.get("sector") or "").strip()
     if sector_raw:
         sector_canon = sectors.canonical(sector_raw)
         if sector_canon is not None:
@@ -398,7 +427,7 @@ def coverage(scope: str, name: str, rows: list[dict]) -> dict:
         target = sectors.canonical(name)
         target_key = target.lower() if target else None
         for r in rows:
-            sec = (r.get("sector") or "").strip()
+            sec = str(r.get("sector") or "").strip()
             if not sec:
                 unsectored += 1
                 continue
@@ -413,7 +442,7 @@ def coverage(scope: str, name: str, rows: list[dict]) -> dict:
     elif scope == "company":
         target_key = brand_aliases.canonical_brand(name).lower()
         for r in rows:
-            comp = (r.get("company") or "").strip()
+            comp = str(r.get("company") or "").strip()
             if not comp:
                 continue
             comp_key = brand_aliases.canonical_brand(comp).lower()
@@ -426,11 +455,16 @@ def coverage(scope: str, name: str, rows: list[dict]) -> dict:
 
 
 def queue_pending_archive(job_id: str, reason: str) -> None:
-    """Append one line to the partial-failure recovery queue."""
+    """Append one line to the partial-failure recovery queue under exclusive lock.
+
+    Concurrent queue+drain races otherwise lose entries: drain reads then
+    truncates; an append landing between the read and the truncate disappears.
+    Locks mirror drain_pending_archives so the two operations serialize."""
     PENDING_ARCHIVES_PATH.parent.mkdir(parents=True, exist_ok=True)
     rec = {"ts": _now_iso(), "job_id": job_id, "reason": reason, "attempts": 0}
-    with PENDING_ARCHIVES_PATH.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    with _FileLock(PENDING_ARCHIVES_PATH, exclusive=True):
+        with PENDING_ARCHIVES_PATH.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
 def drain_pending_archives() -> list[dict]:
@@ -457,31 +491,244 @@ def drain_pending_archives() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Smoke
+# CLI
 # ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    import argparse
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--smoke", action="store_true")
-    args = ap.parse_args()
-    if not args.smoke:
-        ap.print_help()
-        sys.exit(0)
 
-    # Redirect all paths into a temp dir so smoke leaves real data/ untouched.
+def _resolve_until_arg(args) -> date | None:
+    """Translate `--days N` / `--until YYYY-MM-DD` / neither into a date|None.
+
+    Returns None for permanent mutes (no expiry). Raises ValueError if both
+    are passed (mutually exclusive) or if --until cannot be parsed."""
+    days = getattr(args, "days", None)
+    until_str = getattr(args, "until", None)
+    if days is not None and until_str:
+        raise ValueError("--days and --until are mutually exclusive")
+    if days is not None:
+        if days <= 0:
+            raise ValueError("--days must be positive")
+        return date.today() + timedelta(days=days)
+    if until_str:
+        try:
+            return date.fromisoformat(until_str)
+        except ValueError as e:
+            raise ValueError(f"--until must be YYYY-MM-DD: {e}") from e
+    return None
+
+
+def _format_until(entry: dict, today: date) -> str:
+    u = entry.get("until")
+    if not u:
+        return "permanent"
+    parsed = _parse_until(u)
+    if parsed is None:
+        return f"until {u}"
+    delta = (parsed - today).days
+    return f"until {parsed.isoformat()} ({max(0, delta)}d left)"
+
+
+def _print_table(entries: list[dict], scope_label: str, today: date) -> None:
+    if not entries:
+        print(f"  (no active {scope_label} mutes)")
+        return
+    name_w = max((len(e.get("name") or "") for e in entries), default=4)
+    name_w = max(name_w, 4)
+    for e in entries:
+        name = (e.get("name") or "?").ljust(name_w)
+        when = _format_until(e, today)
+        reason = e.get("reason") or ""
+        print(f"  - {name}  {when}  reason: {reason!r}")
+
+
+def _cmd_add_sector(args) -> int:
+    try:
+        until = _resolve_until_arg(args)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    try:
+        add_sector(args.name, until, args.reason)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        print(f"known sectors: {', '.join(sectors.KNOWN)}", file=sys.stderr)
+        return 1
+    canon = sectors.canonical(args.name)
+    if args.json:
+        print(json.dumps({
+            "ok": True, "scope": "sector", "name": canon,
+            "until": until.isoformat() if until else None,
+            "reason": args.reason,
+        }))
+    else:
+        until_str = until.isoformat() if until else "permanent"
+        print(f"OK: muted sector {canon!r} until {until_str} — reason: {args.reason!r}")
+    return 0
+
+
+def _cmd_add_company(args) -> int:
+    try:
+        until = _resolve_until_arg(args)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    try:
+        add_company(args.name, until, args.reason)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps({
+            "ok": True, "scope": "company", "name": args.name.strip(),
+            "until": until.isoformat() if until else None,
+            "reason": args.reason,
+        }))
+    else:
+        until_str = until.isoformat() if until else "permanent"
+        print(f"OK: muted company {args.name.strip()!r} until {until_str} — reason: {args.reason!r}")
+    return 0
+
+
+def _cmd_list(args) -> int:
+    today = date.today()
+    if args.include_expired:
+        bundle = load_all()
+        active = bundle["active"]
+        expired = bundle["expired"]
+    else:
+        active = load_active()
+        expired = []
+
+    if args.json:
+        print(json.dumps({
+            "active": active,
+            "expired": expired if args.include_expired else None,
+        }, indent=2))
+        return 0
+
+    sectors_list = active.get("sectors", []) or []
+    companies_list = active.get("companies", []) or []
+
+    if args.scope in ("all", "sector"):
+        print(f"ACTIVE SECTORS ({len(sectors_list)}):")
+        _print_table(sectors_list, "sector", today)
+    if args.scope in ("all", "company"):
+        print(f"ACTIVE COMPANIES ({len(companies_list)}):")
+        _print_table(companies_list, "company", today)
+    if args.include_expired:
+        print(f"\nEXPIRED ({len(expired)}):")
+        if not expired:
+            print("  (none in history)")
+        else:
+            for e in expired[-20:]:
+                lifted = e.get("lifted_at", "?")
+                kind = e.get("lift_kind", "?")
+                print(f"  - {e.get('scope','?')}/{e.get('name','?')}  lifted_at={lifted}  ({kind})")
+    return 0
+
+
+def _cmd_lift(args) -> int:
+    if args.scope not in ("sector", "company"):
+        print(f"error: scope must be 'sector' or 'company' (got {args.scope!r})", file=sys.stderr)
+        return 1
+    # Probe before+after so we can tell user whether anything was actually lifted.
+    before = load_active()
+    before_keys = {e.get("canonical_key") for e in before.get(args.scope + "s", []) or []}
+    lift(args.scope, args.name)
+    after = load_active()
+    after_keys = {e.get("canonical_key") for e in after.get(args.scope + "s", []) or []}
+    lifted = bool(before_keys - after_keys)
+
+    if args.json:
+        print(json.dumps({"ok": True, "lifted": lifted, "scope": args.scope, "name": args.name}))
+    else:
+        if lifted:
+            print(f"OK: lifted {args.scope} mute on {args.name!r}")
+        else:
+            print(f"no-op: no active {args.scope} mute matched {args.name!r}")
+    return 0
+
+
+def _cmd_extend(args) -> int:
+    if args.scope not in ("sector", "company"):
+        print(f"error: scope must be 'sector' or 'company'", file=sys.stderr)
+        return 1
+    if args.days <= 0:
+        print(f"error: --days must be positive", file=sys.stderr)
+        return 1
+    try:
+        extend(args.scope, args.name, args.days)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps({"ok": True, "action": "extend", "scope": args.scope,
+                          "name": args.name, "days": args.days}))
+    else:
+        print(f"OK: extended {args.scope} mute on {args.name!r} by {args.days}d")
+    return 0
+
+
+def _cmd_edit_reason(args) -> int:
+    if args.scope not in ("sector", "company"):
+        print(f"error: scope must be 'sector' or 'company'", file=sys.stderr)
+        return 1
+    try:
+        edit_reason(args.scope, args.name, args.reason)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps({"ok": True, "action": "edit_reason", "scope": args.scope,
+                          "name": args.name, "reason": args.reason}))
+    else:
+        print(f"OK: updated reason on {args.scope} mute {args.name!r}")
+    return 0
+
+
+def _cmd_audit(args) -> int:
+    if not EVENTS_PATH.exists():
+        if args.json:
+            print(json.dumps({"events": []}))
+        else:
+            print("(no audit events yet)")
+        return 0
+    lines = EVENTS_PATH.read_text(encoding="utf-8").splitlines()
+    events: list[dict] = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    tail = events[-args.limit:] if args.limit > 0 else events
+    if args.json:
+        print(json.dumps({"events": tail}, indent=2))
+        return 0
+    print(f"AUDIT EVENTS (last {len(tail)} of {len(events)}):")
+    for e in tail:
+        ts = e.get("ts", "?")
+        action = (e.get("action") or "?").ljust(11)
+        scope = (e.get("scope") or "?").ljust(7)
+        name = e.get("name") or "?"
+        new = e.get("new") or {}
+        until = new.get("until") if isinstance(new, dict) else None
+        suffix = f"  → until {until}" if until else ""
+        print(f"  {ts}  {action} {scope} {name}{suffix}")
+    return 0
+
+
+def _run_smoke() -> int:
+    """Original smoke harness, preserved bit-for-bit for backward compatibility.
+
+    Redirects all paths into a temp dir so smoke leaves real data/ untouched."""
+    global LIVE_PATH, EXAMPLE_PATH, EVENTS_PATH, HISTORY_PATH, PENDING_ARCHIVES_PATH  # noqa: PLW0603
     tmp = Path(tempfile.mkdtemp(prefix="suppr_smoke_"))
-    LIVE_PATH = tmp / "suppressions.json"  # type: ignore[misc]
-    EXAMPLE_PATH = tmp / "suppressions.example.json"  # type: ignore[misc]
-    EVENTS_PATH = tmp / "suppressions_events.jsonl"  # type: ignore[misc]
-    HISTORY_PATH = tmp / "suppressions_history.json"  # type: ignore[misc]
-    PENDING_ARCHIVES_PATH = tmp / "suppressions_pending_archives.jsonl"  # type: ignore[misc]
-    # Re-bind the module globals so internal calls hit the temp paths.
-    import automation.suppressions as _self
-    _self.LIVE_PATH = LIVE_PATH
-    _self.EXAMPLE_PATH = EXAMPLE_PATH
-    _self.EVENTS_PATH = EVENTS_PATH
-    _self.HISTORY_PATH = HISTORY_PATH
-    _self.PENDING_ARCHIVES_PATH = PENDING_ARCHIVES_PATH
+    LIVE_PATH = tmp / "suppressions.json"
+    EXAMPLE_PATH = tmp / "suppressions.example.json"
+    EVENTS_PATH = tmp / "suppressions_events.jsonl"
+    HISTORY_PATH = tmp / "suppressions_history.json"
+    PENDING_ARCHIVES_PATH = tmp / "suppressions_pending_archives.jsonl"
     EXAMPLE_PATH.write_text(json.dumps(_EMPTY_LIVE, indent=2), encoding="utf-8")
 
     add_sector("Canadian Big 6 Banks", date.today() + timedelta(days=60), "smoke test")
@@ -493,3 +740,82 @@ if __name__ == "__main__":
 
     shutil.rmtree(tmp, ignore_errors=True)
     print("OK")
+    return 0
+
+
+def _build_parser() -> "argparse.ArgumentParser":
+    import argparse
+    ap = argparse.ArgumentParser(
+        prog="python -m automation.suppressions",
+        description="Manage sector/company suppressions (mutes) for the scoring pipeline.",
+    )
+    ap.add_argument("--smoke", action="store_true",
+                    help="Run the in-memory smoke test (leaves data/ untouched).")
+    sub = ap.add_subparsers(dest="cmd", metavar="COMMAND")
+
+    p_add_sec = sub.add_parser("add-sector", help="Mute a sector for N days or until DATE.")
+    p_add_sec.add_argument("name", help="Sector display name (case/punctuation lenient).")
+    p_add_sec.add_argument("--days", type=int, help="TTL in days (mutually exclusive with --until).")
+    p_add_sec.add_argument("--until", help="Expiry date YYYY-MM-DD (mutually exclusive with --days).")
+    p_add_sec.add_argument("--reason", default="manual via CLI", help="Audit log reason.")
+    p_add_sec.add_argument("--json", action="store_true", help="Machine-readable output.")
+    p_add_sec.set_defaults(func=_cmd_add_sector)
+
+    p_add_co = sub.add_parser("add-company", help="Mute a company for N days or until DATE.")
+    p_add_co.add_argument("name", help="Company name (canonicalized via brand_aliases).")
+    p_add_co.add_argument("--days", type=int, help="TTL in days.")
+    p_add_co.add_argument("--until", help="Expiry date YYYY-MM-DD.")
+    p_add_co.add_argument("--reason", default="manual via CLI", help="Audit log reason.")
+    p_add_co.add_argument("--json", action="store_true")
+    p_add_co.set_defaults(func=_cmd_add_company)
+
+    p_list = sub.add_parser("list", help="Show active mutes (and optionally expired).")
+    p_list.add_argument("--scope", choices=["all", "sector", "company"], default="all")
+    p_list.add_argument("--include-expired", action="store_true",
+                        help="Also show last 20 entries from history.")
+    p_list.add_argument("--json", action="store_true")
+    p_list.set_defaults(func=_cmd_list)
+
+    p_lift = sub.add_parser("lift", help="Remove an active mute.")
+    p_lift.add_argument("scope", choices=["sector", "company"])
+    p_lift.add_argument("name")
+    p_lift.add_argument("--json", action="store_true")
+    p_lift.set_defaults(func=_cmd_lift)
+
+    p_ext = sub.add_parser("extend", help="Extend an active mute by N days.")
+    p_ext.add_argument("scope", choices=["sector", "company"])
+    p_ext.add_argument("name")
+    p_ext.add_argument("--days", type=int, required=True)
+    p_ext.add_argument("--json", action="store_true")
+    p_ext.set_defaults(func=_cmd_extend)
+
+    p_er = sub.add_parser("edit-reason", help="Update the reason on an active mute.")
+    p_er.add_argument("scope", choices=["sector", "company"])
+    p_er.add_argument("name")
+    p_er.add_argument("--reason", required=True)
+    p_er.add_argument("--json", action="store_true")
+    p_er.set_defaults(func=_cmd_edit_reason)
+
+    p_aud = sub.add_parser("audit", help="Print the suppressions audit-event log.")
+    p_aud.add_argument("--limit", type=int, default=50,
+                       help="Tail last N events (0 = all).")
+    p_aud.add_argument("--json", action="store_true")
+    p_aud.set_defaults(func=_cmd_audit)
+
+    return ap
+
+
+def _main(argv: list[str] | None = None) -> int:
+    ap = _build_parser()
+    args = ap.parse_args(argv)
+
+    if args.smoke:
+        return _run_smoke()
+    if not getattr(args, "cmd", None):
+        ap.print_help()
+        return 0
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(_main())
