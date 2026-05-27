@@ -1037,3 +1037,88 @@ def test_filter_drops_handles_row_with_multiple_reasons():
     ]
     out = ps.filter_drops_by_category(drops, "suppressed_sector")
     assert len(out) == 1
+
+
+# ---------------------------------------------------------------------------
+# Phase 3D — tracker_migrate via mutate_json (the production path)
+#
+# load_tracker() in ui/app.py runs migrate_in_place under safe_json.mutate_json
+# on first read. The Streamlit code itself can't be unit-tested directly, but
+# the mutation path can — these tests guarantee that an un-migrated tracker
+# becomes migrated when read through the production lock-protected path.
+# ---------------------------------------------------------------------------
+
+def test_migration_through_mutate_json(tmp_path):
+    """An un-migrated tracker (no schema_version, rows missing `archived`)
+    → after one mutate_json round-trip with migrate_in_place, every row
+    has archived=False and meta.schema_version=3."""
+    sys.path.insert(0, str(ROOT / "automation"))
+    from safe_json import mutate_json
+    from tracker_migrate import migrate_in_place, needs_migration, SCHEMA_VERSION
+
+    tracker_path = tmp_path / "job_tracker_data.json"
+    raw = {
+        "meta": {"schema_version": 1},
+        "jobs": [
+            {"id": "a", "company": "X", "status": "Found"},
+            {"id": "b", "company": "Y", "status": "Applied",
+             "archived": True},  # already has the field — should be left
+        ],
+    }
+    tracker_path.write_text(json.dumps(raw), encoding="utf-8")
+    assert needs_migration(raw)
+
+    migrated = mutate_json(tracker_path, migrate_in_place,
+                             default={"jobs": [], "meta": {}})
+    on_disk = json.loads(tracker_path.read_text(encoding="utf-8"))
+    for state in (migrated, on_disk):
+        assert state["meta"]["schema_version"] == SCHEMA_VERSION
+        assert all("archived" in j for j in state["jobs"])
+        # Existing archived=True must be preserved.
+        b = next(j for j in state["jobs"] if j["id"] == "b")
+        assert b["archived"] is True
+
+
+def test_migration_idempotent(tmp_path):
+    """Running migrate_in_place twice = same result (no double-bump,
+    no duplicate changelog entries growing on every read)."""
+    sys.path.insert(0, str(ROOT / "automation"))
+    from safe_json import mutate_json
+    from tracker_migrate import migrate_in_place
+
+    tracker_path = tmp_path / "job_tracker_data.json"
+    raw = {"meta": {"schema_version": 1}, "jobs": [{"id": "a", "status": "Found"}]}
+    tracker_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    first = mutate_json(tracker_path, migrate_in_place,
+                          default={"jobs": [], "meta": {}})
+    changelog_after_first = list(first.get("meta", {}).get("changelog", []))
+    second = mutate_json(tracker_path, migrate_in_place,
+                           default={"jobs": [], "meta": {}})
+    changelog_after_second = list(second.get("meta", {}).get("changelog", []))
+    assert changelog_after_first == changelog_after_second
+
+
+def test_migration_preserves_existing_jobs(tmp_path):
+    """Migration must not lose fields, mutate IDs, or reorder jobs."""
+    sys.path.insert(0, str(ROOT / "automation"))
+    from safe_json import mutate_json
+    from tracker_migrate import migrate_in_place
+
+    tracker_path = tmp_path / "job_tracker_data.json"
+    raw = {
+        "meta": {"schema_version": 1, "weekly_target": {"applies": 5}},
+        "jobs": [
+            {"id": "a", "company": "X", "status": "Found",
+             "fit_score_numeric": 8, "outreach_log": [{"date": "2026-05-01"}]},
+            {"id": "b", "company": "Y", "status": "Applied",
+             "date_applied": "2026-05-15"},
+        ],
+    }
+    tracker_path.write_text(json.dumps(raw), encoding="utf-8")
+    out = mutate_json(tracker_path, migrate_in_place,
+                       default={"jobs": [], "meta": {}})
+    assert [j["id"] for j in out["jobs"]] == ["a", "b"]
+    assert out["jobs"][0]["fit_score_numeric"] == 8
+    assert out["jobs"][0]["outreach_log"] == [{"date": "2026-05-01"}]
+    assert out["meta"]["weekly_target"] == {"applies": 5}

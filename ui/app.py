@@ -123,9 +123,40 @@ def extract_bridge(job: dict, max_len: int = 130) -> str:
 
 @st.cache_data(ttl=15)
 def load_tracker():
+    """Read tracker, auto-migrating schema on first read after a clone or
+    upgrade. Phase-3D contract: every UI code path that reads the tracker
+    flows through this, so the `archived` field is guaranteed to exist on
+    every row by the time it's queried by tracker_ops.is_active().
+
+    The migration is idempotent — running it on an already-migrated file
+    is a no-op (tracker_migrate.needs_migration returns False)."""
     if not TRACKER.exists():
         return {"jobs": [], "meta": {}}
-    return json.loads(TRACKER.read_text(encoding="utf-8"))
+    raw = json.loads(TRACKER.read_text(encoding="utf-8"))
+    try:
+        from automation import tracker_migrate as _tm  # noqa: WPS433
+    except Exception:
+        return raw
+    if not _tm.needs_migration(raw):
+        return raw
+    # Migration WILL mutate. Persist via the same lock-protected path the
+    # rest of the UI uses, with a `.bak.` snapshot before write so the
+    # original is recoverable if anything goes wrong downstream.
+    try:
+        from safe_json import mutate_json as _mj  # noqa: WPS433
+    except Exception:
+        # Fallback: in-memory migrate only. Caller still sees the migrated
+        # dict; the disk file gets persisted on the next write.
+        return _tm.migrate_in_place(raw)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    bak = TRACKER.with_suffix(f".bak.{stamp}.json")
+    try:
+        bak.write_text(TRACKER.read_text(encoding="utf-8"), encoding="utf-8")
+    except Exception:
+        pass
+    migrated = _mj(TRACKER, _tm.migrate_in_place,
+                    default={"jobs": [], "meta": {}})
+    return migrated
 
 
 @st.cache_data(ttl=15)
@@ -1153,10 +1184,14 @@ def compute_next_best_action(
         })
 
     # Most overdue follow-up.
+    # Phase 3D: route through tracker_ops.apply_followup_gate so archived
+    # rows AND terminal-status rows are both excluded. Archive nags an
+    # Applied job → no more follow-up reminders.
+    from automation import tracker_ops as _tops_fu  # noqa: WPS433
     most_overdue = None
     most_overdue_days = 0
     for j in jobs:
-        if j.get("status") in ("Rejected", "Withdrawn", "Offer", "Hired", "Expired"):
+        if _tops_fu.apply_followup_gate(j):
             continue
         nd = parse_date((j.get("followup_schedule") or {}).get("next_due"))
         if nd and (today_d - nd).days > most_overdue_days:
@@ -3109,6 +3144,11 @@ if page == "🏠 Dashboard":
     _today_apply_now = []
     _today_followups = []
     for _j in jobs:
+        # Phase 3D: archive removes a job from EVERY active surface,
+        # including Today's queue. The Kanban inspector's Restore button
+        # is the user-facing path back.
+        if _j.get("archived", False):
+            continue
         _st = _j.get("status", "")
         _fitn = int(_j.get("fit_score_numeric") or 0)
         # Apply-now: ready-to-apply roles, must have fit ≥6 to surface
@@ -6268,8 +6308,15 @@ elif page == "📋 Jobs Kanban":
     ]
     _ACTIVE_STATUSES = {"Found", "Watch", "Tailoring", "Applied",
                         "Recruiter_Screen", "Phone_Screen", "Take_Home", "Onsite"}
+    # Phase 3D — separate archived rows from the status histogram so they
+    # don't inflate "Found / Watch / Applied" counts. Surface as their own
+    # tile in the strip.
     _fu_overdue_count = 0
+    _archived_count = 0
     for _jj in jobs:
+        if _jj.get("archived", False):
+            _archived_count += 1
+            continue
         _ss = _jj.get("status", "?")
         _kan_statuses[_ss] = _kan_statuses.get(_ss, 0) + 1
         _fu_next = _jj.get("followup_schedule", {}).get("next_due")
@@ -6284,7 +6331,9 @@ elif page == "📋 Jobs Kanban":
             _ks_cols[_kci_mod].metric(f"{_ke} {_ks.replace('_', ' ')}", _kan_statuses[_ks])
     if _fu_overdue_count:
         st.warning(f"**{_fu_overdue_count} role{'s' if _fu_overdue_count != 1 else ''} with overdue follow-ups** — filter Status = Applied to find them.", icon="🔴")
-    st.caption(f"{_active_total} active · {len(jobs)} total tracked")
+    _archived_suffix = f" · {_archived_count} archived" if _archived_count else ""
+    st.caption(f"{_active_total} active · {len(jobs)} total tracked"
+                f"{_archived_suffix}")
     st.markdown("---")
 
     if jobs_df.empty:
@@ -6621,7 +6670,8 @@ elif page == "📋 Jobs Kanban":
                         st.success("Saved.")
                         st.rerun()
 
-                if st.button(f"✅ Mark Applied today (id={sel_id})"):
+                _kb_qa1, _kb_qa2 = st.columns(2)
+                if _kb_qa1.button(f"✅ Mark Applied today (id={sel_id})"):
                     for j in tr["jobs"]:
                         if j["id"] == sel_id:
                             j["status"] = "Applied"
@@ -6630,6 +6680,45 @@ elif page == "📋 Jobs Kanban":
                     save_tracker(tr)
                     st.success("Marked Applied; first follow-up in 3 days.")
                     st.rerun()
+                # Phase 3D — Archive / Restore button (toggles based on
+                # current state). Routes through tracker_ops.archive +
+                # mutate_json so the write serializes against auto_promote.
+                _sel_job = next((j for j in tr["jobs"]
+                                 if j.get("id") == sel_id), None)
+                _is_archived = bool((_sel_job or {}).get("archived", False))
+                if not _is_archived:
+                    if _kb_qa2.button(f"🚫 Archive (id={sel_id})",
+                                       help="Hide from Review Queue + "
+                                            "Today's brief + Kanban active "
+                                            "view. URL still blocks "
+                                            "re-promotion."):
+                        from safe_json import mutate_json as _mj_kb  # noqa: WPS433
+                        from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                        try:
+                            _mj_kb(TRACKER,
+                                    lambda t: _tops_kb.archive(
+                                        t, sel_id, "manual_kanban"),
+                                    default={"jobs": [], "meta": {}})
+                            load_tracker.clear()
+                            st.toast("📁 Archived", icon="🚫")
+                        except Exception as _exc:  # noqa: BLE001
+                            st.error(f"Archive failed: {_exc}")
+                        st.rerun()
+                else:
+                    if _kb_qa2.button(f"↩ Restore (id={sel_id})",
+                                       help="Bring this row back into the "
+                                            "active Kanban + Review Queue."):
+                        from safe_json import mutate_json as _mj_kb  # noqa: WPS433
+                        from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                        try:
+                            _mj_kb(TRACKER,
+                                    lambda t: _tops_kb.restore(t, sel_id),
+                                    default={"jobs": [], "meta": {}})
+                            load_tracker.clear()
+                            st.toast("↩ Restored", icon="✅")
+                        except Exception as _exc:  # noqa: BLE001
+                            st.error(f"Restore failed: {_exc}")
+                        st.rerun()
 
     # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
     # 📄 View tailor was clicked anywhere on this page.
@@ -8472,11 +8561,102 @@ elif page == "📬 Review Queue":
             icon="⏰",
         )
 
+    # Phase 3D — Pending-archive retry banner. If a previous Mute+Archive
+    # left a row in the deferred queue (suppression saved, archive failed),
+    # surface a one-click retry up here so the user isn't ambushed by a
+    # job re-appearing in their queue.
+    try:
+        from automation import suppressions as _supp_top  # noqa: WPS433
+        _pending = _supp_top.drain_pending_archives() \
+            if st.session_state.get("_rq_drain_pending") else []
+        # Read-only peek (don't drain): use a separate file probe so we
+        # don't mutate state on every render.
+        _PENDING_PATH = ROOT / "data" / "suppressions_pending_archives.jsonl"
+        _pending_count = 0
+        if _PENDING_PATH.exists():
+            for _ln in _PENDING_PATH.read_text(encoding="utf-8").splitlines():
+                if _ln.strip():
+                    _pending_count += 1
+        if _pending_count:
+            with st.container(border=True):
+                st.warning(
+                    f"⚠️ {_pending_count} archive(s) deferred from previous "
+                    "mute action(s). Retry now to clean up.",
+                    icon="📁",
+                )
+                if st.button("🔁 Retry deferred archives",
+                              key="_rq_retry_pending"):
+                    from safe_json import mutate_json as _mj_r  # noqa: WPS433
+                    from automation import tracker_ops as _tops_r  # noqa: WPS433
+                    _drained = _supp_top.drain_pending_archives()
+                    _retry_ok = 0
+                    _retry_fail: list[str] = []
+                    for _entry in _drained:
+                        _jid = _entry.get("job_id", "")
+                        try:
+                            _mj_r(TRACKER,
+                                   lambda t, _j=_jid: _tops_r.archive(
+                                       t, _j, "deferred_retry"),
+                                   default={"jobs": [], "meta": {}})
+                            _retry_ok += 1
+                        except Exception as _exc:  # noqa: BLE001
+                            _retry_fail.append(f"{_jid}: {_exc}")
+                            try:
+                                _supp_top.queue_pending_archive(
+                                    _jid, str(_entry.get("reason", "")),
+                                )
+                            except Exception:
+                                pass
+                    load_tracker.clear()
+                    if _retry_ok:
+                        st.toast(f"📁 Archived {_retry_ok} deferred row(s)",
+                                  icon="✅")
+                    if _retry_fail:
+                        st.error("Some archives still failed:\n- "
+                                  + "\n- ".join(_retry_fail[:5]))
+                    st.rerun()
+    except Exception:
+        pass  # never let the banner break the page
+
+    # Phase 3D — [Undo] chip for the most recent mute (within 12 minutes).
+    _undo_state = st.session_state.get("_rq_mute_undo")
+    if isinstance(_undo_state, dict):
+        try:
+            _undo_age_min = (datetime.now() - datetime.fromisoformat(
+                _undo_state.get("ts") or ""
+            )).total_seconds() / 60
+        except Exception:
+            _undo_age_min = 999
+        if _undo_age_min < 12:
+            _uc1, _uc2 = st.columns([5, 1])
+            _uc1.caption(
+                f"🔇 Recently muted {_undo_state['scope']} "
+                f"{_undo_state['name']!r}. Click Undo if that wasn't right."
+            )
+            if _uc2.button("↶ Undo", key="_rq_undo_mute"):
+                try:
+                    from automation import suppressions as _supp_undo  # noqa: WPS433
+                    _supp_undo.lift(_undo_state["scope"], _undo_state["name"])
+                    st.toast("Mute undone", icon="↶")
+                except Exception as _exc:  # noqa: BLE001
+                    st.error(f"Undo failed: {_exc}")
+                del st.session_state["_rq_mute_undo"]
+                st.rerun()
+        else:
+            del st.session_state["_rq_mute_undo"]
+
     # Pull jobs needing review (Found, highest fit first)
+    # Phase 3D: respect the `archived` field so muted-and-archived rows
+    # disappear from the queue immediately. tracker_ops.is_active applies
+    # the canonical filter `not archived AND status not in TERMINAL`; we
+    # intersect with status=="Found" because the Review Queue is the
+    # Found-row triage page specifically.
+    from automation import tracker_ops as _tops_rq  # noqa: WPS433
     _rq_all   = load_tracker()
     _rq_jobs  = _rq_all.get("jobs", [])
     _rq_queue = sorted(
-        [j for j in _rq_jobs if j.get("status") == "Found"],
+        [j for j in _rq_jobs
+         if j.get("status") == "Found" and not j.get("archived", False)],
         key=lambda j: (
             -(j.get("fit_score_numeric") or 0) * lane_mult(j),
             -({"High": 3, "Medium": 2, "Low": 1}.get(j.get("urgency", ""), 0)),
@@ -8637,15 +8817,28 @@ elif page == "📬 Review Queue":
         _rq_a1, _rq_a2, _rq_a3, _rq_a4, _rq_a5 = st.columns([2, 2, 2, 2, 1])
 
         def _rq_apply_action(new_status, new_urgency=None):
-            _td = json.loads(TRACKER.read_text(encoding="utf-8"))
-            for _j2 in _td.get("jobs", []):
-                if _j2.get("id") == _rq_job_id:
-                    if new_status:
-                        _j2["status"] = new_status
-                    if new_urgency:
-                        _j2["urgency"] = new_urgency
-                    break
-            save_tracker(_td)
+            # Phase 3D race fix: route through mutate_json so this write
+            # serializes against auto_promote and any other concurrent
+            # tracker writer. Previously, the naked json.loads/save_tracker
+            # pair could interleave with auto_promote's mutate_json and
+            # silently drop one side's edits.
+            from safe_json import mutate_json as _mj  # noqa: WPS433
+            from automation import tracker_ops as _tops  # noqa: WPS433
+
+            def _mut(t):
+                if new_status:
+                    try:
+                        _tops.set_status(t, _rq_job_id, new_status)
+                    except KeyError:
+                        return t  # job missing — caller already moved on
+                if new_urgency:
+                    job = _tops.find_job(t, _rq_job_id)
+                    if job is not None:
+                        job["urgency"] = new_urgency
+                return t
+
+            _mj(TRACKER, _mut, default={"jobs": [], "meta": {}})
+            load_tracker.clear()
             st.session_state["_rq_idx"] = _rq_idx + 1
             st.session_state["_rq_session_acted"] = (
                 st.session_state.get("_rq_session_acted", 0) + 1
@@ -8680,6 +8873,69 @@ elif page == "📬 Review Queue":
             st.session_state["_rq_idx"] = _rq_idx + 1
             st.rerun()
 
+    # Phase 3D — secondary action row: Archive (per-row button) + More popover
+    # (mute-sector / mute-company). Per design doc § "UI hygiene corrections":
+    # Archive is its own button, NOT inside the More menu (single entry point).
+    _rq_b1, _rq_b2, _rq_b_spacer = st.columns([2, 2, 6])
+    if _rq_b1.button(
+        "🚫 Archive", width='stretch', key=f"_rq_archive_{_rq_job_id}",
+        help="Hide this job from Review Queue + Today's brief + Kanban "
+             "active view. URL still blocks re-promotion. Restore later "
+             "from the Archived expander.",
+    ):
+        from safe_json import mutate_json as _mj  # noqa: WPS433
+        from automation import tracker_ops as _tops  # noqa: WPS433
+        try:
+            _mj(TRACKER, lambda t: _tops.archive(t, _rq_job_id, "manual_review_queue"),
+                default={"jobs": [], "meta": {}})
+            load_tracker.clear()
+            st.session_state["_rq_idx"] = _rq_idx + 1
+            st.session_state["_rq_session_acted"] = (
+                st.session_state.get("_rq_session_acted", 0) + 1
+            )
+            st.toast(
+                f"🚫 Archived {_rq_job.get('company') or '?'} · {_rq_job.get('title') or '?'}",
+                icon="📁",
+            )
+        except Exception as exc:  # noqa: BLE001
+            st.error(f"Archive failed: {exc}")
+        st.rerun()
+
+    with _rq_b2.popover("⋯ More options", use_container_width=True):
+        st.caption(
+            "Suppress an entire sector or company so future scoring + "
+            "promote runs skip them. The current job is auto-archived "
+            "on confirm."
+        )
+        _mute_sector = _rq_job.get("sector") or ""
+        _mute_company = _rq_job.get("company") or ""
+        if _mute_sector:
+            if st.button(
+                f"🔇 Mute sector  '{_mute_sector}'",
+                key=f"_rq_mute_sec_{_rq_job_id}",
+                width='stretch',
+            ):
+                st.session_state["_rq_mute_open"] = {
+                    "job_id": _rq_job_id,
+                    "scope": "sector",
+                    "name": _mute_sector,
+                }
+                st.rerun()
+        else:
+            st.caption("_(no sector tag on this row — mute by company instead)_")
+        if _mute_company:
+            if st.button(
+                f"🔇 Mute company '{_mute_company}'",
+                key=f"_rq_mute_co_{_rq_job_id}",
+                width='stretch',
+            ):
+                st.session_state["_rq_mute_open"] = {
+                    "job_id": _rq_job_id,
+                    "scope": "company",
+                    "name": _mute_company,
+                }
+                st.rerun()
+
     # Inline Apply form — shown when user clicks Apply on a card
     if st.session_state.get("_rq_apply_open") == _rq_job_id:
         with st.container(border=True):
@@ -8706,22 +8962,29 @@ elif page == "📬 Review Queue":
                 _ap_cancel = _ap_c2.form_submit_button("Cancel", width='stretch')
 
             if _ap_submit:
-                _td = json.loads(TRACKER.read_text(encoding="utf-8"))
-                for _j2 in _td.get("jobs", []):
-                    if _j2.get("id") == _rq_job_id:
-                        _j2["status"] = "Applied"
-                        seed_followup(_j2, applied_on=_ap_date)
-                        _log_entry = {
-                            "date": _ap_date.isoformat(),
-                            "type": "applied",
-                            "channel": _ap_channel,
-                            "notes": _ap_notes or "",
-                        }
-                        if not isinstance(_j2.get("outreach_log"), list):
-                            _j2["outreach_log"] = []
-                        _j2["outreach_log"].append(_log_entry)
-                        break
-                save_tracker(_td)
+                # Phase 3D race fix: serialize against auto_promote.
+                from safe_json import mutate_json as _mj  # noqa: WPS433
+                from automation import tracker_ops as _tops  # noqa: WPS433
+                _log_entry = {
+                    "date": _ap_date.isoformat(),
+                    "type": "applied",
+                    "channel": _ap_channel,
+                    "notes": _ap_notes or "",
+                }
+
+                def _apply_mut(t):
+                    job = _tops.find_job(t, _rq_job_id)
+                    if job is None:
+                        return t
+                    job["status"] = "Applied"
+                    seed_followup(job, applied_on=_ap_date)
+                    if not isinstance(job.get("outreach_log"), list):
+                        job["outreach_log"] = []
+                    job["outreach_log"].append(_log_entry)
+                    return t
+
+                _mj(TRACKER, _apply_mut, default={"jobs": [], "meta": {}})
+                load_tracker.clear()
                 if _ap_tailor and _rq_job_id and api_key.is_key_valid():
                     _tailor_cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"), "--job-id", _rq_job_id]
                     scan_runner.start_run(f"tailor_{_rq_job_id}", _tailor_cmd)
@@ -8734,6 +8997,126 @@ elif page == "📬 Review Queue":
 
             if _ap_cancel:
                 del st.session_state["_rq_apply_open"]
+                st.rerun()
+
+    # Phase 3D — Mute inline confirm form (mirrors the Apply form pattern).
+    # Two-write protocol per design doc § Cluster D:
+    #   1. Write the suppression FIRST (the higher-signal, less-frequently-
+    #      corrected write — lift on regret is one click).
+    #   2. Attempt archive SECOND. On failure → queue to
+    #      suppressions_pending_archives.jsonl + yellow toast — don't roll
+    #      back the suppression.
+    _mute_open = st.session_state.get("_rq_mute_open")
+    if isinstance(_mute_open, dict) and _mute_open.get("job_id") == _rq_job_id:
+        _m_scope = _mute_open.get("scope", "sector")
+        _m_name = _mute_open.get("name", "")
+        with st.container(border=True):
+            st.markdown(
+                f"#### 🔇 Mute {_m_scope} — {_m_name!r}"
+            )
+            st.caption(
+                "Future scoring + promote runs will skip this scope until the "
+                "expiry date. The current job is auto-archived on confirm so "
+                "it disappears from your queue immediately."
+            )
+            with st.form(key=f"rq_mute_form_{_rq_job_id}"):
+                _mc1, _mc2 = st.columns(2)
+                _m_dur = _mc1.selectbox(
+                    "Duration", ("30d", "60d", "90d", "permanent"),
+                    index=1, key=f"_rq_mute_dur_{_rq_job_id}",
+                )
+                _m_reason = _mc2.text_input(
+                    "Reason (visible in audit log)",
+                    placeholder="1 interview / 14 apps in 8 weeks",
+                    key=f"_rq_mute_reason_{_rq_job_id}",
+                )
+                _mb1, _mb2 = st.columns(2)
+                _m_submit = _mb1.form_submit_button(
+                    f"🔇 Mute & archive", type="primary", width='stretch',
+                )
+                _m_cancel = _mb2.form_submit_button("Cancel", width='stretch')
+
+            if _m_submit:
+                _ttl_days = None if _m_dur == "permanent" else int(_m_dur.rstrip("d"))
+                ok, err, until, canon = pipeline_state.validate_suppression_form(
+                    scope=_m_scope, name=_m_name,
+                    ttl_days=_ttl_days, reason=_m_reason,
+                )
+                if not ok:
+                    st.error(err, icon="❌")
+                else:
+                    # Step 1: write the suppression. Direct in-process call
+                    # — same lock the CLI uses, milliseconds.
+                    suppression_ok = False
+                    archive_ok = False
+                    try:
+                        from automation import suppressions as _supp  # noqa: WPS433
+                        if _m_scope == "sector":
+                            _supp.add_sector(canon, until,
+                                              _m_reason or "muted from Review Queue")
+                        else:
+                            _supp.add_company(canon, until,
+                                               _m_reason or "muted from Review Queue")
+                        suppression_ok = True
+                    except Exception as exc:  # noqa: BLE001
+                        st.error(f"Mute failed: {exc}", icon="❌")
+
+                    # Step 2: attempt archive ONLY if suppression succeeded.
+                    if suppression_ok:
+                        from safe_json import mutate_json as _mj2  # noqa: WPS433
+                        from automation import tracker_ops as _tops2  # noqa: WPS433
+                        try:
+                            _mj2(
+                                TRACKER,
+                                lambda t: _tops2.archive(
+                                    t, _rq_job_id,
+                                    f"muted_{_m_scope}_{canon}",
+                                ),
+                                default={"jobs": [], "meta": {}},
+                            )
+                            load_tracker.clear()
+                            archive_ok = True
+                        except Exception as exc:  # noqa: BLE001
+                            # Don't roll back the suppression — it's the
+                            # load-bearing write. Queue the archive for
+                            # retry; surface a yellow toast.
+                            try:
+                                _supp.queue_pending_archive(
+                                    _rq_job_id,
+                                    f"mute_partial_failure: {exc}",
+                                )
+                            except Exception:
+                                pass
+                            st.warning(
+                                f"Mute saved; archive deferred — retry from "
+                                f"the banner at the top of this page. ({exc})",
+                                icon="⚠️",
+                            )
+
+                        if archive_ok:
+                            until_msg = "permanent" if until is None else \
+                                        f"until {until.isoformat()}"
+                            # Toast carries an [Undo] in the success-flow
+                            # state so the next render shows it as a chip
+                            # at the top of the page.
+                            st.toast(
+                                f"🔇 Muted {_m_scope} {canon!r} ({until_msg}); "
+                                f"job archived",
+                                icon="🔇",
+                            )
+                            st.session_state["_rq_mute_undo"] = {
+                                "scope": _m_scope, "name": canon,
+                                "ts": datetime.now().isoformat(timespec="seconds"),
+                            }
+                            st.session_state["_rq_idx"] = _rq_idx + 1
+                            st.session_state["_rq_session_acted"] = (
+                                st.session_state.get("_rq_session_acted", 0) + 1
+                            )
+                    del st.session_state["_rq_mute_open"]
+                    st.rerun()
+
+            if _m_cancel:
+                del st.session_state["_rq_mute_open"]
                 st.rerun()
 
         # Navigation strip
@@ -8762,6 +9145,53 @@ elif page == "📬 Review Queue":
             "Actioning a card (Watch / Shortlist / Expire) saves immediately to the tracker. "
             "Skip leaves the job unchanged for next session."
         )
+
+    # Phase 3D — Archived rows expander. Lists rows where archived=True,
+    # newest first. Each gets a per-row Restore button so the user can
+    # recover from a misclick without leaving the page.
+    _archived_jobs = [j for j in _rq_jobs if j.get("archived", False)]
+    if _archived_jobs:
+        # Sort by archived_at desc (most recent first), falling back to id.
+        _archived_jobs.sort(
+            key=lambda j: j.get("archived_at") or "", reverse=True,
+        )
+        with st.expander(f"🗂 Archived ({len(_archived_jobs)})", expanded=False):
+            st.caption(
+                "Archived rows are hidden from Review Queue, Today's brief, "
+                "and Kanban active counts. The URL still blocks "
+                "re-promotion. Restore brings the row back to active state."
+            )
+            for _aj in _archived_jobs[:20]:
+                _ac1, _ac2, _ac3 = st.columns([5, 2, 1])
+                _ac1.markdown(
+                    f"**{_aj.get('company') or '?'}** — "
+                    f"{_aj.get('title') or '?'} "
+                    f"<span style='color:#94a3b8;font-size:11px'>"
+                    f"({_aj.get('status') or '?'})</span>",
+                    unsafe_allow_html=True,
+                )
+                _ac2.caption(
+                    f"archived {_aj.get('archived_at', '?')[:10]} · "
+                    f"{_aj.get('archive_reason', '—')[:40]}"
+                )
+                if _ac3.button("↩ Restore",
+                                key=f"_rq_restore_{_aj.get('id', '?')}"):
+                    from safe_json import mutate_json as _mj_re  # noqa: WPS433
+                    from automation import tracker_ops as _tops_re  # noqa: WPS433
+                    try:
+                        _mj_re(TRACKER,
+                                lambda t, _i=_aj.get("id"):
+                                    _tops_re.restore(t, _i),
+                                default={"jobs": [], "meta": {}})
+                        load_tracker.clear()
+                        st.toast(f"↩ Restored {_aj.get('company') or '?'}",
+                                  icon="✅")
+                    except Exception as _exc:  # noqa: BLE001
+                        st.error(f"Restore failed: {_exc}")
+                    st.rerun()
+            if len(_archived_jobs) > 20:
+                st.caption(f"_(showing 20 of {len(_archived_jobs)} — older "
+                            "rows accessible via Jobs Kanban inspector)_")
 
 # ===========================================================================
 # FOLLOW-UPS PAGE
