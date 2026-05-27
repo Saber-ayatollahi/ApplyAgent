@@ -1,0 +1,22 @@
+{
+  "scan_date": "20260527",
+  "source": "qa1_p5_scored.json",
+  "min_score": 7,
+  "include_watch": false,
+  "mode": "commit",
+  "selection_mode": "threshold",
+  "summary": {
+    "added": 0,
+    "updated": 0,
+    "expired": 1,
+    "skipped_verdict": 0,
+    "skipped_score": 0,
+    "skipped_dupe": 0,
+    "skipped_geo": 0,
+    "suppressed_after_score": 0
+  },
+  "skipped_rows": [],
+  "suppressed_after_score": [],
+  "promoted": [],
+  "new_entries": []
+}

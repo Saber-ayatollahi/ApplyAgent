@@ -1,12 +1,17 @@
 {
   "version": 1,
-  "scan_date": "2026-05-25",
-  "rebuilt_at": "2026-05-25T14:07:46",
+  "scan_date": "2026-05-26",
+  "rebuilt_at": "2026-05-26T22:39:05",
   "source": "worklist",
   "sources": {
     "scrape": "scan_20260525.json",
     "gmail_window_days": 30,
     "gmail_files_indexed": [
+      "scan_gmail_20260526_215041.json",
+      "scan_gmail_20260526_214010.json",
+      "scan_gmail_20260526_213912.json",
+      "scan_gmail_20260526_204948.json",
+      "scan_gmail_20260526_192911.json",
       "scan_gmail_20260525_140746.json",
       "scan_gmail_20260525_140519.json",
       "scan_gmail_20260518_233026.json",
@@ -15,18 +20,18 @@
     ]
   },
   "stats": {
-    "scrape": 1328,
-    "gmail": 123,
-    "both": 30,
-    "total": 1481,
-    "new_since_last_score": 1211,
-    "gmail_geo_dropped": 91
+    "scrape": 1342,
+    "gmail": 75,
+    "both": 16,
+    "total": 1433,
+    "new_since_last_score": 1209,
+    "gmail_geo_dropped": 43
   },
   "dedup_stats": {
-    "input": 1733,
-    "output": 1481,
-    "dropped_url": 121,
-    "dropped_near": 40
+    "input": 1903,
+    "output": 1433,
+    "dropped_url": 205,
+    "dropped_near": 63
   },
   "merged_pairs": [
     {
@@ -48,8 +53,107 @@
       "reason": "exact_url"
     },
     {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "kept_source": "scrape",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "dropped_source": "gmail",
+      "company": "S&P Global",
+      "title": "Associate Director, Financial Institutions",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "scrape",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager-customer-lifecycle--retail-investments_r260014579",
+      "kept_source": "scrape",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414991815",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager Customer Lifecycle, Retail Investments",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
       "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
       "kept_source": "scrape",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "scrape",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
       "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
       "dropped_source": "gmail",
       "company": "BMO",
@@ -67,12 +171,1344 @@
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
-      "kept_source": "scrape",
+      "kept_source": "both",
       "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
       "dropped_source": "gmail",
       "company": "PwC Canada",
       "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
       "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "dropped_source": "gmail",
+      "company": "S&P Global",
+      "title": "Associate Director, Financial Institutions",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "dropped_source": "gmail",
+      "company": "Equinix",
+      "title": "People Risk Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "dropped_source": "gmail",
+      "company": "Health | Santé",
+      "title": "Controllership and Risk Lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Senior Director, AI Research",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager-customer-lifecycle--retail-investments_r260014579",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414991815",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager Customer Lifecycle, Retail Investments",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Technical Product Manager (Capital Markets Technology",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "dropped_source": "gmail",
+      "company": "Instacart",
+      "title": "Senior Strategic Finance Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, Operational Risk Enablement",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, High Risk Client Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "dropped_source": "gmail",
+      "company": "Manulife",
+      "title": "Manager/Director, Model Risk Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director of Finance",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "dropped_source": "gmail",
+      "company": "BDO Canada",
+      "title": "Manager, Valuations & Modelling",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "dropped_source": "gmail",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director, Senior Project Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "dropped_source": "gmail",
+      "company": "TD",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "dropped_source": "gmail",
+      "company": "KPMG Canada",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "dropped_source": "gmail",
+      "company": "S&P Global",
+      "title": "Associate Director, Financial Institutions",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "dropped_source": "gmail",
+      "company": "Equinix",
+      "title": "People Risk Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "dropped_source": "gmail",
+      "company": "Health | Santé",
+      "title": "Controllership and Risk Lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Senior Director, AI Research",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager-customer-lifecycle--retail-investments_r260014579",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414991815",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager Customer Lifecycle, Retail Investments",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Technical Product Manager (Capital Markets Technology",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "dropped_source": "gmail",
+      "company": "Instacart",
+      "title": "Senior Strategic Finance Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, Operational Risk Enablement",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, High Risk Client Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "dropped_source": "gmail",
+      "company": "Manulife",
+      "title": "Manager/Director, Model Risk Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director of Finance",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "dropped_source": "gmail",
+      "company": "BDO Canada",
+      "title": "Manager, Valuations & Modelling",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "dropped_source": "gmail",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director, Senior Project Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "dropped_source": "gmail",
+      "company": "TD",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "dropped_source": "gmail",
+      "company": "KPMG Canada",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "dropped_source": "gmail",
+      "company": "S&P Global",
+      "title": "Associate Director, Financial Institutions",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "dropped_source": "gmail",
+      "company": "Equinix",
+      "title": "People Risk Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "dropped_source": "gmail",
+      "company": "Health | Santé",
+      "title": "Controllership and Risk Lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Senior Director, AI Research",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager-customer-lifecycle--retail-investments_r260014579",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414991815",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager Customer Lifecycle, Retail Investments",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Technical Product Manager (Capital Markets Technology",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "dropped_source": "gmail",
+      "company": "Instacart",
+      "title": "Senior Strategic Finance Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, Operational Risk Enablement",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, High Risk Client Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "dropped_source": "gmail",
+      "company": "Manulife",
+      "title": "Manager/Director, Model Risk Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director of Finance",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "dropped_source": "gmail",
+      "company": "BDO Canada",
+      "title": "Manager, Valuations & Modelling",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "dropped_source": "gmail",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director, Senior Project Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "dropped_source": "gmail",
+      "company": "TD",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "dropped_source": "gmail",
+      "company": "KPMG Canada",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398189021",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
+      "dropped_source": "gmail",
+      "company": "S&P Global",
+      "title": "Associate Director, Financial Institutions",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415212776",
+      "dropped_source": "gmail",
+      "company": "Equinix",
+      "title": "People Risk Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Director, Generative and Agentic AI Model Validation",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4405168051",
+      "dropped_source": "gmail",
+      "company": "Boyd Interactive",
+      "title": "Director of Internal Control",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4415206671",
+      "dropped_source": "gmail",
+      "company": "Health | Santé",
+      "title": "Controllership and Risk Lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418696561",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Senior Director, AI Research",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager-customer-lifecycle--retail-investments_r260014579",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414991815",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager Customer Lifecycle, Retail Investments",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4376936674",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4388571745",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Technical Product Manager (Capital Markets Technology",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414989459",
+      "dropped_source": "gmail",
+      "company": "Instacart",
+      "title": "Senior Strategic Finance Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418654086",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, Operational Risk Enablement",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418661061",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Manager, High Risk Client Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "dropped_source": "gmail",
+      "company": "Manulife",
+      "title": "Manager/Director, Model Risk Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director of Finance",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "dropped_source": "gmail",
+      "company": "BDO Canada",
+      "title": "Manager, Valuations & Modelling",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "dropped_source": "gmail",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director, Senior Project Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "dropped_source": "gmail",
+      "company": "TD",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "dropped_source": "gmail",
+      "company": "KPMG Canada",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368270079",
+      "dropped_source": "gmail",
+      "company": "Manulife",
+      "title": "Manager/Director, Model Risk Management",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4367062101",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Portfolio Management, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4400691516",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director of Finance",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418618690",
+      "dropped_source": "gmail",
+      "company": "BDO Canada",
+      "title": "Manager, Valuations & Modelling",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--monitoring-insights-and_r260013596-1",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4409497618",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Senior Manager, Monitoring & Customer Insights",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4418039414",
+      "dropped_source": "gmail",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408526858",
+      "dropped_source": "gmail",
+      "company": "RBC",
+      "title": "Director, Senior Project Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398906586",
+      "dropped_source": "gmail",
+      "company": "TD",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4398977053",
+      "dropped_source": "gmail",
+      "company": "KPMG Canada",
+      "title": "Senior Manager",
+      "reason": "exact_url"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4418603333",
+      "kept_source": "both",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4417715517",
+      "dropped_source": "gmail",
+      "company": "PwC Canada",
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "reason": "near_dup_company_title"
+    },
+    {
+      "kept_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4416598905",
+      "dropped_source": "gmail",
+      "company": "Scotiabank",
+      "title": "Senior Manager, GRM RCM Program Testing",
+      "reason": "exact_url"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4368270079",
@@ -201,8 +1637,17 @@
       "reason": "exact_url"
     },
     {
+      "kept_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "kept_source": "gmail",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4414282267",
+      "dropped_source": "gmail",
+      "company": "BMO",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "reason": "exact_url"
+    },
+    {
       "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/director--generative-and-agentic-ai-model-validation_r260012941",
-      "kept_source": "scrape",
+      "kept_source": "both",
       "dropped_url": "https://www.linkedin.com/jobs/view/4414273407",
       "dropped_source": "gmail",
       "company": "BMO",
@@ -228,24 +1673,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4406800213",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4406800213",
-      "dropped_source": "gmail",
-      "company": "Treasury Manager",
-      "title": "Treasury Manager KOHO",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4372649125",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4372649125",
-      "dropped_source": "gmail",
-      "company": "Director Risk Services Eastern Region",
-      "title": "Director Risk Services Eastern Region Northbridge Financial Corporation",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4368084295",
@@ -261,15 +1688,6 @@
       "dropped_source": "gmail",
       "company": "Scotiabank",
       "title": "Director & Head, Portfolio Management, IT Risk",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4406609619",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4406609619",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Operations Risk",
-      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
       "reason": "exact_url"
     },
     {
@@ -291,39 +1709,12 @@
       "reason": "near_dup_company_title"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4415829161",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4415829161",
-      "dropped_source": "gmail",
-      "company": "Senior Investment Strategist",
-      "title": "Senior Investment Strategist RBC Dominion Securities",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4382463759",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4382463759",
-      "dropped_source": "gmail",
-      "company": "VP, Treasury and Capital Management",
-      "title": "VP, Treasury and Capital Management Zurich Canada",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4415550965",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4415550965",
       "dropped_source": "gmail",
       "company": "Ontario Teachers'​ Pension Plan",
       "title": "Director",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4406800213",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4406800213",
-      "dropped_source": "gmail",
-      "company": "Treasury Manager",
-      "title": "Treasury Manager KOHO",
       "reason": "exact_url"
     },
     {
@@ -354,33 +1745,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4412034856",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4412034856",
-      "dropped_source": "gmail",
-      "company": "Director, FinTech & Risk Analytics",
-      "title": "Director, FinTech & Risk Analytics Jobber",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4412034856",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4412048278",
-      "dropped_source": "gmail",
-      "company": "Director, FinTech & Risk Analytics",
-      "title": "Director, FinTech & Risk Analytics Jobber",
-      "reason": "near_dup_company_title"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Model Validation",
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4415550965",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4414951559",
@@ -390,42 +1754,6 @@
       "reason": "near_dup_company_title"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "dropped_source": "gmail",
-      "company": "Manager, Liquidity Risk Measurement",
-      "title": "Manager, Liquidity Risk Measurement RBC",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "kept_source": "both",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "dropped_source": "gmail",
-      "company": "Manager, Liquidity Risk Measurement",
-      "title": "Manager, Liquidity Risk Measurement RBC",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Total Portfolio Risk",
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414488070",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414488070",
-      "dropped_source": "gmail",
-      "company": "Associate Director, Liquidity Strategy",
-      "title": "Associate Director, Liquidity Strategy Scotiabank",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4405049169",
       "kept_source": "scrape",
       "dropped_url": "https://www.linkedin.com/jobs/view/4405049169",
@@ -435,75 +1763,12 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "kept_source": "both",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Model Validation",
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Total Portfolio Risk",
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4405049169",
       "kept_source": "both",
       "dropped_url": "https://www.linkedin.com/jobs/view/4405049169",
       "dropped_source": "gmail",
       "company": "Manulife",
       "title": "Director, Global Operations Risk & Control Governance",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "kept_source": "both",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414643852",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Model Validation",
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414488070",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414488070",
-      "dropped_source": "gmail",
-      "company": "Associate Director, Liquidity Strategy",
-      "title": "Associate Director, Liquidity Strategy Scotiabank",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4382463759",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4382463759",
-      "dropped_source": "gmail",
-      "company": "VP, Treasury and Capital Management",
-      "title": "VP, Treasury and Capital Management Zurich Canada",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414654470",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Total Portfolio Risk",
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "kept_source": "both",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4414969942",
-      "dropped_source": "gmail",
-      "company": "Manager, Liquidity Risk Measurement",
-      "title": "Manager, Liquidity Risk Measurement RBC",
       "reason": "exact_url"
     },
     {
@@ -588,24 +1853,6 @@
       "reason": "near_dup_company_title"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4410629305",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4410629305",
-      "dropped_source": "gmail",
-      "company": "Treasury Manager FCC",
-      "title": "Treasury Manager FCC Fidelity Canada",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4404549735",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4404549735",
-      "dropped_source": "gmail",
-      "company": "Director, Portfolio Construction",
-      "title": "Director, Portfolio Construction Mackenzie Investments",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4414765163",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4392483035",
@@ -667,15 +1914,6 @@
       "company": "BMO",
       "title": "Head, North American Provisioning & Risk Analytics",
       "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414708847",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4413854121",
-      "dropped_source": "gmail",
-      "company": "Director, Structured Finance",
-      "title": "Director, Structured Finance Sun Life",
-      "reason": "near_dup_company_title"
     },
     {
       "kept_url": "https://bmo.wd3.myworkdayjobs.com/job/toronto-on-can/senior-manager--credit-risk-strategy-oversight_r260014363",
@@ -759,15 +1997,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "dropped_source": "gmail",
-      "company": "Principal, Total Portfolio",
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4392987201",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4392987201",
@@ -784,15 +2013,6 @@
       "company": "RBC",
       "title": "Associate Director, Credit Modeling and Methodology",
       "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4413084912",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4362180315",
-      "dropped_source": "gmail",
-      "company": "Manager, Global Risk Management",
-      "title": "Manager, Global Risk Management BGIS",
-      "reason": "near_dup_company_title"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4395394318",
@@ -819,24 +2039,6 @@
       "dropped_source": "gmail",
       "company": "Scotiabank",
       "title": "Senior Manager, GRM International Banking",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4401378033",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4401378033",
-      "dropped_source": "gmail",
-      "company": "Director, Model Validation",
-      "title": "Director, Model Validation BMO",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "dropped_source": "gmail",
-      "company": "Principal, Total Portfolio",
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
       "reason": "exact_url"
     },
     {
@@ -867,42 +2069,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4413084912",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4362180315",
-      "dropped_source": "gmail",
-      "company": "Manager, Global Risk Management",
-      "title": "Manager, Global Risk Management BGIS",
-      "reason": "near_dup_company_title"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4371862998",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4371862998",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Root Cause Analysis",
-      "title": "Senior Manager, Root Cause Analysis KPMG Canada",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4402766316",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4402766316",
-      "dropped_source": "gmail",
-      "company": "AVP, Casualty Corporate Risk",
-      "title": "AVP, Casualty Corporate Risk Aviva Canada",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4401378033",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4401378033",
-      "dropped_source": "gmail",
-      "company": "Director, Model Validation",
-      "title": "Director, Model Validation BMO",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4392987201",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4392987201",
@@ -919,15 +2085,6 @@
       "company": "Scotiabank",
       "title": "Director & Head, Insights & Analytics, IT Risk",
       "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4413084912",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4362180315",
-      "dropped_source": "gmail",
-      "company": "Manager, Global Risk Management",
-      "title": "Manager, Global Risk Management BGIS",
-      "reason": "near_dup_company_title"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4368084295",
@@ -948,30 +2105,12 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4391732468",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4391732468",
-      "dropped_source": "gmail",
-      "company": "Manager, Risk Independence",
-      "title": "Manager, Risk Independence KPMG Canada",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4392987201",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4392987201",
       "dropped_source": "gmail",
       "company": "BMO",
       "title": "Global Markets Liquidity and Funding Manager",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411772536",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411772536",
-      "dropped_source": "gmail",
-      "company": "Manager, Structural Market Risk",
-      "title": "Manager, Structural Market Risk BMO",
       "reason": "exact_url"
     },
     {
@@ -1020,15 +2159,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411716067",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411716067",
-      "dropped_source": "gmail",
-      "company": "Senior Director Data Analytics",
-      "title": "Senior Director Data Analytics National Bank of Canada",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4410997364",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4410997364",
@@ -1054,24 +2184,6 @@
       "company": "Ontario Teachers'​ Pension Plan",
       "title": "Director",
       "reason": "near_dup_company_title"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4410236372",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4410236372",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Cash Management",
-      "title": "Senior Manager, Cash Management BMO",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411707633",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411707633",
-      "dropped_source": "gmail",
-      "company": "Director of Treasury",
-      "title": "Director of Treasury Clarity Recruitment",
-      "reason": "exact_url"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4390739777",
@@ -1119,24 +2231,6 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4380143887",
-      "dropped_source": "gmail",
-      "company": "Principal, Total Portfolio",
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411821187",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411821187",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Advanced Analytics",
-      "title": "Senior Manager, Advanced Analytics TD",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4402692951",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4402692951",
@@ -1162,51 +2256,6 @@
       "company": "EQ Bank",
       "title": "Senior Director, Asset and Liability Management (ALM)",
       "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411821187",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411821187",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Advanced Analytics",
-      "title": "Senior Manager, Advanced Analytics TD",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4408210518",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4408210518",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Risk Transformation",
-      "title": "Senior Manager, Risk Transformation EQ Bank",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411809419",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4411809419",
-      "dropped_source": "gmail",
-      "company": "Director, CCR Oversight",
-      "title": "Director, CCR Oversight BMO",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4404308907",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4404308907",
-      "dropped_source": "gmail",
-      "company": "VP, Global Enterprise Risk Management",
-      "title": "VP, Global Enterprise Risk Management Element Fleet Management",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4411535487",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4357725889",
-      "dropped_source": "gmail",
-      "company": "Managing Director, Enterprise Risk",
-      "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC",
-      "reason": "near_dup_company_title"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4414765163",
@@ -1254,57 +2303,12 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4323947242",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4323947242",
-      "dropped_source": "gmail",
-      "company": "Senior Manager GRC",
-      "title": "Senior Manager GRC KPMG Canada",
-      "reason": "exact_url"
-    },
-    {
       "kept_url": "https://www.linkedin.com/jobs/view/4408486564",
       "kept_source": "gmail",
       "dropped_url": "https://www.linkedin.com/jobs/view/4408486564",
       "dropped_source": "gmail",
       "company": "RBC",
       "title": "Associate Director, Liquidity Risk Measurement",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4414740484",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4409393067",
-      "dropped_source": "gmail",
-      "company": "Director Investment Risk",
-      "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada",
-      "reason": "near_dup_company_title"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4408486564",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4408486564",
-      "dropped_source": "gmail",
-      "company": "RBC",
-      "title": "Associate Director, Liquidity Risk Measurement",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4408803305",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4408803305",
-      "dropped_source": "gmail",
-      "company": "RBC",
-      "title": "Associate Director, GRA Risk Methodology",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4399682908",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4399682908",
-      "dropped_source": "gmail",
-      "company": "Director, Funding & Investments",
-      "title": "Director, Funding & Investments Scotiabank",
       "reason": "exact_url"
     },
     {
@@ -1326,21 +2330,21 @@
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4409715140",
+      "kept_url": "https://www.linkedin.com/jobs/view/4408486564",
       "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4409715140",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408486564",
       "dropped_source": "gmail",
-      "company": "Manager, Enterprise Risk Management",
-      "title": "Manager, Enterprise Risk Management Canada Life",
+      "company": "RBC",
+      "title": "Associate Director, Liquidity Risk Measurement",
       "reason": "exact_url"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4409716155",
+      "kept_url": "https://www.linkedin.com/jobs/view/4408803305",
       "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4409716155",
+      "dropped_url": "https://www.linkedin.com/jobs/view/4408803305",
       "dropped_source": "gmail",
-      "company": "Senior Manager",
-      "title": "Senior Manager Insight Global",
+      "company": "RBC",
+      "title": "Associate Director, GRA Risk Methodology",
       "reason": "exact_url"
     },
     {
@@ -1360,15 +2364,6 @@
       "company": "BMO",
       "title": "Senior Manager, Credit Risk Model Validation",
       "reason": "near_dup_company_title"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4391195723",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4391195723",
-      "dropped_source": "gmail",
-      "company": "Senior Manager, Risk Initiatives",
-      "title": "Senior Manager, Risk Initiatives BMO",
-      "reason": "exact_url"
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4404858727",
@@ -1395,24 +2390,6 @@
       "dropped_source": "gmail",
       "company": "RBC",
       "title": "Senior Manager, Loss Mitigation Strategy",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4398031303",
-      "kept_source": "gmail",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4398031303",
-      "dropped_source": "gmail",
-      "company": "Sr. Manager, Business Banking",
-      "title": "Sr. Manager, Business Banking CIBC",
-      "reason": "exact_url"
-    },
-    {
-      "kept_url": "https://www.linkedin.com/jobs/view/4374870125",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4374870125",
-      "dropped_source": "gmail",
-      "company": "Senior Director, Credit Risk/Lending",
-      "title": "Senior Director, Credit Risk/Lending Neo Financial",
       "reason": "exact_url"
     },
     {
@@ -1453,7 +2430,7 @@
     },
     {
       "kept_url": "https://www.linkedin.com/jobs/view/4408632196",
-      "kept_source": "scrape",
+      "kept_source": "both",
       "dropped_url": "https://www.linkedin.com/jobs/view/4408632196",
       "dropped_source": "gmail",
       "company": "S&P Global",
@@ -1468,15 +2445,962 @@
       "company": "PwC Canada",
       "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
       "reason": "near_dup_company_title"
+    }
+  ],
+  "quarantine": [
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Treasury Manager",
+      "title": "Treasury Manager KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4406800213"
     },
     {
-      "kept_url": "https://www.linkedin.com/jobs/view/4405600255",
-      "kept_source": "scrape",
-      "dropped_url": "https://www.linkedin.com/jobs/view/4405600255",
-      "dropped_source": "gmail",
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Treasury Manager",
+      "title": "Treasury Manager KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4406800213"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director Risk Services Eastern Region",
+      "title": "Director Risk Services Eastern Region Northbridge Financial Corporation",
+      "link": "https://www.linkedin.com/jobs/view/4372649125"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Operations Risk",
+      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4406609619"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Operations Risk",
+      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4406606752"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Advisory Services",
+      "title": "Senior Manager, Risk Advisory Services BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4414926958"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Financial Risk Manager",
+      "title": "Financial Risk Manager Deloitte",
+      "link": "https://www.linkedin.com/jobs/view/4385349562"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Financial Risk Manager",
+      "title": "Financial Risk Manager Deloitte",
+      "link": "https://www.linkedin.com/jobs/view/4385358188"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Risk Manager",
+      "title": "Risk Manager Fidelity Investments",
+      "link": "https://www.linkedin.com/jobs/view/4397349112"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Operations Risk",
+      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4406609619"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Operations Risk",
+      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4406606752"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Advisory Services",
+      "title": "Senior Manager, Risk Advisory Services BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4414926958"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Treasury and Capital Management",
+      "title": "VP, Treasury and Capital Management Zurich Canada",
+      "link": "https://www.linkedin.com/jobs/view/4382463759"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Investment Strategist",
+      "title": "Senior Investment Strategist RBC Dominion Securities",
+      "link": "https://www.linkedin.com/jobs/view/4415829161"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, FinTech & Risk Analytics",
+      "title": "Director, FinTech & Risk Analytics Jobber",
+      "link": "https://www.linkedin.com/jobs/view/4412034856"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Treasury and Capital Management",
+      "title": "VP, Treasury and Capital Management Zurich Canada",
+      "link": "https://www.linkedin.com/jobs/view/4382463759"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Treasury Manager",
+      "title": "Treasury Manager KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4406800213"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, FinTech & Risk Analytics",
+      "title": "Director, FinTech & Risk Analytics Jobber",
+      "link": "https://www.linkedin.com/jobs/view/4412034856"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, FinTech & Risk Analytics",
+      "title": "Director, FinTech & Risk Analytics Jobber",
+      "link": "https://www.linkedin.com/jobs/view/4412048278"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Advisory Services",
+      "title": "Senior Manager, Risk Advisory Services BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4414926958"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Model Validation",
+      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414643852"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Director, Liquidity Strategy",
+      "title": "Associate Director, Liquidity Strategy Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4414488070"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Total Portfolio Risk",
+      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Structured Finance",
+      "title": "Director, Structured Finance Sun Life",
+      "link": "https://www.linkedin.com/jobs/view/4414708847"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Liquidity Risk Measurement",
+      "title": "Manager, Liquidity Risk Measurement RBC",
+      "link": "https://www.linkedin.com/jobs/view/4414969942"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Liquidity Risk Measurement",
+      "title": "Manager, Liquidity Risk Measurement RBC",
+      "link": "https://www.linkedin.com/jobs/view/4414969942"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Total Portfolio Risk",
+      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Director, Liquidity Strategy",
+      "title": "Associate Director, Liquidity Strategy Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4414488070"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Enterprise Risk",
+      "title": "Senior Director, Enterprise Risk HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414650601"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior ALM / Balance Sheet Risk Manager",
+      "title": "Senior ALM / Balance Sheet Risk Manager Madison-Davis, LLC",
+      "link": "https://www.linkedin.com/jobs/view/4405532772"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "FVP, ALM Manager",
+      "title": "FVP, ALM Manager Cathay Bank",
+      "link": "https://www.linkedin.com/jobs/view/4374092329"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Vice President, Model Risk Management",
+      "title": "Vice President, Model Risk Management BNY",
+      "link": "https://www.linkedin.com/jobs/view/4414973956"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Client Market Risk Manager, Futures",
+      "title": "Client Market Risk Manager, Futures Macquarie Group",
+      "link": "https://www.linkedin.com/jobs/view/4355888013"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Model Validation",
+      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414643852"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Total Portfolio Risk",
+      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Advisory Services",
+      "title": "Senior Manager, Risk Advisory Services BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4414926958"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Model Validation",
+      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414643852"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Director, Liquidity Strategy",
+      "title": "Associate Director, Liquidity Strategy Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4414488070"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Treasury and Capital Management",
+      "title": "VP, Treasury and Capital Management Zurich Canada",
+      "link": "https://www.linkedin.com/jobs/view/4382463759"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Total Portfolio Risk",
+      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Liquidity Risk Measurement",
+      "title": "Manager, Liquidity Risk Measurement RBC",
+      "link": "https://www.linkedin.com/jobs/view/4414969942"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Managing Director, Enterprise Risk",
+      "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC",
+      "link": "https://www.linkedin.com/jobs/view/4411535487"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Head of Portfolio Risk & Analytics",
+      "title": "Head of Portfolio Risk & Analytics Brown Brothers Harriman",
+      "link": "https://www.linkedin.com/jobs/view/4414713412"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director Investment Risk",
+      "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada",
+      "link": "https://www.linkedin.com/jobs/view/4414740484"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Jobs similar to",
+      "title": "Jobs similar to Senior Manager of Safety and Risk at Quark Expeditions",
+      "link": "https://www.linkedin.com/jobs/view/4407878362"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "HSE Manager",
+      "title": "HSE Manager Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4412124748"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "HSE Manager",
+      "title": "HSE Manager Sun Gro Horticulture",
+      "link": "https://www.linkedin.com/jobs/view/4377017911"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Manager, Regulatory Remediation",
+      "title": "Sr. Manager, Regulatory Remediation RBC",
+      "link": "https://www.linkedin.com/jobs/view/4405410405"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Global Treasury Manager",
+      "title": "Global Treasury Manager Tipalti",
+      "link": "https://www.linkedin.com/jobs/view/4414290102"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Global Treasury Manager",
+      "title": "Global Treasury Manager Tipalti",
+      "link": "https://www.linkedin.com/jobs/view/4414270942"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Treasury Manager FCC",
+      "title": "Treasury Manager FCC Fidelity Canada",
+      "link": "https://www.linkedin.com/jobs/view/4410629305"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Dir. princ., Trésorerie",
+      "title": "Dir. princ., Trésorerie TD",
+      "link": "https://www.linkedin.com/jobs/view/4393555116"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Manager, Investment Risk",
+      "title": "Sr. Manager, Investment Risk Charles Schwab",
+      "link": "https://www.linkedin.com/jobs/view/4411192141"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Manager, Investment Risk",
+      "title": "Sr. Manager, Investment Risk Charles Schwab",
+      "link": "https://www.linkedin.com/jobs/view/4411193153"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "AVP, Market Risk",
+      "title": "AVP, Market Risk National Life Group",
+      "link": "https://www.linkedin.com/jobs/view/4404451976"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "AVP, Market Risk",
+      "title": "AVP, Market Risk National Life Group",
+      "link": "https://www.linkedin.com/jobs/view/4404472830"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Portfolio Construction",
+      "title": "Director, Portfolio Construction Mackenzie Investments",
+      "link": "https://www.linkedin.com/jobs/view/4404549735"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Expert Services",
+      "title": "Director, Expert Services Kroll",
+      "link": "https://www.linkedin.com/jobs/view/4411135512"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Risk Management Lead",
+      "title": "Risk Management Lead Open Systems Technologies",
+      "link": "https://www.linkedin.com/jobs/view/4404443637"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Principal, Total Portfolio",
+      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4380143887"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP or Director, Government Finance",
+      "title": "VP or Director, Government Finance BMO Capital Markets",
+      "link": "https://www.linkedin.com/jobs/view/4413743550"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Structured Finance",
+      "title": "Director, Structured Finance Sun Life",
+      "link": "https://www.linkedin.com/jobs/view/4413854121"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Jobs similar to",
+      "title": "Jobs similar to Senior Manager, Business Banking Credit Strategy Risk Management at BMO",
+      "link": "https://www.linkedin.com/jobs/view/4405438345"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Head Credit Risk Model Management",
+      "title": "Head Credit Risk Model Management CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4413480128"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Initiatives",
+      "title": "Senior Manager, Risk Initiatives BMO",
+      "link": "https://www.linkedin.com/jobs/view/4391195723"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director & Head, Credit Risk Strategy",
+      "title": "Director & Head, Credit Risk Strategy Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4408953606"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Manager, Business Banking",
+      "title": "Sr. Manager, Business Banking CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4398031303"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager of Treasury",
+      "title": "Manager of Treasury The Mason Group",
+      "link": "https://www.linkedin.com/jobs/view/4413134054"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Treasury Senior Manager",
+      "title": "Treasury Senior Manager American Iron & Metal (AIM)",
+      "link": "https://www.linkedin.com/jobs/view/4411774577"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Cash Management",
+      "title": "Senior Manager, Cash Management BMO",
+      "link": "https://www.linkedin.com/jobs/view/4410236372"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Risk Manager",
+      "title": "Senior Risk Manager Balyasny Asset Management L.P.",
+      "link": "https://www.linkedin.com/jobs/view/4413093481"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Investment Risk Manager",
+      "title": "Investment Risk Manager Mercer",
+      "link": "https://www.linkedin.com/jobs/view/4412991388"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Global Risk Management",
+      "title": "Manager, Global Risk Management BGIS",
+      "link": "https://www.linkedin.com/jobs/view/4413084912"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Operational Risk",
+      "title": "Manager, Operational Risk Sun Life",
+      "link": "https://www.linkedin.com/jobs/view/4412942098"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Model Validation",
+      "title": "Director, Model Validation BMO",
+      "link": "https://www.linkedin.com/jobs/view/4401378033"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Principal, Total Portfolio",
+      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4380143887"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Investment Strategist, Canada",
+      "title": "Senior Investment Strategist, Canada Edward Jones",
+      "link": "https://www.linkedin.com/jobs/view/4412962191"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Credit Risk Model Validation",
+      "title": "Manager, Credit Risk Model Validation BMO",
+      "link": "https://www.linkedin.com/jobs/view/4400617140"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Global Risk Management",
+      "title": "Manager, Global Risk Management BGIS",
+      "link": "https://www.linkedin.com/jobs/view/4362180315"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Loss Forecasting",
+      "title": "Manager, Loss Forecasting RBC",
+      "link": "https://www.linkedin.com/jobs/view/4412725081"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Data Management (4519)",
+      "title": "Senior Manager, Data Management (4519) TD",
+      "link": "https://www.linkedin.com/jobs/view/4391783733"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Model Validation",
+      "title": "Director, Model Validation BMO",
+      "link": "https://www.linkedin.com/jobs/view/4401378033"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Principal, Total Portfolio",
+      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4380143887"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Valuations & Modelling",
+      "title": "Senior Manager, Valuations & Modelling BDO Canada",
+      "link": "https://www.linkedin.com/jobs/view/4412590007"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Advanced Analytics-2",
+      "title": "Manager, Advanced Analytics-2 TD",
+      "link": "https://www.linkedin.com/jobs/view/4412574959"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Director & Actuary",
+      "title": "Associate Director & Actuary Corebridge Financial",
+      "link": "https://www.linkedin.com/jobs/view/4380633394"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Vice President, Trading Risk Management",
+      "title": "Vice President, Trading Risk Management Morgan Stanley",
+      "link": "https://www.linkedin.com/jobs/view/4402146694"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Vice President, Risk/ Policy Management",
+      "title": "Vice President, Risk/ Policy Management Morgan Stanley",
+      "link": "https://www.linkedin.com/jobs/view/4401498844"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Global Risk Management",
+      "title": "Manager, Global Risk Management BGIS",
+      "link": "https://www.linkedin.com/jobs/view/4362180315"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Root Cause Analysis",
+      "title": "Senior Manager, Root Cause Analysis KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4371862998"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Root Cause Analysis",
+      "title": "Senior Manager, Root Cause Analysis KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4371884036"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "AVP, Casualty Corporate Risk",
+      "title": "AVP, Casualty Corporate Risk Aviva Canada",
+      "link": "https://www.linkedin.com/jobs/view/4402766316"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Model Validation",
+      "title": "Director, Model Validation BMO",
+      "link": "https://www.linkedin.com/jobs/view/4401378033"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Quantitative Valuations Lead",
+      "title": "Quantitative Valuations Lead LSEG",
+      "link": "https://www.linkedin.com/jobs/view/4402767595"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, (Structured Credit/MBS)",
+      "title": "Director, (Structured Credit/MBS) Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4325298832"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Quantitative Risk Associate",
+      "title": "Quantitative Risk Associate RBC",
+      "link": "https://www.linkedin.com/jobs/view/4403802513"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Global Risk Management",
+      "title": "Manager, Global Risk Management BGIS",
+      "link": "https://www.linkedin.com/jobs/view/4362180315"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Risk Independence",
+      "title": "Manager, Risk Independence KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4391732468"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Risk Independence",
+      "title": "Manager, Risk Independence KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4391740336"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Enterprise Risk Manager",
+      "title": "Enterprise Risk Manager VersaBank",
+      "link": "https://www.linkedin.com/jobs/view/4412115336"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Structural Market Risk",
+      "title": "Manager, Structural Market Risk BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411772536"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Risk Portfolio Control",
+      "title": "VP, Risk Portfolio Control BMO Capital Markets",
+      "link": "https://www.linkedin.com/jobs/view/4389226405"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Risk Manager",
+      "title": "Senior Risk Manager Raise",
+      "link": "https://www.linkedin.com/jobs/view/4411753535"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Model Risk Manager",
+      "title": "Model Risk Manager Associated Bank",
+      "link": "https://www.linkedin.com/jobs/view/4390972584"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Vice President, Trading Risk Management",
+      "title": "Vice President, Trading Risk Management Morgan Stanley",
+      "link": "https://www.linkedin.com/jobs/view/4402146694"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Vice President, Risk/ Policy Management",
+      "title": "Vice President, Risk/ Policy Management Morgan Stanley",
+      "link": "https://www.linkedin.com/jobs/view/4401498844"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Structural Market Risk",
+      "title": "Manager, Structural Market Risk BMO U.S.",
+      "link": "https://www.linkedin.com/jobs/view/4411761776"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "AVP Asset Risk & Analytics",
+      "title": "AVP Asset Risk & Analytics Venerable",
+      "link": "https://www.linkedin.com/jobs/view/4411762850"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director Data Analytics",
+      "title": "Senior Director Data Analytics National Bank of Canada",
+      "link": "https://www.linkedin.com/jobs/view/4411716067"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director of Treasury",
+      "title": "Director of Treasury Clarity Recruitment",
+      "link": "https://www.linkedin.com/jobs/view/4411707633"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Director IRRBB",
+      "title": "Associate Director IRRBB National Bank of Canada",
+      "link": "https://www.linkedin.com/jobs/view/4411396975"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Cash Management",
+      "title": "Senior Manager, Cash Management BMO",
+      "link": "https://www.linkedin.com/jobs/view/4410236372"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director of Treasury",
+      "title": "Director of Treasury Clarity Recruitment",
+      "link": "https://www.linkedin.com/jobs/view/4411707633"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director of Quantitative Research",
+      "title": "Director of Quantitative Research Hillsdale Investment Management Inc.",
+      "link": "https://www.linkedin.com/jobs/view/4400210844"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Risk Portfolio Control",
+      "title": "VP, Risk Portfolio Control BMO Capital Markets",
+      "link": "https://www.linkedin.com/jobs/view/4411803892"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, CCR Oversight",
+      "title": "Director, CCR Oversight BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411809419"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Investment Management Systems",
+      "title": "Director, Investment Management Systems RBC",
+      "link": "https://www.linkedin.com/jobs/view/4411683028"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "IRRBB Manager",
+      "title": "IRRBB Manager Mercury",
+      "link": "https://www.linkedin.com/jobs/view/4409603191"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Director, Funds Transfer Pricing",
+      "title": "Sr. Director, Funds Transfer Pricing CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4411819768"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Transformation",
+      "title": "Senior Manager, Risk Transformation EQ Bank",
+      "link": "https://www.linkedin.com/jobs/view/4408210518"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Advanced Analytics",
+      "title": "Senior Manager, Advanced Analytics TD",
+      "link": "https://www.linkedin.com/jobs/view/4411821187"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Principal, Total Portfolio",
+      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4380143887"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Advanced Analytics",
+      "title": "Senior Manager, Advanced Analytics TD",
+      "link": "https://www.linkedin.com/jobs/view/4411821187"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Advanced Analytics",
+      "title": "Senior Manager, Advanced Analytics TD",
+      "link": "https://www.linkedin.com/jobs/view/4411821187"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Transformation",
+      "title": "Senior Manager, Risk Transformation EQ Bank",
+      "link": "https://www.linkedin.com/jobs/view/4408210518"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, CCR Oversight",
+      "title": "Director, CCR Oversight BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411809419"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Jobs similar to",
+      "title": "Jobs similar to Vice President, Enterprise Risk Management at Canada Guaranty",
+      "link": "https://www.linkedin.com/jobs/view/4409535198"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Global Enterprise Risk Management",
+      "title": "VP, Global Enterprise Risk Management Element Fleet Management",
+      "link": "https://www.linkedin.com/jobs/view/4404308907"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Risk and Controls Management",
+      "title": "Director, Risk and Controls Management RBC",
+      "link": "https://www.linkedin.com/jobs/view/4408490495"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Managing Director, Enterprise Risk",
+      "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC",
+      "link": "https://www.linkedin.com/jobs/view/4357725889"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "VP, Business Assurance Services",
+      "title": "VP, Business Assurance Services Equinix",
+      "link": "https://www.linkedin.com/jobs/view/4409218862"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Enterprise Risk Management",
+      "title": "Manager, Enterprise Risk Management Canada Life",
+      "link": "https://www.linkedin.com/jobs/view/4409715140"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Specialist, Investment Risk",
+      "title": "Specialist, Investment Risk Northern Trust",
+      "link": "https://www.linkedin.com/jobs/view/4408479445"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Risk Manager, Credit",
+      "title": "Risk Manager, Credit Millennium",
+      "link": "https://www.linkedin.com/jobs/view/4389307338"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr Risk Manager",
+      "title": "Sr Risk Manager e-STORAGE",
+      "link": "https://www.linkedin.com/jobs/view/4348692097"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager",
+      "title": "Senior Manager Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4409716155"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager GRC",
+      "title": "Senior Manager GRC KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4323947242"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Funding & Investments",
+      "title": "Director, Funding & Investments Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4399682908"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director Investment Risk",
+      "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada",
+      "link": "https://www.linkedin.com/jobs/view/4409393067"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Funding & Investments",
+      "title": "Director, Funding & Investments Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4399682908"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Treasury",
+      "title": "Manager, Treasury Elexicon Energy Inc.",
+      "link": "https://www.linkedin.com/jobs/view/4410762849"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Treasury",
+      "title": "Director, Treasury RECRUITMENT PARTNERS INC.",
+      "link": "https://www.linkedin.com/jobs/view/4410796644"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Enterprise Risk Management",
+      "title": "Manager, Enterprise Risk Management Canada Life",
+      "link": "https://www.linkedin.com/jobs/view/4409715140"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Enterprise Risk Management",
+      "title": "Manager, Enterprise Risk Management Canada Life",
+      "link": "https://www.linkedin.com/jobs/view/4409722039"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager",
+      "title": "Senior Manager Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4409716155"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Jobs similar to",
+      "title": "Jobs similar to Senior Manager, Business Banking Credit Strategy Risk Management at BMO",
+      "link": "https://www.linkedin.com/jobs/view/4405438345"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Risk Initiatives",
+      "title": "Senior Manager, Risk Initiatives BMO",
+      "link": "https://www.linkedin.com/jobs/view/4391195723"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Sr. Manager, Business Banking",
+      "title": "Sr. Manager, Business Banking CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4398031303"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Director, Credit Risk/Lending",
+      "title": "Senior Director, Credit Risk/Lending Neo Financial",
+      "link": "https://www.linkedin.com/jobs/view/4374870125"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Senior Manager, Liquidity Management",
+      "title": "Senior Manager, Liquidity Management TD",
+      "link": "https://www.linkedin.com/jobs/view/4410068524"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Global Regulatory Management",
+      "title": "Director, Global Regulatory Management CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4410084226"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Director, Treasury Analytics",
+      "title": "Director, Treasury Analytics goeasy Ltd.",
+      "link": "https://www.linkedin.com/jobs/view/4351596306"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Treasury Director",
+      "title": "Associate Treasury Director Solmax",
+      "link": "https://www.linkedin.com/jobs/view/4407720907"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Treasury Director",
+      "title": "Associate Treasury Director Solmax",
+      "link": "https://www.linkedin.com/jobs/view/4407720907"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Actuarial Manager, Capital Management",
+      "title": "Actuarial Manager, Capital Management MasterHill Talent",
+      "link": "https://www.linkedin.com/jobs/view/4408679236"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Associate Treasury Director",
+      "title": "Associate Treasury Director Solmax",
+      "link": "https://www.linkedin.com/jobs/view/4407720907"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Process Transformation (4890)",
+      "title": "Manager, Process Transformation (4890) TD",
+      "link": "https://www.linkedin.com/jobs/view/4410048363"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
       "company": "Director, Loan & Appraisal Review",
       "title": "Director, Loan & Appraisal Review BMO",
-      "reason": "exact_url"
+      "link": "https://www.linkedin.com/jobs/view/4405600255"
+    },
+    {
+      "source_file": "scan_gmail_20260518_203733.json",
+      "company": "Manager, Counterparty Credit Risk",
+      "title": "Manager, Counterparty Credit Risk Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4310233947"
     }
   ],
   "results": [
@@ -2390,7 +4314,7 @@
       "company_reported": "RBC",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "treasury risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-15",
       "company": "RBC Global Asset Management",
       "sector": "Canadian Asset Managers",
@@ -2518,7 +4442,7 @@
       "company_reported": "RBC Dominion Securities",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "derivatives",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-16",
       "company": "RBC Global Asset Management",
       "sector": "Canadian Asset Managers",
@@ -4283,7 +6207,7 @@
       "location": "Toronto, ON, CAN",
       "posted_date": "2026-05-14",
       "keyword_hit": "risk analytics",
-      "source": "scrape",
+      "source": "both",
       "company": "BMO Asset Management",
       "sector": "Canadian Asset Managers",
       "found_at": "2026-05-18",
@@ -4394,7 +6318,7 @@
       "company_reported": "BMO",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "IRRBB",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-12",
       "company": "BMO Asset Management",
       "sector": "Canadian Asset Managers",
@@ -4474,7 +6398,7 @@
       "company_reported": "BMO",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "model risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-12",
       "company": "BMO Asset Management",
       "sector": "Canadian Asset Managers",
@@ -4858,7 +6782,7 @@
       "company_reported": "Mackenzie Investments",
       "location": "Greater Toronto Area, Canada",
       "keyword_hit": "ALM",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-13",
       "company": "Mackenzie Investments",
       "sector": "Canadian Asset Managers",
@@ -5107,7 +7031,7 @@
       "company_reported": "Fidelity Canada",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "model risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-13",
       "company": "Fidelity Canada",
       "sector": "Canadian Asset Managers",
@@ -11613,7 +13537,7 @@
       "company_reported": "KPMG Canada",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "model risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-05",
       "company": "KPMG Canada",
       "sector": "Big 4 Risk Advisory",
@@ -11629,7 +13553,7 @@
       "company_reported": "KPMG Canada",
       "location": "Vaughan, Ontario, Canada",
       "keyword_hit": "interest rate risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-10",
       "company": "KPMG Canada",
       "sector": "Big 4 Risk Advisory",
@@ -11645,7 +13569,7 @@
       "company_reported": "KPMG Canada",
       "location": "Vaughan, Ontario, Canada",
       "keyword_hit": "interest rate risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-10",
       "company": "KPMG Canada",
       "sector": "Big 4 Risk Advisory",
@@ -14589,7 +16513,7 @@
       "company_reported": "Aviva Canada",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "ALM",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-09",
       "company": "Aviva Canada",
       "sector": "Canadian Insurers",
@@ -15533,7 +17457,7 @@
       "company_reported": "Northbridge Financial Corporation",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "rates",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-16",
       "company": "Northbridge Financial",
       "sector": "Canadian Insurers",
@@ -16413,7 +18337,7 @@
       "company_reported": "Element Fleet Management",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "company_only",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-22",
       "company": "Element Fleet Management",
       "sector": "Non-Bank Lenders",
@@ -19197,7 +21121,7 @@
       "company_reported": "HOOPP (Healthcare of Ontario Pension Plan)",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "model validation",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-14",
       "company": "ION Group",
       "sector": "Analytics & Risk Vendors",
@@ -19626,7 +21550,7 @@
       "company_reported": "National Bank of Canada",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "model validation",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-08",
       "company": "Bank of Canada",
       "sector": "Regulators & Crown",
@@ -21910,7 +23834,7 @@
       "company_reported": "Neo Financial",
       "location": "Toronto, Ontario, Canada",
       "keyword_hit": "treasury risk",
-      "source": "both",
+      "source": "scrape",
       "posted_date": "2026-05-21",
       "company": "Neo Financial",
       "sector": "Fintech",
@@ -22887,16 +24811,133 @@
       "is_new_since_last_score": true
     },
     {
-      "title": "Manager/Director, Model Risk Management",
-      "company": "Manulife",
-      "link": "https://www.linkedin.com/jobs/view/4368270079",
+      "title": "Head, North American Provisioning & Risk Analytics",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4414282267",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69844",
+      "first_seen": "2026-05-18",
+      "in_pool_since": "2026-05-18",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Manager",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4398189021",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69844",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Director of Internal Control",
+      "company": "Boyd Interactive",
+      "link": "https://www.linkedin.com/jobs/view/4405168051",
+      "location": "North York, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69844",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Manager, Portfolio Governance, Enterprise Delivery Office",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4376936674",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69844",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "People Risk Senior Manager",
+      "company": "Equinix",
+      "link": "https://www.linkedin.com/jobs/view/4415212776",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69839",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Controllership and Risk Lead",
+      "company": "Health | Santé",
+      "link": "https://www.linkedin.com/jobs/view/4415206671",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69839",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Senior Director, AI Research",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4418696561",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69836",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Technical Product Manager (Capital Markets Technology",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4388571745",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69836",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Senior Strategic Finance Manager",
+      "company": "Instacart",
+      "link": "https://www.linkedin.com/jobs/view/4414989459",
+      "location": "Canada",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-26",
+      "gmail_uid": "69836",
+      "first_seen": "2026-05-26",
+      "in_pool_since": "2026-05-26",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Director & Head, Insights & Analytics, IT Risk",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4368084295",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-25",
-      "gmail_uid": "69805",
-      "first_seen": "2026-05-25",
-      "in_pool_since": "2026-05-25",
+      "gmail_uid": "69808",
+      "first_seen": "2026-05-18",
+      "in_pool_since": "2026-05-18",
       "is_new_since_last_score": false
     },
     {
@@ -22907,9 +24948,48 @@
       "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-25",
-      "gmail_uid": "69805",
+      "gmail_uid": "69808",
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
+      "is_new_since_last_score": false
+    },
+    {
+      "title": "Manager, Operational Risk Enablement",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4418654086",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69808",
+      "first_seen": "2026-05-25",
+      "in_pool_since": "2026-05-25",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Manager, High Risk Client Management",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4418661061",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69808",
+      "first_seen": "2026-05-25",
+      "in_pool_since": "2026-05-25",
+      "is_new_since_last_score": true
+    },
+    {
+      "title": "Manager/Director, Model Risk Management",
+      "company": "Manulife",
+      "link": "https://www.linkedin.com/jobs/view/4368270079",
+      "location": "Toronto, ON",
+      "source": "gmail",
+      "sector": "",
+      "posted_date": "2026-05-25",
+      "gmail_uid": "69805",
+      "first_seen": "2026-05-25",
+      "in_pool_since": "2026-05-25",
       "is_new_since_last_score": false
     },
     {
@@ -22924,19 +25004,6 @@
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
       "is_new_since_last_score": true
-    },
-    {
-      "title": "Director & Head, Insights & Analytics, IT Risk",
-      "company": "Scotiabank",
-      "link": "https://www.linkedin.com/jobs/view/4368084295",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-25",
-      "gmail_uid": "69805",
-      "first_seen": "2026-05-18",
-      "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Valuations & Modelling",
@@ -23004,32 +25071,6 @@
       "is_new_since_last_score": true
     },
     {
-      "title": "Treasury Manager KOHO",
-      "company": "Treasury Manager",
-      "link": "https://www.linkedin.com/jobs/view/4406800213",
-      "location": "Canada",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69589",
-      "first_seen": "2026-05-18",
-      "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Head, North American Provisioning & Risk Analytics",
-      "company": "BMO",
-      "link": "https://www.linkedin.com/jobs/view/4414282267",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69589",
-      "first_seen": "2026-05-18",
-      "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
-    },
-    {
       "title": "Senior Manager, International Banking Treasury",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4404112222",
@@ -23051,19 +25092,6 @@
       "sector": "",
       "posted_date": "2026-05-18",
       "gmail_uid": "69589",
-      "first_seen": "2026-05-18",
-      "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Operations Risk Connor, Clark & Lunn Financial Group (CC&L)",
-      "company": "Senior Manager, Operations Risk",
-      "link": "https://www.linkedin.com/jobs/view/4406609619",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-18",
-      "gmail_uid": "69584",
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
       "is_new_since_last_score": false
@@ -23095,19 +25123,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "VP, Treasury and Capital Management Zurich Canada",
-      "company": "VP, Treasury and Capital Management",
-      "link": "https://www.linkedin.com/jobs/view/4382463759",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69557",
-      "first_seen": "2026-05-17",
-      "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Vice President (Non-Executive)",
       "company": "TD Securities",
       "link": "https://www.linkedin.com/jobs/view/4415565313",
@@ -23132,71 +25147,6 @@
       "first_seen": "2026-05-17",
       "in_pool_since": "2026-05-17",
       "is_new_since_last_score": true
-    },
-    {
-      "title": "Director, FinTech & Risk Analytics Jobber",
-      "company": "Director, FinTech & Risk Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4412034856",
-      "location": "Kitchener, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69557",
-      "first_seen": "2026-05-17",
-      "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Associate Director, Liquidity Strategy Scotiabank",
-      "company": "Associate Director, Liquidity Strategy",
-      "link": "https://www.linkedin.com/jobs/view/4414488070",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69548",
-      "first_seen": "2026-05-17",
-      "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan)",
-      "company": "Senior Director, Total Portfolio Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414654470",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69548",
-      "first_seen": "2026-05-17",
-      "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, Structured Finance Sun Life",
-      "company": "Director, Structured Finance",
-      "link": "https://www.linkedin.com/jobs/view/4414708847",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-17",
-      "gmail_uid": "69548",
-      "first_seen": "2026-05-17",
-      "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Director, Enterprise Risk HOOPP (Healthcare of Ontario Pension Plan)",
-      "company": "Senior Director, Enterprise Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414650601",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69546",
-      "first_seen": "2026-05-16",
-      "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": false
     },
     {
       "title": "Director, Enterprise & Financial Risk Management",
@@ -23251,49 +25201,10 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Managing Director, Enterprise Risk CPP Investments | Investissements RPC",
-      "company": "Managing Director, Enterprise Risk",
-      "link": "https://www.linkedin.com/jobs/view/4411535487",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69523",
-      "first_seen": "2026-05-16",
-      "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director Investment Risk Canada Infrastructure Bank/ Banque de l'infrastructure du Canada",
-      "company": "Director Investment Risk",
-      "link": "https://www.linkedin.com/jobs/view/4414740484",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69523",
-      "first_seen": "2026-05-16",
-      "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Corporate Health and Safety",
       "company": "ERCO Worldwide",
       "link": "https://www.linkedin.com/jobs/view/4378003162",
       "location": "Mississauga, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69520",
-      "first_seen": "2026-05-16",
-      "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "HSE Manager Jobgether",
-      "company": "HSE Manager",
-      "link": "https://www.linkedin.com/jobs/view/4412124748",
-      "location": "Canada",
       "source": "gmail",
       "sector": "",
       "posted_date": "2026-05-16",
@@ -23355,19 +25266,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Sr. Manager, Regulatory Remediation RBC",
-      "company": "Sr. Manager, Regulatory Remediation",
-      "link": "https://www.linkedin.com/jobs/view/4405410405",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-16",
-      "gmail_uid": "69519",
-      "first_seen": "2026-05-16",
-      "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
-    },
-    {
       "title": "Senior Manager, Global Client and Payment Screening",
       "company": "RBC",
       "link": "https://www.linkedin.com/jobs/view/4414546585",
@@ -23378,32 +25276,6 @@
       "gmail_uid": "69519",
       "first_seen": "2026-05-16",
       "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "Global Treasury Manager Tipalti",
-      "company": "Global Treasury Manager",
-      "link": "https://www.linkedin.com/jobs/view/4414290102",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69514",
-      "first_seen": "2026-05-15",
-      "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Dir. princ., Trésorerie TD",
-      "company": "Dir. princ., Trésorerie",
-      "link": "https://www.linkedin.com/jobs/view/4393555116",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69514",
-      "first_seen": "2026-05-15",
-      "in_pool_since": "2026-05-15",
       "is_new_since_last_score": true
     },
     {
@@ -23433,45 +25305,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Director, Expert Services Kroll",
-      "company": "Director, Expert Services",
-      "link": "https://www.linkedin.com/jobs/view/4411135512",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69486",
-      "first_seen": "2026-05-15",
-      "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "Risk Management Lead Open Systems Technologies",
-      "company": "Risk Management Lead",
-      "link": "https://www.linkedin.com/jobs/view/4404443637",
-      "location": "Mississauga, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-15",
-      "gmail_uid": "69478",
-      "first_seen": "2026-05-15",
-      "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Principal, Total Portfolio HOOPP (Healthcare of Ontario Pension Plan)",
-      "company": "Principal, Total Portfolio",
-      "link": "https://www.linkedin.com/jobs/view/4380143887",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69459",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Associate Director, Risk Initiatives & Infrastructure",
       "company": "RBC",
       "link": "https://www.linkedin.com/jobs/view/4404095129",
@@ -23498,48 +25331,9 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "VP or Director, Government Finance BMO Capital Markets",
-      "company": "VP or Director, Government Finance",
-      "link": "https://www.linkedin.com/jobs/view/4413743550",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69459",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Head Credit Risk Model Management CIBC",
-      "company": "Head Credit Risk Model Management",
-      "link": "https://www.linkedin.com/jobs/view/4413480128",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69438",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Strategy and Analytics",
       "company": "Capital One",
       "link": "https://www.linkedin.com/jobs/view/4404858727",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69438",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Risk Initiatives BMO",
-      "company": "Senior Manager, Risk Initiatives",
-      "link": "https://www.linkedin.com/jobs/view/4391195723",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
@@ -23589,32 +25383,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Director & Head, Credit Risk Strategy Scotiabank",
-      "company": "Director & Head, Credit Risk Strategy",
-      "link": "https://www.linkedin.com/jobs/view/4408953606",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69438",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Sr. Manager, Business Banking CIBC",
-      "company": "Sr. Manager, Business Banking",
-      "link": "https://www.linkedin.com/jobs/view/4398031303",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-14",
-      "gmail_uid": "69438",
-      "first_seen": "2026-05-14",
-      "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
-    },
-    {
       "title": "Global Markets Liquidity and Funding Manager",
       "company": "BMO",
       "link": "https://www.linkedin.com/jobs/view/4392987201",
@@ -23639,32 +25407,6 @@
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
       "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager of Treasury The Mason Group",
-      "company": "Manager of Treasury",
-      "link": "https://www.linkedin.com/jobs/view/4413134054",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69436",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Cash Management BMO",
-      "company": "Senior Manager, Cash Management",
-      "link": "https://www.linkedin.com/jobs/view/4410236372",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69436",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
     },
     {
       "title": "Senior Manager, Wealth Management Governance & Risk Programs Wealth Management Governance & Controls",
@@ -23693,45 +25435,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Manager, Global Risk Management BGIS",
-      "company": "Manager, Global Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4413084912",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager, Operational Risk Sun Life",
-      "company": "Manager, Operational Risk",
-      "link": "https://www.linkedin.com/jobs/view/4412942098",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69424",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, Model Validation BMO",
-      "company": "Director, Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4401378033",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69421",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Associate Director, Treasury Management Officer, Global Transaction Banking",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4412950909",
@@ -23742,32 +25445,6 @@
       "gmail_uid": "69421",
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Investment Strategist, Canada Edward Jones",
-      "company": "Senior Investment Strategist, Canada",
-      "link": "https://www.linkedin.com/jobs/view/4412962191",
-      "location": "Mississauga, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-13",
-      "gmail_uid": "69421",
-      "first_seen": "2026-05-13",
-      "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager, Credit Risk Model Validation BMO",
-      "company": "Manager, Credit Risk Model Validation",
-      "link": "https://www.linkedin.com/jobs/view/4400617140",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69405",
-      "first_seen": "2026-05-12",
-      "in_pool_since": "2026-05-12",
       "is_new_since_last_score": false
     },
     {
@@ -23784,19 +25461,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Manager, Loss Forecasting RBC",
-      "company": "Manager, Loss Forecasting",
-      "link": "https://www.linkedin.com/jobs/view/4412725081",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69405",
-      "first_seen": "2026-05-12",
-      "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
-    },
-    {
       "title": "Senior Manager, GRM International Banking",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4360080787",
@@ -23810,100 +25474,9 @@
       "is_new_since_last_score": true
     },
     {
-      "title": "Senior Manager, Data Management (4519) TD",
-      "company": "Senior Manager, Data Management (4519)",
-      "link": "https://www.linkedin.com/jobs/view/4391783733",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69400",
-      "first_seen": "2026-05-12",
-      "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "Senior Manager, Valuations & Modelling BDO Canada",
-      "company": "Senior Manager, Valuations & Modelling",
-      "link": "https://www.linkedin.com/jobs/view/4412590007",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69393",
-      "first_seen": "2026-05-12",
-      "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager, Advanced Analytics-2 TD",
-      "company": "Manager, Advanced Analytics-2",
-      "link": "https://www.linkedin.com/jobs/view/4412574959",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-12",
-      "gmail_uid": "69393",
-      "first_seen": "2026-05-12",
-      "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Quantitative Valuations Lead LSEG",
-      "company": "Quantitative Valuations Lead",
-      "link": "https://www.linkedin.com/jobs/view/4402767595",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350",
-      "first_seen": "2026-05-11",
-      "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, (Structured Credit/MBS) Scotiabank",
-      "company": "Director, (Structured Credit/MBS)",
-      "link": "https://www.linkedin.com/jobs/view/4325298832",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350",
-      "first_seen": "2026-05-11",
-      "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Quantitative Risk Associate RBC",
-      "company": "Quantitative Risk Associate",
-      "link": "https://www.linkedin.com/jobs/view/4403802513",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69350",
-      "first_seen": "2026-05-11",
-      "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Business Risk, Global Transaction Banking",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4412183335",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-11",
-      "gmail_uid": "69332",
-      "first_seen": "2026-05-11",
-      "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "VP, Risk Portfolio Control BMO Capital Markets",
-      "company": "VP, Risk Portfolio Control",
-      "link": "https://www.linkedin.com/jobs/view/4389226405",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
@@ -23940,19 +25513,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Director of Treasury Clarity Recruitment",
-      "company": "Director of Treasury",
-      "link": "https://www.linkedin.com/jobs/view/4411707633",
-      "location": "Vaughan, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-10",
-      "gmail_uid": "69327",
-      "first_seen": "2026-05-10",
-      "in_pool_since": "2026-05-10",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Enterprise Capital Management TD",
       "company": "TD",
       "link": "https://www.linkedin.com/jobs/view/4411892473",
@@ -23963,45 +25523,6 @@
       "gmail_uid": "69327",
       "first_seen": "2026-05-10",
       "in_pool_since": "2026-05-10",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director of Quantitative Research Hillsdale Investment Management Inc.",
-      "company": "Director of Quantitative Research",
-      "link": "https://www.linkedin.com/jobs/view/4400210844",
-      "location": "Greater Toronto Area, Canada",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-09",
-      "gmail_uid": "69307",
-      "first_seen": "2026-05-09",
-      "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, CCR Oversight BMO",
-      "company": "Director, CCR Oversight",
-      "link": "https://www.linkedin.com/jobs/view/4411809419",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-09",
-      "gmail_uid": "69307",
-      "first_seen": "2026-05-09",
-      "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "Director, Investment Management Systems RBC",
-      "company": "Director, Investment Management Systems",
-      "link": "https://www.linkedin.com/jobs/view/4411683028",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-09",
-      "gmail_uid": "69307",
-      "first_seen": "2026-05-09",
-      "in_pool_since": "2026-05-09",
       "is_new_since_last_score": false
     },
     {
@@ -24031,19 +25552,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "IRRBB Manager Mercury",
-      "company": "IRRBB Manager",
-      "link": "https://www.linkedin.com/jobs/view/4409603191",
-      "location": "Canada",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69301",
-      "first_seen": "2026-05-08",
-      "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Treasury and Securitization",
       "company": "goeasy Ltd.",
       "link": "https://www.linkedin.com/jobs/view/4378544233",
@@ -24057,48 +25565,9 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Sr. Director, Funds Transfer Pricing CIBC",
-      "company": "Sr. Director, Funds Transfer Pricing",
-      "link": "https://www.linkedin.com/jobs/view/4411819768",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69301",
-      "first_seen": "2026-05-08",
-      "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Risk Management & Compliance",
       "company": "RBC",
       "link": "https://www.linkedin.com/jobs/view/4390327141",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69299",
-      "first_seen": "2026-05-08",
-      "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Risk Transformation EQ Bank",
-      "company": "Senior Manager, Risk Transformation",
-      "link": "https://www.linkedin.com/jobs/view/4408210518",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-08",
-      "gmail_uid": "69299",
-      "first_seen": "2026-05-08",
-      "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Advanced Analytics TD",
-      "company": "Senior Manager, Advanced Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4411821187",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
@@ -24135,19 +25604,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Director, Risk and Controls Management RBC",
-      "company": "Director, Risk and Controls Management",
-      "link": "https://www.linkedin.com/jobs/view/4408490495",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69246",
-      "first_seen": "2026-05-07",
-      "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Director and Head, Risk Identification",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4405029683",
@@ -24164,32 +25620,6 @@
       "title": "Senior Manager, TD Insurance Enterprise Risk TD",
       "company": "TD",
       "link": "https://www.linkedin.com/jobs/view/4410060702",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69246",
-      "first_seen": "2026-05-07",
-      "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "VP, Business Assurance Services Equinix",
-      "company": "VP, Business Assurance Services",
-      "link": "https://www.linkedin.com/jobs/view/4409218862",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69246",
-      "first_seen": "2026-05-07",
-      "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
-    },
-    {
-      "title": "Manager, Enterprise Risk Management Canada Life",
-      "company": "Manager, Enterprise Risk Management",
-      "link": "https://www.linkedin.com/jobs/view/4409715140",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
@@ -24226,48 +25656,9 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Sr Risk Manager e-STORAGE",
-      "company": "Sr Risk Manager",
-      "link": "https://www.linkedin.com/jobs/view/4348692097",
-      "location": "Kitchener, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69216",
-      "first_seen": "2026-05-07",
-      "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager Insight Global",
-      "company": "Senior Manager",
-      "link": "https://www.linkedin.com/jobs/view/4409716155",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-07",
-      "gmail_uid": "69216",
-      "first_seen": "2026-05-07",
-      "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
-    },
-    {
       "title": "Associate Director, GRA Risk Methodology",
       "company": "RBC",
       "link": "https://www.linkedin.com/jobs/view/4408803305",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69212",
-      "first_seen": "2026-05-06",
-      "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, Funding & Investments Scotiabank",
-      "company": "Director, Funding & Investments",
-      "link": "https://www.linkedin.com/jobs/view/4399682908",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",
@@ -24304,19 +25695,6 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Manager, Treasury Elexicon Energy Inc.",
-      "company": "Manager, Treasury",
-      "link": "https://www.linkedin.com/jobs/view/4410762849",
-      "location": "Whitby, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69206",
-      "first_seen": "2026-05-06",
-      "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Senior Manager, Credit Risk Business Banking",
       "company": "Scotiabank",
       "link": "https://www.linkedin.com/jobs/view/4398189019",
@@ -24328,32 +25706,6 @@
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
       "is_new_since_last_score": false
-    },
-    {
-      "title": "Senior Manager, Liquidity Management TD",
-      "company": "Senior Manager, Liquidity Management",
-      "link": "https://www.linkedin.com/jobs/view/4410068524",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69178",
-      "first_seen": "2026-05-06",
-      "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, Global Regulatory Management CIBC",
-      "company": "Director, Global Regulatory Management",
-      "link": "https://www.linkedin.com/jobs/view/4410084226",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69178",
-      "first_seen": "2026-05-06",
-      "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
     },
     {
       "title": "Senior Manager, Business Banking Credit Strategy Risk Management",
@@ -24377,19 +25729,6 @@
       "sector": "",
       "posted_date": "2026-05-06",
       "gmail_uid": "69178",
-      "first_seen": "2026-05-06",
-      "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Director, Treasury Analytics goeasy Ltd.",
-      "company": "Director, Treasury Analytics",
-      "link": "https://www.linkedin.com/jobs/view/4351596306",
-      "location": "Mississauga, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-06",
-      "gmail_uid": "69177",
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
       "is_new_since_last_score": false
@@ -24434,48 +25773,9 @@
       "is_new_since_last_score": false
     },
     {
-      "title": "Actuarial Manager, Capital Management MasterHill Talent",
-      "company": "Actuarial Manager, Capital Management",
-      "link": "https://www.linkedin.com/jobs/view/4408679236",
-      "location": "Greater Toronto Area, Canada",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69165",
-      "first_seen": "2026-05-05",
-      "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager, Process Transformation (4890) TD",
-      "company": "Manager, Process Transformation (4890)",
-      "link": "https://www.linkedin.com/jobs/view/4410048363",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69161",
-      "first_seen": "2026-05-05",
-      "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": false
-    },
-    {
       "title": "Director, Credit Execution, Strategic Accounts, TD Auto Finance TD",
       "company": "TD",
       "link": "https://www.linkedin.com/jobs/view/4410055318",
-      "location": "Toronto, ON",
-      "source": "gmail",
-      "sector": "",
-      "posted_date": "2026-05-05",
-      "gmail_uid": "69161",
-      "first_seen": "2026-05-05",
-      "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": false
-    },
-    {
-      "title": "Manager, Counterparty Credit Risk Scotiabank",
-      "company": "Manager, Counterparty Credit Risk",
-      "link": "https://www.linkedin.com/jobs/view/4310233947",
       "location": "Toronto, ON",
       "source": "gmail",
       "sector": "",

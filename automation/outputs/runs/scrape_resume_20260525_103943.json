@@ -11,7 +11,8 @@
   "started_at": "2026-05-25T10:39:43",
   "log_path": "C:\\Dev\\ApplyAgent\\automation\\outputs\\runs\\scrape_resume_20260525_103943.log",
   "status_path": "C:\\Dev\\ApplyAgent\\automation\\outputs\\runs\\scrape_resume_20260525_103943.json",
-  "state": "failed",
+  "state": "finished",
   "finished_at": "2026-05-25T12:23:25",
-  "returncode": null
+  "returncode": null,
+  "_state_corrected_at": "2026-05-26T21:00:00"
 }

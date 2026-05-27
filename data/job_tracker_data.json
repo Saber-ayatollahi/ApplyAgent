@@ -18,6 +18,11 @@
         "date": "2026-05-19",
         "event": "geo_scrub: -8 historical leaks soft-marked Expired (rejection_reason=geo_gate_historical_leak)",
         "roles": 64
+      },
+      {
+        "date": "2026-05-27",
+        "event": "schema_migration: v0 → v3 (added archived field)",
+        "roles": 64
       }
     ],
     "status_enum": [
@@ -40,7 +45,8 @@
       "coffees": 3,
       "linkedin_posts": 1
     },
-    "last_scan": "2026-05-19"
+    "last_scan": "2026-05-19",
+    "schema_version": 3
   },
   "jobs": [
     {
@@ -93,7 +99,10 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['React / TypeScript / UI programming (JD lists as preferred; Saber has no production delivery experience here — can be mitigated by emphasis on Python/SQL and data-science velocity)']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['React / TypeScript / UI programming (JD lists as preferred; Saber has no production delivery experience here — can be mitigated by emphasis on Python/SQL and data-science velocity)']",
+      "archived": true,
+      "archived_at": "2026-05-27T20:51:50Z",
+      "archive_reason": "manual_kanban"
     },
     {
       "id": "auto-scotiabank-manager-balance-sheet-market-r",
@@ -145,7 +154,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['BancWare platform (trainable; Saber has PFaroe migration and Calypso platform experience—enterprise risk-system learning curve is established).']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['BancWare platform (trainable; Saber has PFaroe migration and Calypso platform experience—enterprise risk-system learning curve is established).']",
+      "archived": false
     },
     {
       "id": "auto-td-bank-senior-enterprise-liquidity-ri",
@@ -196,7 +206,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-td-bank-vice-president-non-executive-c",
@@ -247,7 +258,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-senior-manager-model-validatio",
@@ -298,7 +310,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-manager-treasury-models-valida",
@@ -350,7 +363,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-manager-capital-markets-model-",
@@ -402,7 +416,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-director-model-validation",
@@ -454,7 +469,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-senior-associate-vice-presiden",
@@ -505,7 +521,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-analyst-associate-liquidity-op",
@@ -556,7 +573,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-hoopp-senior-director-model-validati",
@@ -608,7 +626,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-hoopp-senior-director-total-portfoli",
@@ -660,7 +679,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-omers-analyst-senior-analyst-total-p",
@@ -711,7 +731,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-cpp-investments-managing-director-enterprise-r",
@@ -763,7 +784,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-cpp-investments-manager-enterprise-risk",
@@ -815,7 +837,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-deloitte-canada-consultant-senior-consultant-c",
@@ -867,14 +890,15 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-senior-alm-balance-s-senior-alm-balance-sheet-risk-",
-      "company": "Senior ALM / Balance Sheet Risk Manager",
+      "company": "Madison-Davis, LLC",
       "sector": "",
       "tier": 1,
-      "title": "Senior ALM / Balance Sheet Risk Manager Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site) $175K-$198K / year Actively recruiting Apply",
+      "title": "Senior ALM / Balance Sheet Risk Manager",
       "level": "",
       "location": "Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site)",
       "url": "https://www.linkedin.com/jobs/view/4405532772",
@@ -919,7 +943,9 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='Madison-Davis, LLC · Los Angeles Metropolitan Area (On-site)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-td-bank-senior-group-risk-analyst-ath-",
@@ -970,7 +996,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-td-bank-senior-manager-enterprise-capi",
@@ -1021,7 +1048,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "archived": false
     },
     {
       "id": "auto-bmo-head-north-american-provisioni",
@@ -1072,7 +1100,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No explicit Big 6 bank employment (Moody's is vendor/institutional, not deposit-taker); will require brief on BMO's specific provisioning architecture and stress-testing governance\", \"Limited direct ECL modelling depth (Moody's focused on EVE/NII and balance-sheet duration); will onboard quickly on impairment-provision frameworks\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No explicit Big 6 bank employment (Moody's is vendor/institutional, not deposit-taker); will require brief on BMO's specific provisioning architecture and stress-testing governance\", \"Limited direct ECL modelling depth (Moody's focused on EVE/NII and balance-sheet duration); will onboard quickly on impairment-provision frameworks\"]",
+      "archived": false
     },
     {
       "id": "auto-hoopp-vp-investment-product-strategy",
@@ -1124,7 +1153,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No demonstrated pension-fund internal experience (Ortec was advisory-side; Moody's was vendor-side); will need to translate LDI and funding-ratio frameworks to HOOPP's specific governance\", 'Product strategy (pricing, go-to-market, feature roadmaps) not evidenced; role may expect product-management background alongside risk/ALM']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No demonstrated pension-fund internal experience (Ortec was advisory-side; Moody's was vendor-side); will need to translate LDI and funding-ratio frameworks to HOOPP's specific governance\", 'Product strategy (pricing, go-to-market, feature roadmaps) not evidenced; role may expect product-management background alongside risk/ALM']",
+      "archived": false
     },
     {
       "id": "auto-hoopp-principal-total-portfolio",
@@ -1175,7 +1205,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No direct pension-fund portfolio construction or rebalancing experience (Saber's background is risk analytics and platform delivery, not portfolio management execution).\", \"Total-portfolio strategic asset allocation (SAA) and implementation mechanics not evidenced; may require ramp on HOOPP's specific allocation process.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"No direct pension-fund portfolio construction or rebalancing experience (Saber's background is risk analytics and platform delivery, not portfolio management execution).\", \"Total-portfolio strategic asset allocation (SAA) and implementation mechanics not evidenced; may require ramp on HOOPP's specific allocation process.\"]",
+      "archived": false
     },
     {
       "id": "auto-omers-senior-analyst-senior-associat",
@@ -1226,7 +1257,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"12-month contract duration may not suit Saber's director-track trajectory; confirm role offers permanent conversion pathway or skip if contract-only.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"12-month contract duration may not suit Saber's director-track trajectory; confirm role offers permanent conversion pathway or skip if contract-only.\"]",
+      "archived": false
     },
     {
       "id": "auto-ontario-teachers-pen-senior-associate-treasury-oper",
@@ -1277,7 +1309,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['No explicit pension accounting (CA) or actuarial background (ASA/FSA) — likely not required at Senior Associate level but valuable context for advancement.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['No explicit pension accounting (CA) or actuarial background (ASA/FSA) — likely not required at Senior Associate level but valuable context for advancement.']",
+      "archived": false
     },
     {
       "id": "auto-cpp-investments-senior-associate-dynamic-portf",
@@ -1329,7 +1362,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"JD not available; assume gap in sector-specific asset-class knowledge (e.g. infrastructure, real estate, private equity) if role involves direct security selection — Saber's background is risk/analytics, not direct portfolio management.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"JD not available; assume gap in sector-specific asset-class knowledge (e.g. infrastructure, real estate, private equity) if role involves direct security selection — Saber's background is risk/analytics, not direct portfolio management.\"]",
+      "archived": false
     },
     {
       "id": "auto-optrust-senior-manager-investment-fina",
@@ -1381,7 +1415,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"JD unavailable; pension-fund-specific governance (trustee committees, actuarial coordination) may require brief ramp if not explicitly covered in Moody's institutional-client engagement\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[\"JD unavailable; pension-fund-specific governance (trustee committees, actuarial coordination) may require brief ramp if not explicitly covered in Moody's institutional-client engagement\"]",
+      "archived": false
     },
     {
       "id": "auto-manulife-manager-quantitative-models-de",
@@ -1433,7 +1468,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Insurance-specific capital modelling (LICAT/MCCSR dynamic modelling) — not evidenced; Saber has balance-sheet-risk architecture but not insurer-specific stochastic liability models', \"Embedded-systems / high-frequency model deployment in insurance core systems — Moody's platform was analytics, not core actuarial ledger\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Insurance-specific capital modelling (LICAT/MCCSR dynamic modelling) — not evidenced; Saber has balance-sheet-risk architecture but not insurer-specific stochastic liability models', \"Embedded-systems / high-frequency model deployment in insurance core systems — Moody's platform was analytics, not core actuarial ledger\"]",
+      "archived": false
     },
     {
       "id": "auto-manulife-manager-director-model-risk-ma",
@@ -1485,7 +1521,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['C++ production delivery (Java/C++ not in work history; Python/SQL/MATLAB cover quantitative modelling scope; gap is narrow and addressable)']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['C++ production delivery (Java/C++ not in work history; Python/SQL/MATLAB cover quantitative modelling scope; gap is narrow and addressable)']",
+      "archived": false
     },
     {
       "id": "auto-canada-life-manager-financial-risk",
@@ -1537,7 +1574,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['Life-insurance domain specificity (actuarial technicality, policyholder-behaviour modelling, lapse/mortality assumptions) — Saber has institutional ALM and pension/fund-sponsor experience but not direct life-insurer balance-sheet risk. Mitigated by strong analytical transferability and CFA credential.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['Life-insurance domain specificity (actuarial technicality, policyholder-behaviour modelling, lapse/mortality assumptions) — Saber has institutional ALM and pension/fund-sponsor experience but not direct life-insurer balance-sheet risk. Mitigated by strong analytical transferability and CFA credential.']",
+      "archived": false
     },
     {
       "id": "auto-deloitte-financial-risk-manager",
@@ -1589,7 +1627,8 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No direct U.S. banking regulator experience (Saber's Canadian pension/insurer/vendor backdrop); can learn on engagement\", 'Credit Risk and PD/LGD/EAD modelling not in evidence inventory; not required but preferred', 'No prior Dodd-Frank / Fed / OCC compliance hands-on track record (consulting framing can bridge this)'] | geo_scrub 2026-05-19: location='Raleigh, NC' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No direct U.S. banking regulator experience (Saber's Canadian pension/insurer/vendor backdrop); can learn on engagement\", 'Credit Risk and PD/LGD/EAD modelling not in evidence inventory; not required but preferred', 'No prior Dodd-Frank / Fed / OCC compliance hands-on track record (consulting framing can bridge this)'] | geo_scrub 2026-05-19: location='Raleigh, NC' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "archived": false
     },
     {
       "id": "auto-cathay-bank-vp-capital-liquidity-manager",
@@ -1640,14 +1679,15 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='El Monte, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[] | geo_scrub 2026-05-19: location='El Monte, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "archived": false
     },
     {
       "id": "auto-treasury-manager-treasury-manager-koho-canada-r",
-      "company": "Treasury Manager",
+      "company": "KOHO",
       "sector": "",
       "tier": 1,
-      "title": "Treasury Manager KOHO · Canada (Remote) 8 school alumni",
+      "title": "Treasury Manager",
       "level": "",
       "location": "KOHO · Canada (Remote)",
       "url": "https://www.linkedin.com/jobs/view/4406800213",
@@ -1692,14 +1732,16 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=[]",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-financial-risk-manag-financial-risk-manager-deloitt",
-      "company": "Financial Risk Manager",
+      "company": "Deloitte",
       "sector": "",
       "tier": 1,
-      "title": "Financial Risk Manager Deloitte · Charlotte, NC (Hybrid) 63 company alumni",
+      "title": "Financial Risk Manager",
       "level": "",
       "location": "Deloitte · Charlotte, NC (Hybrid)",
       "url": "https://www.linkedin.com/jobs/view/4385358188",
@@ -1744,7 +1786,9 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['U.S. regulatory ecosystem (Dodd-Frank, Fed/OCC/CFTC) familiarity — Canadian OSFI background, not U.S. banking regulator experience.', 'Credit Risk and CECL/ECL modeling — not in evidence base; ALM/IRRBB focus is orthogonal.', 'SAS and data-warehouse tools (Snowflake, etc.) — Python/SQL proficient but not SAS-fluent.'] | geo_scrub 2026-05-19: location='Deloitte · Charlotte, NC (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=apply_now | skill_gaps=['U.S. regulatory ecosystem (Dodd-Frank, Fed/OCC/CFTC) familiarity — Canadian OSFI background, not U.S. banking regulator experience.', 'Credit Risk and CECL/ECL modeling — not in evidence base; ALM/IRRBB focus is orthogonal.', 'SAS and data-warehouse tools (Snowflake, etc.) — Python/SQL proficient but not SAS-fluent.'] | geo_scrub 2026-05-19: location='Deloitte · Charlotte, NC (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-scotiabank-manager-ifrs9-modelling-enterp",
@@ -1796,7 +1840,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Retail credit-risk modelling (PD/LGD) — Saber's stress-testing background is institutional/balance-sheet; retail portfolio mechanics differ (bureau data, behavioral LGD, prepayment dynamics).\", \"Spark (big-data orchestration) — not in Saber's toolkit; Python is strong, but Spark is flagged as asset, not required.\", 'Climate / geopolitical-risk-scenario design — not evidenced; supplementary analytics on emerging risks will require ramp.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Retail credit-risk modelling (PD/LGD) — Saber's stress-testing background is institutional/balance-sheet; retail portfolio mechanics differ (bureau data, behavioral LGD, prepayment dynamics).\", \"Spark (big-data orchestration) — not in Saber's toolkit; Python is strong, but Spark is flagged as asset, not required.\", 'Climate / geopolitical-risk-scenario design — not evidenced; supplementary analytics on emerging risks will require ramp.']",
+      "archived": false
     },
     {
       "id": "auto-rbc-associate-director-liquidity-r",
@@ -1847,7 +1892,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Express / TypeScript / React (production web-delivery) — JD alludes to systems development collaboration; Saber's stack is Python/SQL backend, not frontend; mitigable via 'business lead' positioning\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Express / TypeScript / React (production web-delivery) — JD alludes to systems development collaboration; Saber's stack is Python/SQL backend, not frontend; mitigable via 'business lead' positioning\"]",
+      "archived": false
     },
     {
       "id": "auto-rbc-senior-manager-alm-risk-transf",
@@ -1899,7 +1945,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"TypeScript / Node.js / React (JD lists 'express'; Saber has no production delivery here — disclose upfront as learning-ready but not day-1)\", 'Snowflake (nice-to-have in JD; Saber is PostgreSQL day-to-day; PostgreSQL fundamentals transfer but Snowflake optimization, cost tuning, zero-copy cloning not in evidence)']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"TypeScript / Node.js / React (JD lists 'express'; Saber has no production delivery here — disclose upfront as learning-ready but not day-1)\", 'Snowflake (nice-to-have in JD; Saber is PostgreSQL day-to-day; PostgreSQL fundamentals transfer but Snowflake optimization, cost tuning, zero-copy cloning not in evidence)']",
+      "archived": false
     },
     {
       "id": "auto-td-bank-senior-manager-advanced-analyt",
@@ -1951,7 +1998,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"JD unavailable; assume TD wants treasury/ALM/funding-risk analytics. No evidence of treasury-desk operations, funding-pricing, or internal-transfer-pricing systems. If role includes FTP/ATP, may need to learn TD's specific systems.\", \"No evidence of Big 6 banking tenure (EY, Moody's, Ortec are vendor/consulting). Sector adjacency strong; internal onboarding ~2–3 months likely.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"JD unavailable; assume TD wants treasury/ALM/funding-risk analytics. No evidence of treasury-desk operations, funding-pricing, or internal-transfer-pricing systems. If role includes FTP/ATP, may need to learn TD's specific systems.\", \"No evidence of Big 6 banking tenure (EY, Moody's, Ortec are vendor/consulting). Sector adjacency strong; internal onboarding ~2–3 months likely.\"]",
+      "archived": false
     },
     {
       "id": "auto-td-bank-senior-manager-insurance-inves",
@@ -2003,7 +2051,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Insurance-specific accounting and embedded-derivative valuation (learnable in role; no blocker).', 'Direct insurance-sector portfolio-management experience (background is pension/institutional, not insurer-specific).']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Insurance-specific accounting and embedded-derivative valuation (learnable in role; no blocker).', 'Direct insurance-sector portfolio-management experience (background is pension/institutional, not insurer-specific).']",
+      "archived": false
     },
     {
       "id": "auto-td-bank-specialized-finance-manager-ca",
@@ -2054,7 +2103,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; cannot assess Treasury-specific technology stack or capital-adequacy modelling (CET1/leverage ratio optimization) requirements. Assume capital-ratio sensitivity analysis and stress testing will be in scope — Saber has both but should confirm role does not demand proprietary regulatory reporting systems he lacks.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; cannot assess Treasury-specific technology stack or capital-adequacy modelling (CET1/leverage ratio optimization) requirements. Assume capital-ratio sensitivity analysis and stress testing will be in scope — Saber has both but should confirm role does not demand proprietary regulatory reporting systems he lacks.']",
+      "archived": false
     },
     {
       "id": "auto-bmo-manager-structural-market-risk",
@@ -2106,7 +2156,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No explicit on-the-job experience in a Big 6 Canadian bank treasury or risk division (though sector affinity is high via Moody's institutional client base and EY regulatory-program work).\", \"Title says 'Structural Market Risk' but JD unavailable — confirm scope includes balance-sheet / ALM dimension, not pure trading-book market risk (which is orthogonal to Saber's primary lane).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"No explicit on-the-job experience in a Big 6 Canadian bank treasury or risk division (though sector affinity is high via Moody's institutional client base and EY regulatory-program work).\", \"Title says 'Structural Market Risk' but JD unavailable — confirm scope includes balance-sheet / ALM dimension, not pure trading-book market risk (which is orthogonal to Saber's primary lane).\"]",
+      "archived": false
     },
     {
       "id": "auto-bmo-senior-manager-canadian-provis",
@@ -2157,7 +2208,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['No direct Big 6 bank-side P&L or balance-sheet management experience (only vendor-side delivery); will require onboarding to internal processes', 'Provisions-specific methodologies (loan-loss reserve, ECL mechanics, impairment triggers) not explicitly evidenced—transferable from ALM/stress-testing foundation but not day-one fluency']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['No direct Big 6 bank-side P&L or balance-sheet management experience (only vendor-side delivery); will require onboarding to internal processes', 'Provisions-specific methodologies (loan-loss reserve, ECL mechanics, impairment triggers) not explicitly evidenced—transferable from ALM/stress-testing foundation but not day-one fluency']",
+      "archived": false
     },
     {
       "id": "auto-cibc-senior-quantitative-analyst",
@@ -2209,7 +2261,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Big 6 internal systems (CICS, core banking platforms, CIBC-specific risk architecture) — on-the-job ramp required; no exposure to retail/commercial credit-loss modelling or capital-adequacy ECL calculations.', \"Formal Big 6 treasury operations context — Saber's experience is institutional asset/liability and platform-driven; CIBC treasury may carry different middle/back-office dynamics.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Big 6 internal systems (CICS, core banking platforms, CIBC-specific risk architecture) — on-the-job ramp required; no exposure to retail/commercial credit-loss modelling or capital-adequacy ECL calculations.', \"Formal Big 6 treasury operations context — Saber's experience is institutional asset/liability and platform-driven; CIBC treasury may carry different middle/back-office dynamics.\"]",
+      "archived": false
     },
     {
       "id": "auto-hoopp-sr-analyst-initial-margin-mode",
@@ -2261,7 +2314,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Initial margin methodology (SIMM, BCBS-IOSCO frameworks) — specialized domain; Saber will need targeted ramp on IM-specific regulatory conventions and derivative-exposure calculation.', 'Cleared derivatives and counterparty-risk mechanics — tangential to ALM but not primary experience; on-the-job learning expected.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Initial margin methodology (SIMM, BCBS-IOSCO frameworks) — specialized domain; Saber will need targeted ramp on IM-specific regulatory conventions and derivative-exposure calculation.', 'Cleared derivatives and counterparty-risk mechanics — tangential to ALM but not primary experience; on-the-job learning expected.']",
+      "archived": false
     },
     {
       "id": "auto-hoopp-vice-president-private-markets",
@@ -2313,7 +2367,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['No direct private-equity / private-credit / infrastructure valuation experience (limited to public fixed income, institutional ALM, scenario generators). Tailor resume to emphasize valuation fundamentals (DCF, scenario sensitivity, Monte Carlo) and institutional risk-measurement methodology rather than sector-specific deals.', 'No stated direct LBO/acquisition-pricing or deal-team background; positioning should lead with quantitative valuation frameworks and cross-asset institutional portfolio risk rather than transaction execution.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['No direct private-equity / private-credit / infrastructure valuation experience (limited to public fixed income, institutional ALM, scenario generators). Tailor resume to emphasize valuation fundamentals (DCF, scenario sensitivity, Monte Carlo) and institutional risk-measurement methodology rather than sector-specific deals.', 'No stated direct LBO/acquisition-pricing or deal-team background; positioning should lead with quantitative valuation frameworks and cross-asset institutional portfolio risk rather than transaction execution.']",
+      "archived": false
     },
     {
       "id": "auto-omers-senior-analyst-investment-fina",
@@ -2365,7 +2420,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; inferred gaps may include pension-specific accounting (PSA), minimum funding rules, actuarial coordination—none are blockers for Senior Analyst entry.', \"If role emphasizes private-asset valuations (PE, infra, real estate), Saber's public-market fixed-income and derivatives depth may need tactical upskilling.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; inferred gaps may include pension-specific accounting (PSA), minimum funding rules, actuarial coordination—none are blockers for Senior Analyst entry.', \"If role emphasizes private-asset valuations (PE, infra, real estate), Saber's public-market fixed-income and derivatives depth may need tactical upskilling.\"]",
+      "archived": false
     },
     {
       "id": "auto-omers-technical-analyst-valuations-a",
@@ -2417,7 +2473,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD not available; assume role involves pension-specific actuarial or cash-flow liability modelling — Saber has cash-flow projection experience but no actuarial credential (ASA/FSA/CIA). May need to clarify scope in cover letter.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD not available; assume role involves pension-specific actuarial or cash-flow liability modelling — Saber has cash-flow projection experience but no actuarial credential (ASA/FSA/CIA). May need to clarify scope in cover letter.']",
+      "archived": false
     },
     {
       "id": "auto-omers-analyst-investment-finance-g-a",
@@ -2469,7 +2526,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD not available; exact investment-finance scope (performance attribution, cash-flow forecasting, ALM analytics, or finance-systems configuration) unclear — tailor resume variant once full JD obtained', 'Pension-fund operations (booking cash flows, reconciliation to actuarial forecasts, real-asset accounting) may require ramp, but not a blocker at analyst level']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD not available; exact investment-finance scope (performance attribution, cash-flow forecasting, ALM analytics, or finance-systems configuration) unclear — tailor resume variant once full JD obtained', 'Pension-fund operations (booking cash flows, reconciliation to actuarial forecasts, real-asset accounting) may require ramp, but not a blocker at analyst level']",
+      "archived": false
     },
     {
       "id": "auto-ontario-teachers-pen-director-total-fund-management",
@@ -2520,7 +2578,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Specific OTPP total-fund governance model and committee structure (learning curve, not capability gap).', \"Pension-actuarial integration workflows (adjacent to Saber's IFRS 17/IFRS 9 insurer background, transferable with onboarding).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Specific OTPP total-fund governance model and committee structure (learning curve, not capability gap).', \"Pension-actuarial integration workflows (adjacent to Saber's IFRS 17/IFRS 9 insurer background, transferable with onboarding).\"]",
+      "archived": false
     },
     {
       "id": "auto-deloitte-canada-consultant-senior-consultant-c-7",
@@ -2572,14 +2631,15 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Credit-risk specific domain depth (PD/LGD/EAD modelling, adjudication/behavioural scoring) — not primary in Saber's evidence; requires onboarding but not a blocker given stress-testing and model-governance foundation.\", \"SAS proficiency — JD lists 'SAS, R, Python'; Saber has R + Python but no SAS background; low friction (syntax learnable in 2–4 weeks for standard credit-risk workflows).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Credit-risk specific domain depth (PD/LGD/EAD modelling, adjudication/behavioural scoring) — not primary in Saber's evidence; requires onboarding but not a blocker given stress-testing and model-governance foundation.\", \"SAS proficiency — JD lists 'SAS, R, Python'; Saber has R + Python but no SAS background; low friction (syntax learnable in 2–4 weeks for standard credit-risk workflows).\"]",
+      "archived": false
     },
     {
       "id": "auto-financial-risk-manag-financial-risk-manager-deloitt-7",
-      "company": "Financial Risk Manager",
+      "company": "Deloitte",
       "sector": "",
       "tier": 1,
-      "title": "Financial Risk Manager Deloitte · New York, NY (Hybrid) 17 connections",
+      "title": "Financial Risk Manager",
       "level": "",
       "location": "Deloitte · New York, NY (Hybrid)",
       "url": "https://www.linkedin.com/jobs/view/4385349562",
@@ -2624,14 +2684,16 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Express / TypeScript / Node.js production delivery (not required for this role; gap is low-severity)'] | geo_scrub 2026-05-19: location='Deloitte · New York, NY (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Express / TypeScript / Node.js production delivery (not required for this role; gap is low-severity)'] | geo_scrub 2026-05-19: location='Deloitte · New York, NY (Hybrid)' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-senior-director-tota-senior-director-total-portfoli",
-      "company": "Senior Director, Total Portfolio Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
       "sector": "",
       "tier": 1,
-      "title": "Senior Director, Total Portfolio Risk HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 1 company alum",
+      "title": "Senior Director, Total Portfolio Risk",
       "level": "",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
       "url": "https://www.linkedin.com/jobs/view/4414654470",
@@ -2676,7 +2738,9 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Hands-on Aladdin Risk platform experience (Saber has vendor-platform depth via Calypso→PFaroe migration and Moody's institutional analytics, but not BlackRock Aladdin specifically; trainable and mitigated by Ortec risk-systems familiarity).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Hands-on Aladdin Risk platform experience (Saber has vendor-platform depth via Calypso→PFaroe migration and Moody's institutional analytics, but not BlackRock Aladdin specifically; trainable and mitigated by Ortec risk-systems familiarity).\"]",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-td-bank-vice-president-liquidity-produ",
@@ -2727,7 +2791,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Product management discipline (formal PM training, roadmap prioritization, OKRs, competitive benchmarking) — Saber has platform-delivery and client-translation experience but not PM-as-primary role.', 'Liquidity regulatory landscape depth (BCBS standards, supervisory reporting cadence) — has ALM foundation but no explicit liquidity-compliance or LAR-detailed delivery record.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Product management discipline (formal PM training, roadmap prioritization, OKRs, competitive benchmarking) — Saber has platform-delivery and client-translation experience but not PM-as-primary role.', 'Liquidity regulatory landscape depth (BCBS standards, supervisory reporting cadence) — has ALM foundation but no explicit liquidity-compliance or LAR-detailed delivery record.']",
+      "archived": false
     },
     {
       "id": "auto-bmo-senior-manager-credit-risk-mod",
@@ -2779,7 +2844,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Credit risk modelling (PD/LGD/EAD frameworks, RWA methodology, portfolio default analytics) not evidenced in master inventory—will require rapid ramp on credit-specific calibration and stress-testing conventions.', \"Commercial & consumer credit portfolio analytics not in background; Saber's credit exposure is theoretical/adjacent (balance-sheet risk, not obligor-centric).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Credit risk modelling (PD/LGD/EAD frameworks, RWA methodology, portfolio default analytics) not evidenced in master inventory—will require rapid ramp on credit-specific calibration and stress-testing conventions.', \"Commercial & consumer credit portfolio analytics not in background; Saber's credit exposure is theoretical/adjacent (balance-sheet risk, not obligor-centric).\"]",
+      "archived": false
     },
     {
       "id": "auto-ontario-teachers-pen-manager-collateral-liquidity-o",
@@ -2831,7 +2897,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Collateral-specific operational mechanics (haircuts, repo market conventions, CSA/ISDA agreements) — learnable on-the-job', 'Treasury operations workflow (settlement, fails, margin calls, collateral rehypothecation tracking) — no direct evidence; context-transfer required']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Collateral-specific operational mechanics (haircuts, repo market conventions, CSA/ISDA agreements) — learnable on-the-job', 'Treasury operations workflow (settlement, fails, margin calls, collateral rehypothecation tracking) — no direct evidence; context-transfer required']",
+      "archived": false
     },
     {
       "id": "auto-caat-pension-plan-senior-analyst-investment-oper",
@@ -2882,7 +2949,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable — assuming operations role spans ALM/treasury reporting, cash-flow forecasting, and asset-liability alignment; no gap expected if duties are quantitative/analytical rather than pure operational/transactional']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable — assuming operations role spans ALM/treasury reporting, cash-flow forecasting, and asset-liability alignment; no gap expected if duties are quantitative/analytical rather than pure operational/transactional']",
+      "archived": false
     },
     {
       "id": "auto-canada-infrastructur-associate-portfolio-constructi",
@@ -2934,7 +3002,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Infrastructure-sector domain knowledge (CIB-specific; learnable on-the-job); no direct infrastructure-fund or renewable/transportation investment background.', \"CFA/FRM designation not held (JD lists as 'highly desirable'; not a hard blocker for Associate-level entry).\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Infrastructure-sector domain knowledge (CIB-specific; learnable on-the-job); no direct infrastructure-fund or renewable/transportation investment background.', \"CFA/FRM designation not held (JD lists as 'highly desirable'; not a hard blocker for Associate-level entry).\"]",
+      "archived": false
     },
     {
       "id": "auto-manulife-director-transformation",
@@ -2986,7 +3055,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; cannot assess insurance-specific product lines, legacy-system migration scope, or technology-stack preferences (SAP, Workday, in-flight platforms).', 'No direct Manulife/peer-insurer tenure; sector credibility will depend on framing EY-delivered insurance transformation as directly relevant.']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['JD unavailable; cannot assess insurance-specific product lines, legacy-system migration scope, or technology-stack preferences (SAP, Workday, in-flight platforms).', 'No direct Manulife/peer-insurer tenure; sector credibility will depend on framing EY-delivered insurance transformation as directly relevant.']",
+      "archived": false
     },
     {
       "id": "auto-deloitte-canada-analyst-consultant-senior-cons",
@@ -3038,7 +3108,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (JD mentions C++ alongside Python/MATLAB; Saber has Java/C++ awareness only, not hands-on shipping experience).']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (JD mentions C++ alongside Python/MATLAB; Saber has Java/C++ awareness only, not hands-on shipping experience).']",
+      "archived": false
     },
     {
       "id": "auto-deloitte-canada-manager-senior-manager-quantit",
@@ -3090,7 +3161,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap: Java/C++ noted in inventory; Saber has MATLAB/Python depth but no hands-on C++ shipping record)']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap: Java/C++ noted in inventory; Saber has MATLAB/Python depth but no hands-on C++ shipping record)']",
+      "archived": false
     },
     {
       "id": "auto-kpmg-canada-senior-manager-regulatory-and-",
@@ -3142,7 +3214,8 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD lists as proficiency requirement; Saber has no hands-on evidence)']"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD lists as proficiency requirement; Saber has no hands-on evidence)']",
+      "archived": false
     },
     {
       "id": "auto-ubs-weehawken-nj-on--risk-and-liquidity-manager-inv",
@@ -3194,7 +3267,8 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Aladdin hands-on platform experience (gap); RiskMetrics / BarraOne / Clearwater user fluency (gap) — Saber's platform work spans Moody's Analytics and PFaroe, not BlackRock/MSCI ecosystem.\", \"OCIO/wealth-management context (contextual gap, not skill); Saber's OCIO exposure is indirect (institutional portfolio oversight); strength lies in asset-owner / pension / insurance ALM, not discretionary family-office mandate management.\"] | geo_scrub 2026-05-19: location='$140K-$180K / year' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"Aladdin hands-on platform experience (gap); RiskMetrics / BarraOne / Clearwater user fluency (gap) — Saber's platform work spans Moody's Analytics and PFaroe, not BlackRock/MSCI ecosystem.\", \"OCIO/wealth-management context (contextual gap, not skill); Saber's OCIO exposure is indirect (institutional portfolio oversight); strength lies in asset-owner / pension / insurance ALM, not discretionary family-office mandate management.\"] | geo_scrub 2026-05-19: location='$140K-$180K / year' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "archived": false
     },
     {
       "id": "auto-deloitte-toronto-on-manager-senior-manager-quantit",
@@ -3246,14 +3320,15 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap noted; Saber has Java/C++ familiarity only, not shipped production code). Highlight Python depth and willingness to ramp C++ for the role if required.'] | geo_scrub 2026-05-19: location='17 connections' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['C++ production delivery (gap noted; Saber has Java/C++ familiarity only, not shipped production code). Highlight Python depth and willingness to ramp C++ for the role if required.'] | geo_scrub 2026-05-19: location='17 connections' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "archived": false
     },
     {
       "id": "auto-senior-director-mode-senior-director-model-validati",
-      "company": "Senior Director, Model Validation",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
       "sector": "",
       "tier": 2,
-      "title": "Senior Director, Model Validation HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid) 4 connections",
+      "title": "Senior Director, Model Validation",
       "level": "",
       "location": "HOOPP (Healthcare of Ontario Pension Plan) · Toronto, ON (Hybrid)",
       "url": "https://www.linkedin.com/jobs/view/4414643852",
@@ -3298,14 +3373,16 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"10+ years model-validation experience: Saber has ~4–5 years direct model-governance and review authority; 10-year gap requires narrative framing as 'depth in emerging risk domains (stochastic modelling, AI/ML validation) and platform-delivery context compensate for tenure.' Highlight breadth across asset classes and model types as proxy.\", \"Explicit actuarial-model validation track record: Saber's background is asset/investment-side; no insurance-accounting or actuarial-reserves validation on file. Ortec and IFRS 17 experience provide adjacent credibility but JD leans heavily on actuarial models.\", \"Outsourced-validation-provider coordination: No explicit evidence of managing external validation vendors; Moody's context is internal governance. Will need to articulate transferable project-management and stakeholder-coordination skills.\"]"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=[\"10+ years model-validation experience: Saber has ~4–5 years direct model-governance and review authority; 10-year gap requires narrative framing as 'depth in emerging risk domains (stochastic modelling, AI/ML validation) and platform-delivery context compensate for tenure.' Highlight breadth across asset classes and model types as proxy.\", \"Explicit actuarial-model validation track record: Saber's background is asset/investment-side; no insurance-accounting or actuarial-reserves validation on file. Ortec and IFRS 17 experience provide adjacent credibility but JD leans heavily on actuarial models.\", \"Outsourced-validation-provider coordination: No explicit evidence of managing external validation vendors; Moody's context is internal governance. Will need to articulate transferable project-management and stakeholder-coordination skills.\"]",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
     },
     {
       "id": "auto-vice-president-model-vice-president-model-risk-mana",
-      "company": "Vice President, Model Risk Management",
+      "company": "BNY",
       "sector": "",
       "tier": 2,
-      "title": "Vice President, Model Risk Management BNY · Los Angeles, CA 18 company alumni",
+      "title": "Vice President, Model Risk Management",
       "level": "",
       "location": "BNY · Los Angeles, CA",
       "url": "https://www.linkedin.com/jobs/view/4414973956",
@@ -3350,7 +3427,17 @@
       "rejection_reason": "geo_gate_historical_leak",
       "rejection_date": "2026-05-19",
       "next_action": null,
-      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD calls for C/C++, C#, Java, FORTRAN as primary programming stack; Saber has not shipped production code in Java or C++, though proficiency in Python and MATLAB mitigates significantly)'] | geo_scrub 2026-05-19: location='BNY · Los Angeles, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time"
+      "notes": "auto-promoted 2026-05-19 | verdict=tailor_and_apply | skill_gaps=['Java / C++ production delivery (JD calls for C/C++, C#, Java, FORTRAN as primary programming stack; Saber has not shipped production code in Java or C++, though proficiency in Python and MATLAB mitigates significantly)'] | geo_scrub 2026-05-19: location='BNY · Los Angeles, CA' failed keep_for_toronto_pipeline; promoted before geo gate landed at auto_promote-time",
+      "_repaired_at": "2026-05-26T20:19:27",
+      "archived": false
+    }
+  ],
+  "_repairs": [
+    {
+      "at": "2026-05-26T20:19:27",
+      "fixed": 7,
+      "manual": 0,
+      "tool": "repair_misparsed_rows.py"
     }
   ]
 }

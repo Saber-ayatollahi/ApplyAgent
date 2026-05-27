@@ -56,6 +56,12 @@ Thumbs.db
 automation/outputs/scan_*_stderr.log
 automation/outputs/fit_scorer_stderr.log
 
+# Repair-script sidecar backups (worklist*.bak.<stamp>.json). These are
+# safety copies written by automation/repair_misparsed_rows.py before any
+# in-place edit; they're per-machine + recoverable from git history if
+# ever needed. Don't commit — they bloat the diff and never get read.
+automation/outputs/*.bak.*.json
+
 # Progress file — rewritten per candidate during scoring, churns the diff
 automation/outputs/fit_scorer_progress.json
 

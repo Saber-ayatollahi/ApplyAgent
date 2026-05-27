@@ -11,7 +11,8 @@
   "started_at": "2026-05-25T14:07:44",
   "log_path": "C:\\Dev\\ApplyAgent\\automation\\outputs\\runs\\gmail_fetch_20260525_140744.log",
   "status_path": "C:\\Dev\\ApplyAgent\\automation\\outputs\\runs\\gmail_fetch_20260525_140744.json",
-  "state": "failed",
+  "state": "finished",
   "finished_at": "2026-05-25T14:07:48",
-  "returncode": null
+  "returncode": null,
+  "_state_corrected_at": "2026-05-26T21:00:00"
 }
