@@ -113,6 +113,18 @@ except ImportError:
     except ImportError:
         _tracker_migrate = None  # type: ignore
 
+# Phase 5: route status filters through tracker_ops.is_active so archived rows
+# are excluded from the expire-stale loop (otherwise an archived Found row whose
+# URL drops out of the latest scan would get its status flipped to Expired —
+# pointless noise; the row is already archived and out of every UI lane).
+try:
+    import tracker_ops as _tracker_ops  # type: ignore
+except ImportError:
+    try:
+        from . import tracker_ops as _tracker_ops  # type: ignore
+    except ImportError:
+        _tracker_ops = None  # type: ignore
+
 VERDICT_DEFAULTS = {
     "apply_now":        {"status": "Found", "urgency": "High",   "default_tier": 1},
     "tailor_and_apply": {"status": "Watch", "urgency": "Medium", "default_tier": 2},
@@ -568,6 +580,15 @@ def main() -> int:
                              "Take_Home", "Onsite", "Offer")
             for j in tr.get("jobs", []) or []:
                 if not str(j.get("id", "")).startswith("auto-"):
+                    continue
+                # Phase 5: route through tracker_ops.is_active so archived rows
+                # are skipped — an archived row's status flip to Expired is noise.
+                # is_active also covers all TERMINAL_STATUSES (incl. Expired/Offer),
+                # so the prior held_statuses + Expired guards become redundant
+                # for the Offer/Expired entries; we keep held_statuses for the
+                # interview-pipeline statuses (Applied, Recruiter_Screen, ...)
+                # that are NOT terminal but should still be protected.
+                if _tracker_ops is not None and not _tracker_ops.is_active(j):
                     continue
                 if _wl.norm_url(j) in scan_canon:
                     continue

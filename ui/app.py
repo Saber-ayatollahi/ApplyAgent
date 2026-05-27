@@ -6334,6 +6334,49 @@ elif page == "📋 Jobs Kanban":
     _archived_suffix = f" · {_archived_count} archived" if _archived_count else ""
     st.caption(f"{_active_total} active · {len(jobs)} total tracked"
                 f"{_archived_suffix}")
+
+    # Phase 5 — Active suppressions read-only mirror. The mute action lives
+    # on Review Queue, the admin lives on Pipeline → Scored tab. This thin
+    # expander surfaces the same registry on the Tracker so the user doesn't
+    # have to context-switch to see what's currently muted while triaging
+    # the Kanban. Read-only by design — manage from the Pipeline page.
+    try:
+        from automation import suppressions as _kan_supp  # noqa: WPS433
+        _kan_active = _kan_supp.load_active()
+        _kan_sec = _kan_active.get("sectors") or []
+        _kan_co = _kan_active.get("companies") or []
+        _kan_n = len(_kan_sec) + len(_kan_co)
+        _kan_label = (
+            f"🔇 Active suppressions ({_kan_n})" if _kan_n
+            else "🔇 Active suppressions"
+        )
+        with st.expander(_kan_label, expanded=False):
+            if _kan_n == 0:
+                st.markdown("_No active mutes._")
+            else:
+                from datetime import date as _kan_date  # noqa: WPS433
+                _kan_today = _kan_date.today()
+                for _kan_e in _kan_sec + _kan_co:
+                    _kan_name = _kan_e.get("name", "?")
+                    _kan_scope = _kan_e.get("scope", "?")
+                    _kan_until = _kan_e.get("until")
+                    _kan_reason = _kan_e.get("reason", "") or ""
+                    with st.container(border=True):
+                        st.markdown(
+                            f"**{_kan_name}** _{_kan_scope}_  ·  "
+                            f"{pipeline_state.format_until_label(_kan_until, _kan_today)}"
+                            f"  ·  reason: \"{_kan_reason}\""
+                        )
+            st.caption(
+                "Manage these from the Pipeline page → Scored tab → "
+                "🔇 Active suppressions panel."
+            )
+    except Exception as _kan_supp_exc:  # noqa: BLE001
+        # Fail soft — a corrupt registry shouldn't break the Kanban page.
+        st.caption(
+            f"_(Could not read suppressions: {_kan_supp_exc})_"
+        )
+
     st.markdown("---")
 
     if jobs_df.empty:
@@ -6705,20 +6748,144 @@ elif page == "📋 Jobs Kanban":
                             st.error(f"Archive failed: {_exc}")
                         st.rerun()
                 else:
-                    if _kb_qa2.button(f"↩ Restore (id={sel_id})",
-                                       help="Bring this row back into the "
-                                            "active Kanban + Review Queue."):
-                        from safe_json import mutate_json as _mj_kb  # noqa: WPS433
-                        from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                    # Phase 5 — context-aware Restore. If this row was
+                    # archived as part of a still-active mute, surface
+                    # "(still muted ⚠)" and gate the click on an inline
+                    # confirm that lets the user lift the mute too.
+                    _kb_ar_reason = (_sel_job or {}).get(
+                        "archive_reason", "",
+                    ) or ""
+                    _kb_live_mute: dict | None = None
+                    _kb_parsed = pipeline_state.parse_archive_reason(
+                        _kb_ar_reason,
+                    )
+                    if _kb_parsed:
                         try:
-                            _mj_kb(TRACKER,
-                                    lambda t: _tops_kb.restore(t, sel_id),
-                                    default={"jobs": [], "meta": {}})
-                            load_tracker.clear()
-                            st.toast("↩ Restored", icon="✅")
-                        except Exception as _exc:  # noqa: BLE001
-                            st.error(f"Restore failed: {_exc}")
-                        st.rerun()
+                            from automation import suppressions as _kb_supp_mod  # noqa: WPS433
+                            _kb_supp_state = _kb_supp_mod.load_active()
+                            _kb_sc, _kb_nm = _kb_parsed
+                            try:
+                                if _kb_sc == "sector":
+                                    from automation import sectors as _kb_sec  # noqa: WPS433
+                                    _kb_ck_raw = _kb_sec.canonical(_kb_nm)
+                                    _kb_ck = _kb_ck_raw.lower() if _kb_ck_raw \
+                                        else _kb_nm.lower()
+                                else:
+                                    from automation import brand_aliases as _kb_ba  # noqa: WPS433
+                                    _kb_ck = _kb_ba.canonical_brand(_kb_nm).lower()
+                            except Exception:  # noqa: BLE001
+                                _kb_ck = _kb_nm.lower()
+                            _kb_scope_key = "sectors" if _kb_sc == "sector" \
+                                else "companies"
+                            for _kb_entry in _kb_supp_state.get(
+                                _kb_scope_key, [],
+                            ) or []:
+                                if _kb_entry.get("canonical_key") == _kb_ck:
+                                    _kb_live_mute = _kb_entry
+                                    break
+                        except Exception:  # noqa: BLE001
+                            _kb_live_mute = None
+
+                    _kb_btn_label = (
+                        f"↩ Restore (still muted ⚠) (id={sel_id})"
+                        if _kb_live_mute
+                        else f"↩ Restore (id={sel_id})"
+                    )
+                    if _kb_qa2.button(
+                        _kb_btn_label,
+                        help="Bring this row back into the "
+                             "active Kanban + Review Queue.",
+                    ):
+                        if _kb_live_mute:
+                            st.session_state["_kb_restore_open"] = sel_id
+                            st.rerun()
+                        else:
+                            from safe_json import mutate_json as _mj_kb  # noqa: WPS433
+                            from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                            try:
+                                _mj_kb(TRACKER,
+                                        lambda t: _tops_kb.restore(t, sel_id),
+                                        default={"jobs": [], "meta": {}})
+                                load_tracker.clear()
+                                st.toast("↩ Restored", icon="✅")
+                            except Exception as _exc:  # noqa: BLE001
+                                st.error(f"Restore failed: {_exc}")
+                            st.rerun()
+
+                    if (st.session_state.get("_kb_restore_open") == sel_id
+                            and _kb_live_mute and _kb_parsed):
+                        from datetime import date as _kb_date  # noqa: WPS433
+                        _kb_today = _kb_date.today()
+                        _kb_cf_scope, _kb_cf_name = _kb_parsed
+                        _kb_cf_until_lbl = pipeline_state.format_until_label(
+                            _kb_live_mute.get("until"), _kb_today,
+                        )
+                        with st.container(border=True):
+                            st.caption(
+                                f"This row was archived as part of muting "
+                                f"{_kb_cf_scope} {_kb_cf_name!r}, which is "
+                                f"still active ({_kb_cf_until_lbl}). Restore "
+                                f"alone will bring this row back; future "
+                                f"scans will still skip {_kb_cf_scope} "
+                                f"{_kb_cf_name!r}."
+                            )
+                            _kb_cf_lift = st.checkbox(
+                                f"Also lift the {_kb_cf_scope} mute on "
+                                f"'{_kb_cf_name}'",
+                                value=False,
+                                key=f"_kb_restore_lift_{sel_id}",
+                            )
+                            _kb_cf_b1, _kb_cf_b2 = st.columns(2)
+                            _kb_cf_go = _kb_cf_b1.button(
+                                "↩ Restore", type="primary",
+                                width='stretch',
+                                key=f"_kb_restore_go_{sel_id}",
+                            )
+                            _kb_cf_cancel = _kb_cf_b2.button(
+                                "Cancel", width='stretch',
+                                key=f"_kb_restore_cancel_{sel_id}",
+                            )
+                            if _kb_cf_go:
+                                from safe_json import mutate_json as _mj_kb  # noqa: WPS433
+                                from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                                _kb_restore_ok = False
+                                try:
+                                    _mj_kb(TRACKER,
+                                            lambda t: _tops_kb.restore(t, sel_id),
+                                            default={"jobs": [], "meta": {}})
+                                    load_tracker.clear()
+                                    _kb_restore_ok = True
+                                except Exception as _exc:  # noqa: BLE001
+                                    st.error(f"Restore failed: {_exc}")
+                                if _kb_restore_ok and _kb_cf_lift:
+                                    try:
+                                        _kb_supp_mod.lift(
+                                            _kb_cf_scope, _kb_cf_name,
+                                        )
+                                        st.toast(
+                                            f"↩ Restored & lifted "
+                                            f"{_kb_cf_scope} mute on "
+                                            f"{_kb_cf_name!r}", icon="🔓",
+                                        )
+                                    except Exception as _exc:  # noqa: BLE001
+                                        st.warning(
+                                            f"Restored, but lift failed: "
+                                            f"{_exc}", icon="⚠️",
+                                        )
+                                elif _kb_restore_ok:
+                                    st.toast(
+                                        "↩ Restored (mute remains active)",
+                                        icon="✅",
+                                    )
+                                st.session_state.pop(
+                                    "_kb_restore_open", None,
+                                )
+                                st.rerun()
+                            if _kb_cf_cancel:
+                                st.session_state.pop(
+                                    "_kb_restore_open", None,
+                                )
+                                st.rerun()
 
     # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
     # 📄 View tailor was clicked anywhere on this page.
@@ -9161,7 +9328,47 @@ elif page == "📬 Review Queue":
                 "and Kanban active counts. The URL still blocks "
                 "re-promotion. Restore brings the row back to active state."
             )
+            # Phase 5 — context-aware Restore. If the row was archived as
+            # part of a still-active mute, we surface a "(still muted ⚠)"
+            # label and an inline confirm that lets the user lift the mute
+            # in the same click. Avoids the "I clicked Restore and nothing
+            # happened" trap (the row would just re-archive on next scan).
+            try:
+                from automation import suppressions as _rq_supp_mod  # noqa: WPS433
+                _rq_supp_state = _rq_supp_mod.load_active()
+            except Exception:  # noqa: BLE001
+                _rq_supp_state = {"sectors": [], "companies": []}
+
+            def _rq_active_mute_for(_reason: str) -> dict | None:
+                """Return the live entry if this archive_reason still ties
+                to an active mute, else None."""
+                parsed = pipeline_state.parse_archive_reason(_reason)
+                if not parsed:
+                    return None
+                _sc, _nm = parsed
+                try:
+                    if _sc == "sector":
+                        from automation import sectors as _rq_sec  # noqa: WPS433
+                        _ck_raw = _rq_sec.canonical(_nm)
+                        _ck = _ck_raw.lower() if _ck_raw else _nm.lower()
+                    else:
+                        from automation import brand_aliases as _rq_ba  # noqa: WPS433
+                        _ck = _rq_ba.canonical_brand(_nm).lower()
+                except Exception:  # noqa: BLE001
+                    _ck = _nm.lower()
+                _scope_key = "sectors" if _sc == "sector" else "companies"
+                for _entry in _rq_supp_state.get(_scope_key, []) or []:
+                    if _entry.get("canonical_key") == _ck:
+                        return _entry
+                return None
+
+            from datetime import date as _rq_date  # noqa: WPS433
+            _rq_today = _rq_date.today()
+
             for _aj in _archived_jobs[:20]:
+                _aj_id = _aj.get("id", "?")
+                _ar_reason = _aj.get("archive_reason", "") or ""
+                _live_mute = _rq_active_mute_for(_ar_reason)
                 _ac1, _ac2, _ac3 = st.columns([5, 2, 1])
                 _ac1.markdown(
                     f"**{_aj.get('company') or '?'}** — "
@@ -9172,23 +9379,105 @@ elif page == "📬 Review Queue":
                 )
                 _ac2.caption(
                     f"archived {_aj.get('archived_at', '?')[:10]} · "
-                    f"{_aj.get('archive_reason', '—')[:40]}"
+                    f"{_ar_reason[:40]}"
                 )
-                if _ac3.button("↩ Restore",
-                                key=f"_rq_restore_{_aj.get('id', '?')}"):
-                    from safe_json import mutate_json as _mj_re  # noqa: WPS433
-                    from automation import tracker_ops as _tops_re  # noqa: WPS433
-                    try:
-                        _mj_re(TRACKER,
-                                lambda t, _i=_aj.get("id"):
-                                    _tops_re.restore(t, _i),
-                                default={"jobs": [], "meta": {}})
-                        load_tracker.clear()
-                        st.toast(f"↩ Restored {_aj.get('company') or '?'}",
-                                  icon="✅")
-                    except Exception as _exc:  # noqa: BLE001
-                        st.error(f"Restore failed: {_exc}")
-                    st.rerun()
+                _btn_label = (
+                    "↩ Restore (still muted ⚠)" if _live_mute
+                    else "↩ Restore"
+                )
+                if _ac3.button(_btn_label, key=f"_rq_restore_{_aj_id}"):
+                    if _live_mute:
+                        # Defer to inline confirm; let the user decide
+                        # whether to also lift the mute.
+                        st.session_state["_rq_restore_open"] = _aj_id
+                        st.rerun()
+                    else:
+                        from safe_json import mutate_json as _mj_re  # noqa: WPS433
+                        from automation import tracker_ops as _tops_re  # noqa: WPS433
+                        try:
+                            _mj_re(TRACKER,
+                                    lambda t, _i=_aj_id:
+                                        _tops_re.restore(t, _i),
+                                    default={"jobs": [], "meta": {}})
+                            load_tracker.clear()
+                            st.toast(
+                                f"↩ Restored {_aj.get('company') or '?'}",
+                                icon="✅",
+                            )
+                        except Exception as _exc:  # noqa: BLE001
+                            st.error(f"Restore failed: {_exc}")
+                        st.rerun()
+
+                # Inline confirm for "still muted" rows.
+                if (st.session_state.get("_rq_restore_open") == _aj_id
+                        and _live_mute):
+                    parsed = pipeline_state.parse_archive_reason(_ar_reason)
+                    _cf_scope, _cf_name = parsed if parsed else ("?", "?")
+                    _cf_until = _live_mute.get("until")
+                    _cf_until_lbl = pipeline_state.format_until_label(
+                        _cf_until, _rq_today,
+                    )
+                    with st.container(border=True):
+                        st.caption(
+                            f"This row was archived as part of muting "
+                            f"{_cf_scope} {_cf_name!r}, which is still "
+                            f"active ({_cf_until_lbl}). Restore alone will "
+                            f"bring this row back; future scans will still "
+                            f"skip {_cf_scope} {_cf_name!r}."
+                        )
+                        _cf_lift = st.checkbox(
+                            f"Also lift the {_cf_scope} mute on "
+                            f"'{_cf_name}'",
+                            value=False,
+                            key=f"_rq_restore_lift_{_aj_id}",
+                        )
+                        _cf_b1, _cf_b2 = st.columns(2)
+                        _cf_go = _cf_b1.button(
+                            "↩ Restore", type="primary",
+                            width='stretch',
+                            key=f"_rq_restore_go_{_aj_id}",
+                        )
+                        _cf_cancel = _cf_b2.button(
+                            "Cancel", width='stretch',
+                            key=f"_rq_restore_cancel_{_aj_id}",
+                        )
+                        if _cf_go:
+                            from safe_json import mutate_json as _mj_re  # noqa: WPS433
+                            from automation import tracker_ops as _tops_re  # noqa: WPS433
+                            _restore_ok = False
+                            try:
+                                _mj_re(TRACKER,
+                                        lambda t, _i=_aj_id:
+                                            _tops_re.restore(t, _i),
+                                        default={"jobs": [], "meta": {}})
+                                load_tracker.clear()
+                                _restore_ok = True
+                            except Exception as _exc:  # noqa: BLE001
+                                st.error(f"Restore failed: {_exc}")
+                            if _restore_ok and _cf_lift:
+                                try:
+                                    _rq_supp_mod.lift(_cf_scope, _cf_name)
+                                    st.toast(
+                                        f"↩ Restored & lifted "
+                                        f"{_cf_scope} mute on "
+                                        f"{_cf_name!r}", icon="🔓",
+                                    )
+                                except Exception as _exc:  # noqa: BLE001
+                                    st.warning(
+                                        f"Restored, but lift failed: "
+                                        f"{_exc}", icon="⚠️",
+                                    )
+                            elif _restore_ok:
+                                st.toast(
+                                    f"↩ Restored {_aj.get('company') or '?'}"
+                                    f" (mute remains active)",
+                                    icon="✅",
+                                )
+                            st.session_state.pop("_rq_restore_open", None)
+                            st.rerun()
+                        if _cf_cancel:
+                            st.session_state.pop("_rq_restore_open", None)
+                            st.rerun()
             if len(_archived_jobs) > 20:
                 st.caption(f"_(showing 20 of {len(_archived_jobs)} — older "
                             "rows accessible via Jobs Kanban inspector)_")

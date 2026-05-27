@@ -831,6 +831,36 @@ def format_until_label(until_iso: Any, today: "date | None" = None) -> str:
     return f"{delta}d left (until {target.isoformat()})"
 
 
+def parse_archive_reason(reason: str) -> tuple[str, str] | None:
+    """Decode 'muted_sector_X' / 'muted_company_Y' → (scope, name).
+
+    Returns None for any other reason string (e.g., 'manual_review_queue',
+    'manual_kanban', empty, non-string). Used by the context-aware Restore
+    button to detect rows that were archived as part of a still-active mute,
+    so the UI can offer to lift the mute alongside the restore.
+
+    The name returned is the display-form name written by the Mute & archive
+    form (e.g., 'Canadian Big 6 Banks' for sectors, 'Acme Corp' for companies).
+    Callers that want to look the entry up in `suppressions.load_active()`
+    should canonicalize it via `sectors.canonical(name).lower()` /
+    `brand_aliases.canonical_brand(name).lower()` to match the
+    `canonical_key` field stored on the entry.
+    """
+    if not isinstance(reason, str) or not reason:
+        return None
+    if reason.startswith("muted_sector_"):
+        name = reason[len("muted_sector_"):].strip()
+        if not name:
+            return None
+        return ("sector", name)
+    if reason.startswith("muted_company_"):
+        name = reason[len("muted_company_"):].strip()
+        if not name:
+            return None
+        return ("company", name)
+    return None
+
+
 def validate_suppression_form(
     *,
     scope: str,

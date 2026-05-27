@@ -872,6 +872,39 @@ def test_format_until_label_pathological_input():
 
 
 # ---------------------------------------------------------------------------
+# Phase 5 — parse_archive_reason (context-aware Restore decoder)
+# ---------------------------------------------------------------------------
+
+def test_parse_archive_reason_sector():
+    """The Mute & archive form writes 'muted_sector_<canonical_name>' —
+    decode it back to ('sector', name) so Restore can re-check the mute."""
+    out = ps.parse_archive_reason("muted_sector_Canadian Big 6 Banks")
+    assert out == ("sector", "Canadian Big 6 Banks")
+
+
+def test_parse_archive_reason_company():
+    out = ps.parse_archive_reason("muted_company_Acme Corp")
+    assert out == ("company", "Acme Corp")
+
+
+def test_parse_archive_reason_manual_returns_none():
+    """Per-row Archive button writes 'manual_review_queue' / 'manual_kanban'
+    — these aren't tied to an active mute and must NOT be parsed."""
+    assert ps.parse_archive_reason("manual_review_queue") is None
+    assert ps.parse_archive_reason("manual_kanban") is None
+
+
+def test_parse_archive_reason_empty_or_invalid():
+    """Empty / None / non-string / unparseable → None (caller falls back to
+    plain Restore)."""
+    assert ps.parse_archive_reason("") is None
+    assert ps.parse_archive_reason("muted_sector_") is None  # empty name
+    assert ps.parse_archive_reason("muted_region_X") is None
+    assert ps.parse_archive_reason(None) is None  # type: ignore[arg-type]
+    assert ps.parse_archive_reason(123) is None   # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
 # Phase 3C — validate_suppression_form
 # ---------------------------------------------------------------------------
 

@@ -33,6 +33,21 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Phase 5: archived rows must be excluded from the cold-lane denominator;
+# otherwise archiving roles in a sector inflates `s.applied` and falsely
+# triggers the "you applied N times with 0 interviews" warning. We do NOT
+# use tracker_ops.is_active here because that helper also excludes rows in
+# TERMINAL_STATUSES (Rejected, Offer, ...), and Rejected/Offer are exactly
+# the outcomes the cold-lane signal needs to count. So we gate on the
+# archived flag alone.
+try:
+    import tracker_ops as _tracker_ops  # type: ignore
+except ImportError:
+    try:
+        from . import tracker_ops as _tracker_ops  # type: ignore
+    except ImportError:
+        _tracker_ops = None  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
@@ -176,7 +191,13 @@ def build_report(tracker_path: Path = TRACKER) -> FeedbackReport:
     tiers: dict[str, SliceStats] = {}
     variants: dict[str, SliceStats] = {}
 
-    for j in jobs:
+    # Phase 5: gate on archived so the cold-lane denominator (s.applied) is
+    # not inflated by archived rows. Rejected/Offer/etc. terminal-status rows
+    # are intentionally retained — they ARE the outcome data this report
+    # exists to surface. See module-level note for why we don't use is_active.
+    active_jobs = [j for j in jobs if not j.get("archived", False)]
+
+    for j in active_jobs:
         status = j.get("status") or "?"
         _accumulate(sectors, _slice_key("sector", j.get("sector")), status)
         _accumulate(tiers, _slice_key("tier", j.get("tier")), status)
@@ -198,7 +219,7 @@ def build_report(tracker_path: Path = TRACKER) -> FeedbackReport:
 
     return FeedbackReport(
         generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        total_in_tracker=len(jobs),
+        total_in_tracker=len(active_jobs),
         sectors=sectors, tiers=tiers, variants=variants,
         hot_lanes=hot_lanes, cold_lanes=cold_lanes,
     )
