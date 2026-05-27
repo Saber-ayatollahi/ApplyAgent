@@ -210,7 +210,220 @@ def test_audit_pack_empty_legacy_scan():
             audit_pack.OUT_DIR = original_out
 
 
+# ---------------------------------------------------------------------------
+# Phase 4 — suppression columns + sheets, selection_mode column, run-meta sheet
+# ---------------------------------------------------------------------------
+
+def _read_sheet_rows(wb, sheet_name: str) -> list[dict]:
+    ws = wb[sheet_name]
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        return []
+    header = list(rows[0])
+    return [dict(zip(header, r)) for r in rows[1:]]
+
+
+def test_phase4_scored_to_xlsx_emits_suppressed_sheet():
+    """scored_to_xlsx now writes a `Suppressed` sub-sheet AND a
+    `suppressed_by` column on the main Stage-1 drops sheet."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "outputs"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        scored = {
+            "scan_date": "29991231",
+            "stage1_passed": 1,
+            "stage1_dropped": 3,
+            "results": [],
+            "triage_drops": [
+                {"company": "Gamma", "title": "Sales Rep", "sector": "Banks",
+                 "rule_reasons": ["no_strong_keywords"], "score": 1,
+                 "hits_breakdown": {"strong": [], "medium": [], "weak": [],
+                                    "level": []},
+                 "link": "https://x.co/20", "source": "linkedin"},
+                {"company": "RBC", "title": "Director ALM",
+                 "sector": "Canadian Big 6 Banks",
+                 "rule_reasons": ["suppressed_sector_60d"], "score": 7,
+                 "hits_breakdown": {"strong": ["alm"], "medium": [], "weak": [],
+                                    "level": []},
+                 "link": "https://x.co/21", "source": "scrape"},
+                {"company": "Acme", "title": "Risk Mgr",
+                 "rule_reasons": ["suppressed_company_30d"], "score": 6,
+                 "hits_breakdown": {"strong": [], "medium": [], "weak": [],
+                                    "level": []},
+                 "link": "https://x.co/22", "source": "linkedin"},
+            ],
+        }
+        scored_path = out_dir / "worklist_scored.json"
+        scored_path.write_text(json.dumps(scored), encoding="utf-8")
+
+        data = audit_pack.scored_to_xlsx(scored_path)
+        wb = load_workbook(io.BytesIO(data), read_only=True)
+        assert "Suppressed" in wb.sheetnames
+
+        s1_rows = _read_sheet_rows(wb, "Stage-1 drops")
+        assert "suppressed_by" in s1_rows[0]
+        # Non-suppressed row → empty string in the column
+        gamma = next(r for r in s1_rows if r["company"] == "Gamma")
+        assert gamma["suppressed_by"] == "" or gamma["suppressed_by"] is None
+        # Sector mute → "sector_60d"
+        rbc = next(r for r in s1_rows if r["company"] == "RBC")
+        assert rbc["suppressed_by"] == "sector_60d"
+        # Company mute → "company_30d"
+        acme = next(r for r in s1_rows if r["company"] == "Acme")
+        assert acme["suppressed_by"] == "company_30d"
+
+        # Suppressed sub-sheet contains both muted rows, NOT the
+        # no_strong_keywords drop.
+        sup_rows = _read_sheet_rows(wb, "Suppressed")
+        assert len(sup_rows) == 2
+        sup_companies = {r["company"] for r in sup_rows}
+        assert sup_companies == {"RBC", "Acme"}
+
+
+def test_phase4_promote_to_xlsx_has_selection_mode_and_race_sheet():
+    """promote_to_xlsx emits selection_mode columns + Suppressed (race) sheet
+    + Run meta sheet."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "outputs"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        promote = {
+            "scan_date": "29991231",
+            "selection_mode": "manual",
+            "min_score": 7,
+            "include_watch": False,
+            "summary": {"added": 2},
+            "new_entries": [
+                {"id": "auto-rbc-alm-9", "tier": 1, "score": 9,
+                 "sector": "Canadian Big 6 Banks", "company": "RBC",
+                 "title": "Director ALM",
+                 "selection_mode": "manual_override_suppression",
+                 "url": "https://x.co/21"},
+                {"id": "auto-wave-treas-8", "tier": 2, "score": 8,
+                 "sector": "Fintech", "company": "Wave",
+                 "title": "Treasury",
+                 "selection_mode": "manual",
+                 "url": "https://x.co/30"},
+            ],
+            "skipped_rows": [
+                {"reason": "geo", "company": "X", "title": "T",
+                 "url": "https://x.co/99", "location": "NYC", "score": 8,
+                 "verdict": "apply_now",
+                 "selection_mode": "manual",
+                 "note": "out-of-region"},
+            ],
+            "suppressed_after_score": [
+                {"company": "TD", "title": "ALM Lead",
+                 "sector": "Canadian Big 6 Banks", "score": 8,
+                 "verdict": "apply_now",
+                 "drop_reason": "suppressed_sector_60d",
+                 "promoted_anyway": False, "selection_mode": "threshold",
+                 "url": "https://x.co/40"},
+            ],
+        }
+        promote_path = out_dir / "promote_report_29991231.json"
+        promote_path.write_text(json.dumps(promote), encoding="utf-8")
+
+        data = audit_pack.promote_to_xlsx(promote_path)
+        wb = load_workbook(io.BytesIO(data), read_only=True)
+
+        assert "Run" in wb.sheetnames
+        assert "Promoted" in wb.sheetnames
+        assert "Skipped" in wb.sheetnames
+        assert "Suppressed (race)" in wb.sheetnames
+
+        # Run meta carries the top-level selection_mode + counts
+        run_rows = _read_sheet_rows(wb, "Run")
+        meta = {r["key"]: r["value"] for r in run_rows}
+        assert meta["selection_mode"] == "manual"
+        assert meta["promoted_count"] == 2
+        assert meta["suppressed_after_score_count"] == 1
+
+        # Promoted sheet has selection_mode column with the override value
+        p_rows = _read_sheet_rows(wb, "Promoted")
+        assert "selection_mode" in p_rows[0]
+        rbc = next(r for r in p_rows if r["company"] == "RBC")
+        assert rbc["selection_mode"] == "manual_override_suppression"
+
+        # Suppressed (race) sheet captures the dropped row
+        sup_rows = _read_sheet_rows(wb, "Suppressed (race)")
+        assert len(sup_rows) == 1
+        assert sup_rows[0]["company"] == "TD"
+        assert sup_rows[0]["drop_reason"] == "suppressed_sector_60d"
+
+
+def test_phase4_build_audit_pack_includes_suppression_sheets():
+    """End-to-end: full audit pack carries both the triage-suppressed and
+    race-suppressed sheets, and the Summary sheet surfaces the counts."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        synth_out = Path(tmp) / "outputs"
+        _make_synth_outputs(synth_out, "29991231")
+        # Replace scored + promote with envelopes that include suppression rows.
+        scored = json.loads((synth_out / "worklist_scored.json")
+                            .read_text(encoding="utf-8"))
+        scored["triage_drops"].append({
+            "company": "RBC", "title": "Director ALM",
+            "sector": "Canadian Big 6 Banks",
+            "rule_reasons": ["suppressed_sector_60d"], "score": 7,
+            "hits_breakdown": {"strong": [], "medium": [], "weak": [],
+                                "level": []},
+            "link": "https://x.co/30", "source": "scrape",
+        })
+        (synth_out / "worklist_scored.json").write_text(
+            json.dumps(scored), encoding="utf-8")
+        promote = json.loads((synth_out / "promote_report_29991231.json")
+                             .read_text(encoding="utf-8"))
+        promote["selection_mode"] = "manual"
+        promote["new_entries"][0]["selection_mode"] = "manual"
+        promote["suppressed_after_score"] = [{
+            "company": "TD", "title": "ALM Lead",
+            "sector": "Canadian Big 6 Banks", "score": 8,
+            "verdict": "apply_now",
+            "drop_reason": "suppressed_sector_60d",
+            "promoted_anyway": False, "selection_mode": "threshold",
+            "url": "https://x.co/40",
+        }]
+        (synth_out / "promote_report_29991231.json").write_text(
+            json.dumps(promote), encoding="utf-8")
+
+        original_out = audit_pack.OUT_DIR
+        audit_pack.OUT_DIR = synth_out
+        try:
+            data = audit_pack.build_audit_pack("29991231")
+            wb = load_workbook(io.BytesIO(data), read_only=True)
+            assert "Suppressed (triage)" in wb.sheetnames
+            assert "Suppressed (race)" in wb.sheetnames
+
+            triage_rows = _read_sheet_rows(wb, "Suppressed (triage)")
+            assert any(r["company"] == "RBC" for r in triage_rows)
+
+            race_rows = _read_sheet_rows(wb, "Suppressed (race)")
+            assert any(r["company"] == "TD" for r in race_rows)
+
+            # Summary sheet surfaces the counts
+            summary_rows = _read_sheet_rows(wb, "Summary")
+            metrics = {r.get("Metric"): r.get("Value")
+                       for r in summary_rows
+                       if r.get("Metric")}
+            assert metrics.get("Suppressed (triage)") == 1
+            assert metrics.get("Promote — suppressed_after_score") == 1
+            assert metrics.get("Promote — selection_mode") == "manual"
+        finally:
+            audit_pack.OUT_DIR = original_out
+
+
 if __name__ == "__main__":
     test_audit_pack_round_trip()
     test_audit_pack_empty_legacy_scan()
+    test_phase4_scored_to_xlsx_emits_suppressed_sheet()
+    test_phase4_promote_to_xlsx_has_selection_mode_and_race_sheet()
+    test_phase4_build_audit_pack_includes_suppression_sheets()
     print("\nAll audit_pack tests passed.")

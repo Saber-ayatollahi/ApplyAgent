@@ -155,6 +155,8 @@ def build_audit_pack(scan_date: str | None = None) -> bytes:
          len(scored_env.get("results", []))),
         ("", ""),
         ("Promote — added", (promote_env.get("summary") or {}).get("added", "—")),
+        ("Promote — selection_mode",
+         promote_env.get("selection_mode", "—")),
         ("Promote — skipped (verdict)",
          (promote_env.get("summary") or {}).get("skipped_verdict", "—")),
         ("Promote — skipped (score)",
@@ -163,7 +165,19 @@ def build_audit_pack(scan_date: str | None = None) -> bytes:
          (promote_env.get("summary") or {}).get("skipped_geo", "—")),
         ("Promote — skipped (dupe)",
          (promote_env.get("summary") or {}).get("skipped_dupe", "—")),
+        ("Promote — suppressed_after_score",
+         len(promote_env.get("suppressed_after_score") or [])),
+        ("", ""),
+        ("Suppressed (triage)", len(scored_env.get("triage_drops") or [])
+                                if False else None),  # actual count below
     ]
+    # Replace the placeholder with the real triage suppression count
+    _triage_suppressed_count = sum(
+        1 for d in (scored_env.get("triage_drops") or [])
+        if any(isinstance(rr, str) and rr.startswith("suppressed_")
+               for rr in (d.get("rule_reasons") or []))
+    )
+    summary_rows[-1] = ("Suppressed (triage)", _triage_suppressed_count)
     summary_df = pd.DataFrame(summary_rows, columns=["Metric", "Value"])
 
     # ── Scrape sheets ────────────────────────────────────────────────────────
@@ -229,35 +243,54 @@ def build_audit_pack(scan_date: str | None = None) -> bytes:
     )
 
     stage1_drops = []
+    suppressed_drops = []
     for d in scored_env.get("triage_drops", []) or []:
         bd = d.get("hits_breakdown") or {}
-        stage1_drops.append({
+        suppressed_by = _suppressed_by_for_drop(d)
+        row = {
             "company": d.get("company", ""),
             "title": d.get("title", ""),
+            "sector": d.get("sector", ""),
             "score": d.get("score", ""),
             "rule_reasons": "; ".join(d.get("rule_reasons", []) or []),
+            "suppressed_by": suppressed_by,
             "strong": ",".join(bd.get("strong", []) or []),
             "medium": ",".join(bd.get("medium", []) or []),
             "weak": ",".join(bd.get("weak", []) or []),
             "level": ",".join(bd.get("level", []) or []),
             "source": d.get("source", ""),
             "link": d.get("link", ""),
-        })
+        }
+        stage1_drops.append(row)
+        if suppressed_by:
+            suppressed_drops.append(row)
     stage1_df = _df_from_rows(
         stage1_drops,
-        columns=["company", "title", "score", "rule_reasons",
-                 "strong", "medium", "weak", "level", "source", "link"],
+        columns=["company", "title", "sector", "score", "rule_reasons",
+                 "suppressed_by", "strong", "medium", "weak", "level",
+                 "source", "link"],
+    )
+    suppressed_drops_df = _df_from_rows(
+        suppressed_drops,
+        columns=["company", "title", "sector", "suppressed_by",
+                 "rule_reasons", "score", "source", "link"],
     )
 
     # ── Promote skips + new entries ──────────────────────────────────────────
     promote_skips_df = _df_from_rows(
         promote_env.get("skipped_rows", []),
         columns=["reason", "company", "title", "location", "score",
-                 "verdict", "note", "url"],
+                 "verdict", "selection_mode", "note", "url"],
     )
     promoted_df = _df_from_rows(
         promote_env.get("new_entries", []),
-        columns=["id", "tier", "score", "sector", "company", "title", "url"],
+        columns=["id", "tier", "score", "sector", "company", "title",
+                 "selection_mode", "url"],
+    )
+    suppressed_after_score_df = _df_from_rows(
+        promote_env.get("suppressed_after_score", []),
+        columns=["company", "title", "sector", "score", "verdict",
+                 "drop_reason", "promoted_anyway", "selection_mode", "url"],
     )
 
     # ── Write workbook ───────────────────────────────────────────────────────
@@ -270,9 +303,11 @@ def build_audit_pack(scan_date: str | None = None) -> bytes:
         ("Worklist pool", worklist_df),
         ("Worklist merges", merges_df),
         ("Stage-1 drops", stage1_df),
+        ("Suppressed (triage)", suppressed_drops_df),
         ("Scored", scored_df),
         ("Promote skips", promote_skips_df),
         ("Promoted", promoted_df),
+        ("Suppressed (race)", suppressed_after_score_df),
     ]
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
@@ -412,8 +447,28 @@ def scan_to_xlsx(path: Path) -> bytes:
     return buf.getvalue()
 
 
+def _suppressed_by_for_drop(d: dict) -> str:
+    """Extract the suppression reason from a triage drop's rule_reasons,
+    if any. Returns 'sector_60d' / 'company_30d' / '' (no suppression).
+
+    Phase 4: surfaces the mute that killed the row so a downstream xlsx
+    reader can filter without cross-sheet joins."""
+    for rr in d.get("rule_reasons") or []:
+        if isinstance(rr, str) and rr.startswith("suppressed_"):
+            return rr[len("suppressed_"):]  # "sector_60d" / "company_30d"
+    return ""
+
+
 def scored_to_xlsx(path: Path) -> bytes:
-    """xlsx for worklist_scored.json — Scored sheet + Stage-1 drops sheet."""
+    """xlsx for worklist_scored.json — Scored + Stage-1 drops + Suppressed sheets.
+
+    Phase 4 additions:
+      - `suppressed_by` column on the main Stage-1 drops sheet (empty for
+        non-suppressed drops; "sector_60d" / "company_30d" otherwise) so a
+        reader can filter without a cross-sheet join.
+      - Dedicated `Suppressed` sub-sheet listing only the rows killed by
+        a sector or company mute, for the operator's "what would I see if
+        I lifted my mutes?" question."""
     env = _read_json(path)
     scored_rows = []
     for r in env.get("results", []) or []:
@@ -438,30 +493,47 @@ def scored_to_xlsx(path: Path) -> bytes:
                  "tier", "summary", "top_3_reasons", "skill_gaps",
                  "stage1_score", "source", "link"],
     )
-    s1_rows = []
+
+    s1_rows: list[dict] = []
+    suppressed_rows: list[dict] = []
     for d in env.get("triage_drops", []) or []:
         bd = d.get("hits_breakdown") or {}
-        s1_rows.append({
+        suppressed_by = _suppressed_by_for_drop(d)
+        row = {
             "company": d.get("company", ""),
             "title": d.get("title", ""),
+            "sector": d.get("sector", ""),
             "score": d.get("score", ""),
             "rule_reasons": "; ".join(d.get("rule_reasons", []) or []),
+            "suppressed_by": suppressed_by,
             "strong": ",".join(bd.get("strong", []) or []),
             "medium": ",".join(bd.get("medium", []) or []),
             "weak": ",".join(bd.get("weak", []) or []),
             "level": ",".join(bd.get("level", []) or []),
             "source": d.get("source", ""),
             "link": d.get("link", ""),
-        })
+        }
+        s1_rows.append(row)
+        if suppressed_by:
+            suppressed_rows.append(row)
+
     s1_df = _df_from_rows(
         s1_rows,
-        columns=["company", "title", "score", "rule_reasons", "strong",
-                 "medium", "weak", "level", "source", "link"],
+        columns=["company", "title", "sector", "score", "rule_reasons",
+                 "suppressed_by", "strong", "medium", "weak", "level",
+                 "source", "link"],
+    )
+    suppressed_df = _df_from_rows(
+        suppressed_rows,
+        columns=["company", "title", "sector", "suppressed_by",
+                 "rule_reasons", "score", "source", "link"],
     )
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
         _truncate_str_cells(scored_df).to_excel(xw, sheet_name="Scored", index=False)
         _truncate_str_cells(s1_df).to_excel(xw, sheet_name="Stage-1 drops", index=False)
+        _truncate_str_cells(suppressed_df).to_excel(
+            xw, sheet_name="Suppressed", index=False)
     return buf.getvalue()
 
 
@@ -487,21 +559,59 @@ def worklist_to_xlsx(path: Path) -> bytes:
 
 
 def promote_to_xlsx(json_path: Path) -> bytes:
-    """xlsx for promote_report_<stamp>.json — new entries + skipped rows."""
+    """xlsx for promote_report_<stamp>.json — Promoted + Skipped + Suppressed-after-score sheets.
+
+    Phase 4 additions:
+      - `selection_mode` column on the Promoted sheet (threshold | manual |
+        manual_below_threshold | manual_override_skip | manual_override_suppression)
+        so a reader can audit which rows came from threshold vs. manual flows.
+      - Dedicated `Suppressed (race)` sheet listing rows that crossed the
+        score threshold but were dropped by a mute applied AFTER scoring
+        — the race-window catch from auto_promote.py's
+        `suppressed_after_score` bucket. Includes `promoted_anyway: True`
+        rows (manual_override_suppression) so the audit trail covers both
+        the drop case AND the override case in one view.
+    """
     env = _read_json(json_path)
     new_df = _df_from_rows(
         env.get("new_entries", []),
-        columns=["id", "tier", "score", "sector", "company", "title", "url"],
+        columns=["id", "tier", "score", "sector", "company", "title",
+                 "selection_mode", "url"],
     )
     skip_df = _df_from_rows(
         env.get("skipped_rows", []),
         columns=["reason", "company", "title", "location", "score",
-                 "verdict", "note", "url"],
+                 "verdict", "selection_mode", "note", "url"],
     )
+    sup_df = _df_from_rows(
+        env.get("suppressed_after_score", []),
+        columns=["company", "title", "sector", "score", "verdict",
+                 "drop_reason", "promoted_anyway", "selection_mode",
+                 "url"],
+    )
+
+    # Top-level run mode goes on a tiny meta sheet so a reader can answer
+    # "was this a threshold run or a manual selection?" without scanning rows.
+    meta_rows = [
+        {"key": "selection_mode",
+         "value": env.get("selection_mode", "threshold")},
+        {"key": "min_score", "value": env.get("min_score", "")},
+        {"key": "include_watch", "value": env.get("include_watch", False)},
+        {"key": "scan_date", "value": env.get("scan_date", "")},
+        {"key": "promoted_count", "value": len(env.get("new_entries") or [])},
+        {"key": "skipped_count", "value": len(env.get("skipped_rows") or [])},
+        {"key": "suppressed_after_score_count",
+         "value": len(env.get("suppressed_after_score") or [])},
+    ]
+    meta_df = _df_from_rows(meta_rows, columns=["key", "value"])
+
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(meta_df).to_excel(xw, sheet_name="Run", index=False)
         _truncate_str_cells(new_df).to_excel(xw, sheet_name="Promoted", index=False)
         _truncate_str_cells(skip_df).to_excel(xw, sheet_name="Skipped", index=False)
+        _truncate_str_cells(sup_df).to_excel(
+            xw, sheet_name="Suppressed (race)", index=False)
     return buf.getvalue()
 
 
