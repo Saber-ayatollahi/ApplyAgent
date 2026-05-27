@@ -618,3 +618,216 @@ def test_coverage_for_entry_company_includes_unsectored_count():
     )
     assert cov["matched"] == 2
     assert cov["unsectored"] == 2
+
+
+# ---------------------------------------------------------------------------
+# Phase 3B — apply_selection_edit (URL-keyed selection state)
+#
+# These tests document the contract that fixes the index-based bug in
+# the existing data_editor selection: filter changes must NOT corrupt
+# selection state, and a row off-screen must NOT be silently un-selected.
+# ---------------------------------------------------------------------------
+
+def test_selection_edit_initial_tick():
+    """Empty selection + user ticks one visible row → that row is selected."""
+    new = ps.apply_selection_edit(
+        selection=set(),
+        visible_urls={"https://x/1", "https://x/2", "https://x/3"},
+        ticked_urls={"https://x/2"},
+    )
+    assert new == {"https://x/2"}
+
+
+def test_selection_edit_filter_change_preserves_offscreen_state():
+    """User selects /1 from a wide view; user filters down to NOT show /1;
+    nothing was ticked in the new view → /1 must remain selected."""
+    new = ps.apply_selection_edit(
+        selection={"https://x/1"},
+        visible_urls={"https://x/2", "https://x/3"},   # /1 hidden
+        ticked_urls=set(),                               # nothing ticked
+    )
+    assert new == {"https://x/1"}
+
+
+def test_selection_edit_untick_visible_row():
+    """User had /2 selected; the row is visible and they untick it."""
+    new = ps.apply_selection_edit(
+        selection={"https://x/2"},
+        visible_urls={"https://x/1", "https://x/2"},
+        ticked_urls=set(),                               # /2 unticked
+    )
+    assert new == set()
+
+
+def test_selection_edit_combination_filter_and_tick():
+    """Mid-flow: had {1,2,3} selected from wide view; filtered to show
+    {2,3,4}; user ticks 4 and unticks 3. /1 stays selected (off-screen)."""
+    new = ps.apply_selection_edit(
+        selection={"https://x/1", "https://x/2", "https://x/3"},
+        visible_urls={"https://x/2", "https://x/3", "https://x/4"},
+        ticked_urls={"https://x/2", "https://x/4"},
+    )
+    assert new == {"https://x/1", "https://x/2", "https://x/4"}
+
+
+def test_selection_edit_defends_against_inconsistent_ticked():
+    """If ticked claims a URL not in visible, drop it (caller error)."""
+    new = ps.apply_selection_edit(
+        selection=set(),
+        visible_urls={"https://x/1"},
+        ticked_urls={"https://x/1", "https://x/9999"},   # /9999 not visible
+    )
+    assert new == {"https://x/1"}
+
+
+# ---------------------------------------------------------------------------
+# Phase 3B — compute_preflight_breakdown (caption beneath [Send N selected])
+# ---------------------------------------------------------------------------
+
+def test_preflight_empty_selection():
+    bd = ps.compute_preflight_breakdown(
+        selection=set(), scored_rows=[],
+    )
+    assert bd["total"] == 0
+
+
+def test_preflight_clean_above_threshold_unsupressed():
+    rows = [
+        {"url": "https://x/1", "fit": {"score": 8, "verdict": "apply_now"}},
+        {"url": "https://x/2", "fit": {"score": 9, "verdict": "apply_now"}},
+    ]
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/1", "https://x/2"},
+        scored_rows=rows, min_score=7,
+    )
+    assert bd["total"] == 2
+    assert bd["below_threshold"] == 0
+    assert bd["override_mute"] == 0
+    assert bd["already_tracked"] == 0
+
+
+def test_preflight_below_threshold_counted():
+    rows = [
+        {"url": "https://x/1", "fit": {"score": 6, "verdict": "watch"}},
+        {"url": "https://x/2", "fit": {"score": 8, "verdict": "apply_now"}},
+    ]
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/1", "https://x/2"},
+        scored_rows=rows, min_score=7,
+    )
+    assert bd["below_threshold"] == 1
+
+
+def test_preflight_override_mute_counted():
+    """Selected row that's in a muted sector → counts toward override_mute.
+
+    Per Phase-2 E2E Round 2, manual selection PROMOTES with the
+    manual_override_suppression tag — this is explicit user-intent, not
+    a drop. The caption tells the user 'this overrides a mute' so they're
+    not surprised."""
+    rows = [
+        {"url": "https://x/1", "company": "RBC",
+         "sector": "Canadian Big 6 Banks",
+         "fit": {"score": 9, "verdict": "apply_now"}},
+        {"url": "https://x/2", "company": "Wave", "sector": "Fintech",
+         "fit": {"score": 8, "verdict": "apply_now"}},
+    ]
+    state = {
+        "version": 1,
+        "sectors": [{"name": "Canadian Big 6 Banks",
+                     "canonical_key": "canadian big 6 banks",
+                     "until": None, "reason": "test"}],
+        "companies": [],
+    }
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/1", "https://x/2"},
+        scored_rows=rows, suppressions_state=state, min_score=7,
+    )
+    assert bd["override_mute"] == 1
+    assert bd["below_threshold"] == 0
+
+
+def test_preflight_already_in_tracker_counted():
+    rows = [
+        {"url": "https://x/1", "fit": {"score": 8, "verdict": "apply_now"}},
+        {"url": "https://x/2", "fit": {"score": 9, "verdict": "apply_now"}},
+    ]
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/1", "https://x/2"},
+        scored_rows=rows,
+        tracker_urls={"https://x/1"},
+    )
+    assert bd["already_tracked"] == 1
+
+
+def test_preflight_missing_url_counted():
+    """User somehow selected a URL no longer in the scored file (rescore
+    dropped it, e.g.). Caption flags it so they don't see a silent shrink."""
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/ghost"},
+        scored_rows=[],
+    )
+    assert bd["missing_in_scored"] == 1
+    assert bd["total"] == 1
+
+
+def test_preflight_caption_format_clean():
+    bd = {"total": 5, "below_threshold": 0, "override_mute": 0,
+          "already_tracked": 0, "missing_in_scored": 0}
+    assert ps.format_preflight_caption(bd) == "Will send 5."
+
+
+def test_preflight_caption_format_with_buckets():
+    bd = {"total": 27, "below_threshold": 4, "override_mute": 1,
+          "already_tracked": 2, "missing_in_scored": 0}
+    s = ps.format_preflight_caption(bd)
+    assert "Will send 27" in s
+    assert "4 below fit≥7" in s
+    assert "1 overrides active mute" in s
+    assert "2 already in tracker" in s
+
+
+def test_preflight_caption_empty_selection():
+    bd = {"total": 0, "below_threshold": 0, "override_mute": 0,
+          "already_tracked": 0, "missing_in_scored": 0}
+    assert ps.format_preflight_caption(bd) == "Nothing selected."
+
+
+def test_preflight_handles_production_fit_score_schema():
+    """Production rows from fit_scorer use `fit_score`/`fit_verdict`, not
+    the compact `score`/`verdict`. Both must be accepted by the helpers."""
+    rows = [
+        {"link": "https://x/1",  # field is `link` in production, not `url`
+         "fit": {"fit_score": 6, "fit_verdict": "watch",
+                 "skill_gaps": [], "summary": ""}},
+        {"link": "https://x/2",
+         "fit": {"fit_score": 9, "fit_verdict": "apply_now",
+                 "skill_gaps": [], "summary": ""}},
+    ]
+    bd = ps.compute_preflight_breakdown(
+        selection={"https://x/1", "https://x/2"},
+        scored_rows=rows, min_score=7,
+    )
+    assert bd["total"] == 2
+    assert bd["below_threshold"] == 1   # /1 has fit_score=6
+    assert bd["missing_in_scored"] == 0
+
+
+def test_derive_snapshot_promotable_with_production_schema(fs):
+    """Reading worklist_scored.json written by fit_scorer (uses fit_score)."""
+    out = fs["out"]
+    (out / "worklist_scored.json").write_text(json.dumps({
+        "scored_at": datetime.now().isoformat(timespec="seconds"),
+        "stage1_passed": 2, "stage1_dropped": 0,
+        "results": [
+            {"url": "https://x/1",
+             "fit": {"fit_score": 8, "fit_verdict": "apply_now"}},
+            {"url": "https://x/2",
+             "fit": {"fit_score": 5, "fit_verdict": "watch"}},
+        ],
+    }), encoding="utf-8")
+    s = ps.derive_snapshot(
+        out_dir=out, fit_cache_dir=fs["cache"], tracker_path=fs["tracker"],
+        min_score=7,
+    )
+    assert s.promotable_count == 1   # only /1 ≥7

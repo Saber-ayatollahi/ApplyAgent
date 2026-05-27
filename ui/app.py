@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import scan_runner  # noqa: E402
 import api_key  # noqa: E402
 import gmail_ui  # noqa: E402
+import pipeline_state  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "automation"))
 import cost_ledger  # noqa: E402
@@ -5584,7 +5585,9 @@ elif page == "🎯 Pipeline":
                         view = view[view["company"].str.lower().str.contains(sl, na=False) |
                                     view["title"].str.lower().str.contains(sl, na=False)]
 
-                    # Add select column for promotion
+                    # Promotable rows = visible rows not already in the
+                    # tracker. (Already-tracked rows surface in the caption
+                    # below for transparency, but get no checkbox.)
                     _promotable = view[view["in_tracker"] != "✅"].copy()
                     _not_promotable = view[view["in_tracker"] == "✅"]
 
@@ -5594,7 +5597,20 @@ elif page == "🎯 Pipeline":
                     )
 
                     if not _promotable.empty:
-                        _promotable.insert(0, "promote", False)
+                        # ── Cluster A: URL-keyed selection state ──
+                        # Source-of-truth lives in session state, keyed on
+                        # URL (the only stable identity across reruns and
+                        # filter changes). `df["promote"] = isin(state)`
+                        # each render; data_editor edits are reconciled
+                        # back via apply_selection_edit() so off-screen
+                        # selections survive filter changes intact.
+                        _sel_state: set[str] = st.session_state.setdefault(
+                            "scoring_selected_urls", set())
+                        _visible_urls = set(_promotable["url"].tolist())
+                        _promotable.insert(
+                            0, "promote",
+                            _promotable["url"].isin(_sel_state),
+                        )
                         _edited = st.data_editor(
                             _promotable,
                             hide_index=True, width='stretch', height=500,
@@ -5607,26 +5623,91 @@ elif page == "🎯 Pipeline":
                             disabled=[c for c in _promotable.columns if c != "promote"],
                             key="scored_editor",
                         )
-                        _selected = _edited[_edited["promote"] == True]
-                        if not _selected.empty:
-                            _sel_urls = _selected["url"].tolist()
-                            if st.button(
-                                f"📋 Promote {len(_sel_urls)} selected to tracker",
-                                type="primary",
-                                disabled=any_work_active,
-                                key="scored_bulk_promote",
-                            ):
-                                _url_args = []
-                                for _u in _sel_urls:
-                                    _url_args += ["--only-url", _u]
+                        _ticked_urls = set(
+                            _edited.loc[_edited["promote"] == True, "url"].tolist()
+                        )
+                        # Reconcile: hidden URLs preserved, visible URLs
+                        # synced to whatever the user just ticked.
+                        st.session_state["scoring_selected_urls"] = \
+                            pipeline_state.apply_selection_edit(
+                                selection=_sel_state,
+                                visible_urls=_visible_urls,
+                                ticked_urls=_ticked_urls,
+                            )
+                        _sel_state = st.session_state["scoring_selected_urls"]
+
+                        # ── [Send N selected] action + pre-flight caption ──
+                        if _sel_state:
+                            # Lazy-load suppressions for the preflight
+                            # caption so a missing/corrupt registry
+                            # doesn't break the data_editor render.
+                            _supp_state = None
+                            try:
+                                from automation import suppressions as _supp  # noqa: WPS433
+                                _supp_state = _supp.load_active()
+                            except Exception:
+                                _supp_state = {"sectors": [], "companies": []}
+
+                            # Preflight runs against the FULL scored set
+                            # (not the filtered `view`) because the selection
+                            # may include URLs the user ticked under a
+                            # different filter. min_score=7 mirrors
+                            # auto_promote.py's default — that's the value
+                            # the shelled subprocess will compare against,
+                            # not the page slider.
+                            _bd = pipeline_state.compute_preflight_breakdown(
+                                selection=_sel_state,
+                                scored_rows=results,
+                                suppressions_state=_supp_state,
+                                min_score=7,
+                                tracker_urls=_tracker_urls,
+                            )
+
+                            _bcol1, _bcol2 = st.columns([2, 1])
+                            with _bcol1:
+                                _send_clicked = st.button(
+                                    f"📋 Send {len(_sel_state)} selected to tracker",
+                                    type="primary",
+                                    disabled=any_work_active,
+                                    key="scored_bulk_promote",
+                                )
+                                st.caption(
+                                    pipeline_state.format_preflight_caption(_bd)
+                                )
+                            with _bcol2:
+                                if st.button("Clear selection",
+                                             key="scored_bulk_clear"):
+                                    st.session_state["scoring_selected_urls"] = set()
+                                    st.rerun()
+
+                            if _send_clicked:
+                                # Write the URL list to a tempfile and pass
+                                # via --only-urls. Atomic file is more robust
+                                # than chained --only-url args (no shell
+                                # length limit, audit trail in the file).
+                                import tempfile as _tf
+                                _tmp = _tf.NamedTemporaryFile(
+                                    mode="w", encoding="utf-8",
+                                    suffix=".urls.txt", delete=False,
+                                    dir=str(OUT_DIR),
+                                )
+                                _tmp.write(
+                                    "# auto-generated by ui/app.py — "
+                                    f"{datetime.now().isoformat(timespec='seconds')}\n"
+                                )
+                                for _u in sorted(_sel_state):
+                                    _tmp.write(_u + "\n")
+                                _tmp.close()
                                 _prec = scan_runner.start_run("promote", [
                                     sys.executable,
                                     str(ROOT / "automation" / "auto_promote.py"),
-                                    *_url_args, "--commit",
+                                    "--only-urls", _tmp.name,
+                                    "--commit",
                                 ])
                                 st.toast(
-                                    f"Promoting {len(_sel_urls)} roles…",
+                                    f"Promoting {len(_sel_state)} role(s)…",
                                     icon="📋")
+                                st.session_state["scoring_selected_urls"] = set()
                     else:
                         st.dataframe(view, hide_index=True, width='stretch',
                                      height=500,

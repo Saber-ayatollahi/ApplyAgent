@@ -599,15 +599,19 @@ def derive_snapshot(
 
 def _is_bad_placeholder(row: dict) -> bool:
     """Match the design-doc filter: `bad_verdict | bad_score | bad_reasons`
-    placeholders should not count toward `reusable_count` (overstates 'free')."""
+    placeholders should not count toward `reusable_count` (overstates 'free').
+
+    Tolerates both `fit_score`/`fit_verdict` (the production schema written
+    by fit_scorer) and `score`/`verdict` (the abbreviated form used by
+    test fixtures here)."""
     fit = row.get("fit") or {}
     if not isinstance(fit, dict):
         return True
-    verdict = (fit.get("verdict") or "").lower()
+    verdict = (fit.get("fit_verdict") or fit.get("verdict") or "").lower()
     if verdict.startswith("bad_") or verdict in ("error", "api_error", "skipped_bad"):
         return True
-    score = fit.get("score")
-    if score in (None, "", "bad_score"):
+    score_raw = fit.get("fit_score") if "fit_score" in fit else fit.get("score")
+    if score_raw in (None, "", "bad_score"):
         return True
     reasons = fit.get("top_3_reasons") or fit.get("reasons") or []
     if isinstance(reasons, list) and len(reasons) == 1 and \
@@ -617,12 +621,13 @@ def _is_bad_placeholder(row: dict) -> bool:
 
 
 def _row_score(row: dict) -> int | None:
+    """Tolerates both `fit_score` (production) and `score` (compact) schemas."""
     fit = row.get("fit") or {}
     if not isinstance(fit, dict):
         return None
-    s = fit.get("score")
-    if isinstance(s, (int, float)):
-        return int(s)
+    raw = fit.get("fit_score") if "fit_score" in fit else fit.get("score")
+    if isinstance(raw, (int, float)):
+        return int(raw)
     return None
 
 
@@ -681,3 +686,149 @@ def _suppression_invalid_names(state: dict) -> list[str]:
         return []
     from automation import sectors  # noqa: WPS433
     return [n for n in names if not sectors.is_known(n)]
+
+
+# ---------------------------------------------------------------------------
+# Phase 3B — Scoring-card selection helpers (pure functions)
+#
+# `apply_selection_edit` and `compute_preflight_breakdown` are extracted from
+# the Streamlit caller so they can be unit-tested without Streamlit. The
+# Streamlit code in ui/app.py is the thin wrapper that wires st.session_state
+# into these.
+# ---------------------------------------------------------------------------
+
+def apply_selection_edit(
+    *,
+    selection: set[str],
+    visible_urls: Iterable[str],
+    ticked_urls: Iterable[str],
+) -> set[str]:
+    """Reconcile the selection set against an `st.data_editor` callback.
+
+    The Streamlit data_editor returns the entire edited frame, but the user
+    can only have ticked/unticked rows that were ON SCREEN. Rows hidden by
+    the current filters must be left alone — they may be ticked from a
+    previous filter context. Pattern:
+
+        new_selection = (selection - visible) | ticked_in_visible
+
+    This is equivalent to a per-row XOR: for each visible row, set the
+    selection bit to whatever the data_editor reports. Crucially, this
+    means:
+      - Filtering is NON-DESTRUCTIVE (state for hidden URLs preserved).
+      - Toggling a row off the screen has no effect (correct — user can't
+        see/touch what's off-screen).
+
+    Returns a NEW set; does not mutate `selection`.
+    """
+    visible = set(visible_urls)
+    ticked = set(ticked_urls)
+    # Defense: ticked URLs must be a subset of visible. If not, the caller
+    # is feeding us an inconsistent edited frame; silently restrict to
+    # visible to avoid promoting URLs the user can't actually see.
+    ticked &= visible
+    return (selection - visible) | ticked
+
+
+def compute_preflight_breakdown(
+    *,
+    selection: set[str],
+    scored_rows: list[dict],
+    suppressions_state: dict | None = None,
+    min_score: int = 7,
+    tracker_urls: set[str] | None = None,
+) -> dict:
+    """Pre-flight breakdown for the `[Send N selected]` caption.
+
+    Phase-2 contract reminders (mirrored from auto_promote.py docstrings):
+      - `--only-urls` BYPASSES `--min-score` — below-threshold rows still
+        promote (they get `selection_mode: manual_below_threshold`).
+      - Manual selection of a suppressed row PROMOTES with
+        `manual_override_suppression`. It does NOT skip.
+      - Geo gate is a hard correctness boundary that still applies.
+      - Rows already in tracker are silently dropped by dedupe.
+
+    So the caption is informational, not prescriptive: "you'll send N, of
+    which K are below fit≥7, M override an active mute, P are already in
+    tracker (will dedupe)". Empty buckets are dropped from the output.
+
+    Returns:
+        {
+          "total": int,
+          "below_threshold": int,    # below --min-score (will still promote)
+          "override_mute": int,      # would-be-suppressed (will still promote)
+          "already_tracked": int,    # in tracker (will dedupe)
+          "missing_in_scored": int,  # selected URLs not in the scored file
+        }
+    """
+    if not selection:
+        return {"total": 0, "below_threshold": 0, "override_mute": 0,
+                "already_tracked": 0, "missing_in_scored": 0}
+
+    tracker_urls = tracker_urls or set()
+    state = suppressions_state or {"sectors": [], "companies": []}
+    has_mutes = bool(state.get("sectors") or state.get("companies"))
+
+    # Build URL → row index for fast look-up.
+    by_url: dict[str, dict] = {}
+    for r in scored_rows:
+        u = r.get("url") or r.get("link")
+        if isinstance(u, str) and u:
+            by_url[u] = r
+
+    below_threshold = 0
+    override_mute = 0
+    already_tracked = 0
+    missing = 0
+
+    for url in selection:
+        row = by_url.get(url)
+        if row is None:
+            missing += 1
+            continue
+        if url in tracker_urls:
+            already_tracked += 1
+        score = _row_score(row)
+        if score is not None and score < min_score:
+            below_threshold += 1
+        if has_mutes and _row_suppressed(row, state):
+            override_mute += 1
+
+    return {
+        "total": len(selection),
+        "below_threshold": below_threshold,
+        "override_mute": override_mute,
+        "already_tracked": already_tracked,
+        "missing_in_scored": missing,
+    }
+
+
+def format_preflight_caption(breakdown: dict) -> str:
+    """Render the breakdown dict as the user-facing caption string.
+
+    Always shows total. Other fields appear only when non-zero. Pattern:
+        "Will send 27 — 4 below fit≥7 (still promote), 1 overrides
+         active mute, 2 already in tracker (dedupe)"
+    """
+    total = breakdown.get("total", 0)
+    if total <= 0:
+        return "Nothing selected."
+    parts: list[str] = []
+    if breakdown.get("below_threshold"):
+        parts.append(
+            f"{breakdown['below_threshold']} below fit≥7 (still promote)"
+        )
+    if breakdown.get("override_mute"):
+        parts.append(
+            f"{breakdown['override_mute']} overrides active mute"
+        )
+    if breakdown.get("already_tracked"):
+        parts.append(
+            f"{breakdown['already_tracked']} already in tracker (dedupe)"
+        )
+    if breakdown.get("missing_in_scored"):
+        parts.append(
+            f"{breakdown['missing_in_scored']} URL(s) not in scored file"
+        )
+    suffix = f" — {', '.join(parts)}" if parts else ""
+    return f"Will send {total}{suffix}."
