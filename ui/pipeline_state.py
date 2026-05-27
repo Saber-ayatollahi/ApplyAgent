@@ -803,6 +803,177 @@ def compute_preflight_breakdown(
     }
 
 
+# ---------------------------------------------------------------------------
+# Phase 3C — Suppression admin helpers (pure functions)
+# ---------------------------------------------------------------------------
+
+def format_until_label(until_iso: Any, today: "date | None" = None) -> str:
+    """Human-readable expiry label for a suppression entry.
+
+    Returns:
+      - 'permanent' for None / null until
+      - '5d left (until 2026-06-01)' for active TTL
+      - 'expired' for an already-passed date (lazy expiry hasn't run yet)
+    """
+    from datetime import date as _date  # local import keeps top-level light
+    if until_iso in (None, "", "null"):
+        return "permanent"
+    today = today or _date.today()
+    try:
+        target = _date.fromisoformat(str(until_iso)[:10])
+    except (ValueError, TypeError):
+        return f"until {until_iso}"  # pathological — surface raw value
+    delta = (target - today).days
+    if delta < 0:
+        return "expired"
+    if delta == 0:
+        return f"expires today ({target.isoformat()})"
+    return f"{delta}d left (until {target.isoformat()})"
+
+
+def validate_suppression_form(
+    *,
+    scope: str,
+    name: str,
+    ttl_days: int | None = None,
+    until_str: str | None = None,
+    reason: str = "",
+) -> tuple[bool, str | None, "date | None", str]:
+    """Validate inputs for the [+ Add suppression] form.
+
+    Returns (ok, error_message, parsed_until, canonical_name).
+
+    Rules:
+    - scope must be 'sector' or 'company'.
+    - name must be non-empty after strip.
+    - For sector scope, name must canonicalize via sectors.canonical()
+      (so the form's sector dropdown — populated from sectors.KNOWN —
+      always passes; free-typed sectors fail loudly).
+    - For company scope, brand_aliases.canonical_brand() must produce a
+      non-empty key.
+    - ttl_days and until_str are mutually exclusive. Both None is valid
+      (= permanent mute) but the caller is expected to surface this as
+      a yellow warning per the design doc.
+    - ttl_days must be positive when present.
+    - until_str must parse as YYYY-MM-DD when present.
+    """
+    from datetime import date as _date, timedelta as _td
+
+    if scope not in ("sector", "company"):
+        return False, f"invalid scope: {scope!r}", None, ""
+    if not isinstance(name, str) or not name.strip():
+        return False, "name is required", None, ""
+
+    name_stripped = name.strip()
+    canonical_name: str
+    if scope == "sector":
+        from automation import sectors  # noqa: WPS433
+        canon = sectors.canonical(name_stripped)
+        if canon is None:
+            return False, (
+                f"unknown sector: {name_stripped!r}. Known sectors: "
+                f"{', '.join(sectors.KNOWN[:5])}…"
+            ), None, ""
+        canonical_name = canon
+    else:
+        from automation import brand_aliases  # noqa: WPS433
+        canon_key = brand_aliases.canonical_brand(name_stripped).strip()
+        if not canon_key:
+            return False, (
+                f"could not canonicalize company: {name_stripped!r}"
+            ), None, ""
+        canonical_name = name_stripped  # company keeps user-entered display
+
+    if ttl_days is not None and until_str:
+        return False, "ttl_days and until_str are mutually exclusive", None, canonical_name
+    if ttl_days is not None:
+        if not isinstance(ttl_days, int) or ttl_days <= 0:
+            return False, "ttl_days must be a positive integer", None, canonical_name
+        return True, None, _date.today() + _td(days=ttl_days), canonical_name
+    if until_str:
+        try:
+            target = _date.fromisoformat(until_str)
+        except (ValueError, TypeError) as exc:
+            return False, f"until must be YYYY-MM-DD ({exc})", None, canonical_name
+        if target <= _date.today():
+            return False, "until must be a future date", None, canonical_name
+        return True, None, target, canonical_name
+    # No TTL → permanent mute (caller renders yellow chip).
+    return True, None, None, canonical_name
+
+
+def normalize_drop_reason(rr: str) -> tuple[str, str | None]:
+    """Bucket a raw rule_reasons string into (category, detail).
+
+    Categories used by the Drops sub-tab histogram:
+      - 'neg_title_match'      : raw "neg:intern" → detail = "intern"
+      - 'suppressed_sector'    : "suppressed_sector_60d" → detail = "60d"
+      - 'suppressed_company'   : "suppressed_company_30d" → detail = "30d"
+      - everything else        : split on '=' (collapse hit-list reasons)
+
+    Stable category names mean the histogram doesn't fragment when a TTL
+    changes — `suppressed_sector_60d` and `suppressed_sector_30d` collapse
+    into one row labeled `suppressed_sector`."""
+    if not isinstance(rr, str) or not rr:
+        return ("unknown", None)
+    if rr.startswith("neg:"):
+        return ("neg_title_match", rr[4:])
+    if rr.startswith("suppressed_sector_"):
+        return ("suppressed_sector", rr[len("suppressed_sector_"):])
+    if rr.startswith("suppressed_company_"):
+        return ("suppressed_company", rr[len("suppressed_company_"):])
+    return (rr.split("=", 1)[0], None)
+
+
+def categorize_drop_reasons(drops: list[dict]) -> dict:
+    """Histogram of drop reasons grouped via normalize_drop_reason.
+
+    Returns:
+      {
+        "by_category":      {"suppressed_sector": 47, ...},
+        "neg_terms":        {"intern": 12, ...},
+        "suppressed_total": int,                    # both sector + company
+      }
+    """
+    from collections import Counter
+    by_category: Counter = Counter()
+    neg_terms: Counter = Counter()
+    suppressed_total = 0
+    for d in drops or []:
+        for rr in d.get("rule_reasons") or []:
+            category, detail = normalize_drop_reason(rr)
+            by_category[category] += 1
+            if category == "neg_title_match" and detail:
+                neg_terms[detail] += 1
+            if category in ("suppressed_sector", "suppressed_company"):
+                suppressed_total += 1
+    return {
+        "by_category": dict(by_category.most_common()),
+        "neg_terms": dict(neg_terms.most_common()),
+        "suppressed_total": suppressed_total,
+    }
+
+
+def filter_drops_by_category(
+    drops: list[dict],
+    category: str | None,
+) -> list[dict]:
+    """Return drops where any rule_reason maps to `category`.
+
+    Used by the Drops sub-tab's category filter. category=None passes
+    everything through (no filter applied)."""
+    if not category:
+        return list(drops or [])
+    out: list[dict] = []
+    for d in drops or []:
+        for rr in d.get("rule_reasons") or []:
+            cat, _ = normalize_drop_reason(rr)
+            if cat == category:
+                out.append(d)
+                break
+    return out
+
+
 def format_preflight_caption(breakdown: dict) -> str:
     """Render the breakdown dict as the user-facing caption string.
 

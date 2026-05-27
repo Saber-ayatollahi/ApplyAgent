@@ -305,6 +305,266 @@ def render_artifact_download(label: str, json_path: Path | None,
         c3.caption(f"xlsx err: {e}")
 
 
+def _render_suppressions_admin() -> None:
+    """Phase 3C — Triage card suppression admin.
+
+    Renders an expander with:
+      - One bordered container per active mute, columns([3,1,1,1]):
+        name+scope (3) / [🔓 Lift] / [+30d Extend] / click-to-edit-reason.
+      - [+ Add suppression] form with sector dropdown (sectors.KNOWN) +
+        company freetext + 30/60/90/permanent picker + reason field.
+
+    Writes happen synchronously via the suppressions module — same lock
+    the CLI uses, milliseconds. UI doesn't shell subprocesses for these.
+    Reads are tolerant of a missing/corrupt registry (lazy-creates from
+    the example seed)."""
+    try:
+        from automation import suppressions as supp  # noqa: WPS433
+        from automation import sectors as _sectors  # noqa: WPS433
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"Suppressions module unavailable: {exc}", icon="⚠️")
+        return
+
+    try:
+        active = supp.load_active()
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"Could not read suppressions: {exc}", icon="⚠️")
+        return
+
+    sec_list = active.get("sectors") or []
+    co_list = active.get("companies") or []
+    n_active = len(sec_list) + len(co_list)
+
+    # Lazy: load drop-counts per entry from the latest scored file once,
+    # so coverage rendering doesn't re-read 1,400 rows on each radio click.
+    @st.cache_data(ttl=60, show_spinner=False)
+    def _coverage_map(scored_path_str: str | None,
+                       mtime_key: float,
+                       entries_key: tuple) -> dict:
+        """Build {canonical_key: coverage_dict} for the given scored file.
+
+        Cache key is (path, mtime, entries) — recomputed when any of those
+        change. entries_key is a tuple of (scope, canonical_key) so adding
+        / lifting an entry busts the cache cleanly."""
+        if not scored_path_str:
+            return {}
+        try:
+            data = json.loads(
+                Path(scored_path_str).read_text(encoding="utf-8")
+            )
+        except Exception:
+            return {}
+        rows = data.get("results") or []
+        out: dict = {}
+        for entry in sec_list + co_list:
+            key = entry.get("canonical_key", "")
+            if not key:
+                continue
+            try:
+                out[key] = pipeline_state.coverage_for_entry(entry, rows)
+            except Exception:
+                out[key] = {"matched": 0, "total": 0, "unsectored": 0}
+        return out
+
+    scored_files = sorted(OUT_DIR.glob("*_scored.json"),
+                           key=lambda p: p.stat().st_mtime, reverse=True)
+    scored_path = scored_files[0] if scored_files else None
+    cov_map = _coverage_map(
+        str(scored_path) if scored_path else None,
+        scored_path.stat().st_mtime if scored_path else 0.0,
+        tuple((e.get("scope", "?"), e.get("canonical_key", ""))
+              for e in sec_list + co_list),
+    )
+
+    # Surface SUPPRESS-INVALID inline so the user sees it on the same card
+    # they edit, not just in the global banner.
+    invalid_names = pipeline_state._suppression_invalid_names(active)
+    if invalid_names:
+        st.warning(
+            "These sector mutes reference unknown sectors (likely renamed): "
+            + ", ".join(invalid_names) + ". Lift or rename them.",
+            icon="⚠️",
+        )
+
+    expander_label = (
+        f"🔇 Active suppressions ({n_active})"
+        if n_active else "🔇 Active suppressions"
+    )
+    with st.expander(expander_label, expanded=False):
+        if n_active == 0:
+            st.caption(
+                "No active mutes. Use the form below to skip a sector or "
+                "company at scoring + promote time."
+            )
+        else:
+            from datetime import date as _date  # noqa: WPS433
+            today = _date.today()
+            for entry in sec_list + co_list:
+                _render_suppression_entry(entry, today, cov_map, supp)
+
+        st.markdown("---")
+        _render_add_suppression_form(_sectors)
+
+
+def _render_suppression_entry(entry: dict,
+                                today,
+                                cov_map: dict,
+                                supp_module) -> None:
+    """One bordered container per entry. Columns: name+scope / Lift / Extend /
+    edit-reason. Inline-confirm pattern for edit (mirrors _rq_apply_open)."""
+    canonical_key = entry.get("canonical_key", "")
+    scope = entry.get("scope", "?")
+    name = entry.get("name", "?")
+    reason = entry.get("reason", "")
+    until_iso = entry.get("until")
+    cov = cov_map.get(canonical_key, {})
+    edit_state_key = f"_supp_edit_{canonical_key}"
+
+    with st.container(border=True):
+        col_name, col_lift, col_extend, col_reason = st.columns([3, 1, 1, 2])
+
+        with col_name:
+            scope_chip = "🏭 sector" if scope == "sector" else "🏢 company"
+            st.markdown(f"**{name}** &nbsp; {scope_chip}")
+            sub_bits = [pipeline_state.format_until_label(until_iso, today)]
+            if cov:
+                m, t, u = cov.get("matched", 0), cov.get("total", 0), \
+                          cov.get("unsectored", 0)
+                if t:
+                    sub_bits.append(f"{m} of {t} rows match")
+                if u:
+                    sub_bits.append(f"{u} unsectored — pass through")
+            st.caption(" · ".join(sub_bits))
+
+        with col_lift:
+            if st.button("🔓 Lift", key=f"_supp_lift_{canonical_key}",
+                          help="Remove this mute. Audit trail preserved."):
+                try:
+                    supp_module.lift(scope, name)
+                    st.toast(f"Lifted {scope} mute on {name!r}", icon="🔓")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"Lift failed: {exc}")
+                st.rerun()
+
+        with col_extend:
+            if st.button("+30d", key=f"_supp_ext_{canonical_key}",
+                          help="Extend this mute by 30 days from its current "
+                               "expiry."):
+                try:
+                    supp_module.extend(scope, name, 30)
+                    st.toast(f"Extended {scope} mute by 30d", icon="📅")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"Extend failed: {exc}")
+                st.rerun()
+
+        with col_reason:
+            editing = st.session_state.get(edit_state_key, False)
+            if not editing:
+                # Click-to-edit pattern. Rendering reason text as a button
+                # keeps the affordance discoverable without a separate icon.
+                btn_label = (reason[:40] + "…") if len(reason) > 40 else \
+                            (reason or "_(no reason)_")
+                if st.button(btn_label,
+                              key=f"_supp_reason_btn_{canonical_key}",
+                              help="Click to edit this reason. Old value "
+                                   "preserved in events log."):
+                    st.session_state[edit_state_key] = True
+                    st.rerun()
+            else:
+                new_reason = st.text_input(
+                    "reason", value=reason,
+                    key=f"_supp_reason_in_{canonical_key}",
+                    label_visibility="collapsed",
+                )
+                save_col, cancel_col = st.columns(2)
+                if save_col.button("Save",
+                                    key=f"_supp_reason_save_{canonical_key}",
+                                    type="primary"):
+                    try:
+                        supp_module.edit_reason(scope, name, new_reason)
+                        st.toast("Reason updated", icon="✏️")
+                    except Exception as exc:  # noqa: BLE001
+                        st.error(f"Save failed: {exc}")
+                    st.session_state[edit_state_key] = False
+                    st.rerun()
+                if cancel_col.button("Cancel",
+                                       key=f"_supp_reason_cancel_{canonical_key}"):
+                    st.session_state[edit_state_key] = False
+                    st.rerun()
+
+
+def _render_add_suppression_form(sectors_module) -> None:
+    """[+ Add suppression] form. Calls validate_suppression_form for the
+    error path so a malformed input never reaches the lock-protected write."""
+    with st.form("add_suppression_form", clear_on_submit=False):
+        c_scope, c_name, c_dur = st.columns([1, 2, 1])
+        with c_scope:
+            scope = st.radio(
+                "Scope", ("sector", "company"),
+                horizontal=True, key="_supp_form_scope",
+            )
+        with c_name:
+            if scope == "sector":
+                name = st.selectbox(
+                    "Sector", options=[""] + list(sectors_module.KNOWN),
+                    key="_supp_form_sector_name",
+                )
+            else:
+                name = st.text_input(
+                    "Company", key="_supp_form_company_name",
+                    placeholder="RBC, KOHO, …",
+                    help="Free text — canonicalized via brand_aliases. "
+                         "RBC ⇄ Royal Bank of Canada match the same key.",
+                )
+        with c_dur:
+            ttl_choice = st.selectbox(
+                "Duration", ("30d", "60d", "90d", "permanent"),
+                index=1, key="_supp_form_ttl",
+            )
+        reason = st.text_input(
+            "Reason (visible in audit log)",
+            placeholder="e.g. 1 interview / 14 apps in 8 weeks",
+            key="_supp_form_reason",
+        )
+        submitted = st.form_submit_button("➕ Add suppression", type="primary")
+
+        if submitted:
+            ttl_days: int | None
+            if ttl_choice == "permanent":
+                ttl_days = None
+            else:
+                ttl_days = int(ttl_choice.rstrip("d"))
+            ok, err, until, canon = pipeline_state.validate_suppression_form(
+                scope=scope, name=name or "",
+                ttl_days=ttl_days, reason=reason,
+            )
+            if not ok:
+                st.error(err, icon="❌")
+                return
+            try:
+                from automation import suppressions as supp  # noqa: WPS433
+                if scope == "sector":
+                    supp.add_sector(canon, until,
+                                     reason or "manual via UI")
+                else:
+                    supp.add_company(canon, until,
+                                      reason or "manual via UI")
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"Save failed: {exc}", icon="❌")
+                return
+            until_msg = "permanent" if until is None else f"until {until.isoformat()}"
+            st.success(
+                f"Muted {scope} {canon!r} ({until_msg})", icon="🔇",
+            )
+            if until is None:
+                st.warning(
+                    "This is a permanent mute (no auto-lift). "
+                    "Lift manually when you're ready to see this scope again.",
+                    icon="⚠️",
+                )
+            st.rerun()
+
+
 def _classify_worklist_against_cache() -> dict:
     """Bucket every worklist row by what scoring would do.
 
@@ -5497,6 +5757,11 @@ elif page == "🎯 Pipeline":
 
     # ================== TAB: Scored ==================
     with _tab_scored:
+        # Suppression admin (Phase 3C). Always rendered — independent of
+        # whether a scored file exists, so a fresh-clone user can add
+        # mutes pre-emptively.
+        _render_suppressions_admin()
+
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
         if not scored_files:
@@ -5724,26 +5989,23 @@ elif page == "🎯 Pipeline":
                         "(or a dry-run) to populate the triage audit trail."
                     )
                 else:
-                    # Reason histogram
-                    from collections import Counter as _Counter
-                    _reason_ct = _Counter()
-                    _neg_term_ct = _Counter()
-                    for d in drops:
-                        for rr in d.get("rule_reasons", []):
-                            # "neg:intern" → show negative terms separately
-                            if rr.startswith("neg:"):
-                                _neg_term_ct[rr[4:]] += 1
-                                _reason_ct["neg_title_match"] += 1
-                            else:
-                                # strip the hit list so we group by type
-                                key = rr.split("=", 1)[0]
-                                _reason_ct[key] += 1
+                    # Categorize via the pure helper so suppressed_*_30d /
+                    # _60d / _90d collapse into one histogram row each.
+                    _bd = pipeline_state.categorize_drop_reasons(drops)
+                    _by_cat = _bd["by_category"]
+                    _neg_term_ct = _bd["neg_terms"]
 
                     rm1, rm2 = st.columns([1, 1])
                     with rm1:
                         st.markdown("**Drop reasons (histogram)**")
+                        if _bd["suppressed_total"]:
+                            st.caption(
+                                f"🔇 {_bd['suppressed_total']} dropped by "
+                                "suppression — manage mutes in the "
+                                "🔇 Active suppressions panel above."
+                            )
                         _reason_df = pd.DataFrame(
-                            [{"reason": k, "count": v} for k, v in _reason_ct.most_common()]
+                            [{"reason": k, "count": v} for k, v in _by_cat.items()]
                         )
                         if not _reason_df.empty:
                             st.dataframe(_reason_df, hide_index=True, width='stretch',
@@ -5752,7 +6014,8 @@ elif page == "🎯 Pipeline":
                         st.markdown("**Top negative-title terms**")
                         st.caption("Tune NEG_TITLE_TERMS in fit_scorer to adjust.")
                         _neg_df = pd.DataFrame(
-                            [{"term": k, "hits": v} for k, v in _neg_term_ct.most_common(20)]
+                            [{"term": k, "hits": v}
+                             for k, v in list(_neg_term_ct.items())[:20]]
                         )
                         if not _neg_df.empty:
                             st.dataframe(_neg_df, hide_index=True, width='stretch',
@@ -5763,13 +6026,28 @@ elif page == "🎯 Pipeline":
 
                     st.markdown("---")
                     st.markdown(f"**All {len(drops):,} dropped roles**")
-                    _drop_q = st.text_input(
-                        "Search company/title in drops",
-                        key="triage_drop_q",
-                        placeholder="scotiabank / data engineer / ...",
+                    _filter_col, _q_col = st.columns([1, 2])
+                    with _filter_col:
+                        # Phase 3C: category filter chip — surfaces
+                        # suppressed-* drops as a one-click view.
+                        _cat_options = ["(all)"] + list(_by_cat.keys())
+                        _cat_label = st.selectbox(
+                            "Filter by category", _cat_options,
+                            key="triage_drop_cat",
+                        )
+                        _cat_filter = None if _cat_label == "(all)" else _cat_label
+                    with _q_col:
+                        _drop_q = st.text_input(
+                            "Search company/title in drops",
+                            key="triage_drop_q",
+                            placeholder="scotiabank / data engineer / ...",
+                        )
+
+                    _filtered_drops = pipeline_state.filter_drops_by_category(
+                        drops, _cat_filter,
                     )
                     _drop_rows = []
-                    for d in drops:
+                    for d in _filtered_drops:
                         co, ti = d.get("company", ""), d.get("title", "")
                         if _drop_q:
                             q = _drop_q.lower()

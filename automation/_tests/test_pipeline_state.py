@@ -831,3 +831,209 @@ def test_derive_snapshot_promotable_with_production_schema(fs):
         min_score=7,
     )
     assert s.promotable_count == 1   # only /1 ≥7
+
+
+# ---------------------------------------------------------------------------
+# Phase 3C — format_until_label
+# ---------------------------------------------------------------------------
+
+def test_format_until_label_permanent():
+    assert ps.format_until_label(None) == "permanent"
+    assert ps.format_until_label("") == "permanent"
+    assert ps.format_until_label("null") == "permanent"
+
+
+def test_format_until_label_active():
+    from datetime import date, timedelta
+    today = date(2026, 5, 27)
+    target = today + timedelta(days=10)
+    s = ps.format_until_label(target.isoformat(), today=today)
+    assert "10d left" in s
+    assert "2026-06-06" in s
+
+
+def test_format_until_label_expired():
+    from datetime import date
+    s = ps.format_until_label("2020-01-01", today=date(2026, 5, 27))
+    assert s == "expired"
+
+
+def test_format_until_label_today():
+    from datetime import date
+    today = date(2026, 5, 27)
+    s = ps.format_until_label(today.isoformat(), today=today)
+    assert "expires today" in s
+
+
+def test_format_until_label_pathological_input():
+    from datetime import date
+    s = ps.format_until_label("not-a-date", today=date(2026, 5, 27))
+    assert s.startswith("until ")  # surfaces raw value
+
+
+# ---------------------------------------------------------------------------
+# Phase 3C — validate_suppression_form
+# ---------------------------------------------------------------------------
+
+def test_validate_form_sector_with_ttl():
+    ok, err, until, canon = ps.validate_suppression_form(
+        scope="sector", name="canadian big 6 banks",
+        ttl_days=30, reason="Q2 cooldown",
+    )
+    assert ok and err is None
+    assert canon == "Canadian Big 6 Banks"  # canonicalized
+    assert until is not None
+
+
+def test_validate_form_sector_unknown():
+    ok, err, until, canon = ps.validate_suppression_form(
+        scope="sector", name="Made Up Sector", ttl_days=30,
+    )
+    assert not ok
+    assert "unknown sector" in err.lower()
+    assert until is None
+
+
+def test_validate_form_company_freeform():
+    ok, err, until, canon = ps.validate_suppression_form(
+        scope="company", name="Acme Corp", ttl_days=60,
+    )
+    assert ok and err is None
+    assert canon == "Acme Corp"
+
+
+def test_validate_form_empty_name():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="sector", name="", ttl_days=30,
+    )
+    assert not ok
+    assert "required" in err.lower()
+
+
+def test_validate_form_invalid_scope():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="region", name="x", ttl_days=30,
+    )
+    assert not ok
+    assert "scope" in err.lower()
+
+
+def test_validate_form_negative_ttl():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="sector", name="Fintech", ttl_days=-5,
+    )
+    assert not ok
+    assert "positive" in err.lower()
+
+
+def test_validate_form_ttl_and_until_mutually_exclusive():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="sector", name="Fintech", ttl_days=30, until_str="2027-01-01",
+    )
+    assert not ok
+    assert "mutually exclusive" in err.lower()
+
+
+def test_validate_form_until_in_past_rejected():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="sector", name="Fintech", until_str="2020-01-01",
+    )
+    assert not ok
+    assert "future" in err.lower()
+
+
+def test_validate_form_until_bad_format():
+    ok, err, _, _ = ps.validate_suppression_form(
+        scope="sector", name="Fintech", until_str="not-a-date",
+    )
+    assert not ok
+    assert "yyyy-mm-dd" in err.lower()
+
+
+def test_validate_form_permanent_allowed():
+    """No ttl_days, no until_str → permanent mute (UI surfaces yellow chip)."""
+    ok, err, until, canon = ps.validate_suppression_form(
+        scope="sector", name="Fintech",
+    )
+    assert ok and err is None
+    assert until is None  # permanent
+
+
+# ---------------------------------------------------------------------------
+# Phase 3C — normalize_drop_reason / categorize_drop_reasons
+# ---------------------------------------------------------------------------
+
+def test_normalize_neg_term():
+    cat, det = ps.normalize_drop_reason("neg:intern")
+    assert cat == "neg_title_match"
+    assert det == "intern"
+
+
+def test_normalize_suppressed_sector_drops_ttl():
+    """Different TTLs collapse to the same category — histogram doesn't
+    fragment when a mute is renewed with a new TTL."""
+    cat_60, det_60 = ps.normalize_drop_reason("suppressed_sector_60d")
+    cat_30, det_30 = ps.normalize_drop_reason("suppressed_sector_30d")
+    assert cat_60 == cat_30 == "suppressed_sector"
+    assert det_60 == "60d"
+    assert det_30 == "30d"
+
+
+def test_normalize_suppressed_company():
+    cat, det = ps.normalize_drop_reason("suppressed_company_15d")
+    assert cat == "suppressed_company"
+    assert det == "15d"
+
+
+def test_normalize_keyword_strips_hit_list():
+    cat, _ = ps.normalize_drop_reason("kw_match=alm,irrbb,pension")
+    assert cat == "kw_match"
+
+
+def test_normalize_unknown_passthrough():
+    cat, det = ps.normalize_drop_reason("level_mismatch")
+    assert cat == "level_mismatch"
+    assert det is None
+
+
+def test_categorize_buckets_correctly():
+    drops = [
+        {"rule_reasons": ["suppressed_sector_60d"]},
+        {"rule_reasons": ["suppressed_sector_30d"]},
+        {"rule_reasons": ["suppressed_company_15d"]},
+        {"rule_reasons": ["neg:intern"]},
+        {"rule_reasons": ["neg:sales"]},
+        {"rule_reasons": ["level_mismatch"]},
+    ]
+    bd = ps.categorize_drop_reasons(drops)
+    assert bd["by_category"]["suppressed_sector"] == 2
+    assert bd["by_category"]["suppressed_company"] == 1
+    assert bd["by_category"]["neg_title_match"] == 2
+    assert bd["by_category"]["level_mismatch"] == 1
+    assert bd["suppressed_total"] == 3
+    assert bd["neg_terms"]["intern"] == 1
+
+
+def test_filter_drops_by_category_picks_only_matching():
+    drops = [
+        {"company": "RBC", "rule_reasons": ["suppressed_sector_60d"]},
+        {"company": "Wave", "rule_reasons": ["level_mismatch"]},
+        {"company": "Acme", "rule_reasons": ["suppressed_company_15d"]},
+    ]
+    out = ps.filter_drops_by_category(drops, "suppressed_sector")
+    assert len(out) == 1
+    assert out[0]["company"] == "RBC"
+
+
+def test_filter_drops_by_category_none_passes_all():
+    drops = [{"rule_reasons": ["x"]}, {"rule_reasons": ["y"]}]
+    assert len(ps.filter_drops_by_category(drops, None)) == 2
+
+
+def test_filter_drops_handles_row_with_multiple_reasons():
+    """A row can have several rule_reasons; matches if ANY map to category."""
+    drops = [
+        {"rule_reasons": ["level_mismatch", "suppressed_sector_60d"]},
+    ]
+    out = ps.filter_drops_by_category(drops, "suppressed_sector")
+    assert len(out) == 1
