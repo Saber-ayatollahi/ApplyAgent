@@ -488,6 +488,36 @@ def test_derive_snapshot_reads_worklist_and_scored(fs):
     assert s.scored_age_h is not None and s.scored_age_h < 1
 
 
+def test_derive_snapshot_reusable_count_uses_link_key(fs):
+    """Regression: production worklist + scored rows are keyed `link`, not
+    `url` (fit_scorer passes the worklist row straight through). The old
+    `reusable_count` summed `r.get("url") in worklist_urls`, which was
+    ALWAYS 0 against real data — the 'free re-score' count silently lied.
+    Build the snapshot from link-keyed rows and assert it's non-zero."""
+    out = fs["out"]
+    (out / "worklist.json").write_text(json.dumps({
+        "rebuilt_at": datetime.now().isoformat(timespec="seconds"),
+        "results": [{"link": f"https://x/{i}", "company": "C", "sector": ""}
+                    for i in range(4)],
+    }), encoding="utf-8")
+    (out / "worklist_scored.json").write_text(json.dumps({
+        "scored_at": datetime.now().isoformat(timespec="seconds"),
+        "stage1_passed": 4, "stage1_dropped": 0,
+        "results": [
+            {"link": f"https://x/{i}",
+             "fit": {"fit_score": 8, "fit_verdict": "apply_now",
+                     "skill_gaps": [], "summary": ""}}
+            for i in range(4)
+        ],
+    }), encoding="utf-8")
+    s = ps.derive_snapshot(
+        out_dir=out, fit_cache_dir=fs["cache"], tracker_path=fs["tracker"],
+        min_score=7,
+    )
+    # All 4 scored rows are link-matched against the worklist → reusable.
+    assert s.reusable_count == 4
+
+
 def test_derive_snapshot_promotable_excludes_tracker_urls(fs):
     out = fs["out"]
     (out / "worklist_scored.json").write_text(json.dumps({

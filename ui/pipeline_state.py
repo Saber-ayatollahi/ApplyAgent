@@ -542,7 +542,8 @@ def derive_snapshot(
     cached_count = len(cache_urls)
     reusable_count = sum(
         1 for r in scored_results
-        if not _is_bad_placeholder(r) and r.get("url") in worklist_urls
+        if not _is_bad_placeholder(r)
+        and (r.get("url") or r.get("link")) in worklist_urls
     )
 
     # ── Promotable ──
