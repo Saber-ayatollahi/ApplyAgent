@@ -1,0 +1,154 @@
+{
+  "scan_date": "2026-05-29",
+  "scan_timestamp": "2026-05-29T18:45:17Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 9,
+    "output": 9,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "69938",
+      "69945"
+    ],
+    "deleted": false,
+    "deleted_at": null,
+    "delete_result": null
+  },
+  "results": [
+    {
+      "title": "Associate Director, Global Risk Analytics",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4420415626",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69945"
+    },
+    {
+      "title": "Senior Manager, ALM Risk Transformation",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4411292568",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69945"
+    },
+    {
+      "title": "Director, Funding & Investments",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4399682908",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69945"
+    },
+    {
+      "title": "Manager, Treasury",
+      "company": "Elexicon Energy Inc.",
+      "link": "https://www.linkedin.com/jobs/view/4410762849",
+      "location": "Whitby, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69945"
+    },
+    {
+      "title": "Associate Director, Liquidity Risk Measurement",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4408486564",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69938"
+    },
+    {
+      "title": "Director, Funding & Investments",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4399682908",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69938"
+    },
+    {
+      "title": "Group Risk Manager (ATH 4995)",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4419879730",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69938"
+    },
+    {
+      "title": "Senior Manager, Regulatory Model Enablement",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4418887251",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69938"
+    },
+    {
+      "title": "Multi-Asset Research Associate",
+      "company": "Northern Trust",
+      "link": "https://www.linkedin.com/jobs/view/4399560837",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-05-29",
+      "gmail_uid": "69938"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 2,
+    "linkedin_alerts_seen": 2,
+    "digests_with_rows": 2,
+    "digests_without_rows": 0,
+    "rows_parsed": 11,
+    "rows_dropped_location": 2,
+    "rows_kept": 9,
+    "dropped_location_examples": [
+      "RECRUITMENT PARTNERS INC. — Calgary, AB",
+      "Vancity — Vancouver, BC"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "RECRUITMENT PARTNERS INC.",
+        "title": "Director, Treasury",
+        "location": "Calgary, AB",
+        "posted_date": "2026-05-29",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "69945",
+        "link": "https://www.linkedin.com/jobs/view/4410796644",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      },
+      {
+        "company": "Vancity",
+        "title": "Senior Consultant, Model Validation",
+        "location": "Vancouver, BC",
+        "posted_date": "2026-05-29",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "69938",
+        "link": "https://www.linkedin.com/jobs/view/4419463659",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "quarantine": []
+  }
+}
