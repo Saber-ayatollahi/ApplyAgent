@@ -9,7 +9,6 @@ One page, one flow. Background execution via ui/scan_runner.py.
 from __future__ import annotations
 import json
 import re
-import subprocess
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -1813,12 +1812,21 @@ def render_tailor_action_row(job: dict, key_prefix: str,
                       key=f"{key_prefix}_apply_{job_id}",
                       help="Stamp date_applied=today, status=Applied. "
                            "Closes the loop without leaving the page."):
-            for _tj in tracker_data.get("jobs", []):
-                if _tj.get("id") == job_id:
-                    _tj["status"] = "Applied"
-                    seed_followup(_tj, applied_on=date.today())
-                    break
-            save_tracker(tracker_data)
+            # Lost-update fix: don't write the stale cached `tracker_data`
+            # dict (it clobbers concurrent edits from auto_promote / other
+            # tabs). Re-read + mutate under the shared lock instead.
+            from safe_json import mutate_json as _mj  # noqa: WPS433
+
+            def _apply_one(t):
+                for _tj in t.get("jobs", []):
+                    if _tj.get("id") == job_id:
+                        _tj["status"] = "Applied"
+                        seed_followup(_tj, applied_on=date.today())
+                        break
+                return t
+
+            _mj(tracker_path, _apply_one, default={"jobs": [], "meta": {}})
+            load_tracker.clear()
             st.toast(f"✅ Marked {job.get('company', '')} as applied",
                       icon="🎯")
             st.rerun()
@@ -1911,12 +1919,21 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                 if st.button("✅ Mark applied",
                               width='stretch', type="primary",
                               key=f"drawer_apply_btn_{_kk}"):
-                    for _tj in tracker_data.get("jobs", []):
-                        if _tj.get("id") == job_id:
-                            _tj["status"] = "Applied"
-                            seed_followup(_tj, applied_on=date.today())
-                            break
-                    save_tracker(tracker_data)
+                    # Lost-update fix: re-read + mutate under the shared lock
+                    # rather than writing the stale cached `tracker_data`.
+                    from safe_json import mutate_json as _mj  # noqa: WPS433
+
+                    def _apply_one(t):
+                        for _tj in t.get("jobs", []):
+                            if _tj.get("id") == job_id:
+                                _tj["status"] = "Applied"
+                                seed_followup(_tj, applied_on=date.today())
+                                break
+                        return t
+
+                    _mj(tracker_path, _apply_one,
+                        default={"jobs": [], "meta": {}})
+                    load_tracker.clear()
                     st.session_state.pop("_active_tailor_job_id", None)
                     st.session_state.pop("_active_tailor_run_id", None)
                     st.toast(f"✅ {job.get('company', '?')} marked applied",
@@ -1938,6 +1955,104 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
 
         with st.expander("📄 Tailor preview", expanded=True):
             st.markdown(_content)
+
+
+def run_inline_agent(slot, label, *, on_finish=None,
+                     running_msg="Working… the UI stays responsive."):
+    """Launch `cmd` in the BACKGROUND (scan_runner, detached) and render its
+    output inline once it finishes — without freezing the Streamlit thread.
+
+    Replaces the old blocking `subprocess.run(...)` pattern for the ad-hoc
+    admin actions (score-single-URL, weekly report, jd_tailor). The run id is
+    stashed in session_state under `_inline_run_{slot}`.
+
+    Self-refresh: while the run is live, this calls st_autorefresh() with a
+    slot-scoped key so the page re-enters every ~2.5s until the run settles —
+    regardless of which page hosts the button. We do NOT rely on the page-wide
+    autorefresh at the top of the script: on Streamlit ≥1.33 that's disabled
+    in favour of the live-panel fragment, and the Admin page (weekly_report,
+    jd_tailor) has no live panel at all, so without this self-refresh those
+    results would never auto-appear. When st_autorefresh is unavailable (shim),
+    we degrade to a manual 🔄 hint.
+
+    Call this UNCONDITIONALLY on every render (not just on the button click):
+    it no-ops when there's no run for `slot`, shows a live log tail while
+    running, and renders the final output (via `on_finish(log_text, rec)` if
+    given, else a plain code block) when finished.
+
+    `on_finish` receives the full merged stdout+stderr log text and the run
+    record dict; it owns all success rendering for that slot.
+    """
+    _key = f"_inline_run_{slot}"
+    run_id = st.session_state.get(_key)
+    if not run_id:
+        return
+    status_path = scan_runner.RUNS_DIR / f"{run_id}.json"
+    if not status_path.exists():
+        # Run record vanished (cleared outputs, etc.) — drop the slot.
+        st.session_state.pop(_key, None)
+        return
+    rec = scan_runner.refresh_state(status_path)
+    state = rec.get("state")
+    log_text = scan_runner.tail_log(rec.get("log_path", ""), 50_000)
+    if state == "running":
+        st.info(f"⏳ {running_msg}", icon="🤖")
+        if log_text:
+            st.code(log_text[-2000:], language="text")
+        # Drive our own refresh loop — see docstring for why the page-wide one
+        # can't be relied on here. Slot-scoped key so two inline agents don't
+        # share a counter.
+        if _HAVE_AUTOREFRESH:
+            st_autorefresh(interval=2500, key=f"_inline_refresh_{slot}")
+        else:
+            st.caption("Hit 🔄 Reload page in the sidebar to check progress.")
+        return
+    # Settled (finished | failed | stopped) — render once, then clear so a
+    # later rerun doesn't keep re-showing a stale result.
+    if state == "failed":
+        st.error(f"❌ {label} failed (exit {rec.get('returncode')}).")
+        if log_text:
+            st.code(log_text[-3000:], language="text")
+    elif on_finish is not None:
+        on_finish(log_text, rec)
+    else:
+        st.code(log_text[-4000:] if log_text else "(no output)", language="text")
+    st.session_state.pop(_key, None)
+
+
+def start_inline_agent(slot, label, cmd):
+    """Launch `cmd` detached and register it for run_inline_agent(slot)."""
+    rec = scan_runner.start_run(label, cmd)
+    st.session_state[f"_inline_run_{slot}"] = rec.run_id
+    return rec
+
+
+def _extract_pretty_json(text):
+    """Pull a top-level `json.dumps(indent=2)` object out of a mixed log.
+
+    score_url.py --json-only prints pretty-printed JSON to stdout while
+    diagnostics go to stderr; start_run merges both streams into one log, so
+    we can't just json.loads() the whole thing. A naive brace-counter breaks
+    when a free-text field (summary, reasons — LLM output) contains a literal
+    `{` or `}`. Instead we exploit pretty-print layout: with indent=2 the
+    OUTER braces are the only ones at column 0 of a physical line (in-string
+    newlines are escaped to `\\n`, so no string content ever starts a line).
+    Grab from the first line that is exactly "{" through the next line that
+    starts with "}" and parse that slice. Returns the dict, or None.
+    """
+    lines = text.splitlines()
+    start = None
+    for i, ln in enumerate(lines):
+        if start is None:
+            if ln.rstrip() == "{":
+                start = i
+        elif ln.startswith("}"):
+            candidate = "\n".join(lines[start:i + 1])
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                start = None  # not valid — keep scanning for another block
+    return None
 
 
 CRM_STALE_DAYS = 14  # past this, contacts get flagged as "nudge-worthy"
@@ -6383,49 +6498,58 @@ elif page == "🎯 Pipeline":
                     cmd.append("--rescore")
                 if add_to_tr:
                     cmd.append("--add-to-tracker")
-                with st.spinner("Fetching JD and scoring..."):
-                    res = subprocess.run(cmd, capture_output=True, text=True,
-                                          cwd=str(ROOT), timeout=60,
-                                          encoding="utf-8", errors="replace")
-                if res.returncode != 0:
-                    st.error(f"Scoring failed (exit {res.returncode}):")
-                    st.code(res.stderr[-2000:], language="text")
-                else:
-                    try:
-                        fit = json.loads(res.stdout)
-                    except json.JSONDecodeError:
-                        st.error("Scorer did not return JSON:")
-                        st.code(res.stdout[-1000:], language="text")
-                    else:
-                        verdict = fit.get("fit_verdict", "?")
-                        score = fit.get("fit_score", "?")
-                        tier = fit.get("tier", "?")
-                        variants = fit.get("applicable_resume_variants") or []
-                        badge = {"apply_now": "🟢", "tailor_and_apply": "🟡",
-                                 "watch": "⚪", "skip": "🔴", "error": "❌"}.get(verdict, "⚪")
-                        st.markdown(
-                            f"### {badge} Verdict: `{verdict}` · "
-                            f"Score: **{score}/10** · Tier {tier}"
-                        )
-                        cA, cB = st.columns(2)
-                        with cA:
-                            st.markdown("**Lead-with resume(s):** "
-                                        + (" · ".join(variants) if variants else "—"))
-                            st.markdown("**Summary:** " + fit.get("summary", "—"))
-                        with cB:
-                            reasons = fit.get("top_3_reasons") or []
-                            if reasons:
-                                st.markdown("**Why it fits:**")
-                                for r in reasons:
-                                    st.markdown(f"- {r}")
-                            gaps = fit.get("skill_gaps") or []
-                            if gaps:
-                                st.markdown("**Gaps:** " + "; ".join(gaps))
-                        if add_to_tr and "Added" in (res.stderr or ""):
-                            st.success("✅ Added to tracker. Reload the Kanban to see it.")
-                            load_tracker.clear()
-                        with st.expander("Raw scorer output"):
-                            st.code(json.dumps(fit, indent=2), language="json")
+                # Launch detached so the UI stays responsive (was a blocking
+                # subprocess.run that froze Streamlit for up to 60s). Result
+                # renders below via run_inline_agent once the run finishes.
+                start_inline_agent("score_url", "score_url", cmd)
+                st.session_state["_inline_score_url_addtr"] = add_to_tr
+                st.rerun()
+
+            def _render_score_url(log_text, rec):
+                # score_url.py --json-only prints indented JSON to stdout and
+                # diagnostics to stderr; start_run merges both into the log.
+                # The JSON is the only multi-line {...} block — extract it.
+                fit = _extract_pretty_json(log_text)
+                if fit is None:
+                    st.error("Scorer did not return JSON:")
+                    st.code(log_text[-1500:], language="text")
+                    return
+                verdict = fit.get("fit_verdict", "?")
+                score = fit.get("fit_score", "?")
+                tier = fit.get("tier", "?")
+                variants = fit.get("applicable_resume_variants") or []
+                badge = {"apply_now": "🟢", "tailor_and_apply": "🟡",
+                         "watch": "⚪", "skip": "🔴", "error": "❌"}.get(verdict, "⚪")
+                st.markdown(
+                    f"### {badge} Verdict: `{verdict}` · "
+                    f"Score: **{score}/10** · Tier {tier}"
+                )
+                cA, cB = st.columns(2)
+                with cA:
+                    st.markdown("**Lead-with resume(s):** "
+                                + (" · ".join(variants) if variants else "—"))
+                    st.markdown("**Summary:** " + fit.get("summary", "—"))
+                with cB:
+                    reasons = fit.get("top_3_reasons") or []
+                    if reasons:
+                        st.markdown("**Why it fits:**")
+                        for r in reasons:
+                            st.markdown(f"- {r}")
+                    gaps = fit.get("skill_gaps") or []
+                    if gaps:
+                        st.markdown("**Gaps:** " + "; ".join(gaps))
+                if st.session_state.get("_inline_score_url_addtr") and \
+                        "Added" in log_text:
+                    st.success("✅ Added to tracker. Reload the Kanban to see it.")
+                    load_tracker.clear()
+                st.session_state.pop("_inline_score_url_addtr", None)
+                with st.expander("Raw scorer output"):
+                    st.code(json.dumps(fit, indent=2), language="json")
+
+            run_inline_agent(
+                "score_url", "Score URL", on_finish=_render_score_url,
+                running_msg="Fetching JD and scoring… UI stays responsive.",
+            )
 
     # ================== CARD/TAB: Scored (+ triage sub-tabs) ===============
     def _render_scored_card():
@@ -9494,11 +9618,17 @@ elif page == "⚙️ Admin":
     agent = st.radio("Agent", ["Weekly report", "JD tailor"], horizontal=True)
 
     if agent == "Weekly report":
-        if st.button("📊 Generate weekly report", type="primary"):
+        if st.button("📊 Generate weekly report", type="primary",
+                     disabled=any_work_active):
             cmd = [sys.executable, str(ROOT / "automation" / "weekly_report.py")]
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT),
-                                encoding="utf-8", errors="replace", timeout=120)
-            st.code((res.stdout or "") + "\n" + (res.stderr or "")[-2000:])
+            # Detached launch (was a blocking subprocess.run freezing the UI
+            # for up to 120s). Output renders below when the run settles.
+            start_inline_agent("weekly_report", "weekly_report", cmd)
+            st.rerun()
+        run_inline_agent(
+            "weekly_report", "Weekly report",
+            running_msg="Generating weekly report… UI stays responsive.",
+        )
 
     elif agent == "JD tailor":
         if jobs_df.empty:
@@ -9513,19 +9643,35 @@ elif page == "⚙️ Admin":
             if not _ad_tailor_ok:
                 st.caption("🔑 API key required (or tick Dry run).")
             if st.button("✏️ Tailor resume + cover", type="primary",
-                         disabled=not _ad_tailor_ok):
+                         disabled=(not _ad_tailor_ok or any_work_active)):
                 cmd = [sys.executable, str(ROOT / "automation" / "jd_tailor.py"),
                        "--job-id", pick]
                 if dry:
                     cmd.append("--dry-run")
-                res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT),
-                                    encoding="utf-8", errors="replace", timeout=300)
-                st.code((res.stdout or "") + "\n" + (res.stderr or "")[-4000:])
-                latest = sorted(OUT_DIR.glob(f"*_{pick.replace('-','_')}*.md"),
-                               key=lambda p: p.stat().st_mtime, reverse=True)
-                if latest:
-                    with st.expander(f"Output: {latest[0].name}", expanded=True):
-                        st.markdown(latest[0].read_text(encoding="utf-8"))
+                # Detached launch (was a blocking subprocess.run freezing the
+                # UI for up to 300s). Output renders below when it settles.
+                start_inline_agent("jd_tailor_admin", f"tailor_{pick}", cmd)
+                st.session_state["_inline_tailor_admin_pick"] = pick
+                st.rerun()
+
+            def _render_tailor_admin(log_text, rec):
+                st.code(log_text[-4000:] if log_text else "(no output)",
+                        language="text")
+                _pick = st.session_state.get("_inline_tailor_admin_pick", "")
+                if _pick:
+                    latest = sorted(
+                        OUT_DIR.glob(f"*_{_pick.replace('-', '_')}*.md"),
+                        key=lambda p: p.stat().st_mtime, reverse=True)
+                    if latest:
+                        with st.expander(f"Output: {latest[0].name}",
+                                         expanded=True):
+                            st.markdown(latest[0].read_text(encoding="utf-8"))
+                st.session_state.pop("_inline_tailor_admin_pick", None)
+
+            run_inline_agent(
+                "jd_tailor_admin", "JD tailor", on_finish=_render_tailor_admin,
+                running_msg="Tailoring resume + cover… UI stays responsive.",
+            )
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 📊 ANALYTICS PAGE
@@ -9899,8 +10045,25 @@ elif page == "📬 Review Queue":
             if _uc2.button("↶ Undo", key="_rq_undo_mute"):
                 try:
                     from automation import suppressions as _supp_undo  # noqa: WPS433
-                    _supp_undo.lift(_undo_state["scope"], _undo_state["name"])
-                    st.toast("Mute undone", icon="↶")
+                    # lift() silently no-ops (logs lift_noop) when the mute is
+                    # already gone — e.g. another tab/session lifted it, or it
+                    # expired. Probe before/after like the CLI's _cmd_lift so
+                    # the toast reflects what actually happened instead of
+                    # always claiming success.
+                    _u_scope = _undo_state["scope"]
+                    _u_key = _u_scope + "s"
+                    _before = _supp_undo.load_active()
+                    _before_keys = {e.get("canonical_key")
+                                    for e in _before.get(_u_key, []) or []}
+                    _supp_undo.lift(_u_scope, _undo_state["name"])
+                    _after = _supp_undo.load_active()
+                    _after_keys = {e.get("canonical_key")
+                                   for e in _after.get(_u_key, []) or []}
+                    if _before_keys - _after_keys:
+                        st.toast("Mute undone", icon="↶")
+                    else:
+                        st.toast("Mute already lifted — nothing to undo",
+                                 icon="ℹ️")
                 except Exception as _exc:  # noqa: BLE001
                     st.error(f"Undo failed: {_exc}")
                 del st.session_state["_rq_mute_undo"]
@@ -10102,7 +10265,12 @@ elif page == "📬 Review Queue":
 
             _mj(TRACKER, _mut, default={"jobs": [], "meta": {}})
             load_tracker.clear()
-            st.session_state["_rq_idx"] = _rq_idx + 1
+            # Double-skip fix: an actioned card flips off status=="Found" and
+            # drops out of the re-filtered queue on rerun, so the NEXT card
+            # slides into this same index automatically. Do NOT advance
+            # _rq_idx here — only the pure Skip button advances (its card
+            # stays in the queue). The clamp at the top of the page handles
+            # the last-card case.
             st.session_state["_rq_session_acted"] = (
                 st.session_state.get("_rq_session_acted", 0) + 1
             )
@@ -10132,7 +10300,8 @@ elif page == "📬 Review Queue":
             if _rq_url:
                 _rq_a4.link_button("🔗 Open JD", _rq_url, width='stretch')
 
-        if _rq_a5.button("⏭", width='stretch', help="Skip - come back later"):
+        if _rq_a5.button("⏭", width='stretch', help="Skip - come back later",
+                         disabled=(_rq_idx >= _rq_total - 1)):
             st.session_state["_rq_idx"] = _rq_idx + 1
             st.rerun()
 
@@ -10152,7 +10321,8 @@ elif page == "📬 Review Queue":
             _mj(TRACKER, lambda t: _tops.archive(t, _rq_job_id, "manual_review_queue"),
                 default={"jobs": [], "meta": {}})
             load_tracker.clear()
-            st.session_state["_rq_idx"] = _rq_idx + 1
+            # Double-skip fix: archived card drops out of the queue on rerun,
+            # so the next card takes this index — don't advance _rq_idx.
             st.session_state["_rq_session_acted"] = (
                 st.session_state.get("_rq_session_acted", 0) + 1
             )
@@ -10204,21 +10374,27 @@ elif page == "📬 Review Queue":
         with st.container(border=True):
             st.markdown(f"#### ✅ Confirm application — {_rq_job.get('company')} · {_rq_job.get('title')}")
             with st.form(key=f"rq_apply_form_{_rq_job_id}"):
+                # Job-id-scoped widget keys (mirrors the Mute form) so the
+                # date/channel/notes a user enters for one card never bleed
+                # into the next card's Apply form across reruns.
                 _ap_col1, _ap_col2 = st.columns(2)
                 _ap_date = _ap_col1.date_input(
-                    "Date applied", value=date.today(), help="When did you submit the application?"
+                    "Date applied", value=date.today(), help="When did you submit the application?",
+                    key=f"_rq_ap_date_{_rq_job_id}",
                 )
                 _ap_channel = _ap_col2.selectbox(
-                    "Applied via", ["Company portal", "LinkedIn", "Email", "Referral", "Recruiter", "Other"]
+                    "Applied via", ["Company portal", "LinkedIn", "Email", "Referral", "Recruiter", "Other"],
+                    key=f"_rq_ap_channel_{_rq_job_id}",
                 )
                 _ap_notes = st.text_area(
                     "Notes (optional)", placeholder="E.g. referral from Jane, used tailored resume v2, ...",
-                    height=80
+                    height=80, key=f"_rq_ap_notes_{_rq_job_id}",
                 )
                 _ap_tailor = st.checkbox(
                     "🤖 Launch jd_tailor in background (tailors resume + cover letter)",
                     value=False,
-                    help="Requires API key. Runs jd_tailor.py for this job ID."
+                    help="Requires API key. Runs jd_tailor.py for this job ID.",
+                    key=f"_rq_ap_tailor_{_rq_job_id}",
                 )
                 _ap_c1, _ap_c2 = st.columns(2)
                 _ap_submit = _ap_c1.form_submit_button("✅ Confirm application", type="primary", width='stretch')
@@ -10253,7 +10429,8 @@ elif page == "📬 Review Queue":
                     scan_runner.start_run(f"tailor_{_rq_job_id}", _tailor_cmd)
                     st.toast(f"🤖 jd_tailor launched for {_rq_job_id}", icon="🚀")
                 del st.session_state["_rq_apply_open"]
-                st.session_state["_rq_idx"] = _rq_idx + 1
+                # Double-skip fix: the now-Applied card drops out of the
+                # Found queue on rerun; the next card slides into this index.
                 st.session_state["_rq_session_acted"] = st.session_state.get("_rq_session_acted", 0) + 1
                 st.toast(f"✅ Application recorded for {_rq_job.get('company')}!", icon="📨")
                 st.rerun()
@@ -10371,7 +10548,9 @@ elif page == "📬 Review Queue":
                                 "scope": _m_scope, "name": canon,
                                 "ts": datetime.now().isoformat(timespec="seconds"),
                             }
-                            st.session_state["_rq_idx"] = _rq_idx + 1
+                            # Double-skip fix: the auto-archived card drops
+                            # out of the queue on rerun; next card takes this
+                            # index — don't advance _rq_idx.
                             st.session_state["_rq_session_acted"] = (
                                 st.session_state.get("_rq_session_acted", 0) + 1
                             )
