@@ -39,6 +39,21 @@ def archive(t: dict, job_id: str, reason: str = "manual") -> dict:
     return t
 
 
+def archive_many(t: dict, job_ids, reason: str = "manual") -> dict:
+    """Archive every id in `job_ids` in one pass so a bulk-clear is a single
+    atomic write (vs N mutate_json calls, each taking the file lock). Unknown
+    ids are skipped silently — the caller derives ids from the same tracker,
+    so a missing id just means it was already gone. Idempotent: re-archiving
+    an already-archived row only refreshes its timestamp/reason."""
+    wanted = set(job_ids)
+    for j in t.get("jobs", []):
+        if j.get("id") in wanted:
+            j["archived"] = True
+            j["archived_at"] = _now_iso()
+            j["archive_reason"] = reason
+    return t
+
+
 def restore(t: dict, job_id: str) -> dict:
     job = find_job(t, job_id)
     if job is None:

@@ -112,6 +112,43 @@ def test_archive_preserves_existing_fields():
     assert j["url"] == "https://x.co/a-1"
 
 
+def test_archive_many_archives_only_listed_ids():
+    t = _tracker(jobs=[_job("a-1"), _job("a-2"), _job("a-3")])
+    out = tracker_ops.archive_many(t, ["a-1", "a-3"], reason="manual_bulk_kanban")
+    assert out is t
+    assert tracker_ops.find_job(t, "a-1")["archived"] is True
+    assert tracker_ops.find_job(t, "a-1")["archive_reason"] == "manual_bulk_kanban"
+    assert tracker_ops.find_job(t, "a-3")["archived"] is True
+    # a-2 untouched
+    assert tracker_ops.find_job(t, "a-2")["archived"] is False
+    assert "archived_at" not in tracker_ops.find_job(t, "a-2")
+
+
+def test_archive_many_skips_unknown_ids_silently():
+    t = _tracker(jobs=[_job("a-1")])
+    # unknown id must not raise (unlike single-archive)
+    tracker_ops.archive_many(t, ["a-1", "ghost"], reason="x")
+    assert tracker_ops.find_job(t, "a-1")["archived"] is True
+    assert tracker_ops.find_job(t, "ghost") is None
+
+
+def test_archive_many_idempotent_refreshes_reason():
+    t = _tracker(jobs=[_job("a-1")])
+    tracker_ops.archive_many(t, ["a-1"], reason="first")
+    first_ts = tracker_ops.find_job(t, "a-1")["archived_at"]
+    tracker_ops.archive_many(t, ["a-1"], reason="second")
+    j = tracker_ops.find_job(t, "a-1")
+    assert j["archived"] is True
+    assert j["archive_reason"] == "second"
+    assert isinstance(first_ts, str)
+
+
+def test_archive_many_empty_list_is_noop():
+    t = _tracker(jobs=[_job("a-1")])
+    tracker_ops.archive_many(t, [], reason="x")
+    assert tracker_ops.find_job(t, "a-1")["archived"] is False
+
+
 def test_restore_clears_archive_fields():
     t = _tracker()
     tracker_ops.archive(t, "a-1", reason="manual")

@@ -121,6 +121,29 @@ def extract_bridge(job: dict, max_len: int = 130) -> str:
     return first
 
 
+@st.cache_data(ttl=600)
+def _target_counts() -> dict:
+    """Live company counts for the scrape buttons, read from the actual
+    target lists so the UI labels can never drift from reality (the old
+    hardcoded "77 core targets" string was stale — the list is 66).
+
+    Returns {"core": int, "expansion": int, "full": int}. On any import
+    failure (e.g. requests/bs4 missing in a thin env) falls back to the
+    last-known counts rather than crashing the page."""
+    try:
+        sys.path.insert(0, str(ROOT / "automation"))
+        from jd_scraper import TARGETS  # noqa: E402
+        from expansion_companies import EXPANSION_TARGETS  # noqa: E402
+        core = len(TARGETS)
+        expansion = len(EXPANSION_TARGETS)
+        # Union by name — core and expansion are disjoint today, but guard
+        # against future overlap so "full" never overstates coverage.
+        names = {t["name"] for t in TARGETS} | {t["name"] for t in EXPANSION_TARGETS}
+        return {"core": core, "expansion": expansion, "full": len(names)}
+    except Exception:
+        return {"core": 66, "expansion": 93, "full": 159}
+
+
 @st.cache_data(ttl=15)
 def load_tracker():
     """Read tracker, auto-migrating schema on first read after a clone or
@@ -963,6 +986,122 @@ def render_latest_outputs_row(container=None, key_prefix: str = "out") -> None:
         render_artifact_download(
             "📋 Promote report", pr_path, promote_to_xlsx,
             f"{key_prefix}_promote",
+        )
+
+
+def _vc_inspect_toggle(stage: str, label: str, default: bool = False) -> bool:
+    """Button-gated inspect flag for a vertical stage card.
+
+    Critic perf-fix: st.expander still RUNS its body every rerun (collapse
+    only hides output client-side). A session-state toggle lets the caller
+    `if`-skip the heavy body entirely when closed, so six stacked cards
+    don't re-parse thousands of rows on every one of the page's ~40
+    st.rerun() calls. Returns True when the body should render.
+    """
+    _key = f"_vc_inspect_{stage}"
+    _open = st.session_state.setdefault(_key, default)
+    _icon = "▾" if _open else "▸"
+    if st.button(f"{_icon} {label}", key=f"_vc_inspect_btn_{stage}",
+                 width="stretch"):
+        st.session_state[_key] = not _open
+        st.rerun()
+    return st.session_state[_key]
+
+
+def _vc_download_row(stage: str) -> None:
+    """Per-card 📄 JSON / 📊 xlsx downloads for a vertical stage card.
+
+    Reuses render_artifact_download (lazy two-click xlsx, no per-rerun
+    pandas cost). Maps each stage to its on-disk artifact(s) + builder.
+    Lazy-imports audit_pack with a reload so a stale Streamlit module
+    cache picks up new builders without a restart (same guard as
+    render_latest_outputs_row).
+    """
+    try:
+        import sys as _sys
+        import importlib as _il
+        _ad = str(ROOT / "automation")
+        if _ad not in _sys.path:
+            _sys.path.insert(0, _ad)
+        if "audit_pack" in _sys.modules:
+            _il.reload(_sys.modules["audit_pack"])
+        from audit_pack import (
+            gmail_scan_to_xlsx, scan_to_xlsx, scored_to_xlsx,
+            worklist_to_xlsx, promote_to_xlsx,
+        )
+    except Exception as e:
+        st.caption(f"Downloads unavailable: {e}")
+        return
+
+    def _latest(glob, exclude=()):
+        files = sorted(OUT_DIR.glob(glob), key=lambda p: p.stat().st_mtime,
+                       reverse=True)
+        for f in files:
+            if not any(x in f.name for x in exclude):
+                return f
+        return None
+
+    if stage == "inputs":
+        render_artifact_download(
+            "🛰 Scrape", _latest("scan_*.json",
+                                 exclude=("_scored", "scan_gmail_", "scan_checkpoint")),
+            scan_to_xlsx, "vc_scan")
+        render_artifact_download(
+            "📬 Gmail", _latest("scan_gmail_*.json"),
+            gmail_scan_to_xlsx, "vc_gmail")
+    elif stage == "worklist":
+        _wl = OUT_DIR / "worklist.json"
+        render_artifact_download(
+            "📋 Worklist pool", _wl if _wl.exists() else None,
+            worklist_to_xlsx, "vc_worklist")
+    elif stage == "triage" or stage == "scored":
+        _sc = OUT_DIR / "worklist_scored.json"
+        render_artifact_download(
+            "🤖 Scored + triage drops", _sc if _sc.exists() else None,
+            scored_to_xlsx, f"vc_scored_{stage}")
+    elif stage == "promote":
+        render_artifact_download(
+            "📤 Promote report", _latest("promote_report_*.json"),
+            promote_to_xlsx, "vc_promote")
+
+
+def _vc_audit_pack_download() -> None:
+    """Combined multi-sheet audit pack — the 'grab everything' export the
+    UX critic flagged as lost when downloads moved onto per-stage cards.
+    Restored here in the footer. Lazy two-click build."""
+    try:
+        import sys as _sys
+        _ad = str(ROOT / "automation")
+        if _ad not in _sys.path:
+            _sys.path.insert(0, _ad)
+        from audit_pack import build_audit_pack as _build_pack
+    except Exception as e:
+        st.caption(f"Audit pack unavailable: {e}")
+        return
+    _scan = sorted(
+        (p for p in OUT_DIR.glob("scan_*.json")
+         if "_scored" not in p.name and "scan_gmail_" not in p.name
+         and "scan_checkpoint" not in p.name),
+        key=lambda p: p.stat().st_mtime, reverse=True)
+    _stamp = "latest"
+    if _scan:
+        _parts = _scan[0].stem.split("_")
+        _stamp = _parts[1] if len(_parts) > 1 else "latest"
+    st.caption(
+        "One Excel workbook with every stage as a sheet: raw scrape, "
+        "title/geo drops, gmail, worklist, merges, stage-1 drops, scored, "
+        "promote skips."
+    )
+    if st.button("📦 Build full audit pack (xlsx)", key="_vc_build_pack"):
+        with st.spinner("Building multi-sheet xlsx…"):
+            st.session_state["_vc_pack_bytes"] = _build_pack(_stamp)
+    if st.session_state.get("_vc_pack_bytes"):
+        st.download_button(
+            "⬇ Download audit_pack.xlsx",
+            data=st.session_state["_vc_pack_bytes"],
+            file_name=f"audit_pack_{_stamp}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key="_vc_dl_pack",
         )
 
 
@@ -3366,11 +3505,12 @@ if page == "🏠 Dashboard":
         qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
         _dash_scrape_age_h = _web_scan_age_hours()
         _dash_scrape_fresh = _dash_scrape_age_h is not None and _dash_scrape_age_h < 24
+        _counts = _target_counts()
         with qa1:
-            _help_core = ("Scrape the 77 core targets (no expansion list). "
-                          "~15-30 min. Writes scan_<date>.json only; no LLM "
+            _help_core = (f"Scrape the {_counts['core']} core targets (no expansion "
+                          "list). ~15-30 min. Writes scan_<date>.json only; no LLM "
                           "call until you score. No API key needed.")
-            if st.button("🛰 Core scrape", width='stretch',
+            if st.button(f"🛰 Core scrape ({_counts['core']})", width='stretch',
                           disabled=bool(pipeline_running or any_work_active) or _dash_scrape_fresh,
                           help=_help_core, key="dash_qa_core"):
                 rec = scan_runner.start_run("pipeline", [
@@ -3381,6 +3521,23 @@ if page == "🏠 Dashboard":
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
                 st.toast("🛰 Core scrape launched!", icon="🚀")
+                st.rerun()
+            _help_full = (f"Scrape ALL {_counts['full']} targets — the {_counts['core']} "
+                          f"core companies plus the {_counts['expansion']}-company expansion "
+                          "list (mid banks, insurers, hedge funds, fintechs, regulators). "
+                          "~20-40 min. Writes scan_<date>.json only; no LLM call until "
+                          "you score. No API key needed.")
+            if st.button(f"🌐 Full scrape ({_counts['full']})", width='stretch',
+                          disabled=bool(pipeline_running or any_work_active) or _dash_scrape_fresh,
+                          help=_help_full, key="dash_qa_full"):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable,
+                    str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "full",
+                    "--skip-score", "--skip-promote",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full scrape"}
+                st.toast("🌐 Full scrape launched!", icon="🚀")
                 st.rerun()
             if _dash_scrape_fresh:
                 st.caption(f"🟢 Scan is {_dash_scrape_age_h:.0f}h old")
@@ -4611,6 +4768,22 @@ elif page == "🎯 Pipeline":
         "One flow; one click runs the whole chain. Each stage can also be run in isolation."
     )
 
+    # ---------- Layout toggle (strangler-fig) ----------
+    # Two layouts coexist behind this flag while the vertical 6-card design
+    # (docs/pipeline_redesign_mockup.md) reaches parity with the legacy
+    # tabbed layout. Both call the SAME tested render functions; only the
+    # arrangement differs. Default ON (vertical) once parity is verified;
+    # the classic tabs remain one toggle away as an escape hatch.
+    _vert_default = st.session_state.get("_pipe_vertical_layout", True)
+    with st.sidebar:
+        _PIPE_VERTICAL = st.toggle(
+            "🧱 Vertical pipeline layout",
+            value=_vert_default,
+            key="_pipe_vertical_layout",
+            help="New top-to-bottom stage-card flow with per-card downloads. "
+                 "Turn off to fall back to the classic tabbed layout.",
+        )
+
     # ---------- Banner state machine (priority ladder) ---------
     # The single primary CTA, computed every render from on-disk state per
     # `pipeline_redesign.md` § "Banner state machine". Pure function in
@@ -5370,16 +5543,14 @@ elif page == "🎯 Pipeline":
     # Live panel ABOVE tabs so active-job output is always visible
     _pipeline_live_panel()
 
-    # Two-sources panel: visualizes scrape + gmail → worklist funnel so the
-    # user understands at-a-glance where rows come from and what's dropped.
-    render_two_sources_panel()
+    # The four section bodies below are defined as functions so BOTH layouts
+    # (vertical cards / classic tabs) call the same tested wiring. They are
+    # only INVOKED by the dispatcher at the end of the page — defining them
+    # here has no side effects. Two-sources panel + tabs creation moved into
+    # the classic-layout branch of that dispatcher.
 
-    _tab_run, _tab_worklist, _tab_scored, _tab_history = st.tabs(
-        ["🚀 Run", "📋 Worklist", "🎯 Scored", "📜 History"]
-    )
-
-    # ================== TAB: Worklist ==================
-    with _tab_worklist:
+    # ================== CARD/TAB: Worklist ==================
+    def _render_worklist_card():
         # @st.fragment scopes the filter-widget reruns (search box, source/
         # sector multiselects, 'New since last score' checkbox) to this
         # fragment body. Without it, every widget click triggers a full-page
@@ -5516,8 +5687,8 @@ elif page == "🎯 Pipeline":
 
         _render_worklist_tab_body()
 
-    # ================== TAB: Run ==================
-    with _tab_run:
+    # ================== CARD/TAB: Run (launch + advanced + score-URL) ======
+    def _render_run_card():
         # --- Quick actions: the 3 things the user actually does ---
         # Buttons FIRST, config SECOND. Most visits to this page are
         # "launch something" or "check what's running". The detailed
@@ -5546,12 +5717,13 @@ elif page == "🎯 Pipeline":
         _scrape_age_h = _web_scan_age_hours()
         _scrape_fresh = _scrape_age_h is not None and _scrape_age_h < 24
 
+        _counts = _target_counts()
         qa1, qa2, qa3, qa4, qa5 = st.columns(5)
         with qa1:
-            if st.button("🛰 Refresh scrape", width='stretch',
+            if st.button(f"🛰 Refresh scrape ({_counts['core']})", width='stretch',
                          disabled=(not _can_run or _scrape_fresh),
-                         help="Re-scrape the 77 core targets. ~15-30 min, no "
-                              "API key needed. Auto-rebuilds the worklist "
+                         help=f"Re-scrape the {_counts['core']} core targets. ~15-30 min, "
+                              "no API key needed. Auto-rebuilds the worklist "
                               "when done so the scorer sees the new rows."):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
@@ -5559,6 +5731,19 @@ elif page == "🎯 Pipeline":
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Refresh scrape"}
                 st.toast("🛰 Scrape launched!", icon="🚀")
+                st.rerun()
+            if st.button(f"🌐 Full scrape ({_counts['full']})", width='stretch',
+                         disabled=(not _can_run or _scrape_fresh),
+                         help=f"Scrape ALL {_counts['full']} targets — {_counts['core']} core "
+                              f"plus the {_counts['expansion']}-company expansion list. "
+                              "~20-40 min, no API key needed. Auto-rebuilds the "
+                              "worklist when done so the scorer sees the new rows."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "full", "--skip-score", "--skip-promote",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full scrape"}
+                st.toast("🌐 Full scrape launched!", icon="🚀")
                 st.rerun()
             if _scrape_fresh:
                 st.caption(f"🟢 Scan is {_scrape_age_h:.0f}h old — fresh enough")
@@ -5719,11 +5904,11 @@ elif page == "🎯 Pipeline":
                     "Scrape strategy",
                     options=["full", "core", "ats", "linkedin", "expansion"],
                     format_func=lambda x: {
-                        "full":      "Full — all targets + expansion (20–40 min)",
-                        "core":      "Core 77 targets (15–30 min)",
+                        "full":      f"Full — all {_counts['full']} targets + expansion (20–40 min)",
+                        "core":      f"Core {_counts['core']} targets (15–30 min)",
                         "ats":       "Direct ATS only — Workday/Greenhouse (3–6 min)",
                         "linkedin":  "LinkedIn guest search only (15–25 min)",
-                        "expansion": "Expansion list only (5–10 min)",
+                        "expansion": f"Expansion list only — {_counts['expansion']} (5–10 min)",
                     }[x],
                 )
                 sector = st.text_input("Limit to sector (optional)", placeholder="Pension Funds")
@@ -5860,8 +6045,8 @@ elif page == "🎯 Pipeline":
                         with st.expander("Raw scorer output"):
                             st.code(json.dumps(fit, indent=2), language="json")
 
-    # ================== TAB: Scored ==================
-    with _tab_scored:
+    # ================== CARD/TAB: Scored (+ triage sub-tabs) ===============
+    def _render_scored_card():
         # Suppression admin (Phase 3C). Always rendered — independent of
         # whether a scored file exists, so a fresh-clone user can add
         # mutes pre-emptively.
@@ -6198,8 +6383,8 @@ elif page == "🎯 Pipeline":
                     by_co_df = by_co_df.sort_values("scraped", ascending=False)
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
 
-    # ================== TAB: History ==================
-    with _tab_history:
+    # ================== CARD/TAB: History ==================
+    def _render_history_card():
         pipelines = list_pipelines(50)
         if not pipelines:
             st.caption("No pipeline runs yet — launch one from the Run tab.")
@@ -6340,6 +6525,167 @@ elif page == "🎯 Pipeline":
                                 if _val:
                                     st.caption(f"📁 {_label}: `{_val}`")
                             st.json(_r, expanded=False)
+
+    # ======================================================================
+    # LAYOUT DISPATCHER
+    # ======================================================================
+    # Both layouts call the SAME four render functions defined above plus the
+    # shared panels. Only the arrangement differs. Critic fixes baked into the
+    # vertical path: fixed 6-card slots (no reflow), no card-level dimming
+    # (buttons disable + header chip instead), markdown+caption headlines
+    # (not st.metric), button-gated heavy inspect bodies (if-skip, not just
+    # expander), and a stage-jump rail to neutralize the scroll tax.
+
+    def _stage_chip(running: bool, state_ok: bool = True) -> str:
+        if running:
+            return "🟡 running"
+        return "🟢" if state_ok else "⚪"
+
+    if not _PIPE_VERTICAL:
+        # ---------------- Classic tabbed layout (escape hatch) ------------
+        render_two_sources_panel()
+        _tab_run, _tab_worklist, _tab_scored, _tab_history = st.tabs(
+            ["🚀 Run", "📋 Worklist", "🎯 Scored", "📜 History"]
+        )
+        with _tab_worklist:
+            _render_worklist_card()
+        with _tab_run:
+            _render_run_card()
+        with _tab_scored:
+            _render_scored_card()
+        with _tab_history:
+            _render_history_card()
+    else:
+        # ---------------- Vertical 6-stage card flow ----------------------
+        # Stage-jump rail: anchors so the daily-expert user keeps O(1)
+        # navigation instead of scrolling a tall page (UX-critic fix #1).
+        _rail = st.columns(6)
+        _rail_labels = [
+            ("① Inputs", "Two job-list sources"),
+            ("② Worklist", "Merged + deduped pool"),
+            ("③ Triage", "Rule-based filter"),
+            ("④ Scoring", "LLM fit verdicts"),
+            ("⑤ Promote", "Into the tracker"),
+            ("⑥ Tracker", "Active job list"),
+        ]
+        for _ci, (_lbl, _hlp) in enumerate(_rail_labels):
+            _rail[_ci].caption(_lbl)
+
+        _src_ok = bool(scan_f or _latest_gm)
+        _wl_ok = bool(_wstatus.get("worklist_exists"))
+        _scored_ok = bool(score_count)
+        # Derive here (these are locals of _render_run_card, not globals).
+        _ws_scored_exists = bool(_wstatus.get("worklist_scored_exists"))
+        _ws_total = _wstats.get("total", 0)
+
+        # ── ① INPUTS ──────────────────────────────────────────────────
+        with st.container(border=True):
+            st.markdown(
+                f"#### 🛰 ① Inputs · {_stage_chip(_scraper_active)}"
+            )
+            render_two_sources_panel()
+            render_gmail_trash_panel()
+            _vc_download_row("inputs")
+
+        # ── ② WORKLIST ────────────────────────────────────────────────
+        with st.container(border=True):
+            st.markdown(
+                f"#### 📋 ② Worklist · {_stage_chip(False, _wl_ok)} "
+                f"{_wstats.get('total', 0):,} rows"
+            )
+            st.caption(
+                f"🛰 {_wstats.get('scrape', 0):,} scrape · "
+                f"📬 {_wstats.get('gmail', 0):,} gmail · "
+                f"🔁 {_wstats.get('both', 0):,} both"
+            )
+            if _vc_inspect_toggle("worklist", "Inspect worklist rows"):
+                _render_worklist_card()
+            _vc_download_row("worklist")
+
+        # ── ③ TRIAGE ──────────────────────────────────────────────────
+        with st.container(border=True):
+            _tr_in = score_input or scrape_count or 0
+            _tr_pass = score_pass or 0
+            _tr_drop = (_tr_in - _tr_pass) if _tr_in else 0
+            _tr_ratio = f"{int(100*_tr_drop/_tr_in)}%" if _tr_in else "—"
+            st.markdown(
+                f"#### 🎯 ③ Triage · {_stage_chip(False, bool(_tr_pass))} "
+                f"{_tr_pass:,} passed · {_tr_drop:,} dropped ({_tr_ratio})"
+            )
+            st.caption(
+                "Rule-based keyword/level/negative-term filter + active "
+                "suppressions. Drop reasons and rescue candidates live in "
+                "the Scored card's 🚫 Dropped sub-tab."
+            )
+            _vc_download_row("triage")
+
+        # ── ④ SCORING ─────────────────────────────────────────────────
+        with st.container(border=True):
+            st.markdown(
+                f"#### 🤖 ④ Scoring · {_stage_chip(scorer_running, _scored_ok)} "
+                + (f"{score_count:,} scored" if score_count else "not scored yet")
+            )
+            if scorer_running:
+                st.caption("🟡 Scoring in progress — see the live panel above. "
+                           "Actions are disabled until it finishes.")
+            # Scored card hosts the suppression admin + triage sub-tabs +
+            # manual-selection promote. Heavy body is button-gated.
+            if _vc_inspect_toggle("scoring", "Inspect verdicts + manage suppressions",
+                                  default=True):
+                _render_scored_card()
+            _vc_download_row("scored")
+
+        # ── ⑤ AUTO-PROMOTE ────────────────────────────────────────────
+        with st.container(border=True):
+            st.markdown(
+                f"#### 📤 ⑤ Auto-promote · "
+                f"{_stage_chip(False, _ws_scored_exists)} "
+                + (f"{actionable_n} actionable at fit≥7" if actionable_n
+                   else "nothing promotable yet")
+            )
+            st.caption(
+                "Launch + advanced config + score-a-single-URL live here. "
+                "Promote reads worklist_scored.json; preview before commit "
+                "in the Advanced expander."
+            )
+            if _vc_inspect_toggle("promote", "Launch / advanced / score-a-URL",
+                                  default=True):
+                _render_run_card()
+            _vc_download_row("promote")
+
+        # ── ⑥ TRACKER ─────────────────────────────────────────────────
+        with st.container(border=True):
+            _arch = sum(1 for j in jobs if j.get("archived"))
+            st.markdown(
+                f"#### 🗂 ⑥ Tracker · {len(jobs) - _arch} active · "
+                f"{tracker_found} to review"
+            )
+            st.caption(
+                f"{tracker_found} Found/Watch · {tracker_applied} applied"
+                + (f" · {_arch} archived" if _arch else "")
+            )
+            _tc1, _tc2, _tc3 = st.columns(3)
+            if _tc1.button("→ Jobs Kanban", width="stretch", key="_vc_go_kanban"):
+                st.session_state["_applyagent_nav"] = "📋 Roles"
+                st.session_state["_nav_sub_📋 Roles"] = "Tracker"
+                st.rerun()
+            if _tc2.button("→ Review Queue", width="stretch", key="_vc_go_review"):
+                st.session_state["_applyagent_nav"] = "🏠 Today"
+                st.session_state["_nav_sub_🏠 Today"] = "Review"
+                st.rerun()
+            if _tc3.button("→ Today's brief", width="stretch", key="_vc_go_today"):
+                st.session_state["_applyagent_nav"] = "🏠 Today"
+                st.session_state["_nav_sub_🏠 Today"] = "Dashboard"
+                st.rerun()
+
+        # ── Footer: full audit pack + history (re-homed, not dropped) ──
+        st.markdown("---")
+        with st.expander("📦 Download full audit pack (all stages, one xlsx)",
+                         expanded=False):
+            _vc_audit_pack_download()
+        with st.expander("📜 Run history (pipelines · logs · cost)",
+                         expanded=False):
+            _render_history_card()
 
 
 # ============================================================================
@@ -6618,6 +6964,86 @@ elif page == "📋 Jobs Kanban":
         hide_index=True, width='stretch', height=540,
         column_config=_col_config,
     )
+
+    # ── Bulk clear (hand-pick) ───────────────────────────────────────────
+    # "Clear old roles, commit to new ones": tick the rows you're done with
+    # and archive them in one atomic write. Archive (not delete) is reversible
+    # and keeps the URL block so a cleared role won't re-promote on the next
+    # scan. Operates on the CURRENTLY FILTERED view, so filter first to narrow
+    # the candidate set (e.g. Status=Found) then pick within it.
+    with st.expander("🧹 Bulk clear roles (archive selected)", expanded=False):
+        if not len(view):
+            st.caption("No roles in the current view to clear.")
+        else:
+            st.caption(
+                f"Tick roles to archive, then confirm. Archiving hides them "
+                f"from the active Kanban / Review Queue / Today, and blocks "
+                f"re-promotion on future scans — but is reversible per-row via "
+                f"Inspect → ↩ Restore. Acting on the {len(view)} role(s) "
+                f"currently shown" + (" (filtered)." if _filter_active else ".")
+            )
+            _bulk_rows = [
+                {
+                    "_pick": False,
+                    "id": _bid,
+                    "company": _label_co,
+                    "title": _label_ti,
+                    "status": _label_st,
+                }
+                for _bid, _label_co, _label_ti, _label_st in zip(
+                    view["id"].tolist(),
+                    view["company"].tolist() if "company" in view.columns else [""] * len(view),
+                    view["title"].tolist() if "title" in view.columns else [""] * len(view),
+                    view["status"].tolist() if "status" in view.columns else [""] * len(view),
+                )
+            ]
+            _bulk_df = pd.DataFrame(_bulk_rows)
+            _edited = st.data_editor(
+                _bulk_df,
+                hide_index=True,
+                width='stretch',
+                height=min(420, 80 + 36 * len(_bulk_rows)),
+                column_config={
+                    "_pick": st.column_config.CheckboxColumn("Clear?", width="small"),
+                    "id": st.column_config.TextColumn("ID", width="small", disabled=True),
+                    "company": st.column_config.TextColumn("Company", disabled=True),
+                    "title": st.column_config.TextColumn("Title", disabled=True),
+                    "status": st.column_config.TextColumn("Status", width="small", disabled=True),
+                },
+                key="kanban_bulk_clear_editor",
+            )
+            _picked_ids = _edited.loc[_edited["_pick"] == True, "id"].tolist()  # noqa: E712
+            _bc1, _bc2 = st.columns([1, 3])
+            with _bc1:
+                _bulk_go = st.button(
+                    f"🧹 Archive {len(_picked_ids)} selected",
+                    type="primary",
+                    width='stretch',
+                    disabled=not _picked_ids,
+                    key="kanban_bulk_clear_go",
+                )
+            with _bc2:
+                if _picked_ids:
+                    st.caption(
+                        "Reversible — restore any row later from Inspect → ↩ Restore."
+                    )
+                else:
+                    st.caption("Tick at least one role to enable.")
+            if _bulk_go and _picked_ids:
+                from safe_json import mutate_json as _mj_bulk  # noqa: WPS433
+                from automation import tracker_ops as _tops_bulk  # noqa: WPS433
+                try:
+                    _mj_bulk(
+                        TRACKER,
+                        lambda t: _tops_bulk.archive_many(
+                            t, _picked_ids, "manual_bulk_kanban"),
+                        default={"jobs": [], "meta": {}},
+                    )
+                    load_tracker.clear()
+                    st.toast(f"🧹 Archived {len(_picked_ids)} role(s)", icon="🚫")
+                except Exception as _bexc:  # noqa: BLE001
+                    st.error(f"Bulk archive failed: {_bexc}")
+                st.rerun()
 
     st.markdown("---")
     st.subheader("Inspect / edit")

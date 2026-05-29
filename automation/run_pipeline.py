@@ -20,7 +20,7 @@ Usage:
 
 Scrape modes:
     full        scrape all targets incl. expansion (default, 20-40 min)
-    core        core 77 targets only (15-30 min)
+    core        core targets only, no expansion list (15-30 min)
     ats         Workday+Greenhouse+Lever only (3-6 min, no LinkedIn)
     linkedin    LinkedIn guest search only (15-25 min)
     expansion   expansion list only (5-10 min)
