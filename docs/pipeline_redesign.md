@@ -425,7 +425,7 @@ Every verb supports `--json` so future UI work in Phase 3 (the SUPPRESSIONS sect
 |---|---|---|
 | `ui/pipeline_state.py` (new) | +~150 | Pure-function state derivation + `compute_next_action`; no Streamlit imports; unit-testable |
 | `ui/app.py` | -~600 / +~400 | Replace Pipeline-page tabs with 6 stage cards; remove dead "Latest outputs" panel (each card carries its own downloads); banner widget at top |
-| `ui/_tests/test_pipeline_state.py` (new) | +~120 | Priority-ladder test cases from the state-machine review (≥15 scenarios) |
+| `automation/_tests/test_pipeline_state.py` (new) | +~120 | Priority-ladder test cases from the state-machine review (≥15 scenarios). *(Landed in `automation/_tests/`, beside the modules under test; the UI-card render tests live in `tests/test_pipeline_vertical_layout.py`.)* |
 | `automation/audit_pack.py` | +~30 | Add `triage_to_xlsx(worklist_scored.json)` |
 | Review Queue race fix | +~20 / -~10 | Route `_rq_apply_action` through `safe_json.mutate_json` |
 
@@ -447,9 +447,9 @@ Every verb supports `--json` so future UI work in Phase 3 (the SUPPRESSIONS sect
 | `ui/app.py` (Tracker / Kanban) | +~70 | Single archive entry point: per-row `🚫 Archive` button on Review Queue card and Kanban row menu only. Archive checkbox in Mute modal stays (coupled, different intent). `[⋯ More]` keeps mute-sector / mute-company only. `[Restore]` becomes context-aware: if archived row's reason references an active suppression, prompt "Lift sector mute too?" with checkbox |
 | `ui/pipeline_state.py` | +~80 | Headline counts derive from current `worklist_scored.json` post-suppression (NOT `last_run_state.added`). New banner states: `SUPPRESS-AWARE-EMPTY`, `SUPPRESS-EXPIRED` (7-day window post-lapse, then demotes to chip). Coverage stats include unsectored-row count |
 | `automation/audit_pack.py` | +~30 | `triage_to_xlsx` adds `Suppressed` sub-sheet AND `suppressed_by` column on the main Triage sheet; `promote_to_xlsx` adds per-row `selection_mode` column |
-| `ui/_tests/test_suppressions.py` (new) | +~150 | TTL lazy expiry; canonical-key matching (RBC vs Royal Bank of Canada vs RBC Capital Markets); sector registry validation; unsectored-row pass-through; lock contention with promote; mute+archive partial-failure recovery via `suppressions_pending_archives.jsonl`; snapshot-at-run-start behavior |
-| `ui/_tests/test_tracker_ops.py` (new) | +~100 | `archive` / `restore` / `is_active` / followup-gate semantics; migration idempotency; archived-row exclusion from cold-lane denominators |
-| `ui/_tests/test_pipeline_state.py` | +~60 | Two new banner states + 7-day SUPPRESS-EXPIRED window + post-suppression headline counts |
+| `automation/_tests/test_suppressions.py` (new) | +~150 | TTL lazy expiry; canonical-key matching (RBC vs Royal Bank of Canada vs RBC Capital Markets); sector registry validation; unsectored-row pass-through; lock contention with promote; mute+archive partial-failure recovery via `suppressions_pending_archives.jsonl`; snapshot-at-run-start behavior |
+| `automation/_tests/test_tracker_ops.py` (new) | +~100 | `archive` / `restore` / `is_active` / followup-gate semantics; migration idempotency; archived-row exclusion from cold-lane denominators |
+| `automation/_tests/test_pipeline_state.py` | +~60 | Two new banner states + 7-day SUPPRESS-EXPIRED window + post-suppression headline counts |
 | `.gitignore` | +~5 | Add `data/suppressions.json`, `data/suppressions_events.jsonl`, `data/suppressions_pending_archives.jsonl`, `data/suppressions_history.json`. Reasons can be candid; never sync across machines |
 
 v3 total: ~600 line delta. v3.1.1 (post-review) adds ~1,200 on top. CLI changes: `--only-urls FILE` on `auto_promote.py`. Disk schema changes:

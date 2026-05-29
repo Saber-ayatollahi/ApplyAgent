@@ -6464,6 +6464,7 @@ elif page == "🎯 Pipeline":
                 "🎯 Scored candidates",
                 "🚫 Dropped (rule-triage)",
                 "🏢 By company",
+                "🏷 By sector",
             ])
 
             # --- Sub-tab 1: scored candidates -------------------------------
@@ -6827,6 +6828,43 @@ elif page == "🎯 Pipeline":
                 if "scraped" in by_co_df.columns:
                     by_co_df = by_co_df.sort_values("scraped", ascending=False)
                 st.dataframe(by_co_df, hide_index=True, width='stretch', height=500)
+
+            # --- Sub-tab 4: by sector (mockup State 7) ----------------------
+            with triage_tabs[3]:
+                st.caption("Scored roles per sector: count, mean fit, and "
+                           "actionable (apply_now + tailor_and_apply).")
+                from collections import Counter as _SecCounter  # noqa: WPS433
+                _sec_rows: dict[str, dict] = {}
+                for r in results:
+                    f = r.get("fit") or {}
+                    sec = r.get("sector") or "(unknown)"
+                    slot = _sec_rows.setdefault(
+                        sec, {"sector": sec, "scored": 0, "_fit_sum": 0,
+                              "_fit_n": 0, "actionable": 0})
+                    slot["scored"] += 1
+                    try:
+                        _fs = float(f.get("fit_score") or 0)
+                        if _fs:
+                            slot["_fit_sum"] += _fs
+                            slot["_fit_n"] += 1
+                    except (TypeError, ValueError):
+                        pass
+                    if f.get("fit_verdict") in ("apply_now", "tailor_and_apply"):
+                        slot["actionable"] += 1
+                by_sec = []
+                for slot in _sec_rows.values():
+                    _n = slot.pop("_fit_n")
+                    _s = slot.pop("_fit_sum")
+                    slot["mean_fit"] = f"{(_s / _n):.0f}" if _n else "—"
+                    by_sec.append(slot)
+                if by_sec:
+                    by_sec_df = pd.DataFrame(by_sec)[
+                        ["sector", "scored", "mean_fit", "actionable"]
+                    ].sort_values("scored", ascending=False)
+                    st.dataframe(by_sec_df, hide_index=True, width='stretch',
+                                 height=500)
+                else:
+                    st.caption("No scored rows to group.")
 
     # ================== CARD/TAB: History ==================
     def _render_history_card():
