@@ -1,0 +1,43 @@
+{
+  "pipeline_id": "20260529_140856",
+  "started_at": "2026-05-29T14:08:56",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": true,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 2,
+    "score_dry_run": false,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 1433,
+      "scrape_only": 1342,
+      "gmail_only": 75,
+      "both": 16,
+      "new_since_last_score": 921
+    },
+    "score": {
+      "state": "skipped"
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260529_140856_suppressions.json",
+  "finished_at": "2026-05-29T14:08:56"
+}

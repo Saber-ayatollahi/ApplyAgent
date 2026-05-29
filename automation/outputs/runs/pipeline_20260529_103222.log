@@ -1,0 +1,22 @@
+# pipeline
+# cmd: C:\Program Files\Python313\python.exe C:\Dev\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-score
+# started: 2026-05-29T10:32:22.122570
+
+Traceback (most recent call last):
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 118, in _snapshot_suppressions
+    from automation import suppressions as _supp  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'automation'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 380, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 197, in main
+    snapshot_path = _snapshot_suppressions(pipeline_id)
+  File "C:\Dev\ApplyAgent\automation\run_pipeline.py", line 120, in _snapshot_suppressions
+    from . import suppressions as _supp  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: attempted relative import with no known parent package

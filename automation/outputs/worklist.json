@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "scan_date": "2026-05-26",
-  "rebuilt_at": "2026-05-26T22:39:05",
+  "scan_date": "2026-05-29",
+  "rebuilt_at": "2026-05-29T14:08:56",
   "source": "worklist",
   "sources": {
     "scrape": "scan_20260525.json",
@@ -24,7 +24,7 @@
     "gmail": 75,
     "both": 16,
     "total": 1433,
-    "new_since_last_score": 1209,
+    "new_since_last_score": 921,
     "gmail_geo_dropped": 43
   },
   "dedup_stats": {
@@ -3447,7 +3447,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Fixed Income Settlements Technology",
@@ -3462,7 +3462,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Regulatory Risk and Governance",
@@ -3477,7 +3477,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Manager, CNAPP Product",
@@ -3597,7 +3597,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AI Solutions Lead, Strategic Initiatives, Automation, Efficiency",
@@ -3612,7 +3612,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Mortgage Specialist - Kitchener, Cambridge, Waterloo",
@@ -3642,7 +3642,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior ServiceNow Engineer",
@@ -3672,7 +3672,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Investor Education Instructor, Scotia iTRADE - Toronto, ON (12-month contract)",
@@ -3702,7 +3702,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Compliance Officer, GBM&T Compliance Canada Program",
@@ -3732,7 +3732,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Commercial Card Solutions Head, GTB - Toronto",
@@ -3867,7 +3867,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director & Global Head of HR Analytics and Data Office",
@@ -4032,7 +4032,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Benefits - Global HR (Contract)",
@@ -4152,7 +4152,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Compliance Officer, Asset Management Compliance",
@@ -4182,7 +4182,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Technical Product Manager (Capital Markets Technology - Sales and Trading)",
@@ -4227,7 +4227,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Product Strategy",
@@ -4242,7 +4242,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Client Relationship Management (Salesforce.com CRM)",
@@ -4306,7 +4306,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Liquidity Risk Measurement",
@@ -4386,7 +4386,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Funds Transfer Pricing",
@@ -4418,7 +4418,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Portfolio Manager",
@@ -4498,7 +4498,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Director, Product Control",
@@ -4578,7 +4578,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-24",
       "in_pool_since": "2026-05-24",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Financial Planning Analyst",
@@ -4714,7 +4714,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Regulatory & Policy Governance - TD Asset Management",
@@ -4759,7 +4759,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Solution Specialist",
@@ -4909,7 +4909,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AML Financial Crime Risk Investigative Analyst (4965)",
@@ -4924,7 +4924,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Audit Manager II, Financial Crimes Fraud and Insider Risk Audit (968)",
@@ -4954,7 +4954,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Audit Manager I, Treasury Audit (1016)",
@@ -5239,7 +5239,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Bus Mgmt Analyst, TD Auto Finance",
@@ -5254,7 +5254,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Application Security Automation Engineer",
@@ -5284,7 +5284,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Operational Risk Programs (12-month contract)",
@@ -5509,7 +5509,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-25",
       "in_pool_since": "2026-04-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Credit Risk Model Validation",
@@ -5524,7 +5524,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-25",
       "in_pool_since": "2026-04-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Credit Risk Model Validation",
@@ -5554,7 +5554,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "IT Development and Emerging Technology Manager",
@@ -5599,7 +5599,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Operational Resilience Manager",
@@ -5659,7 +5659,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Quantitative Researcher, Alpha Research Team",
@@ -5674,7 +5674,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Credit Cards, Can P&C Finance",
@@ -5689,7 +5689,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Quality Assurance Test Lead (E2E)",
@@ -5959,7 +5959,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-25",
       "in_pool_since": "2026-04-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Managing Director - Chief Compliance Officer, Capital Markets Canada",
@@ -5974,7 +5974,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Director, Commercial Banking (Corporate Finance Group)",
@@ -6019,7 +6019,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Group Product Manager, Home Financing",
@@ -6064,7 +6064,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Lead - Compliance, Audit & Risk (ARC)",
@@ -6079,7 +6079,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Manager, Home Financing",
@@ -6246,7 +6246,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Vice President, Canadian Business Banking",
@@ -6310,7 +6310,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Structural Market Risk",
@@ -6342,7 +6342,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Canadian Provisions and Analytics",
@@ -6358,7 +6358,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Real Estate Secured Lending Acquisition",
@@ -6390,7 +6390,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Loan & Appraisal Review",
@@ -6438,7 +6438,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Credit Risk Strategy Oversight",
@@ -6454,7 +6454,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Investment Associate, Private Wealth",
@@ -6486,7 +6486,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Capital Markets Model Validation",
@@ -6502,7 +6502,7 @@
       "newly_seen": false,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Investment Counsellor, BMO Private Wealth",
@@ -6959,7 +6959,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Advanced Analytics",
@@ -7007,7 +7007,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Governance Specialist",
@@ -7231,7 +7231,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-04",
       "in_pool_since": "2026-05-04",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Support Specialist",
@@ -7503,7 +7503,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-04",
       "in_pool_since": "2026-05-04",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Salesforce Developer",
@@ -7631,7 +7631,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Private Market Portfolio Operations",
@@ -7711,7 +7711,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Trading & AI Enablement",
@@ -7871,7 +7871,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate, Portfolio Construction and Risk",
@@ -7887,7 +7887,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Investment Risk",
@@ -7903,7 +7903,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate/Analyst, Portfolio Construction",
@@ -7935,7 +7935,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Asset Management (Bilingual)",
@@ -8140,7 +8140,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-10",
       "in_pool_since": "2026-05-10",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Managed Accounts",
@@ -8315,7 +8315,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Services, Full Time Analyst, Toronto - CA, 2026",
@@ -8763,7 +8763,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Lead (Low Latency Trading Application) - Senior Vice President",
@@ -8904,7 +8904,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-25",
       "in_pool_since": "2026-04-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Compliance Risk Testing Analyst – Assistant Vice President",
@@ -9009,7 +9009,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-25",
       "in_pool_since": "2026-04-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "VP - Head of Audit Technology",
@@ -9439,7 +9439,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Assistant Vice President, Credit Ratings -  Project Finance, Infrastructure & Sports Finance",
@@ -9455,7 +9455,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Global Sovereign Ratings, Public Finance – Vice President",
@@ -9471,7 +9471,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Sales Operations Associate",
@@ -9782,7 +9782,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director DevOps and SRE",
@@ -9812,7 +9812,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Project Manager, Treasury Systems and Transformation",
@@ -9827,7 +9827,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP Institutional Sales",
@@ -9857,7 +9857,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Consultant",
@@ -9952,7 +9952,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Financial Analyst, Bank External Reporting & Capital Management",
@@ -10000,7 +10000,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Mortgage Specialist",
@@ -10048,7 +10048,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Office of the CEO",
@@ -10304,7 +10304,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP, Sales Enablement",
@@ -10336,7 +10336,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Data Scientist - GenAI",
@@ -10400,7 +10400,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Operation and Reporting, Global Hedging – Variable and Indexed-Linked Products",
@@ -10416,7 +10416,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Portfolio Management",
@@ -10543,7 +10543,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Engineering Manager",
@@ -10588,7 +10588,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Future Opportunities",
@@ -10652,7 +10652,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Plan Specialist (ME)",
@@ -10700,7 +10700,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Corporate Risk Insurance",
@@ -10716,7 +10716,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst – Data Governance",
@@ -10764,7 +10764,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-09",
       "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Container Service Delivery Co-Ordinator (OpenShift / Kubernetes)",
@@ -10796,7 +10796,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Security Platform Developer, Security Automation (Python, Splunk SOAR)",
@@ -10908,7 +10908,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Financial Services Consultant- Insurance",
@@ -11233,7 +11233,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Software Developer Specialist - Security Product",
@@ -11568,7 +11568,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Copywriter – English Content & Thought Leadership",
@@ -11691,7 +11691,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "UKG WFM Lead",
@@ -11721,7 +11721,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Program Management Ascend for Advise (SC) (2-year Fixed Term), Deloitte GCS",
@@ -11736,7 +11736,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Consultant/Manager, Financial Crime Analytics",
@@ -11751,7 +11751,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Contingent Labor Manager, Deloitte Global People",
@@ -11781,7 +11781,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AI Solutions Architect",
@@ -11871,7 +11871,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Directeur(trice) principal(e) - Chefs de livraison et architectes de solutions, Microsoft Dynamics",
@@ -11946,7 +11946,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Dynamics 365 Finance & Operations",
@@ -11961,7 +11961,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-24",
       "in_pool_since": "2026-05-24",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Dayforce Integration Data Management - Senior Consultant",
@@ -12186,7 +12186,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Consultant, Credit Risk Models - Financial Engineering & Modeling",
@@ -12201,7 +12201,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Actuarial Analyst/Consultant/Senior Consultant - Financial Engineering & Modeling",
@@ -12216,7 +12216,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Financial Planning and Management, Deloitte Global Finance",
@@ -12231,7 +12231,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Sr Data Scientist / Power Systems Analyst",
@@ -12667,7 +12667,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory",
@@ -12683,7 +12683,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Lead Finance Controller (SM), (2-year Fixed Term), Deloitte Global Consulting Services",
@@ -12699,7 +12699,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-11",
       "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "GenAI & Python Specialist - Operate",
@@ -12779,7 +12779,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Financial Analyst",
@@ -12795,7 +12795,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Portfolio Management, Global Deloitte Technology",
@@ -12811,7 +12811,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Portfolio Management",
@@ -12907,7 +12907,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-04",
       "in_pool_since": "2026-05-04",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, TMT, SR&ED",
@@ -13002,7 +13002,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Business Transformation - Senior Manager - Financial Services - Corporate, Commercial & SME Banking",
@@ -13017,7 +13017,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Power Platform Developer",
@@ -13129,7 +13129,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Consultant, Human Resources – Mergers & Acquisitions",
@@ -13161,7 +13161,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Associate, Restructuring & Turnaround - Advisory",
@@ -13225,7 +13225,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Key Account Specialist, Infrastructure, Government & Healthcare",
@@ -13321,7 +13321,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Consultant, Integration & Separation Services, Operations - Mergers & Acquisitions",
@@ -13385,7 +13385,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Change and Adoption",
@@ -13417,7 +13417,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Consultant/ Manager - Workday Recruiting Lead",
@@ -13817,7 +13817,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Digital Operations, Senior Associate",
@@ -13945,7 +13945,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Performance & Restructuring Senior Associate",
@@ -14025,7 +14025,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Payments and Open Banking, Consulting",
@@ -14089,7 +14089,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-09",
       "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Finance Transformation, Enterprise Performance Management, Senior Associate",
@@ -14105,7 +14105,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Finance and Accounting Managed Services, Senior Associate",
@@ -14137,7 +14137,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "ERP Risk, Controls & Security Solutions Senior Associate",
@@ -14153,7 +14153,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Financial Crimes Technology Manager",
@@ -14249,7 +14249,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Health & Benefits Actuarial Associate",
@@ -14297,7 +14297,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Canada Alternatives Investment Leader",
@@ -14329,7 +14329,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Leader canadien de l'investissement alternatif",
@@ -14761,7 +14761,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Oliver Wyman- Private Capital/Industrials & Business Services Engagement Manager / Associate / Senior Consultant",
@@ -15033,7 +15033,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Legal and Recoveries",
@@ -15081,7 +15081,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-29",
       "in_pool_since": "2026-04-29",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director Credit Decisioning & Risk Strategies",
@@ -15097,7 +15097,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Treasury Analyst",
@@ -15113,7 +15113,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Product Manager",
@@ -15273,7 +15273,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Tangerine FinCrime - Tangerine",
@@ -15369,7 +15369,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Collections Strategy",
@@ -15385,7 +15385,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Sr. Analyst, Vendor Performance",
@@ -15417,7 +15417,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager BI & Analytics",
@@ -15433,7 +15433,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Pricing Programs",
@@ -15465,7 +15465,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Risk Analyst, Operational Resilience",
@@ -15481,7 +15481,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-16",
       "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Third Party Risk",
@@ -15497,7 +15497,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Supervisor, Dealer Rebates",
@@ -15577,7 +15577,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Workday Operations",
@@ -15625,7 +15625,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Vice President, Anti‑Money Laundering",
@@ -15705,7 +15705,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-17",
       "in_pool_since": "2026-05-17",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Scientist, Partnerships",
@@ -15737,7 +15737,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-11",
       "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Specialist, Accounts Payable",
@@ -15833,7 +15833,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Actuarial Associate, Fin Planning & Analysis",
@@ -15849,7 +15849,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-25",
       "in_pool_since": "2026-03-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Underwriter",
@@ -15897,7 +15897,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-30",
       "in_pool_since": "2026-03-30",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Governance Manager",
@@ -15913,7 +15913,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP & Actuary, Pricing",
@@ -15929,7 +15929,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-27",
       "in_pool_since": "2026-03-27",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Sales Director, WFG ON",
@@ -15993,7 +15993,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Analyst",
@@ -16025,7 +16025,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Business Quality Review Coordinator",
@@ -16265,7 +16265,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-28",
       "in_pool_since": "2026-04-28",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Program Manager",
@@ -16329,7 +16329,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Customer Research & Insights Specialist",
@@ -16361,7 +16361,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP, Data Science",
@@ -16425,7 +16425,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Operational Resilience – Technology and Data Resilience",
@@ -16457,7 +16457,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Group Portfolio Lead",
@@ -16473,7 +16473,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP, Cyber and Data Risk",
@@ -16489,7 +16489,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Actuarial Analyst, Economic Capital",
@@ -16505,7 +16505,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP, Casualty Corporate Risk",
@@ -16697,7 +16697,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Assistant à la souscription bilingue",
@@ -16857,7 +16857,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Agile Team Lead",
@@ -16921,7 +16921,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AVP, FP&A Enablement",
@@ -16953,7 +16953,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Client Support Representative (12 month contract)",
@@ -16985,7 +16985,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Dealer Services Representative - Temporary Full-Time (12 months)",
@@ -17065,7 +17065,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Corporate Actuarial",
@@ -17081,7 +17081,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Sales Specialist",
@@ -17113,7 +17113,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Group Sales & Service Representative- Group Benefits",
@@ -17161,7 +17161,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Systems Analyst",
@@ -17257,7 +17257,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Actuarial Consultant - Auto Pricing",
@@ -17273,7 +17273,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Claims Representative II, Bodily Injury (commercial & Farm- Bilingual Eng/ French)",
@@ -17369,7 +17369,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-17",
       "in_pool_since": "2026-04-17",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "(*) Senior Actuarial Consultant / Actuarial Consultant - Personal Auto",
@@ -17385,7 +17385,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-28",
       "in_pool_since": "2026-04-28",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Actuarial Consultant / Senior Actuarial Consultant - Commercial Auto Pricing",
@@ -17401,7 +17401,7 @@
       "newly_seen": true,
       "first_seen": "2026-02-20",
       "in_pool_since": "2026-02-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Actuarial Consultant - Corporate Actuarial - Forecasting",
@@ -17417,7 +17417,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-11",
       "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Underwriter, Specialty Risk",
@@ -17529,7 +17529,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Claims Examiner",
@@ -17577,7 +17577,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Actuarial Associate",
@@ -17593,7 +17593,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-11",
       "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Actuarial Associate - Global Actuarial Consulting Group",
@@ -17609,7 +17609,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Group Underwriter, Group Reinsurance",
@@ -17641,7 +17641,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Branch Operations Manager, Reinsurance",
@@ -17673,7 +17673,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-16",
       "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Pricing Actuary",
@@ -17689,7 +17689,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "P&C Insurance Audit Manager",
@@ -17785,7 +17785,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-09",
       "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Pricing Actuarial Analyst",
@@ -17801,7 +17801,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Fixed Income Research and Trading",
@@ -17817,7 +17817,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-10",
       "in_pool_since": "2026-05-10",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Quality Analyst",
@@ -17897,7 +17897,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Development Operations Engineer",
@@ -17929,7 +17929,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Commercial Mortgage Underwriter",
@@ -17961,7 +17961,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Business Development Manager",
@@ -18073,7 +18073,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Mortgage Underwriter",
@@ -18681,7 +18681,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Analyst (IT)",
@@ -18729,7 +18729,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Contrôleur(-euse)",
@@ -18777,7 +18777,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Financial Reporting",
@@ -18793,7 +18793,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Strategy & Enablement Manager, Wealth",
@@ -18809,7 +18809,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Product Manager, Wealth Ecosystem",
@@ -18857,7 +18857,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-04",
       "in_pool_since": "2026-03-04",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Client Portfolio Manager",
@@ -18873,7 +18873,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate, Portfolio & Market Intelligence",
@@ -18905,7 +18905,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-02",
       "in_pool_since": "2026-03-02",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Vice President, Currency Risk and Hedging, Capital Markets",
@@ -18921,7 +18921,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-30",
       "in_pool_since": "2026-04-30",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Intermediate Analyst, Investor Operations, Private Equity",
@@ -18937,7 +18937,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-05",
       "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Financial Analyst, Funds",
@@ -18953,7 +18953,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Vice-President & Product Specialist (Wholesaler)",
@@ -19001,7 +19001,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Analyst, Change Consulting and Delivery",
@@ -19033,7 +19033,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-25",
       "in_pool_since": "2026-03-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Supervisor, Financial Reporting",
@@ -19049,7 +19049,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Business Analytics",
@@ -19065,7 +19065,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Service Governance",
@@ -19097,7 +19097,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Platform Operations Manager, Treasury Technology",
@@ -19145,7 +19145,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Trading Market Risk Manager - Fixed Income",
@@ -19161,7 +19161,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
@@ -19177,7 +19177,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Data Governance Consultant",
@@ -19193,7 +19193,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Sr. Financial Analyst, Product Control",
@@ -19337,7 +19337,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Operations Officer",
@@ -19385,7 +19385,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Financial Analyst, Private Equity Financial Control",
@@ -19417,7 +19417,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Specialist, Operations II",
@@ -19481,7 +19481,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate Director - QTS Fixed Income Production Services Support (Capital Markets)",
@@ -19529,7 +19529,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-16",
       "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Vice President, Fund Accounting (Hedge Funds)",
@@ -19801,7 +19801,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Investor Relations - Private Asset",
@@ -19945,7 +19945,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Supervisor, Fund Accounting - Private Assets (Traditional PA)",
@@ -19993,7 +19993,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data & Reporting Analyst",
@@ -20281,7 +20281,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Associate, Fund Accounting, Private Equity",
@@ -20329,7 +20329,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Associate, Sales Analytics and Controls",
@@ -20457,7 +20457,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Model Validation and Governance",
@@ -20473,7 +20473,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Operational Risk Analyst",
@@ -20489,7 +20489,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Functional Architect – High-Performance Trading Systems",
@@ -20521,7 +20521,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyste principale ou analyste principal en validation des modèles et en gouvernance",
@@ -20537,7 +20537,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-08",
       "in_pool_since": "2026-05-08",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyste principal(e), Gestion quantitative du risque",
@@ -20553,7 +20553,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Analyst - Post-Trade Operations",
@@ -20633,7 +20633,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Cash Management",
@@ -20697,7 +20697,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Analyst",
@@ -20777,7 +20777,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Service Delivery Manager",
@@ -21049,7 +21049,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Systems Operations Specialist",
@@ -21177,7 +21177,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Trading Consultant",
@@ -21240,7 +21240,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Project and Planning Specialist (Ottawa (Downtown), ON, CA)",
@@ -21255,7 +21255,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Cloud Security Architect (Ottawa (Downtown), ON, CA)",
@@ -21315,7 +21315,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "QA Systems testing Analyst",
@@ -21435,7 +21435,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Accounting Operations Specialist (Ottawa (Downtown), ON, CA)",
@@ -21764,7 +21764,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Institutional Credit Risk Analyst",
@@ -21779,7 +21779,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "analyste du risque de crédit institutionnel",
@@ -21794,7 +21794,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Specialist, Financial Solutions",
@@ -21810,7 +21810,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Bilingual Senior Specialist, Multi-Unit Underwriting (ACLP)",
@@ -22098,7 +22098,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-30",
       "in_pool_since": "2026-03-30",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Business Systems Analyst (12 month contract)",
@@ -22226,7 +22226,7 @@
       "newly_seen": true,
       "first_seen": "2026-03-27",
       "in_pool_since": "2026-03-27",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Project Manager",
@@ -22274,7 +22274,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Budget Manager",
@@ -22338,7 +22338,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-22",
       "in_pool_since": "2026-05-22",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Legal Operations",
@@ -22402,7 +22402,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Accounting Policy",
@@ -22482,7 +22482,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, Treasury",
@@ -22498,7 +22498,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Compliance Manager (Questbank)",
@@ -22530,7 +22530,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Analyst, Credit Risk",
@@ -22546,7 +22546,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Principal Analyst, Credit Risk",
@@ -22562,7 +22562,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Fraud Risk Specialist",
@@ -22578,7 +22578,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-09",
       "in_pool_since": "2026-05-09",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Compliance",
@@ -22706,7 +22706,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Product Manager",
@@ -22738,7 +22738,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Data Science & AI Enablement",
@@ -22850,7 +22850,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-05",
       "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Fraud Investigator (Questbank)",
@@ -22962,7 +22962,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Residential Lending (Prime)",
@@ -23026,7 +23026,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Credit Decisioning Systems",
@@ -23122,7 +23122,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst, P&S & Buyins, Trade Operations",
@@ -23186,7 +23186,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-06",
       "in_pool_since": "2026-05-06",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Product Manager, Agent Performance & Network",
@@ -23314,7 +23314,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-24",
       "in_pool_since": "2026-05-24",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Business Management, Lead",
@@ -23378,7 +23378,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-04",
       "in_pool_since": "2026-05-04",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "AppOps, Senior Specialist",
@@ -23410,7 +23410,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Software Developer - iOS",
@@ -23474,7 +23474,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Payments and Fraud Analyst",
@@ -23506,7 +23506,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analyst III, PMO Governance",
@@ -23554,7 +23554,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-11",
       "in_pool_since": "2026-05-11",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Human Resources Business Partner",
@@ -23602,7 +23602,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-20",
       "in_pool_since": "2026-05-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Identity and Access Management Specialist",
@@ -23810,7 +23810,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Credit Risk",
@@ -23826,7 +23826,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-05",
       "in_pool_since": "2026-05-05",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Director, Credit Risk/Lending",
@@ -23890,7 +23890,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-14",
       "in_pool_since": "2026-05-14",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Regional Sales Director - Retail (GTA)",
@@ -23952,7 +23952,7 @@
       "newly_seen": true,
       "first_seen": "2026-02-20",
       "in_pool_since": "2026-02-20",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Risk Strategist, Onboarding and Compliance",
@@ -24016,7 +24016,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Risk Strategist, Financial Crimes",
@@ -24032,7 +24032,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Risk Strategist - Screening (Financial Crimes)",
@@ -24048,7 +24048,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-16",
       "in_pool_since": "2026-05-16",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Data Scientist",
@@ -24112,7 +24112,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-21",
       "in_pool_since": "2026-05-21",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Technical Program Manager, Extensibility Programs",
@@ -24144,7 +24144,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Product Manager, Sail Core",
@@ -24272,7 +24272,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-12",
       "in_pool_since": "2026-05-12",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Backend Engineer, Expansion",
@@ -24334,7 +24334,7 @@
       "newly_seen": true,
       "first_seen": "2026-04-30",
       "in_pool_since": "2026-04-30",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Staff Analytics Engineer, Subledger Platform",
@@ -24380,7 +24380,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-07",
       "in_pool_since": "2026-05-07",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "People Knowledge Experience Manager",
@@ -24428,7 +24428,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Strategic Finance Lead (Revenue)",
@@ -24444,7 +24444,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Business Systems Analyst II",
@@ -24540,7 +24540,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-15",
       "in_pool_since": "2026-05-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Strategic Finance Manager (Revenue)",
@@ -24556,7 +24556,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-19",
       "in_pool_since": "2026-05-19",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Global Mobility",
@@ -24652,7 +24652,7 @@
       "newly_seen": true,
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Analytics Developer",
@@ -24808,7 +24808,7 @@
       "newly_seen": true,
       "first_seen": "2024-08-15",
       "in_pool_since": "2024-08-15",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Head, North American Provisioning & Risk Analytics",
@@ -24821,7 +24821,7 @@
       "gmail_uid": "69844",
       "first_seen": "2026-05-18",
       "in_pool_since": "2026-05-18",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager",
@@ -24860,7 +24860,7 @@
       "gmail_uid": "69844",
       "first_seen": "2026-05-26",
       "in_pool_since": "2026-05-26",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "People Risk Senior Manager",
@@ -24873,7 +24873,7 @@
       "gmail_uid": "69839",
       "first_seen": "2026-05-26",
       "in_pool_since": "2026-05-26",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Controllership and Risk Lead",
@@ -24886,7 +24886,7 @@
       "gmail_uid": "69839",
       "first_seen": "2026-05-26",
       "in_pool_since": "2026-05-26",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Director, AI Research",
@@ -24912,7 +24912,7 @@
       "gmail_uid": "69836",
       "first_seen": "2026-05-26",
       "in_pool_since": "2026-05-26",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Strategic Finance Manager",
@@ -24925,7 +24925,7 @@
       "gmail_uid": "69836",
       "first_seen": "2026-05-26",
       "in_pool_since": "2026-05-26",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director & Head, Insights & Analytics, IT Risk",
@@ -24964,7 +24964,7 @@
       "gmail_uid": "69808",
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, High Risk Client Management",
@@ -24977,7 +24977,7 @@
       "gmail_uid": "69808",
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager/Director, Model Risk Management",
@@ -25003,7 +25003,7 @@
       "gmail_uid": "69805",
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Manager, Valuations & Modelling",
@@ -25016,7 +25016,7 @@
       "gmail_uid": "69805",
       "first_seen": "2026-05-25",
       "in_pool_since": "2026-05-25",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Director, Senior Project Manager",
@@ -25029,7 +25029,7 @@
       "gmail_uid": "69748",
       "first_seen": "2026-05-23",
       "in_pool_since": "2026-05-23",
-      "is_new_since_last_score": false
+      "is_new_since_last_score": true
     },
     {
       "title": "Senior Manager",
@@ -25419,7 +25419,7 @@
       "gmail_uid": "69428",
       "first_seen": "2026-05-13",
       "in_pool_since": "2026-05-13",
-      "is_new_since_last_score": true
+      "is_new_since_last_score": false
     },
     {
       "title": "Senior Manager, Operational Risk Management Initiative and Implementation",

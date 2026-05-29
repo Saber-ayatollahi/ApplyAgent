@@ -1,0 +1,16 @@
+# pipeline
+# cmd: C:\Program Files\Python313\python.exe C:\Dev\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-score
+# started: 2026-05-29T10:50:40.919051
+
+=== ApplyAgent pipeline 20260529_105041 ===
+Mode: scrape=full skip_scrape=True skip_score=True skip_promote=False
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] quarantined 159 gmail row(s) with title==company prefix — see merged_pairs/quarantine in worklist.json
+[worklist] 1433 rows (1342 scrape, 75 gmail, 16 both) · 921 new since last score
+[stage 2] SKIPPED
+[promote] [auto_promote] DRY-RUN: would add 30, upgrade 0, expire 0, geo-skip 0
+[promote] [auto_promote] Re-run with --commit to apply.
+[promote] [auto_promote] Report: C:\Dev\ApplyAgent\automation\outputs\promote_report_20260529.md
+
+=== Pipeline 20260529_105041 complete ===
