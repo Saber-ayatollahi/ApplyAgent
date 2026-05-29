@@ -187,20 +187,20 @@ def refresh_state(rec_path: Path) -> dict:
             rec["returncode"] = rc
             rec["state"] = "finished" if rc == 0 else "failed"
         else:
-            # Fallback: tail the log for known success markers.
+            # Fallback when the OS returncode is unreadable (POSIX, or a
+            # different Windows API failure). Default to finished; only call
+            # it a crash if the log tail carries an obvious failure signal.
+            # The older 'failed unless a hardcoded success marker matches'
+            # default falsely flagged every short script (gmail_fetch, etc.).
             log_path = rec.get("log_path", "")
-            crashed = True
+            crashed = False
             if log_path and Path(log_path).exists():
                 try:
-                    tail = Path(log_path).read_bytes()[-2048:]
-                    if (b"nightly_refresh finished" in tail
-                            or b"finished ===" in tail
-                            or b"complete ===" in tail
-                            or b"[gmail_fetch] worklist rebuilt" in tail
-                            or b"[gmail_fetch] \xe2\x9c\x93 wrote" in tail
-                            or b"[scan] worklist rebuilt" in tail
-                            or b"new candidates across" in tail):
-                        crashed = False
+                    tail = Path(log_path).read_bytes()[-4096:]
+                    if (b"Traceback (most recent call last)" in tail
+                            or b"\nFATAL:" in tail
+                            or b"\nABORT:" in tail):
+                        crashed = True
                 except OSError:
                     pass
             rec["state"] = "failed" if crashed else "finished"

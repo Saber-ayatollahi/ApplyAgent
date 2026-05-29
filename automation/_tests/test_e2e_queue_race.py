@@ -1,14 +1,8 @@
-"""Regression test left behind by adversarial-testing pass.
+"""Regression test: queue_pending_archive vs drain race condition.
 
-queue_pending_archive() does NOT take an exclusive lock while
-drain_pending_archives() does (read-then-truncate). A queue write that
-lands inside the drain's read-then-truncate window gets clobbered by
-the truncate. Reproduced: 4/200 entries silently lost across 2 of 3
-runs in adversarial harness on Windows + portalocker.
-
-This test is currently EXPECTED TO FAIL — it documents the bug. Once
-queue_pending_archive starts holding the exclusive lock around its
-append, it should pass deterministically.
+Previously queue_pending_archive() lacked an exclusive lock while
+drain_pending_archives() did read-then-truncate, causing silent data
+loss under contention. Now fixed — this test passes deterministically.
 """
 import json
 import shutil
@@ -21,11 +15,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 
-@pytest.mark.xfail(
-    reason="queue_pending_archive lacks exclusive-lock; concurrent drain truncates "
-           "the file mid-append and silently loses entries. Tracked as P1.",
-    strict=False,
-)
 def test_queue_drain_race_no_data_loss(tmp_path: Path):
     """Spawn a queuer and a draining loop in parallel. After both finish,
     the count of (drained + remaining) entries must equal the count queued.
