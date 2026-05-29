@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -534,6 +535,140 @@ def scored_to_xlsx(path: Path) -> bytes:
         _truncate_str_cells(s1_df).to_excel(xw, sheet_name="Stage-1 drops", index=False)
         _truncate_str_cells(suppressed_df).to_excel(
             xw, sheet_name="Suppressed", index=False)
+    return buf.getvalue()
+
+
+def triage_to_xlsx(path: Path) -> bytes:
+    """xlsx for the TRIAGE stage of worklist_scored.json — Passed / Dropped /
+    Suppressed sheets (doc §139, §449).
+
+    Distinct from scored_to_xlsx (which leads with the LLM verdicts): this
+    builder is triage-centric — the `Passed` sheet is every row that cleared
+    the rule stage (so reached scoring), and `Dropped` carries the rule_reasons
+    that killed each rejected row, with a `suppressed_by` column + a dedicated
+    `Suppressed` sub-sheet for the "what would I see if I lifted my mutes?"
+    question. Reuses _suppressed_by_for_drop."""
+    env = _read_json(path)
+
+    # Passed = rows that cleared rule-triage and were scored.
+    passed_rows = []
+    for r in env.get("results", []) or []:
+        tr = r.get("_triage") or {}
+        passed_rows.append({
+            "company": r.get("company", ""),
+            "title": r.get("title", ""),
+            "sector": r.get("sector", ""),
+            "location": r.get("location", ""),
+            "stage1_score": tr.get("score", ""),
+            "source": r.get("source", ""),
+            "link": r.get("link", ""),
+        })
+    passed_df = _df_from_rows(
+        passed_rows,
+        columns=["company", "title", "sector", "location", "stage1_score",
+                 "source", "link"],
+    )
+
+    dropped_rows: list[dict] = []
+    suppressed_rows: list[dict] = []
+    for d in env.get("triage_drops", []) or []:
+        bd = d.get("hits_breakdown") or {}
+        suppressed_by = _suppressed_by_for_drop(d)
+        row = {
+            "company": d.get("company", ""),
+            "title": d.get("title", ""),
+            "sector": d.get("sector", ""),
+            "score": d.get("score", ""),
+            "rule_reasons": "; ".join(d.get("rule_reasons", []) or []),
+            "suppressed_by": suppressed_by,
+            "strong": ",".join(bd.get("strong", []) or []),
+            "medium": ",".join(bd.get("medium", []) or []),
+            "weak": ",".join(bd.get("weak", []) or []),
+            "level": ",".join(bd.get("level", []) or []),
+            "source": d.get("source", ""),
+            "link": d.get("link", ""),
+        }
+        dropped_rows.append(row)
+        if suppressed_by:
+            suppressed_rows.append(row)
+
+    dropped_df = _df_from_rows(
+        dropped_rows,
+        columns=["company", "title", "sector", "score", "rule_reasons",
+                 "suppressed_by", "strong", "medium", "weak", "level",
+                 "source", "link"],
+    )
+    suppressed_df = _df_from_rows(
+        suppressed_rows,
+        columns=["company", "title", "sector", "suppressed_by",
+                 "rule_reasons", "score", "source", "link"],
+    )
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(passed_df).to_excel(xw, sheet_name="Passed", index=False)
+        _truncate_str_cells(dropped_df).to_excel(xw, sheet_name="Dropped", index=False)
+        _truncate_str_cells(suppressed_df).to_excel(
+            xw, sheet_name="Suppressed", index=False)
+    return buf.getvalue()
+
+
+def tracker_to_xlsx(path: Path) -> bytes:
+    """xlsx for data/job_tracker_data.json — one sheet per status (doc §178).
+
+    Each distinct job `status` becomes its own sheet (sheet names sanitised to
+    Excel's 31-char / no-special-chars limit); archived rows are tagged via an
+    `archived` column rather than dropped, so the export is a faithful snapshot.
+    An `All` sheet leads for a single-view scan."""
+    env = _read_json(path)
+    jobs = env.get("jobs", []) or []
+
+    def _row(j: dict) -> dict:
+        return {
+            "id": j.get("id", ""),
+            "company": j.get("company", ""),
+            "title": j.get("title", ""),
+            "status": j.get("status", ""),
+            "tier": j.get("tier", ""),
+            "fit_score": j.get("fit_score_numeric", j.get("fit_score", "")),
+            "urgency": j.get("urgency", ""),
+            "sector": j.get("sector", ""),
+            "location": j.get("location", ""),
+            "date_found": j.get("date_found", ""),
+            "date_applied": j.get("date_applied", ""),
+            "archived": bool(j.get("archived", False)),
+            "next_action": j.get("next_action", ""),
+            "url": j.get("url", ""),
+        }
+
+    cols = ["id", "company", "title", "status", "tier", "fit_score", "urgency",
+            "sector", "location", "date_found", "date_applied", "archived",
+            "next_action", "url"]
+    all_df = _df_from_rows([_row(j) for j in jobs], columns=cols)
+
+    # Group by status, preserving first-seen order.
+    by_status: dict[str, list[dict]] = {}
+    for j in jobs:
+        by_status.setdefault(j.get("status") or "(none)", []).append(_row(j))
+
+    def _safe_sheet(name: str, used: set) -> str:
+        # Excel sheet names: ≤31 chars, none of []:*?/\
+        clean = re.sub(r"[\[\]:*?/\\]", "_", str(name))[:31] or "sheet"
+        base, n = clean, 1
+        while clean in used:
+            suffix = f"_{n}"
+            clean = base[:31 - len(suffix)] + suffix
+            n += 1
+        used.add(clean)
+        return clean
+
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        _truncate_str_cells(all_df).to_excel(xw, sheet_name="All", index=False)
+        _used = {"All"}
+        for status, rows in by_status.items():
+            sheet = _safe_sheet(status, _used)
+            _truncate_str_cells(_df_from_rows(rows, columns=cols)).to_excel(
+                xw, sheet_name=sheet, index=False)
     return buf.getvalue()
 
 

@@ -49,6 +49,17 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 PIPELINE_DIR = OUT_DIR / "pipelines"
 
+# When launched as a script (`python automation/run_pipeline.py`), sys.path[0]
+# is automation/, not ROOT — so `from automation import suppressions` fails,
+# and the relative-import fallback (`from . import …`) also fails because the
+# script has no package parent. suppressions.py uses `from .safe_json import …`
+# and so can ONLY load as part of the `automation` namespace package. Put ROOT
+# on the path here so that namespace import resolves. Without this, every
+# pipeline run dies at _snapshot_suppressions with ModuleNotFoundError before
+# the first stage even starts. (Idempotent — guarded against duplicate entry.)
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 SCRAPE_MODE_ARGS = {
     "full":      ["--expansion"],
     "core":      [],
@@ -161,6 +172,12 @@ def main() -> int:
     ap.add_argument("--include-watch", action="store_true")
     ap.add_argument("--commit-promote", action="store_true",
                     help="Write tracker. Without this flag, promote is dry-run preview.")
+    ap.add_argument("--expire-stale", action="store_true",
+                    help="Pass-through to auto_promote: mark auto-* tracker rows "
+                         "absent from this scan as Expired.")
+    ap.add_argument("--auto-tailor", action="store_true",
+                    help="Pass-through to auto_promote: spawn jd_tailor for each "
+                         "new Tier-1 role after commit (ignored in dry-run).")
 
     args = ap.parse_args()
 
@@ -360,6 +377,10 @@ def _run(args, status: dict, pipeline_id: str) -> int:
                "--min-score", str(args.min_score)]
         if args.include_watch:
             cmd.append("--include-watch")
+        if args.expire_stale:
+            cmd.append("--expire-stale")
+        if args.auto_tailor:
+            cmd.append("--auto-tailor")
         if args.commit_promote:
             cmd.append("--commit")
         rc = _stream(cmd, "promote", status, "promote", env=child_env)

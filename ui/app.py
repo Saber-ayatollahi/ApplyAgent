@@ -291,14 +291,49 @@ def _content_age_h(json_path: Path) -> float | None:
     return _file_age_hours(json_path)
 
 
+@st.cache_data(show_spinner=False, max_entries=64)
+def _build_xlsx_cached(builder_name: str, path_str: str,
+                       mtime: float, size: int) -> bytes:
+    """Build an artifact's xlsx once per (file, mtime, size) and memoize.
+
+    Keyed on builder_name + path + mtime + size — all primitives — so a
+    rerun that hasn't touched the file returns instantly, but a freshly
+    written artifact (new mtime/size) rebuilds. The builder is resolved by
+    name from audit_pack (not passed as a function object) to keep the
+    cache key hashable and stable across reruns.
+
+    Builders are 20–470 ms each; memoizing makes the eager build below a
+    one-time, per-session cost instead of a per-render one. This is what
+    lets the 📊 xlsx button be a SINGLE-click direct download (Streamlit's
+    download_button materialises `data` at render, so the bytes must exist
+    before the click — the old two-click build→reveal dance is what read
+    as "downloads not working").
+    """
+    import sys as _sys
+    import importlib as _il
+    _ad = str(ROOT / "automation")
+    if _ad not in _sys.path:
+        _sys.path.insert(0, _ad)
+    # Reload guard (cache-miss only): a Streamlit-held audit_pack imported
+    # before a builder shipped would lack it; reload picks it up without a
+    # server restart. Cheap because it runs at most once per (file, mtime).
+    if "audit_pack" in _sys.modules:
+        _il.reload(_sys.modules["audit_pack"])
+    import audit_pack as _ap
+    builder = getattr(_ap, builder_name)
+    return builder(Path(path_str))
+
+
 def render_artifact_download(label: str, json_path: Path | None,
                               xlsx_builder, key_prefix: str,
                               container=None) -> None:
     """Render a 3-column row: filename caption + JSON download + xlsx download.
 
     `xlsx_builder` is a callable taking the json path and returning xlsx bytes
-    (one of the per-artifact builders in audit_pack.py). xlsx is built lazily
-    on click and cached in session_state so re-renders don't rebuild.
+    (one of the per-artifact builders in audit_pack.py). The xlsx is built
+    eagerly and memoized via `_build_xlsx_cached` (keyed on file mtime), so
+    the 📊 button is a single-click direct download rather than the previous
+    build→reveal two-step.
     """
     target = container or st
     if json_path is None or not json_path.exists():
@@ -335,26 +370,26 @@ def render_artifact_download(label: str, json_path: Path | None,
         )
     except Exception as e:
         c2.caption(f"JSON err: {e}")
-    # xlsx: lazy build via session_state, single click. Pattern: c3.button
-    # builds the bytes; on the same rerun, st.session_state has the bytes,
-    # so the download_button below renders and the user clicks once more.
-    # Two clicks total but no per-rerun pandas cost.
-    xlsx_state_key = f"_xlsx_bytes_{key_prefix}_{json_path.name}"
+    # xlsx: single-click direct download. The bytes are built eagerly and
+    # memoized by _build_xlsx_cached (keyed on file mtime), so the button
+    # below carries real data the instant it renders — one click downloads.
+    # Resolve the builder's NAME so the cache key stays hashable; fall back
+    # to __name__ when a bare function is passed.
+    _builder_name = getattr(xlsx_builder, "__name__", None)
     try:
-        if c3.button("📊 xlsx", key=f"build_xlsx_{key_prefix}",
-                     width='stretch',
-                     help="Build Excel workbook with input/filter/output "
-                          "sheets. Lazy — only runs on click."):
-            with st.spinner(f"Building xlsx for {label}…"):
-                st.session_state[xlsx_state_key] = xlsx_builder(json_path)
-        if st.session_state.get(xlsx_state_key) is not None:
-            target.download_button(
-                f"⬇ Download {json_path.stem}.xlsx",
-                data=st.session_state[xlsx_state_key],
-                file_name=f"{json_path.stem}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key=f"dl_xlsx_{key_prefix}",
-            )
+        _stat = json_path.stat()
+        _xlsx_bytes = _build_xlsx_cached(
+            _builder_name, str(json_path), _stat.st_mtime, _stat.st_size,
+        )
+        c3.download_button(
+            "📊 xlsx",
+            data=_xlsx_bytes,
+            file_name=f"{json_path.stem}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=f"dl_xlsx_{key_prefix}", width='stretch',
+            help="Excel workbook with input/filter/output sheets. "
+                 "Built on first render, cached after.",
+        )
     except Exception as e:
         c3.caption(f"xlsx err: {e}")
 
@@ -1008,6 +1043,100 @@ def _vc_inspect_toggle(stage: str, label: str, default: bool = False) -> bool:
     return st.session_state[_key]
 
 
+def _route_banner_cta(action: str | None, active_runs: list | None = None) -> None:
+    """Make the top-of-page banner CTA actually *do* something.
+
+    Streamlit has no scroll anchor, so "go to stage X" is realised by opening
+    that stage card's inspect toggle (`_vc_inspect_<stage>` session flag) so
+    its body is visible after the rerun. On top of that:
+
+      • promote        → open ⑤ + launch a dry-run promote PREVIEW (no tracker
+                         write). The ⑤ card then shows the report + an
+                         [✅ Apply to tracker] commit button (preview→commit,
+                         the flow the user picked). Skips the launch if a run
+                         is already active.
+      • score          → open ⑤ (the Score button lives in the run card). Not
+                         auto-launched — scoring costs API spend, so the user
+                         clicks the cost-labelled button themselves.
+      • review_verdicts → open ④ (verdicts live in the scored card).
+      • review_suppressions → open ③ Triage (suppression admin lives there).
+      • refresh / setup / retry_* → open ⑤ (scrape/Gmail launch buttons).
+      • stop_run       → signal-stop the active run immediately.
+      • quarantine     → open ② so the user can inspect the merged pool.
+      • set_api_key    → guidance toast (the key widget owns its sidebar
+                         expander; we can't force it open from here).
+
+    All paths end in st.rerun() so the freshly-set toggle/flags take effect.
+    """
+    open_toggle = None          # which _vc_inspect_<stage> to force-open
+    toast = None
+
+    if action == "promote":
+        open_toggle = "promote"
+        if not any_work_active:
+            try:
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-score",   # dry-run promote preview
+                ])
+                st.session_state["_last_launch"] = {
+                    "run_id": rec.run_id, "label": "Promote preview",
+                }
+                # Arm the Apply button — it only enables after a preview that
+                # was launched THIS session (doc §167 "enabled only after a
+                # preview"), so a stale on-disk report can't invite a commit.
+                st.session_state["_promote_preview_armed"] = True
+                toast = ("📋 Promote preview running — review the report in ⑤, "
+                         "then Apply to tracker.")
+            except Exception as e:  # noqa: BLE001
+                toast = f"Couldn't launch promote preview: {e}"
+        else:
+            toast = "A run is active — opened ⑤; preview once it finishes."
+    elif action == "score":
+        open_toggle = "promote"
+        toast = "Opened ⑤ — hit 🤖 Score worklist (cost shown on the button)."
+    elif action in ("review_verdicts",):
+        open_toggle = "scoring"
+        toast = "Opened ④ Scoring — inspect verdicts to hand-pick roles."
+    elif action in ("review_suppressions",):
+        open_toggle = "triage"
+        toast = "Opened ③ Triage — manage suppressions in the admin panel."
+    elif action == "refresh":
+        open_toggle = "promote"
+        toast = "Opened ⑤ — launch 🛰 scrape / 📬 Gmail to refresh inputs."
+    elif action == "setup":
+        open_toggle = "promote"
+        toast = ("Opened ⑤ — connect Gmail in the sidebar, then launch a "
+                 "scrape to populate the worklist.")
+    elif action and action.startswith("retry_"):
+        open_toggle = "promote"
+        toast = f"Opened ⑤ — relaunch the {action[len('retry_'):]} stage."
+    elif action == "stop_run":
+        _runs = active_runs or []
+        if _runs:
+            try:
+                scan_runner.stop_run(_runs[0].get("run_id"))
+                toast = "⏹ Stop signal sent — the run exits after its current step."
+            except Exception as e:  # noqa: BLE001
+                toast = f"Couldn't stop the run: {e}"
+        else:
+            toast = "No active run to stop."
+    elif action == "quarantine":
+        open_toggle = "worklist"
+        toast = ("Opened ② Worklist — inspect the pool; a high quarantine "
+                 "ratio usually means a parser/source regression.")
+    elif action == "set_api_key":
+        toast = "Set your key in the sidebar → Manage Anthropic API key."
+    else:
+        toast = "Opened the relevant stage below."
+
+    if open_toggle:
+        st.session_state[f"_vc_inspect_{open_toggle}"] = True
+    if toast:
+        st.toast(toast)
+    st.rerun()
+
+
 def _vc_download_row(stage: str) -> None:
     """Per-card 📄 JSON / 📊 xlsx downloads for a vertical stage card.
 
@@ -1027,7 +1156,8 @@ def _vc_download_row(stage: str) -> None:
             _il.reload(_sys.modules["audit_pack"])
         from audit_pack import (
             gmail_scan_to_xlsx, scan_to_xlsx, scored_to_xlsx,
-            worklist_to_xlsx, promote_to_xlsx,
+            worklist_to_xlsx, promote_to_xlsx, triage_to_xlsx,
+            tracker_to_xlsx,
         )
     except Exception as e:
         st.caption(f"Downloads unavailable: {e}")
@@ -1054,7 +1184,14 @@ def _vc_download_row(stage: str) -> None:
         render_artifact_download(
             "📋 Worklist pool", _wl if _wl.exists() else None,
             worklist_to_xlsx, "vc_worklist")
-    elif stage == "triage" or stage == "scored":
+    elif stage == "triage":
+        # Triage-centric export: Passed / Dropped (with rule reasons) /
+        # Suppressed sheets — distinct from the verdict-led scored export.
+        _sc = OUT_DIR / "worklist_scored.json"
+        render_artifact_download(
+            "🎯 Triage (passed/dropped)", _sc if _sc.exists() else None,
+            triage_to_xlsx, "vc_triage")
+    elif stage == "scored":
         _sc = OUT_DIR / "worklist_scored.json"
         render_artifact_download(
             "🤖 Scored + triage drops", _sc if _sc.exists() else None,
@@ -1063,6 +1200,127 @@ def _vc_download_row(stage: str) -> None:
         render_artifact_download(
             "📤 Promote report", _latest("promote_report_*.json"),
             promote_to_xlsx, "vc_promote")
+    elif stage == "tracker":
+        render_artifact_download(
+            "🗂 Tracker (sheet per status)",
+            TRACKER if Path(TRACKER).exists() else None,
+            tracker_to_xlsx, "vc_tracker")
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _worklist_hidden_by_mutes(wl_mtime: float, supp_mtime: float) -> tuple[int, int]:
+    """(hidden_rows, active_mutes) — how many worklist rows an active mute
+    would suppress, and how many mutes are active (doc §370).
+
+    Cached on (worklist mtime, suppressions mtime) so the 1,400-row scan
+    runs at most once per change, not every rerun. Returns (0, 0) on any
+    error or when no mutes are active (the dormant default)."""
+    try:
+        from automation import suppressions as _supp  # noqa: WPS433
+        state = _supp.load_active()
+        n_mutes = len(state.get("sectors", []) or []) + len(state.get("companies", []) or [])
+        if not n_mutes:
+            return (0, 0)
+        wl = json.loads((OUT_DIR / "worklist.json").read_text(encoding="utf-8"))
+        hidden = 0
+        for row in wl.get("results", []) or []:
+            suppressed, _ = _supp.is_suppressed(row, snapshot=state)
+            if suppressed:
+                hidden += 1
+        return (hidden, n_mutes)
+    except Exception:
+        return (0, 0)
+
+
+def _vc_promote_apply_panel(busy: bool) -> None:
+    """Preview→commit step for ⑤ Auto-promote.
+
+    The banner's `Promote N` CTA (and the run card's promote button) launch a
+    DRY-RUN preview — `run_pipeline.py --skip-scrape --skip-score`, which
+    writes a `promote_report_*.json` with `mode: dry_run` and the full
+    would-add list under `promoted[]` but does NOT touch the tracker. This
+    panel surfaces that preview and gives the missing second step: an explicit
+    [✅ Apply N to tracker] button that shells `auto_promote.py --commit`.
+
+    Renders nothing when there's no recent (<6h) dry-run preview — keeps the
+    card quiet until the user has actually previewed.
+    """
+    files = sorted(OUT_DIR.glob("promote_report_*.json"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        return
+    latest = files[0]
+    try:
+        rep = json.loads(latest.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    if rep.get("mode") != "dry_run":
+        # Last action was a commit (or single-URL run) — nothing to apply.
+        return
+    age_h = _file_age_hours(latest)
+    if age_h is not None and age_h > 6:
+        return  # stale preview; user should re-preview before committing
+    would_add = (rep.get("summary") or {}).get("added", 0)
+    rows = rep.get("promoted") or rep.get("new_entries") or []
+
+    with st.container(border=True):
+        if not would_add:
+            st.caption(
+                f"✅ Promote preview ({_humanize_age_h(age_h)}): nothing new "
+                "to add — every above-threshold role is already in the tracker."
+            )
+            return
+        st.markdown(f"**📋 Preview ready — {would_add} role(s) would be added**")
+        # Compact peek at the top would-add rows so the commit isn't blind.
+        _peek = [
+            {"score": r.get("score"), "company": r.get("company"),
+             "title": r.get("title"), "sector": r.get("sector")}
+            for r in rows[:8]
+        ]
+        if _peek:
+            st.dataframe(pd.DataFrame(_peek), hide_index=True, width="stretch",
+                         height=min(240, 40 + 36 * len(_peek)))
+            if len(rows) > len(_peek):
+                st.caption(f"…and {len(rows) - len(_peek)} more.")
+        # Apply only enables after a preview launched THIS session (doc §167) —
+        # a stale on-disk dry-run report alone is not enough to invite a commit.
+        _armed = bool(st.session_state.get("_promote_preview_armed"))
+        _ac1, _ac2 = st.columns([2, 1])
+        with _ac1:
+            if not _armed:
+                st.caption("▶️ Run a Promote **preview** above to enable Apply.")
+            if st.button(f"✅ Apply {would_add} to tracker", type="primary",
+                         width="stretch", disabled=(busy or not _armed),
+                         key="_vc_promote_apply",
+                         help="Commit these roles to the tracker "
+                              "(auto_promote.py --commit). A .bak is written "
+                              "first, so it's reversible."):
+                try:
+                    rec = scan_runner.start_run("promote", [
+                        sys.executable,
+                        str(ROOT / "automation" / "auto_promote.py"),
+                        "--commit",
+                        "--min-score", str(rep.get("min_score", 7)),
+                    ] + (["--include-watch"] if rep.get("include_watch") else []))
+                    st.session_state["_last_launch"] = {
+                        "run_id": rec.run_id, "label": "Promote (commit)",
+                    }
+                    # Arm the success-feedback overlay (doc §90) — the banner
+                    # shows "✅ Promoted N" for ~10 min after this commit.
+                    st.session_state["_promote_feedback"] = {
+                        "count": int(would_add),
+                        "ts": datetime.now().isoformat(timespec="seconds"),
+                    }
+                    # Disarm — the next commit needs a fresh preview.
+                    st.session_state["_promote_preview_armed"] = False
+                    st.toast(f"📋 Committing {would_add} role(s) to the tracker…",
+                             icon="✅")
+                    st.rerun()
+                except Exception as e:  # noqa: BLE001
+                    st.error(f"Couldn't launch commit: {e}")
+        with _ac2:
+            st.caption(f"Preview from {_humanize_age_h(age_h)} · "
+                       f"min-score {rep.get('min_score', 7)}")
 
 
 def _vc_audit_pack_download() -> None:
@@ -1175,9 +1433,19 @@ def followup_buckets(jobs: list[dict], today_date: date | None = None) -> dict:
         "upcoming": [],
         "no_schedule": [],
     }
+    # Archived rows must not nag follow-ups — an archived Applied role
+    # otherwise shows as overdue/due-today and inflates the badge (doc §340).
+    # apply_followup_gate(job)==True means "skip follow-ups" (archived OR
+    # terminal). Imported locally to match the pattern used elsewhere in
+    # this module (tracker_ops isn't a module-scope import).
+    from automation import tracker_ops as _tops_fb  # noqa: WPS433
     for j in jobs:
+        if _tops_fb.apply_followup_gate(j):
+            continue
         if not j.get("date_applied"):
             continue
+        # FOLLOWUP_TERMINAL_STATUSES is a superset of tracker_ops.TERMINAL_STATUSES
+        # (it also includes "Declined"), so keep this check after the gate.
         if j.get("status") in FOLLOWUP_TERMINAL_STATUSES:
             continue
         sched = j.get("followup_schedule") or {}
@@ -2602,12 +2870,22 @@ def render_gmail_trash_panel(container=None,
 def list_pipelines(limit: int = 20) -> list[dict]:
     if not PIPELINE_DIR.exists():
         return []
-    files = sorted(PIPELINE_DIR.glob("pipeline_*.json"),
-                   key=lambda p: p.stat().st_mtime, reverse=True)
+    # The glob also matches the `pipeline_<id>_suppressions.json` snapshots
+    # that run_pipeline._snapshot_suppressions writes into the same dir —
+    # those are {version,sectors,companies}, NOT run records (no pipeline_id /
+    # state), so they pollute the history table and crash the `p["pipeline_id"]`
+    # selectbox. Exclude them; also skip any file missing pipeline_id so a
+    # future sidecar can't reintroduce the crash.
+    files = sorted(
+        (p for p in PIPELINE_DIR.glob("pipeline_*.json")
+         if not p.name.endswith("_suppressions.json")),
+        key=lambda p: p.stat().st_mtime, reverse=True)
     out = []
     for p in files[:limit]:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
+            if not data.get("pipeline_id"):
+                continue
             out.append(_resolve_pipeline_staleness(data, p))
         except Exception:
             continue
@@ -3804,17 +4082,24 @@ if page == "🏠 Dashboard":
         matches = list(OUT_DIR.glob(f"{sc}_{sr}_*.md"))
         return any(not p.name.endswith("_prompt.md") for p in matches)
 
+    # All five "needs attention" buckets exclude archived rows — an archived
+    # Tier-1/high-score Found row must not nag the user (doc §339), matching
+    # the Phase-3D honored-archive loop elsewhere on this page.
+    def _att_active(j) -> bool:
+        return (j.get("status") in ("Found", "Watch")
+                and not j.get("archived", False))
+
     tier1_no_draft = [
         j for j in jobs
         if j.get("tier") == 1
-        and j.get("status") in ("Found", "Watch")
+        and _att_active(j)
         and not _tailor_draft_exists(j.get("company", ""), j.get("title", ""))
     ]
 
     # Bucket 2 — Tier-1 Found with CRM contact at the same company
     tier1_warm_intro = []
     for j in jobs:
-        if j.get("tier") != 1 or j.get("status") not in ("Found", "Watch"):
+        if j.get("tier") != 1 or not _att_active(j):
             continue
         contacts = crm_contacts_at_company(crm, j.get("company", ""))
         if contacts:
@@ -3825,7 +4110,7 @@ if page == "🏠 Dashboard":
     high_score_thin_jd = [
         j for j in jobs
         if int(j.get("fit_score_numeric") or 0) >= 7
-        and j.get("status") in ("Found", "Watch")
+        and _att_active(j)
         and len(j.get("fit_notes", "") or "") < 80
     ]
 
@@ -3833,14 +4118,14 @@ if page == "🏠 Dashboard":
     scoring_errors = [
         j for j in jobs
         if int(j.get("fit_score_numeric") or 0) == 0
-        and j.get("status") in ("Found", "Watch")
+        and _att_active(j)
         and j.get("tier", 4) <= 2  # only flag top-tier broken entries
     ]
 
     # Bucket 5 — Missing primary_variant (pre-variant-upgrade entries)
     missing_variant = [
         j for j in jobs
-        if j.get("status") in ("Found", "Watch")
+        if _att_active(j)
         and j.get("tier", 4) == 1
         and not j.get("primary_variant")
     ]
@@ -4203,10 +4488,23 @@ if page == "🏠 Dashboard":
                                 "followup_schedule": {"next_due": None,
                                                        "cadence_days": [3, 10, 21]},
                             }
-                            # Avoid duplicates
-                            if not any(j.get("url") == r.get("link") for j in tr["jobs"]):
-                                tr["jobs"].append(new_entry)
-                                save_tracker(tr)
+                            # Avoid duplicates. Race fix: append under the
+                            # mutate_json lock and dedupe against the CURRENT
+                            # on-disk tracker (not the stale page-load `tr`),
+                            # so a concurrent promote can't be clobbered.
+                            from safe_json import mutate_json as _mj  # noqa: WPS433
+                            _added = {"ok": False}
+
+                            def _mut_add(t):
+                                t.setdefault("jobs", [])
+                                if not any(j.get("url") == r.get("link") for j in t["jobs"]):
+                                    t["jobs"].append(new_entry)
+                                    _added["ok"] = True
+                                return t
+
+                            _mj(TRACKER, _mut_add, default={"jobs": [], "meta": {}})
+                            load_tracker.clear()
+                            if _added["ok"]:
                                 st.success(f"Added {new_id} to tracker.")
                                 st.rerun()
                             else:
@@ -4789,6 +5087,10 @@ elif page == "🎯 Pipeline":
     # `pipeline_redesign.md` § "Banner state machine". Pure function in
     # `pipeline_state.compute_next_action`; this is the Streamlit wrapper.
     # Severity → Streamlit container affordance (st.error/warning/info/success).
+    # Post-suppression promotable count, surfaced from the snapshot so the ⑤
+    # card headline can show the same figure the banner computes (doc §282/§314).
+    # None = couldn't compute (snapshot failed); the ⑤ card falls back then.
+    _promotable_n = None
     try:
         from automation import suppressions as _bn_supp  # noqa: WPS433
         try:
@@ -4814,7 +5116,28 @@ elif page == "🎯 Pipeline":
             gmail_connected=gmail_ui.is_connected(),
             active_runs=_bn_active_runs,
         )
+        # Success-feedback decay (doc §90): when a commit landed within the
+        # last ~10 min, inject the count + age into the snapshot so the chip
+        # set surfaces "✅ Promoted N" on top of the next CTA. The commit
+        # paths record _promote_feedback = {"count", "ts"} in session_state;
+        # we translate that to the snapshot fields the pure function reads.
+        _pf = st.session_state.get("_promote_feedback")
+        if _pf and _pf.get("ts"):
+            try:
+                _pf_age_h = (datetime.now() - datetime.fromisoformat(_pf["ts"])).total_seconds() / 3600.0
+                if 0 <= _pf_age_h < 0.2:  # 0.2h ≈ 12 min decay window
+                    import dataclasses as _dc  # noqa: WPS433
+                    _bn_snap = _dc.replace(
+                        _bn_snap,
+                        recent_promote_count=int(_pf.get("count", 0)),
+                        last_promote_age_h=_pf_age_h,
+                    )
+                else:
+                    st.session_state.pop("_promote_feedback", None)  # expired
+            except Exception:
+                st.session_state.pop("_promote_feedback", None)
         _bn = pipeline_state.compute_next_action(_bn_snap)
+        _promotable_n = getattr(_bn_snap, "promotable_count", None)
 
         with st.container(border=True):
             _bn_c1, _bn_c2 = st.columns([5, 2], vertical_alignment="center")
@@ -4829,16 +5152,17 @@ elif page == "🎯 Pipeline":
                     st.caption(chip_md)
             with _bn_c2:
                 if _bn.cta_label:
-                    # CTA is informational anchor for now — clicking sets a
-                    # session-state hint the rest of the page can react to.
-                    # No shell-outs from the banner itself; the existing
-                    # stage buttons do the work. (Phase 8 may route directly.)
+                    # Live CTA: clicking routes to the matching stage card —
+                    # opens its inspect toggle so the body is visible, and for
+                    # the explicitly-actionable states launches the work
+                    # (promote-preview, score, stop). Streamlit has no scroll
+                    # anchor, so "go to the stage" = expand its card. See
+                    # _route_banner_cta for the per-action behaviour.
                     if st.button(
                         _bn.cta_label, key=f"_banner_cta_{_bn.state}",
                         type="primary", width="stretch",
                     ):
-                        st.session_state["_banner_cta_clicked"] = _bn.cta_action
-                        st.toast(f"Scroll to the {_bn.cta_action} stage below.")
+                        _route_banner_cta(_bn.cta_action, _bn_active_runs)
     except Exception as _bn_err:  # noqa: BLE001
         st.caption(f"Banner unavailable: {_bn_err}")
 
@@ -5398,7 +5722,13 @@ elif page == "🎯 Pipeline":
     tailor_n = verdict_counts.get("tailor_and_apply", 0)
     actionable_n = apply_n + tailor_n
 
-    tracker_found = sum(1 for j in jobs if j.get("status") in ("Found", "Watch"))
+    # Exclude archived rows so this "N to review" count matches the Review
+    # Queue (which gates `not archived`) — otherwise an archived Found/Watch
+    # row inflates the funnel count and the two surfaces disagree (doc §339).
+    tracker_found = sum(
+        1 for j in jobs
+        if j.get("status") in ("Found", "Watch") and not j.get("archived", False)
+    )
     tracker_applied = sum(1 for j in jobs if parse_date(j.get("date_applied")))
     tailored_docs = len(list(OUT_DIR.glob("*_prompt.md")))
 
@@ -5814,6 +6144,8 @@ elif page == "🎯 Pipeline":
                     "--skip-scrape", "--skip-score",
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Promote scored"}
+                # Arm the Apply button (see _route_banner_cta promote branch).
+                st.session_state["_promote_preview_armed"] = True
                 st.toast("📋 Promote launched!", icon="🚀")
                 st.rerun()
             if _promote_fresh:
@@ -5858,8 +6190,12 @@ elif page == "🎯 Pipeline":
         # Live panel moved above tabs — always visible when a job is active.
 
         # Latest outputs — every action emits a JSON artifact; this row gives
-        # one-click JSON + xlsx access without bouncing to History.
-        render_latest_outputs_row(key_prefix="pipe_run")
+        # one-click JSON + xlsx access without bouncing to History. In the
+        # vertical layout each stage card already carries its own download
+        # row, so this combined panel would render every artifact a SECOND
+        # time — only show it in the classic tab layout (doc §427).
+        if not _PIPE_VERTICAL:
+            render_latest_outputs_row(key_prefix="pipe_run")
 
         # Gmail trash cleanup panel — only renders when there's an
         # un-trashed scan_gmail_*.json. Same widget as the Dashboard,
@@ -5922,6 +6258,38 @@ elif page == "🎯 Pipeline":
                 score_limit = st.number_input("Score limit (0 = all)", 0, 5000, 0)
                 dry_score = st.checkbox("Score dry-run (rule-stage only)")
 
+            # Promote controls — only meaningful when the promote stage runs.
+            # Exposed here so fit≥6 / include-watch / expire-stale / auto-tailor
+            # are reachable from the UI instead of terminal-only (doc §168/§154).
+            if not skip_promote:
+                st.markdown("**Promote options**")
+                pcA, pcB = st.columns(2)
+                with pcA:
+                    promote_min_score = st.slider(
+                        "Promote min-score (fit≥)", 1, 10, 7,
+                        help="Roles scoring below this aren't promoted "
+                             "(auto_promote --min-score).")
+                    include_watch = st.checkbox(
+                        "Include verdict=watch", value=False,
+                        help="Promote watch-verdict roles as Watch "
+                             "(--include-watch).")
+                with pcB:
+                    commit_promote = st.checkbox(
+                        "Commit to tracker (write)", value=False,
+                        help="Without this, promote is a dry-run preview "
+                             "(--commit-promote).")
+                    expire_stale = st.checkbox(
+                        "Expire stale auto-* rows", value=False,
+                        help="Mark auto-* tracker rows absent from this scan "
+                             "as Expired (--expire-stale).")
+                    auto_tailor = st.checkbox(
+                        "Auto-tailor new Tier-1", value=False,
+                        help="Spawn jd_tailor for each new Tier-1 role after "
+                             "commit (--auto-tailor; ignored in dry-run).")
+            else:
+                promote_min_score = 7
+                include_watch = commit_promote = expire_stale = auto_tailor = False
+
             cmd = [sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                    "--scrape-mode", scrape_mode,
                    "--score-concurrency", str(score_concurrency)]
@@ -5935,12 +6303,26 @@ elif page == "🎯 Pipeline":
                 cmd.append("--skip-score")
             if skip_promote:
                 cmd.append("--skip-promote")
+            else:
+                cmd += ["--min-score", str(int(promote_min_score))]
+                if include_watch:
+                    cmd.append("--include-watch")
+                if commit_promote:
+                    cmd.append("--commit-promote")
+                if expire_stale:
+                    cmd.append("--expire-stale")
+                if auto_tailor:
+                    cmd.append("--auto-tailor")
             if score_limit:
                 cmd += ["--score-limit", str(int(score_limit))]
             if dry_score:
                 cmd.append("--score-dry-run")
 
             st.code(" ".join(cmd), language="bash")
+            if not skip_promote and commit_promote:
+                st.warning("⚠️ This run will **write to the tracker** "
+                           "(--commit-promote). A .bak is saved first.",
+                           icon="🗄️")
 
             needs_llm = not skip_score or not skip_promote
             can_run_adv = not pipeline_running and (key_ok_here or not needs_llm)
@@ -6047,10 +6429,12 @@ elif page == "🎯 Pipeline":
 
     # ================== CARD/TAB: Scored (+ triage sub-tabs) ===============
     def _render_scored_card():
-        # Suppression admin (Phase 3C). Always rendered — independent of
-        # whether a scored file exists, so a fresh-clone user can add
-        # mutes pre-emptively.
-        _render_suppressions_admin()
+        # Suppression admin moved to the ③ Triage card (doc §280/§368/§446) —
+        # in the classic tab layout it still belongs with Scored, so render
+        # it here only when NOT using the vertical layout (the vertical ③
+        # card calls _render_suppressions_admin itself).
+        if not _PIPE_VERTICAL:
+            _render_suppressions_admin()
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -6084,6 +6468,24 @@ elif page == "🎯 Pipeline":
 
             # --- Sub-tab 1: scored candidates -------------------------------
             with triage_tabs[0]:
+                # Surface scoring failures (fit_verdict=="error") — they're
+                # hidden by the default verdict filter, so without this banner
+                # the user can't see that N roles failed to score (doc: API
+                # errors view). Lists the first few company/title for triage.
+                _err_rows = [
+                    r for r in results
+                    if (r.get("fit") or {}).get("fit_verdict") == "error"
+                ]
+                if _err_rows:
+                    _err_names = ", ".join(
+                        f"{r.get('company','?')}" for r in _err_rows[:5])
+                    _more = f" (+{len(_err_rows) - 5} more)" if len(_err_rows) > 5 else ""
+                    st.warning(
+                        f"⚠️ {len(_err_rows)} role(s) failed to score "
+                        f"(verdict=error): {_err_names}{_more}. Re-run the "
+                        "scorer or check the API key / rate limits.",
+                        icon="⚠️",
+                    )
                 if not results:
                     st.info("No scored candidates in this file — "
                             "either the scorer was dry-run, the API key "
@@ -6191,6 +6593,20 @@ elif page == "🎯 Pipeline":
                             )
                         _sel_state = st.session_state["scoring_selected_urls"]
 
+                        # [Select all visible] — bulk-tick the current
+                        # (possibly filtered) view in one click (mockup State 7
+                        # third footer control). Unions the visible URLs into
+                        # the selection so off-screen ticks are preserved.
+                        if _visible_urls:
+                            if st.button(
+                                f"☑ Select all visible ({len(_visible_urls)})",
+                                key="scored_select_all_visible",
+                                help="Tick every row in the current view; "
+                                     "off-screen selections are kept."):
+                                st.session_state["scoring_selected_urls"] = (
+                                    _sel_state | _visible_urls)
+                                st.rerun()
+
                         # ── [Send N selected] action + pre-flight caption ──
                         if _sel_state:
                             # Lazy-load suppressions for the preflight
@@ -6218,12 +6634,25 @@ elif page == "🎯 Pipeline":
                                 tracker_urls=_tracker_urls,
                             )
 
+                            # Large-batch guard (doc §B:243): a hand-picked
+                            # selection of ≥25 rows requires an explicit
+                            # confirm before the commit fires, so one stray
+                            # click can't bulk-write dozens of tracker rows.
+                            _BULK_CONFIRM_AT = 25
+                            _bulk_big = len(_sel_state) >= _BULK_CONFIRM_AT
+                            _bulk_confirmed = True
+                            if _bulk_big:
+                                _bulk_confirmed = st.checkbox(
+                                    f"⚠️ Confirm: promote {len(_sel_state)} roles "
+                                    "to the tracker (large batch)",
+                                    key="scored_bulk_confirm")
+
                             _bcol1, _bcol2 = st.columns([2, 1])
                             with _bcol1:
                                 _send_clicked = st.button(
                                     f"📋 Send {len(_sel_state)} selected to tracker",
                                     type="primary",
-                                    disabled=any_work_active,
+                                    disabled=any_work_active or not _bulk_confirmed,
                                     key="scored_bulk_promote",
                                 )
                                 st.caption(
@@ -6236,6 +6665,7 @@ elif page == "🎯 Pipeline":
                                     st.rerun()
 
                             if _send_clicked:
+                                _sel_n = len(_sel_state)  # capture before clear
                                 # Write the URL list to a tempfile and pass
                                 # via --only-urls. Atomic file is more robust
                                 # than chained --only-url args (no shell
@@ -6263,6 +6693,21 @@ elif page == "🎯 Pipeline":
                                     f"Promoting {len(_sel_state)} role(s)…",
                                     icon="📋")
                                 st.session_state["scoring_selected_urls"] = set()
+                                # Surface the run in the Dashboard banner AND
+                                # rerun so the data_editor drops its ticks —
+                                # without the rerun, apply_selection_edit
+                                # re-merges the old ticks and the "cleared"
+                                # selection silently reappears.
+                                st.session_state["_last_launch"] = {
+                                    "run_id": _prec.run_id,
+                                    "label": "Promote selected",
+                                }
+                                # Arm the success-feedback overlay (doc §90).
+                                st.session_state["_promote_feedback"] = {
+                                    "count": _sel_n,
+                                    "ts": datetime.now().isoformat(timespec="seconds"),
+                                }
+                                st.rerun()
                     else:
                         st.dataframe(view, hide_index=True, width='stretch',
                                      height=500,
@@ -6536,10 +6981,18 @@ elif page == "🎯 Pipeline":
     # (not st.metric), button-gated heavy inspect bodies (if-skip, not just
     # expander), and a stage-jump rail to neutralize the scroll tax.
 
-    def _stage_chip(running: bool, state_ok: bool = True) -> str:
+    def _stage_chip(running: bool, state_ok: bool = True,
+                    empty: bool = False) -> str:
+        # ⏸ = empty/no-data-yet (doc §103 pill level), distinct from ⚪
+        # (has data but not "ok"). Empty wins only when not running.
         if running:
             return "🟡 running"
+        if empty:
+            return "⏸"
         return "🟢" if state_ok else "⚪"
+
+    # True when there's no worklist yet — drives the ⏸ "will activate" copy.
+    _pipe_empty = (_wstats.get("total", 0) == 0)
 
     if not _PIPE_VERTICAL:
         # ---------------- Classic tabbed layout (escape hatch) ------------
@@ -6557,19 +7010,29 @@ elif page == "🎯 Pipeline":
             _render_history_card()
     else:
         # ---------------- Vertical 6-stage card flow ----------------------
-        # Stage-jump rail: anchors so the daily-expert user keeps O(1)
-        # navigation instead of scrolling a tall page (UX-critic fix #1).
+        # Stage-jump rail. Streamlit has no in-page scroll-anchor, so this
+        # can't literally jump — but the three stages with a gated heavy body
+        # (Worklist/Scoring/Promote) get a button that OPENS that card's
+        # inspect toggle, so a click does something real. The toggle-less
+        # stages (Inputs/Triage/Tracker) render as plain labels. `help=` shows
+        # the one-line description on hover.
         _rail = st.columns(6)
         _rail_labels = [
-            ("① Inputs", "Two job-list sources"),
-            ("② Worklist", "Merged + deduped pool"),
-            ("③ Triage", "Rule-based filter"),
-            ("④ Scoring", "LLM fit verdicts"),
-            ("⑤ Promote", "Into the tracker"),
-            ("⑥ Tracker", "Active job list"),
+            ("① Inputs", "Two job-list sources", None),
+            ("② Worklist", "Merged + deduped pool", "worklist"),
+            ("③ Triage", "Rule-based filter", None),
+            ("④ Scoring", "LLM fit verdicts", "scoring"),
+            ("⑤ Promote", "Into the tracker", "promote"),
+            ("⑥ Tracker", "Active job list", None),
         ]
-        for _ci, (_lbl, _hlp) in enumerate(_rail_labels):
-            _rail[_ci].caption(_lbl)
+        for _ci, (_lbl, _hlp, _toggle) in enumerate(_rail_labels):
+            if _toggle:
+                if _rail[_ci].button(_lbl, key=f"_rail_jump_{_toggle}",
+                                     width="stretch", help=_hlp):
+                    st.session_state[f"_vc_inspect_{_toggle}"] = True
+                    st.rerun()
+            else:
+                _rail[_ci].caption(_lbl, help=_hlp)
 
         _src_ok = bool(scan_f or _latest_gm)
         _wl_ok = bool(_wstatus.get("worklist_exists"))
@@ -6584,20 +7047,77 @@ elif page == "🎯 Pipeline":
                 f"#### 🛰 ① Inputs · {_stage_chip(_scraper_active)}"
             )
             render_two_sources_panel()
+            # Per-source refresh actions (doc §116). These mirror the launch
+            # buttons in the run card but live ON the ① card where the doc +
+            # mockup place them. Same freshness/active-run disable guards.
+            _in_can_run = not any_work_active
+            _in_scrape_age = _web_scan_age_hours()
+            _in_scrape_fresh = _in_scrape_age is not None and _in_scrape_age < 24
+            _in_gmail_age = _latest_glob_age_hours("scan_gmail_*.json")
+            _in_gmail_fresh = _in_gmail_age is not None and _in_gmail_age < 1
+            _in_gmail_ok = gmail_ui.is_connected()
+            _in_counts = _target_counts()
+            _ic1, _ic2 = st.columns(2)
+            if _ic1.button(f"🛰 Refresh scrape ({_in_counts['core']})",
+                           width="stretch", key="_vc_inputs_refresh_scrape",
+                           disabled=(not _in_can_run or _in_scrape_fresh),
+                           help="Re-scrape the core targets (~15–30 min, no API "
+                                "key). Auto-rebuilds the worklist."
+                                + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
+                                   if _in_scrape_fresh else "")):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Refresh scrape"}
+                st.toast("🛰 Scrape launched!", icon="🚀")
+                st.rerun()
+            if _ic2.button("📬 Refresh Gmail", width="stretch",
+                           key="_vc_inputs_refresh_gmail",
+                           disabled=(not _in_gmail_ok or not _in_can_run),
+                           help=("Pull LinkedIn alert emails from last 30d "
+                                 "(~10–30s, free). Auto-rebuilds the worklist."
+                                 if _in_gmail_ok else
+                                 "Connect Gmail in the sidebar first.")):
+                rec = scan_runner.start_run("gmail_fetch", [
+                    sys.executable,
+                    str(ROOT / "automation" / "gmail_fetch.py"), "--days", "30",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Gmail fetch"}
+                st.toast("📬 Gmail fetch launched!", icon="🚀")
+                st.rerun()
             render_gmail_trash_panel()
             _vc_download_row("inputs")
 
         # ── ② WORKLIST ────────────────────────────────────────────────
         with st.container(border=True):
             st.markdown(
-                f"#### 📋 ② Worklist · {_stage_chip(False, _wl_ok)} "
+                f"#### 📋 ② Worklist · {_stage_chip(False, _wl_ok, empty=_pipe_empty)} "
                 f"{_wstats.get('total', 0):,} rows"
             )
-            st.caption(
-                f"🛰 {_wstats.get('scrape', 0):,} scrape · "
-                f"📬 {_wstats.get('gmail', 0):,} gmail · "
-                f"🔁 {_wstats.get('both', 0):,} both"
-            )
+            if _pipe_empty:
+                st.caption("⏸ Will activate after the first scrape / Gmail "
+                           "fetch populates the pool.")
+            else:
+                # Hidden-by-mute annotation (doc §370): how many pool rows an
+                # active mute would suppress at triage. Cached on file mtimes.
+                _wl_p = OUT_DIR / "worklist.json"
+                _supp_p = ROOT / "data" / "suppressions.json"
+                _hidden, _n_mutes = _worklist_hidden_by_mutes(
+                    _wl_p.stat().st_mtime if _wl_p.exists() else 0.0,
+                    _supp_p.stat().st_mtime if _supp_p.exists() else 0.0,
+                )
+                _mute_note = (
+                    f" · 🔇 {_hidden} hidden by {_n_mutes} mute"
+                    f"{'s' if _n_mutes != 1 else ''}" if _hidden else ""
+                )
+                st.caption(
+                    f"🛰 {_wstats.get('scrape', 0):,} scrape · "
+                    f"📬 {_wstats.get('gmail', 0):,} gmail · "
+                    f"🔁 {_wstats.get('both', 0):,} both" + _mute_note
+                )
             if _vc_inspect_toggle("worklist", "Inspect worklist rows"):
                 _render_worklist_card()
             _vc_download_row("worklist")
@@ -6609,20 +7129,25 @@ elif page == "🎯 Pipeline":
             _tr_drop = (_tr_in - _tr_pass) if _tr_in else 0
             _tr_ratio = f"{int(100*_tr_drop/_tr_in)}%" if _tr_in else "—"
             st.markdown(
-                f"#### 🎯 ③ Triage · {_stage_chip(False, bool(_tr_pass))} "
+                f"#### 🎯 ③ Triage · {_stage_chip(False, bool(_tr_pass), empty=_pipe_empty)} "
                 f"{_tr_pass:,} passed · {_tr_drop:,} dropped ({_tr_ratio})"
             )
             st.caption(
                 "Rule-based keyword/level/negative-term filter + active "
-                "suppressions. Drop reasons and rescue candidates live in "
-                "the Scored card's 🚫 Dropped sub-tab."
+                "suppressions. Per-drop rule reasons are in the ④ Scoring "
+                "card's 🚫 Dropped sub-tab and the Triage xlsx below."
             )
+            # Suppression admin lives here (doc §280) — gated behind a toggle
+            # so the page doesn't re-read the registry every rerun.
+            if _vc_inspect_toggle("triage", "Manage suppressions (mutes)"):
+                _render_suppressions_admin()
             _vc_download_row("triage")
 
         # ── ④ SCORING ─────────────────────────────────────────────────
         with st.container(border=True):
             st.markdown(
-                f"#### 🤖 ④ Scoring · {_stage_chip(scorer_running, _scored_ok)} "
+                f"#### 🤖 ④ Scoring · "
+                f"{_stage_chip(scorer_running, _scored_ok, empty=_pipe_empty and not score_count)} "
                 + (f"{score_count:,} scored" if score_count else "not scored yet")
             )
             if scorer_running:
@@ -6637,11 +7162,25 @@ elif page == "🎯 Pipeline":
 
         # ── ⑤ AUTO-PROMOTE ────────────────────────────────────────────
         with st.container(border=True):
+            # Headline shows the post-suppression promotable count (rows above
+            # threshold, deduped against the tracker, minus active mutes) — the
+            # same figure the banner computes — NOT raw verdict counts, which
+            # overstate by ignoring tracker-dedup/suppression (doc §282/§314).
+            # Fall back to actionable_n only if the snapshot couldn't compute.
+            if _promotable_n is not None:
+                _promo_headline = (
+                    f"{_promotable_n} ready at fit≥7 (after suppressions)"
+                    if _promotable_n else "nothing promotable yet"
+                )
+            else:
+                _promo_headline = (
+                    f"{actionable_n} actionable at fit≥7" if actionable_n
+                    else "nothing promotable yet"
+                )
             st.markdown(
                 f"#### 📤 ⑤ Auto-promote · "
-                f"{_stage_chip(False, _ws_scored_exists)} "
-                + (f"{actionable_n} actionable at fit≥7" if actionable_n
-                   else "nothing promotable yet")
+                f"{_stage_chip(False, _ws_scored_exists, empty=not _ws_scored_exists)} "
+                + _promo_headline
             )
             st.caption(
                 "Launch + advanced config + score-a-single-URL live here. "
@@ -6652,6 +7191,7 @@ elif page == "🎯 Pipeline":
                                   default=True):
                 _render_run_card()
             _vc_download_row("promote")
+            _vc_promote_apply_panel(any_work_active)
 
         # ── ⑥ TRACKER ─────────────────────────────────────────────────
         with st.container(border=True):
@@ -6677,6 +7217,8 @@ elif page == "🎯 Pipeline":
                 st.session_state["_applyagent_nav"] = "🏠 Today"
                 st.session_state["_nav_sub_🏠 Today"] = "Dashboard"
                 st.rerun()
+            # Tracker downloads (doc §178): raw JSON + per-status xlsx.
+            _vc_download_row("tracker")
 
         # ── Footer: full audit pack + history (re-homed, not dropped) ──
         st.markdown("---")
@@ -6685,6 +7227,11 @@ elif page == "🎯 Pipeline":
             _vc_audit_pack_download()
         with st.expander("📜 Run history (pipelines · logs · cost)",
                          expanded=False):
+            if st.button("→ Open Scan History page", key="_vc_go_scan_history",
+                         help="Full scan/run history with per-scan drill-in."):
+                st.session_state["_applyagent_nav"] = "📋 Roles"
+                st.session_state["_nav_sub_📋 Roles"] = "Scans"
+                st.rerun()
             _render_history_card()
 
 
@@ -7189,29 +7736,45 @@ elif page == "📋 Jobs Kanban":
                     new_notes = st.text_area("Notes", job.get("notes", ""))
                     submitted = st.form_submit_button("Save")
                     if submitted:
-                        for j in tr["jobs"]:
-                            if j["id"] == sel_id:
-                                j["status"] = new_status
-                                j["urgency"] = new_urgency
-                                # Seed follow-up schedule on first Applied date
-                                if new_date_applied and not parse_date(j.get("date_applied")):
-                                    seed_followup(j, new_date_applied)
-                                elif new_date_applied:
-                                    j["date_applied"] = new_date_applied.isoformat()
-                                j["notes"] = new_notes
-                                break
-                        save_tracker(tr)
+                        # Race fix: route through mutate_json (single exclusive
+                        # lock) so this serializes against auto_promote and the
+                        # Review-Queue writer instead of clobbering the whole
+                        # page-load `tr` dict (same fix as _rq_apply_action).
+                        from safe_json import mutate_json as _mj  # noqa: WPS433
+
+                        def _mut_save(t):
+                            for j in t.get("jobs", []):
+                                if j["id"] == sel_id:
+                                    j["status"] = new_status
+                                    j["urgency"] = new_urgency
+                                    # Seed follow-up on first Applied date
+                                    if new_date_applied and not parse_date(j.get("date_applied")):
+                                        seed_followup(j, new_date_applied)
+                                    elif new_date_applied:
+                                        j["date_applied"] = new_date_applied.isoformat()
+                                    j["notes"] = new_notes
+                                    break
+                            return t
+
+                        _mj(TRACKER, _mut_save, default={"jobs": [], "meta": {}})
+                        load_tracker.clear()
                         st.success("Saved.")
                         st.rerun()
 
                 _kb_qa1, _kb_qa2 = st.columns(2)
                 if _kb_qa1.button(f"✅ Mark Applied today (id={sel_id})"):
-                    for j in tr["jobs"]:
-                        if j["id"] == sel_id:
-                            j["status"] = "Applied"
-                            seed_followup(j, applied_on=date.today())
-                            break
-                    save_tracker(tr)
+                    from safe_json import mutate_json as _mj  # noqa: WPS433
+
+                    def _mut_applied(t):
+                        for j in t.get("jobs", []):
+                            if j["id"] == sel_id:
+                                j["status"] = "Applied"
+                                seed_followup(j, applied_on=date.today())
+                                break
+                        return t
+
+                    _mj(TRACKER, _mut_applied, default={"jobs": [], "meta": {}})
+                    load_tracker.clear()
                     st.success("Marked Applied; first follow-up in 3 days.")
                     st.rerun()
                 # Phase 3D — Archive / Restore button (toggles based on
@@ -8066,10 +8629,10 @@ elif page == "⚙️ Admin":
             icon="🗄️",
         )
     with _admin_a2:
-        if st.button("🗄️ Jump to Reset", width="stretch", key="admin_jump_reset"):
-            st.markdown('<a href="#month-end-archive-reset" style="display:none"></a>',
-                        unsafe_allow_html=True)
-            st.toast("Scroll down to 🗄️ Month-End Archive & Reset section.", icon="📢")
+        # Streamlit has no in-page anchor scroll (the old hidden <a> + toast
+        # was a no-op), so this is an honest advisory rather than a fake jump.
+        st.caption("⬇️ The **🗄️ Month-End Archive & Reset** section is further "
+                   "down this page.")
 
     # ---------- Cost ledger ----------
     st.subheader("💰 Cost ledger (lifetime)")
@@ -8451,9 +9014,13 @@ elif page == "⚙️ Admin":
         _tracker_raw = json.loads(_data_file.read_text(encoding="utf-8")) if _data_file.exists() else {}
         _all_jobs = _tracker_raw.get("jobs", [])
         _meta = _tracker_raw.get("meta", {})
-        _applied_jobs  = [j for j in _all_jobs if j.get("status") in ("Applied","Recruiter_Screen","Phone_Screen","Take_Home","Onsite","Offer")]
-        _active_jobs   = [j for j in _all_jobs if j.get("status") in ("Found","JD_Verified","Tailoring","Watch")]
-        _closed_jobs   = [j for j in _all_jobs if j.get("status") in ("Rejected","Ghosted","Withdrawn","Expired")]
+        # Exclude archived rows from the pre-wipe preview counts so they
+        # don't overstate active/applied/closed (doc §339). NOT is_active()
+        # here — that would collapse the deliberate Applied+ vs Active-leads
+        # split this preview relies on; a plain archived gate is correct.
+        _applied_jobs  = [j for j in _all_jobs if j.get("status") in ("Applied","Recruiter_Screen","Phone_Screen","Take_Home","Onsite","Offer") and not j.get("archived", False)]
+        _active_jobs   = [j for j in _all_jobs if j.get("status") in ("Found","JD_Verified","Tailoring","Watch") and not j.get("archived", False)]
+        _closed_jobs   = [j for j in _all_jobs if j.get("status") in ("Rejected","Ghosted","Withdrawn","Expired") and not j.get("archived", False)]
         _tracker_ok = True
     except Exception as _te:
         _tracker_ok = False

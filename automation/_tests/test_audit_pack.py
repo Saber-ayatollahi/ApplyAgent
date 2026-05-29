@@ -420,10 +420,102 @@ def test_phase4_build_audit_pack_includes_suppression_sheets():
             audit_pack.OUT_DIR = original_out
 
 
+def test_triage_to_xlsx_passed_dropped_suppressed_sheets():
+    """triage_to_xlsx emits Passed / Dropped / Suppressed sheets with the
+    suppressed_by column and the dedicated Suppressed sub-sheet."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "outputs"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        scored = {
+            "scan_date": "29991231",
+            "stage1_passed": 2, "stage1_dropped": 2,
+            "results": [
+                {"title": "Risk Mgr", "company": "Acme", "sector": "Banks",
+                 "location": "Toronto", "source": "scrape",
+                 "link": "https://x.co/1", "_triage": {"score": 5},
+                 "fit": {"fit_verdict": "watch", "fit_score": 60}},
+                {"title": "ALM", "company": "Beta", "sector": "Banks",
+                 "location": "Toronto", "source": "scrape",
+                 "link": "https://x.co/2", "_triage": {"score": 7},
+                 "fit": {"fit_verdict": "apply_now", "fit_score": 80}},
+            ],
+            "triage_drops": [
+                {"company": "Gamma", "title": "Sales", "sector": "Retail",
+                 "rule_reasons": ["no_strong_keywords"], "score": 1,
+                 "hits_breakdown": {}, "link": "https://x.co/3",
+                 "source": "linkedin"},
+                {"company": "RBC", "title": "Dir ALM",
+                 "sector": "Canadian Big 6 Banks",
+                 "rule_reasons": ["suppressed_sector_60d"], "score": 7,
+                 "hits_breakdown": {}, "link": "https://x.co/4",
+                 "source": "scrape"},
+            ],
+        }
+        p = out_dir / "worklist_scored.json"
+        p.write_text(json.dumps(scored), encoding="utf-8")
+
+        data = audit_pack.triage_to_xlsx(p)
+        wb = load_workbook(io.BytesIO(data), read_only=True)
+        assert wb.sheetnames == ["Passed", "Dropped", "Suppressed"], wb.sheetnames
+
+        passed = _read_sheet_rows(wb, "Passed")
+        assert len(passed) == 2 and "stage1_score" in passed[0]
+        dropped = _read_sheet_rows(wb, "Dropped")
+        assert len(dropped) == 2 and "suppressed_by" in dropped[0]
+        rbc = next(r for r in dropped if r["company"] == "RBC")
+        assert rbc["suppressed_by"] == "sector_60d"
+        sup = _read_sheet_rows(wb, "Suppressed")
+        assert len(sup) == 1 and sup[0]["company"] == "RBC"
+        print("[PASS] triage_to_xlsx: Passed/Dropped/Suppressed sheets correct")
+
+
+def test_tracker_to_xlsx_one_sheet_per_status():
+    """tracker_to_xlsx emits an `All` sheet plus one sheet per distinct
+    status, with an `archived` column and Excel-safe sheet names."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tracker = {
+            "jobs": [
+                {"id": "a1", "company": "Acme", "title": "Risk Mgr",
+                 "status": "Found", "tier": 1, "fit_score_numeric": 8,
+                 "url": "https://x.co/1"},
+                {"id": "a2", "company": "Beta", "title": "ALM",
+                 "status": "Applied", "tier": 2, "fit_score_numeric": 7,
+                 "date_applied": "2026-05-01", "url": "https://x.co/2"},
+                {"id": "a3", "company": "Gamma", "title": "Quant",
+                 "status": "Found", "tier": 1, "archived": True,
+                 "url": "https://x.co/3"},
+            ],
+            "meta": {},
+        }
+        p = Path(tmp) / "job_tracker_data.json"
+        p.write_text(json.dumps(tracker), encoding="utf-8")
+
+        data = audit_pack.tracker_to_xlsx(p)
+        wb = load_workbook(io.BytesIO(data), read_only=True)
+        assert "All" in wb.sheetnames
+        assert "Found" in wb.sheetnames and "Applied" in wb.sheetnames
+        all_rows = _read_sheet_rows(wb, "All")
+        assert len(all_rows) == 3 and "archived" in all_rows[0]
+        found = _read_sheet_rows(wb, "Found")
+        assert len(found) == 2  # both Found rows (incl. the archived one, tagged)
+        # the archived Found row carries archived=True
+        arch = [r for r in found if r["company"] == "Gamma"]
+        assert arch and bool(arch[0]["archived"]) is True
+        print("[PASS] tracker_to_xlsx: per-status sheets + archived column")
+
+
 if __name__ == "__main__":
     test_audit_pack_round_trip()
     test_audit_pack_empty_legacy_scan()
     test_phase4_scored_to_xlsx_emits_suppressed_sheet()
     test_phase4_promote_to_xlsx_has_selection_mode_and_race_sheet()
     test_phase4_build_audit_pack_includes_suppression_sheets()
+    test_triage_to_xlsx_passed_dropped_suppressed_sheets()
+    test_tracker_to_xlsx_one_sheet_per_status()
     print("\nAll audit_pack tests passed.")
