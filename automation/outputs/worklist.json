@@ -1,21 +1,17 @@
 {
   "version": 1,
-  "scan_date": "2026-05-29",
-<<<<<<< Updated upstream
-  "rebuilt_at": "2026-05-29T14:08:56",
-=======
-  "rebuilt_at": "2026-05-29T14:45:17",
->>>>>>> Stashed changes
+  "scan_date": "2026-06-01",
+  "rebuilt_at": "2026-06-01T19:07:44",
   "source": "worklist",
   "sources": {
     "scrape": "scan_20260525.json",
     "gmail_window_days": 30,
     "gmail_files_indexed": [
       "scan_gmail_20260529_144517.json",
-      "scan_gmail_20260526_204948.json",
-      "scan_gmail_20260526_213912.json",
-      "scan_gmail_20260526_214010.json",
       "scan_gmail_20260526_215041.json",
+      "scan_gmail_20260526_214010.json",
+      "scan_gmail_20260526_213912.json",
+      "scan_gmail_20260526_204948.json",
       "scan_gmail_20260526_192911.json",
       "scan_gmail_20260525_140746.json",
       "scan_gmail_20260525_140519.json",
@@ -25,20 +21,13 @@
     ]
   },
   "stats": {
-<<<<<<< Updated upstream
-    "scrape": 1342,
-    "gmail": 75,
-    "both": 16,
-    "total": 1433,
-    "new_since_last_score": 921,
-=======
     "scrape": 1339,
     "gmail": 79,
     "both": 19,
     "total": 1437,
     "new_since_last_score": 925,
->>>>>>> Stashed changes
-    "gmail_geo_dropped": 43
+    "gmail_geo_dropped": 43,
+    "excluded_dropped": 0
   },
   "dedup_stats": {
     "input": 1912,
@@ -24867,8 +24856,6 @@
       "first_seen": "2024-08-15",
       "in_pool_since": "2024-08-15",
       "is_new_since_last_score": false
-<<<<<<< Updated upstream
-=======
     },
     {
       "title": "Senior Manager, ALM Risk Transformation",
@@ -24934,7 +24921,6 @@
       "first_seen": "2026-05-29",
       "in_pool_since": "2026-05-29",
       "is_new_since_last_score": true
->>>>>>> Stashed changes
     },
     {
       "title": "Head, North American Provisioning & Risk Analytics",
