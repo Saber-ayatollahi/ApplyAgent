@@ -1068,6 +1068,62 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
 # The scorer picks 1-3 of these per role so the UI + tailor know which to lead with.
 RESUME_VARIANTS = ["ALM", "VAL", "VEN", "QUANT", "CON"]
 
+# ---------------------------------------------------------------------------
+# Shared strategy text — SINGLE SOURCE OF TRUTH for the scoring rubric.
+#
+# Both the live prompt (_build_system_prompt) and the dead-path fallback
+# (_FALLBACK_SYSTEM_PROMPT) interpolate these blocks, so the strategy can never
+# drift between them again. Edit strategy HERE, not in two places.
+# (Previously the VEN/QUANT-PRIMARY, opportunistic-stretch, and trading-desk
+# rules lived only in the fallback and silently never reached production.)
+# ---------------------------------------------------------------------------
+_STRATEGY_VARIANTS = (
+    "Resume variants Saber can lead with (pick the best-fit 1-3 in your output):\n"
+    "- ALM    — Asset-Liability Management, IRRBB, Treasury & Balance-Sheet Risk\n"
+    "- VAL    — Model Risk, Validation & Governance\n"
+    "- VEN    — Vendor-Platform / Solutions Engineering & Client Solutions\n"
+    "           (Aladdin SE, MSCI, S&P, Bloomberg, SS&C)\n"
+    "- QUANT  — Investment & Market Risk Analytics (VaR/CVaR, risk decomposition,\n"
+    "           portfolio optimization, LDI, stochastic/Monte Carlo)\n"
+    "- CON    — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
+    "Vendor-Platform (VEN) and Investment & Market Risk (QUANT) are PRIMARY lanes,\n"
+    "co-equal with ALM and VAL — do not treat them as secondary or fallback variants.\n"
+)
+
+_STRATEGY_OPPORTUNISTIC = (
+    "OPPORTUNISTIC STRETCH — market-risk CAPITAL / methodology roles:\n"
+    "Market-risk-CAPITAL and methodology roles (FRTB, CCR / xVA, CCAR, market risk\n"
+    "capital methodology) are OPPORTUNISTIC stretch targets worth pursuing — Saber has\n"
+    "the metrics (VaR/ES, scenario & reverse-stress testing, derivatives valuation) but\n"
+    "not the trading-desk capital machinery. Score these as a stretch worth pursuing:\n"
+    "verdict 'watch' or 'tailor_and_apply' (NOT 'skip'), and flag cover-letter framing\n"
+    "to bridge the gap. Keep this DISTINCT from pure trading-DESK roles below: a\n"
+    "'market risk capital / methodology' role is IN-SCOPE (opportunistic), whereas a\n"
+    "'rates trading desk' role is OUT-OF-SCOPE (skip).\n"
+)
+
+_STRATEGY_CAPABILITIES = (
+    "Reasons MUST cite concrete capabilities Saber demonstrably has: ALM/IRRBB\n"
+    "modelling, cash-flow projection engines, delegated sign-off authority, LDI\n"
+    "strategy, model validation/governance, VaR/CVaR portfolio optimization, risk\n"
+    "decomposition, solutions-engineering / platform client-solutions delivery,\n"
+    "vendor-platform implementation (Aladdin/Bloomberg/MSCI/S&P/PFaroe),\n"
+    "Python/agentic-AI workflows, or sector experience (pension/insurer/Big 6/vendor).\n"
+)
+
+_STRATEGY_OUT_OF_SCOPE = (
+    "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
+    "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
+    "- Retail banking (teller, personal banker, branch manager, mobile mortgage)\n"
+    "- Sales / marketing / communications / PR\n"
+    "- Internships, co-ops, student programs, new-grad rotational\n"
+    "- Generalist Product Manager / Project Manager (non-risk/non-ALM scope)\n"
+    "- Boutique HF quant-research as PRIMARY focus (Saber is buy-side adjacent, not HF)\n"
+    "- Pure trading-DESK roles (rates trading, rates strategy/strategist, market-making,\n"
+    "  trading desk) — these are out-of-scope/skip. Do NOT confuse these with the\n"
+    "  market-risk-capital/methodology roles above, which ARE in-scope (opportunistic).\n"
+)
+
 _FALLBACK_SYSTEM_PROMPT = (
     "You are a hard-nosed senior finance career strategist assessing job fit for Saber Ayatollahi.\n"
     "\n"
@@ -1084,16 +1140,7 @@ _FALLBACK_SYSTEM_PROMPT = (
     "  ($5-25bn per engagement; $50bn+ cumulative).\n"
     "- Toronto-based, not relocating.\n"
     "\n"
-    "Resume variants Saber can lead with (pick the best-fit 1-3 in your output):\n"
-    "- ALM    — Asset-Liability Management, IRRBB, Treasury & Balance-Sheet Risk\n"
-    "- VAL    — Model Risk, Validation & Governance\n"
-    "- VEN    — Vendor-Platform / Solutions Engineering & Client Solutions\n"
-    "           (Aladdin SE, MSCI, S&P, Bloomberg, SS&C)\n"
-    "- QUANT  — Investment & Market Risk Analytics (VaR/CVaR, risk decomposition,\n"
-    "           portfolio optimization, LDI, stochastic/Monte Carlo)\n"
-    "- CON    — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
-    "Vendor-Platform (VEN) and Investment & Market Risk (QUANT) are now PRIMARY lanes,\n"
-    "co-equal with ALM and VAL — do not treat them as secondary or fallback variants.\n"
+    + _STRATEGY_VARIANTS +
     "\n"
     "Score each role on CAPABILITY FIT against the skill inventory above. Judge whether\n"
     "Saber can do the job and whether the role advances his trajectory. Strategy, market\n"
@@ -1102,38 +1149,17 @@ _FALLBACK_SYSTEM_PROMPT = (
     "Toronto finance employer and the JD has substantive quantitative, risk, or\n"
     "platform-delivery content.\n"
     "\n"
-    "OPPORTUNISTIC STRETCH — market-risk CAPITAL / methodology roles:\n"
-    "Market-risk-CAPITAL and methodology roles (FRTB, CCR / xVA, CCAR, market risk\n"
-    "capital methodology) are OPPORTUNISTIC stretch targets worth pursuing — Saber has\n"
-    "the metrics (VaR/ES, scenario & reverse-stress testing, derivatives valuation) but\n"
-    "not the trading-desk capital machinery. Score these as a stretch worth pursuing:\n"
-    "verdict 'watch' or 'tailor_and_apply' (NOT 'skip'), and flag cover-letter framing\n"
-    "to bridge the gap. Keep this DISTINCT from pure trading-DESK roles below: a\n"
-    "'market risk capital / methodology' role is IN-SCOPE (opportunistic), whereas a\n"
-    "'rates trading desk' role is OUT-OF-SCOPE (skip).\n"
+    + _STRATEGY_OPPORTUNISTIC +
     "\n"
     "HARD RULE — top_3_reasons and fit drivers:\n"
     "ABSOLUTE PROHIBITION: top_3_reasons strings MUST NOT contain ANY of these tokens\n"
     "(case-insensitive): 'OSFI', 'E-23', 'B-12', 'LAR', 'IFRS', 'Basel', 'ECL',\n"
     "'guideline', 'regulatory-calendar', 'regulatory tailwind', 'regulatory posture',\n"
     "'regulatory awareness', 'regulatory familiarity'. These are background context\n"
-    "only and read as generic. Reasons MUST cite concrete capabilities Saber\n"
-    "demonstrably has: ALM/IRRBB modelling, cash-flow projection engines, delegated\n"
-    "sign-off authority, LDI strategy, model validation/governance, VaR/CVaR portfolio\n"
-    "optimization, risk decomposition, solutions-engineering / platform client-solutions\n"
-    "delivery, vendor-platform implementation (Aladdin/Bloomberg/MSCI/S&P/PFaroe),\n"
-    "Python/agentic-AI workflows, or sector experience (pension/insurer/Big 6/vendor).\n"
+    "only and read as generic. "
+    + _STRATEGY_CAPABILITIES +
     "\n"
-    "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
-    "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
-    "- Retail banking (teller, personal banker, branch manager, mobile mortgage)\n"
-    "- Sales / marketing / communications / PR\n"
-    "- Internships, co-ops, student programs, new-grad rotational\n"
-    "- Generalist Product Manager / Project Manager (non-risk/non-ALM scope)\n"
-    "- Boutique HF quant-research as PRIMARY focus (Saber is buy-side adjacent, not HF)\n"
-    "- Pure trading-DESK roles (rates trading, rates strategy/strategist, market-making,\n"
-    "  trading desk) — these are out-of-scope/skip. Do NOT confuse these with the\n"
-    "  market-risk-capital/methodology roles above, which ARE in-scope (opportunistic).\n"
+    + _STRATEGY_OUT_OF_SCOPE +
     "\n"
     "Return ONLY valid JSON matching the schema given, no prose, no markdown.\n"
 )
@@ -1224,6 +1250,8 @@ def _build_system_prompt() -> str:
         "Senior Manager at a target Toronto finance employer and the JD has substantive\n"
         "quantitative, risk, or platform-delivery content.\n"
         "\n"
+        "# " + _STRATEGY_OPPORTUNISTIC +
+        "\n"
         "# HARD RULE — top_3_reasons and fit drivers\n"
         "\n"
         "ABSOLUTE PROHIBITION: top_3_reasons strings MUST NOT contain ANY of these tokens\n"
@@ -1234,7 +1262,7 @@ def _build_system_prompt() -> str:
         "would mention any of these, rewrite it to cite the underlying CAPABILITY:\n"
         "  - Instead of 'OSFI B-12 / IRRBB awareness' → say 'IRRBB modelling, EVE/NII\n"
         "    sensitivity, parallel and non-parallel rate-shock analytics'\n"
-        "  - Instead of 'OSFI E-23 / model risk awareness' → say 'formal sign-off\n"
+        "  - Instead of 'OSFI E-23 / model risk awareness' → say 'delegated sign-off\n"
         "    authority on institutional models, independent model review, assumption\n"
         "    validation'\n"
         "  - Instead of 'OSFI LAR / liquidity awareness' → say 'liquidity-gap and\n"
@@ -1243,28 +1271,15 @@ def _build_system_prompt() -> str:
         "    accounting transformation programs' (only when EY/insurer context fits)\n"
         "  - Instead of 'Canadian regulatory alignment' → say 'sector experience at\n"
         "    Canadian Big 6 / pension / insurer / vendor'\n"
-        "Reasons MUST cite concrete capabilities Saber demonstrably has: ALM/IRRBB\n"
-        "modelling, cash-flow projection engines, formal sign-off authority, LDI\n"
-        "strategy, model validation/governance, vendor-platform implementation\n"
-        "(Aladdin/Bloomberg/MSCI/S&P/PFaroe), Python/agentic-AI workflows, or sector\n"
-        "experience (pension/insurer/Big 6/vendor).\n"
+        + _STRATEGY_CAPABILITIES +
         "\n"
         "For every role also pick the 1-3 resume variants best suited (from this set):\n"
-        "  ALM   — Asset-Liability Management / IRRBB / Balance-Sheet / Treasury Risk\n"
-        "  VAL   — Model Validation / Model Risk / Model Governance\n"
-        "  VEN   — Vendor-Platform / Client Solutions (Aladdin, Bloomberg, MSCI, S&P)\n"
-        "  QUANT — Quantitative / Fixed Income Analytics / Derivatives / ESG / Monte Carlo\n"
-        "  CON   — Consulting / Advisory (Big 4 FSRM, Mercer, WTW, Oliver Wyman)\n"
-        "If a role leans market-risk, list ALM first (the bullet library overlaps) and VAL\n"
-        "second; if it leans strategy, list ALM + CON + relevant others; etc.\n"
+        + _STRATEGY_VARIANTS +
+        "If a role leans market-risk, lead with the lane that fits (ALM or QUANT) and\n"
+        "list VAL where model-review overlaps; if it leans strategy, list CON + relevant\n"
+        "others; etc.\n"
         "\n"
-        "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
-        "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
-        "- Retail banking (teller, personal banker, branch manager, mobile mortgage)\n"
-        "- Sales / marketing / communications / PR\n"
-        "- Internships, co-ops, student programs, new-grad rotational\n"
-        "- Generalist Product Manager / Project Manager where scope is NOT risk/ALM/platform\n"
-        "- Pure HF quant-research as primary focus (Saber is buy-side adjacent, not HF)\n"
+        + _STRATEGY_OUT_OF_SCOPE +
         "\n"
         "Return ONLY valid JSON matching the schema given. No prose, no markdown.\n"
     )

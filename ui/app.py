@@ -90,7 +90,18 @@ CRM_STATUS_COLORS = {
     "Closed":         _C_RED,
 }
 
-LANE_MULTIPLIERS = {"ALM": 1.5, "VAL": 1.2}
+# Lane economics. Mirrors fit_scorer.RESUME_VARIANTS. As of the 2026-05 strategy
+# rebalance, VEN (Vendor-Platform) and QUANT (Investment & Market Risk) are
+# PRIMARY lanes co-equal with ALM/VAL — they must get a boost and a badge, not
+# fall through to 1.0 / "Other". Keep this dict and LANE_LABELS as the single
+# source of truth so the scorer taxonomy and the UI cannot diverge again.
+LANE_MULTIPLIERS = {"ALM": 1.5, "VAL": 1.2, "VEN": 1.3, "QUANT": 1.3}
+
+# Short label per lane for the activity strip and badges. Unmapped -> "Other".
+LANE_LABELS = {"ALM": "ALM", "VAL": "Validation", "VEN": "Vendor", "QUANT": "Quant"}
+
+# Badge accent colour per lane (Review Queue tag row).
+LANE_COLORS = {"ALM": _C_INDIGO, "VAL": _C_BLUE, "VEN": _C_AMBER, "QUANT": _C_GREEN}
 
 
 def lane_mult(job: dict) -> float:
@@ -1741,8 +1752,9 @@ def compute_next_best_action(
     """Pick the single highest-priority action across all surfaces.
 
     Returns a dict {kind, score, label, sublabel, page, ...payload} or None
-    if nothing qualifies. Lane multiplier privileges ALM-primary per
-    feedback_positioning.md (1.5x), vendor-secondary 1.2x, other 1.0x.
+    if nothing qualifies. Lane multiplier privileges the primary lanes per
+    LANE_MULTIPLIERS (the single source of truth): ALM 1.5x, VEN/QUANT 1.3x,
+    VAL 1.2x, other 1.0x.
     """
     today_d = date.today()
     candidates: list[dict] = []
@@ -4110,7 +4122,7 @@ if page == "🏠 Dashboard":
                     _tq_pv = (_j.get("primary_variant") or "").upper()
                     if _tq_pv in LANE_MULTIPLIERS:
                         _badges.append(
-                            f"<span style='color:{_C_INDIGO if _tq_pv == 'ALM' else _C_BLUE};"
+                            f"<span style='color:{LANE_COLORS.get(_tq_pv, _C_INDIGO)};"
                             f"font-weight:700'>{_tq_pv}</span>"
                         )
                     if _vlabel and _vcolor:
@@ -4467,22 +4479,27 @@ if page == "🏠 Dashboard":
             else:
                 st.caption("No jobs in active stages yet — apply to get started.")
 
-    # ── 7-day activity strip — lane-split (ALM / Vendor / Other) ─────────────
-    # Per feedback_positioning.md, Saber wants ALM-primary throughput visible
-    # separately from vendor-platform secondary. Stack the daily applied bar
-    # by lane so a glance shows whether the week's volume is hitting the
-    # ALM-primary target or skewing toward vendor/other.
+    # ── 7-day activity strip — lane-split ────────────────────────────────────
+    # Stack the daily applied bar by lane so a glance shows the week's lane mix.
+    # Each PRIMARY lane (ALM / Validation / Vendor / Quant — see LANE_LABELS) is
+    # shown distinctly; CON / unmapped / no-variant fall to "Other". (Previously
+    # this mislabeled VAL as "Vendor" and hid VEN/QUANT entirely.)
     import altair as _alt_strip
     _act_days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
-    _act_lane_map = {"ALM": "ALM", "VAL": "Vendor"}
+    _LANE_STRIP_ORDER = ["ALM", "Validation", "Vendor", "Quant", "Other"]
+    _LANE_STRIP_COLOR = {"ALM": _C_INDIGO, "Validation": _C_BLUE,
+                         "Vendor": _C_AMBER, "Quant": _C_GREEN, "Other": _C_SLATE}
+
+    def _lane_label(pv) -> str:
+        return LANE_LABELS.get((pv or "").upper(), "Other")
+
     _act_applied: dict[tuple, int] = {(d, lane): 0 for d in _act_days
-                                      for lane in ("ALM", "Vendor", "Other")}
+                                      for lane in _LANE_STRIP_ORDER}
     _act_outreach = {d: 0 for d in _act_days}
     for _aj in jobs:
         _ad = parse_date(_aj.get("date_applied"))
         if _ad and _ad in _act_outreach:
-            _lane = _act_lane_map.get((_aj.get("primary_variant") or "").upper(), "Other")
-            _act_applied[(_ad, _lane)] += 1
+            _act_applied[(_ad, _lane_label(_aj.get("primary_variant")))] += 1
         for _ol in (_aj.get("outreach_log") or []):
             _od = parse_date(_ol.get("date"))
             if _od and _od in _act_outreach:
@@ -4494,8 +4511,8 @@ if page == "🏠 Dashboard":
                     f"**{_total_out}** outreach")
         _strip_df = pd.DataFrame([
             {"day": _dd.strftime("%a %d"), "lane": _lane, "n": _act_applied[(_dd, _lane)],
-             "order": {"ALM": 0, "Vendor": 1, "Other": 2}[_lane]}
-            for _dd in _act_days for _lane in ("ALM", "Vendor", "Other")
+             "order": _LANE_STRIP_ORDER.index(_lane)}
+            for _dd in _act_days for _lane in _LANE_STRIP_ORDER
         ])
         _strip_chart = (
             _alt_strip.Chart(_strip_df)
@@ -4505,8 +4522,8 @@ if page == "🏠 Dashboard":
                 y=_alt_strip.Y("n:Q", title="Applied", stack="zero"),
                 color=_alt_strip.Color("lane:N", title="Lane",
                     scale=_alt_strip.Scale(
-                        domain=["ALM", "Vendor", "Other"],
-                        range=["#16a34a", "#f59e0b", "#94a3b8"])),
+                        domain=_LANE_STRIP_ORDER,
+                        range=[_LANE_STRIP_COLOR[l] for l in _LANE_STRIP_ORDER])),
                 order=_alt_strip.Order("order:Q", sort="ascending"),
                 tooltip=["day:N", "lane:N", "n:Q"],
             )
@@ -4514,7 +4531,7 @@ if page == "🏠 Dashboard":
         )
         st.altair_chart(_strip_chart, use_container_width=True)
         st.caption(" · ".join(
-            f"**{_dd.strftime('%a')}** {sum(_act_applied[(_dd, l)] for l in ('ALM','Vendor','Other'))}a / {_act_outreach[_dd]}o"
+            f"**{_dd.strftime('%a')}** {sum(_act_applied[(_dd, l)] for l in _LANE_STRIP_ORDER)}a / {_act_outreach[_dd]}o"
             for _dd in _act_days
         ))
 
@@ -8736,23 +8753,26 @@ elif page == "📝 Content & Memory":
         crit_col1, crit_col2 = st.columns([1, 1], gap="large")
 
         with crit_col1:
-            st.markdown("#### 🔵 PRIMARY Lane — ALM / IRRBB / Model Governance")
+            st.caption("Two primary families · four active lanes (Master Repo §7). "
+                       "Opportunistic: trading-book market-risk capital, consulting.")
+            st.markdown("#### 🔵 PRIMARY Family — Risk & Model Analytics")
             st.markdown(
+                "_Co-equal lanes: ALM/IRRBB/Treasury · Model Validation · "
+                "Investment & Market Risk._  \n"
                 "**Best-fit titles:**  \n"
                 "Director — ALM & Balance Sheet Risk  \n"
                 "Director — IRRBB Modelling  \n"
                 "Senior Manager / Director — Model Risk & Validation  \n"
-                "Head of ALM Analytics  \n"
-                "Director — Treasury Risk  \n"
-                "VP — Balance Sheet Risk"
+                "Director — Investment / Market Risk Analytics (VaR/CVaR)  \n"
+                "Head of ALM Analytics · Director — Treasury Risk"
             )
             st.markdown(
                 "**Evidence stack:**  \n"
-                "• Sign-off authority on multi-asset institutional portfolios (Moody's)  \n"
+                "• Delegated sign-off authority on multi-asset institutional portfolios (Moody's)  \n"
                 "• Cash flow projection engine design & delivery (Moody's)  \n"
                 "• IRRBB-analogous shock analytics & curve calibration (Moody's)  \n"
-                "• LDI and stochastic scenario generators (Ortec)  \n"
-                "• Model governance framework operation (Moody's)"
+                "• VaR/CVaR & portfolio optimization, risk decomposition (Ortec/Moody's)  \n"
+                "• LDI, stochastic scenario generators (Ortec) · model governance (Moody's)"
             )
             st.info(
                 "**Target employers:** Scotiabank · RBC · BMO · CIBC · TD · National Bank · Equitable Bank  \n"
@@ -8760,14 +8780,14 @@ elif page == "📝 Content & Memory":
                 "Manulife · Sun Life · Canada Life · Intact · iA · RGA"
             )
 
-            st.markdown("#### 🟡 SECONDARY Lane — Vendor-Platform / Client Solutions")
+            st.markdown("#### 🟢 PRIMARY Family — Vendor-Platform / Solutions Engineering")
             st.markdown(
+                "_Co-equal with Risk & Model Analytics — runs active outbound._  \n"
                 "**Best-fit titles:**  \n"
-                "Director — Aladdin Client Engagement  \n"
-                "Senior Analytics Specialist  \n"
-                "Director — Risk Solutions  \n"
-                "Product Manager (Risk/ALM platforms)  \n"
-                "Director — Client Advisory"
+                "Director — Aladdin Solutions Engineering / Client Engagement  \n"
+                "Senior Analytics Specialist · Solutions Consultant (Risk Analytics)  \n"
+                "Director — Risk Solutions · Pre-Sales / Solutions Engineering  \n"
+                "Product Specialist (Risk/ALM platforms) · Director — Client Advisory"
             )
             st.markdown(
                 "**Evidence stack:**  \n"
@@ -8778,7 +8798,7 @@ elif page == "📝 Content & Memory":
             )
             st.info(
                 "**Target employers:** BlackRock (Aladdin) · Bloomberg · MSCI · S&P Global  \n"
-                "FactSet · Morningstar DBRS · SS&C Algorithmics · Numerix · Prometeia"
+                "FactSet · Morningstar DBRS · SS&C Algorithmics · Numerix · Prometeia · Clearwater"
             )
 
         with crit_col2:
@@ -10531,11 +10551,11 @@ elif page == "📬 Review Queue":
                 unsafe_allow_html=True,
             )
 
-        # Tag row
+        # Tag row — badge every boosted PRIMARY lane (ALM/VAL/VEN/QUANT).
         _rq_tags = []
         _rq_pv = (_rq_job.get("primary_variant") or "").upper()
-        if _rq_pv in ("ALM", "VAL"):
-            _rq_lane_color = _C_INDIGO if _rq_pv == "ALM" else _C_BLUE
+        if _rq_pv in LANE_MULTIPLIERS:
+            _rq_lane_color = LANE_COLORS.get(_rq_pv, _C_INDIGO)
             _rq_tags.append(
                 f"<span style='color:{_rq_lane_color};font-weight:700'>"
                 f"{_rq_pv} {LANE_MULTIPLIERS[_rq_pv]}×</span>"

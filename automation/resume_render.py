@@ -198,13 +198,25 @@ def _build_education(doc, education):
 # Validation / length / keyword self-check
 # ---------------------------------------------------------------------------
 def validate(content):
+    """Validate that `content` has every field the render path dereferences.
+
+    Contract: if validate() passes, render()/estimate_lines() will not raise a
+    bare KeyError — every []-indexed field below is required here. (Previously
+    only the top-level keys + employer/roles were checked, so malformed-but-
+    passing content crashed mid-render with a confusing traceback.)"""
     errs = []
     for key in ("contact", "summary", "core_skills", "experience", "education"):
         if key not in content:
             errs.append(f"missing required key: {key}")
+    if "name" not in content.get("contact", {}):
+        errs.append("contact missing required 'name'")
     for emp in content.get("experience", []):
         if "employer" not in emp or "roles" not in emp:
             errs.append(f"experience entry missing employer/roles: {emp.get('employer','?')}")
+            continue
+        for role in emp["roles"]:
+            if "title" not in role:
+                errs.append(f"role under '{emp['employer']}' missing required 'title'")
     if errs:
         raise ValueError("Content validation failed:\n  - " + "\n  - ".join(errs))
 
@@ -239,10 +251,21 @@ def estimate_lines(content):
     total += len(content.get("education", [])) + 1
     return total
 
+def _kw_present(keyword, text):
+    """True if `keyword` appears in `text` (both lowercased) as a whole token,
+    not embedded in a larger word — so 'SQL' does NOT match inside 'PostgreSQL'
+    and 'Excel' does NOT match inside 'excellent'. Boundaries are non-word
+    characters; this keeps multi-word and punctuated keywords ('C++', 'value at
+    risk') working."""
+    k = keyword.lower().strip()
+    if not k:
+        return False
+    return re.search(r"(?<!\w)" + re.escape(k) + r"(?!\w)", text) is not None
+
 def keyword_report(content):
     text = _all_text(content).lower()
     kws = content.get("target", {}).get("jd_keywords", [])
-    missing = [k for k in kws if k.lower() not in text]
+    missing = [k for k in kws if not _kw_present(k, text)]
     return kws, missing
 
 # ---------------------------------------------------------------------------
@@ -272,34 +295,89 @@ def render(content, out_path):
 # Output bundling — folder per job, both .docx and .pdf
 # ---------------------------------------------------------------------------
 def _slug(text):
-    return re.sub(r"[^A-Za-z0-9]+", "-", str(text)).strip("-")
+    """Filesystem-safe slug for folder/file names. Drops apostrophes (so
+    "Moody's" -> "Moodys", not "Moody-s") and transliterates accented letters
+    to ASCII (NFKD fold, so "Societe Generale" with accents degrades to
+    "Societe-Generale") before collapsing any remaining non-alphanumerics."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(text))
+    s = s.encode("ascii", "ignore").decode("ascii")   # drop accents
+    s = s.replace("'", "").replace("’", "")        # drop straight + curly apostrophes
+    out = re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-")
+    # An all-non-ASCII name (e.g. CJK) folds to ''; never return empty, or the
+    # folder/file name would collapse to "<date>__<role>".
+    return out or "x"
+
+# Max seconds to wait for a single LibreOffice headless conversion before giving
+# up. A hung/locked soffice (shared-profile lock, recovery dialog) would
+# otherwise block the whole render forever; we'd rather skip the PDF.
+PDF_CONVERT_TIMEOUT = 120
 
 def to_pdf(docx_path, out_dir):
     """Convert .docx -> .pdf via libreoffice/soffice in a private temp dir so
     LibreOffice lock/temp droppings never land in the deliverable folder; only
-    the finished PDF is copied into out_dir. Returns Path or None."""
+    the finished PDF is moved into out_dir. Returns Path or None.
+
+    The conversion is bounded by PDF_CONVERT_TIMEOUT so a hung soffice can't
+    wedge the pipeline, and the finished PDF is placed via an atomic os.replace
+    so an interrupted run never leaves a half-written or silently-stale
+    canonical PDF. If the canonical path is genuinely locked (open in a viewer
+    on the host) we fall back to a '-new.pdf' copy and warn LOUDLY that the
+    canonical file is now stale."""
     soffice = shutil.which("libreoffice") or shutil.which("soffice")
     if not soffice:
         return None
+    import os
     import tempfile
     stem = Path(docx_path).stem
+    # Isolate LibreOffice's per-user profile to a throwaway dir: the shared
+    # profile lock is the most common cause of a headless-soffice hang.
     with tempfile.TemporaryDirectory() as td:
-        subprocess.run([soffice, "--headless", "--convert-to", "pdf",
-                        "--outdir", td, str(docx_path)], check=False, capture_output=True)
+        profile = Path(td) / "lo_profile"
+        # as_uri() emits the schema-correct file:///C:/... on Windows and
+        # file:///tmp/... on POSIX. A hand-built "file://" + path would put the
+        # drive letter in the URI authority on Windows (file://C:/…), which LO
+        # ignores — falling back to the shared profile we're trying to avoid.
+        try:
+            subprocess.run(
+                [soffice, f"-env:UserInstallation={profile.as_uri()}",
+                 "--headless", "--convert-to", "pdf", "--outdir", td, str(docx_path)],
+                check=False, capture_output=True, timeout=PDF_CONVERT_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            print(f"  WARNING: PDF conversion timed out after {PDF_CONVERT_TIMEOUT}s "
+                  f"(LibreOffice hung/locked); PDF skipped.")
+            return None
         tmp_pdf = Path(td) / (stem + ".pdf")
         if not tmp_pdf.exists():
             return None
         dest = Path(out_dir) / (stem + ".pdf")
+        # Stage the result in the destination dir so os.replace is atomic
+        # (same filesystem) and never leaves a partial canonical file.
+        staged = Path(out_dir) / (stem + ".pdf.tmp")
+        shutil.copyfile(tmp_pdf, staged)
         try:
-            shutil.copyfile(tmp_pdf, dest)
+            os.replace(staged, dest)   # atomic overwrite of the canonical name
             return dest
         except PermissionError:
-            # destination is locked (e.g. open in a PDF viewer on the host) —
-            # don't crash the pipeline; write a fresh copy alongside it.
+            # canonical path is locked (e.g. open in a PDF viewer) — we cannot
+            # overwrite or delete an open file on Windows; keep the fresh render
+            # under -new.pdf and make it unmistakable that dest is now STALE.
             alt = Path(out_dir) / (stem + "-new.pdf")
-            shutil.copyfile(tmp_pdf, alt)
-            print(f"  WARNING: {dest.name} is open/locked; wrote {alt.name} instead "
-                  f"(close the open PDF and re-run to overwrite).")
+            try:
+                os.replace(staged, alt)
+            except OSError:
+                # even -new.pdf is locked — never leave the staging temp behind
+                # or crash the pipeline; drop it and report.
+                try:
+                    staged.unlink()
+                except OSError:
+                    pass
+                print(f"  WARNING: both {dest.name} and {alt.name} are open/locked; "
+                      f"PDF not written. Close the open PDF(s) and re-run.")
+                return None
+            print(f"  WARNING: {dest.name} is open/locked and is now STALE; wrote "
+                  f"{alt.name} with the current render. Close the open PDF, delete "
+                  f"the stale {dest.name}, and rename {alt.name} (or re-run).")
             return alt
 
 def bundle(content, base_dir, make_pdf=True, on_date=None):
@@ -318,7 +396,47 @@ def bundle(content, base_dir, make_pdf=True, on_date=None):
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
-SCHEMA = __doc__
+# The actual content-JSON schema (what --schema prints). This is the key shape
+# an AI agent must produce — NOT the module docstring (which is design prose).
+SCHEMA = """resume_content.json — required key shape:
+
+{
+  "contact": {                 # REQUIRED. 'name' is required; rest optional.
+    "name":        str,        #   REQUIRED
+    "credentials": str,        #   optional, e.g. "CFA, MSc"
+    "location":    str,        #   optional
+    "phone":       str,        #   optional
+    "email":       str,        #   optional
+    "linkedin":    str         #   optional, full URL
+  },
+  "target": {                  # optional, but drives folder name + ATS check
+    "company":          str,   #   used in folder/file name
+    "role":             str,   #   used in folder/file name
+    "experience_label": str,   #   optional, overrides the EXPERIENCE heading
+    "jd_keywords":      [str]  #   ATS self-check (whole-token match)
+  },
+  "summary":     str,          # REQUIRED. One paragraph, 60-85 words.
+  "core_skills": [str],        # REQUIRED. Dot-separated on one ATS-safe line.
+  "experience": [              # REQUIRED. List of employers.
+    {
+      "employer": str,         #   REQUIRED
+      "roles": [               #   REQUIRED
+        {
+          "title":         str,   # REQUIRED
+          "location_date": str,   # optional, e.g. "Toronto, May 2023 - Present"
+          "sections": [           # optional
+            {"heading": str|null, # optional sub-heading
+             "bullets": [str]}    # bullet lines
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [str]           # REQUIRED. One string per credential line.
+}
+
+Run --example for a concrete, renderable sample of this shape.
+"""
 
 EXAMPLE = {
     "contact": {"name": "Saber Ayatollahi", "credentials": "CFA, MSc",
@@ -327,7 +445,7 @@ EXAMPLE = {
                 "linkedin": "https://www.linkedin.com/in/sayatollahi/"},
     "target": {"company": "Example Bank", "role": "Director, Risk",
                "jd_keywords": ["market risk", "Python", "SQL"]},
-    "summary": "One tight paragraph, 60-90 words, evidence-backed, opens with target title + years.",
+    "summary": "One tight paragraph, 60-85 words, evidence-backed, opens with target title + years.",
     "core_skills": ["Skill A", "Skill B", "Skill C", "Skill D", "Skill E", "Skill F"],
     "experience": [
         {"employer": "Employer One",
@@ -371,6 +489,8 @@ def main():
             pdf_path = to_pdf(out, Path(out).resolve().parent)
             if pdf_path:
                 print(f"pdf      {pdf_path}")
+            else:
+                print("  WARNING: PDF skipped (libreoffice/soffice not found on PATH)")
     else:
         folder, docx_path, pdf_path = bundle(content, args.bundle_base,
                                              make_pdf=not args.no_pdf, on_date=args.date)

@@ -82,9 +82,12 @@ Extract and write down:
 
 ## Step 2 — Choose positioning (honest, evidence-led)
 
-Master Repo §7 defines two primary angles: **ALM / IRRBB / Model Governance**
-and **Vendor-Platform / Client Solutions**. Pick the closest, then decide the
-overlay:
+Master Repo §7 defines **four PRIMARY lanes** (co-equal): **7.1 ALM / IRRBB /
+Treasury & Balance-Sheet Risk**, **7.2 Model Risk, Validation & Governance**,
+**7.3 Investment & Market Risk Analytics**, **7.4 Vendor-Platform / Solutions
+Engineering**, plus two **opportunistic** lanes (7.5 trading-book market-risk
+capital — FRTB/CCR/CCAR; 7.6 Consulting). Pick the closest primary lane, then
+decide the overlay:
 - If the JD is sell-side / trading-book / market-risk / quant (e.g., RBC GRA),
   keep the ALM/balance-sheet spine but lead the summary and skills with the
   **quant / market-risk** overlay — map transferable evidence (derivatives
@@ -243,7 +246,7 @@ Content: `automation/resume_data/<company>_<role-slug>.json`
 ## B. Professional summary (Jobscan executive formula)
 
 - Shape: **[exact target job title] + [years] + [top 2–3 JD skills] + [1–2
-  quantified achievements] + [unique value]**. 3–5 sentences, **~60–90 words**.
+  quantified achievements] + [unique value]**. 3–5 sentences, **60–85 words**.
 - Use the **exact job title from the posting** somewhere in the summary — Jobscan
   data: exact-title resumes were ~10x more likely to get the interview.
 - **No first-person pronouns** anywhere on the resume (I/me/my). Recast "where I

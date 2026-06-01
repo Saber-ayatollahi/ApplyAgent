@@ -79,6 +79,15 @@ data/lifetime_cost.*.json
 automation/outputs/jd_cache/
 automation/outputs/fit_cache/
 
+# resume_render.py transients. The finished deliverables under applications/
+# are intentionally TRACKED (synced across machines); these are scratch only:
+#   *.pdf.tmp        — atomic-replace staging file (should never persist)
+#   *_preview.pdf / _audit_preview.pdf — ad-hoc render previews dropped into
+#     the resume_data/ INPUT dir; not deliverables. (Already-committed
+#     _audit_preview.pdf stays tracked; this stops NEW previews from leaking.)
+applications/**/*.pdf.tmp
+automation/resume_data/*_preview.pdf
+
 # ============================================================================
 # Tracker / CRM backups — written by auto_promote and the UI
 # ============================================================================

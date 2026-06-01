@@ -75,7 +75,8 @@ def check_packages(o: Outcome):
                 ("dateutil", "python-dateutil"),
                 ("anthropic", "anthropic"),
                 ("pandas", "pandas"),
-                ("streamlit", "streamlit")]
+                ("streamlit", "streamlit"),
+                ("docx", "python-docx")]   # automation/resume_render.py imports docx at module load
     for mod, pkg in required:
         try:
             importlib.import_module(mod)
@@ -96,7 +97,7 @@ def check_files(o: Outcome):
         "automation/jd_scraper.py", "automation/fit_scorer.py",
         "automation/auto_promote.py", "automation/jd_tailor.py",
         "automation/weekly_report.py", "automation/expansion_companies.py",
-        "automation/README.md",
+        "automation/resume_render.py", "automation/README.md",
         "ui/app.py", "ui/requirements.txt", "ui/README.md",
     ]
     for rel in required:
@@ -122,7 +123,8 @@ def check_compile(o: Outcome):
     print("\n[5] Agent scripts compile")
     scripts = ["automation/jd_scraper.py", "automation/fit_scorer.py",
                "automation/auto_promote.py", "automation/jd_tailor.py",
-               "automation/weekly_report.py", "ui/app.py", "verify.py"]
+               "automation/weekly_report.py", "automation/resume_render.py",
+               "ui/app.py", "verify.py"]
     for rel in scripts:
         p = ROOT / rel
         if not p.exists():

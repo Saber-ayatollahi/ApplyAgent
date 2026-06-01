@@ -141,7 +141,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Interest-rate, inflation & currency hedging analysis
 
 ### 4.3 Model Governance & Risk Controls *(primary)*
-- Formal sign-off authority across multi-asset institutional portfolios
+- Delegated sign-off authority across multi-asset institutional portfolios
 - Independent model review & challenge
 - Assumption validation & economic-defensibility assessment
 - Auditability & documentation standards

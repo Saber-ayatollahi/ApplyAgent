@@ -324,7 +324,7 @@ skills:
   # 4.3 Model Governance & Risk Controls (PRIMARY)
   # -------------------------------------------------------------------------
   - id: sk_model_signoff
-    name: "Formal sign-off authority across multi-asset institutional portfolios"
+    name: "Delegated sign-off authority across multi-asset institutional portfolios"
     category: model_governance
     is_primary: true
     level: expert

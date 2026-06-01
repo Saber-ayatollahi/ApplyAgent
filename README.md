@@ -2,7 +2,7 @@
 
 > **Campaign:** 2026-05-03 → 2026-07-12 (10 weeks).
 > **Target:** Director / VP roles in Toronto — two primary families: **Risk & Model Analytics** (ALM/IRRBB/Treasury · Model Validation · Investment & Market Risk Analytics) and **Vendor-Platform / Solutions Engineering**; opportunistic: trading-book market-risk capital (FRTB/CCR/CCAR), consulting.
-> **Architecture:** 5 Python agents + Streamlit dashboard + persistent Claude memory.
+> **Architecture:** 5 Python agents + a canonical resume renderer + Streamlit dashboard + persistent Claude memory.
 
 ---
 
@@ -130,7 +130,7 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 | **`requirements.txt`** | Consolidated Python deps | Once per install |
 | **`operating_cadence.md`** | 10-week calendar, daily ritual, KPI targets, follow-up cadence | Every Monday; ref daily |
 | **`job_tracker_data.json`** | Live pipeline — 96 roles, 14-status funnel, contacts, outreach log | Every application / interview / Friday |
-| **`Saber_Ayatollahi_Master_Repository.md`** | Single source of truth for resumes + cover letters. Tagged bullet library (§5). STAR stories (§6). Two positioning angles (§7) | Before every resume tailoring |
+| **`Saber_Ayatollahi_Master_Repository.md`** | Single source of truth for resumes + cover letters. Tagged bullet library (§5). STAR stories (§6). Two primary families / four active lanes (§7) | Before every resume tailoring |
 | **`Target_Companies_2026.md`** | 155-firm curated shortlist | When considering a new target |
 | **`cover_letter_templates.md`** | 3 templates (ALM-bank / Vendor-platform / Consulting) | Every cover letter |
 | **`interview_prep.md`** | IRRBB/ALM/model-risk/LDI technical Q&A, STAR mapping, per-company prep, interview-day protocol | 1 hour before every interview |
@@ -146,7 +146,8 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 | **`automation/jd_scraper.py`** | Scrape 155 companies (20+ validated Workday + Greenhouse + LinkedIn) | Friday |
 | **`automation/fit_scorer.py`** | Fetch JD + LLM-score (1-10, verdict, gaps, resume variants) with caches | After each scan |
 | **`automation/auto_promote.py`** | Promote scored roles to tracker; auto-expire stale URLs; backup-safe | After each fit_scorer |
-| **`automation/jd_tailor.py`** | JD → tailored resume + cover letter + interview brief | Before every application |
+| **`automation/jd_tailor.py`** | JD → cover letter + interview brief (and draft tailoring notes) | Before every application |
+| **`automation/resume_render.py`** | THE canonical resume renderer: `resume_content.json` → ATS-safe `.docx`/`.pdf`. See `docs/resume_agent_instructions.md` | Every resume |
 | **`automation/weekly_report.py`** | KPI deltas, stale apps, followups due, interview pipeline, next-week targets | Friday 18:00 |
 | **`automation/expansion_companies.py`** | 89-company expansion list (mid-banks, insurers, fintechs, regulators, fund admins) | Read-only reference |
 | **`ui/app.py`** | Streamlit dashboard — 7 pages | When monitoring |
@@ -155,7 +156,7 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 
 ## The discipline
 
-**Two positioning narratives only.** Primary = ALM/IRRBB/Model Governance. Secondary = Vendor-platform. Everything else retired from outbound — see Master Repo §7.
+**Two primary families, four active lanes (see Master Repo §7).** Risk & Model Analytics (ALM/IRRBB/Treasury · Model Validation · Investment & Market Risk) and Vendor-Platform / Solutions Engineering — both run active outbound. Opportunistic: trading-book market-risk capital, consulting.
 
 **Weekly KPIs:**
 - 8 tailored applications
@@ -167,7 +168,7 @@ Every UI edit writes back with a `.bak.<timestamp>.json` safety copy.
 **Every application requires:**
 1. JD verified as live.
 2. Tracker entry updated (`date_jd_verified`, `urgency`).
-3. Resume tailored via `jd_tailor.py`.
+3. Resume tailored via the canonical pipeline — author `resume_content.json` per `docs/resume_agent_instructions.md`, then render with `automation/resume_render.py` (never ship a generic resume).
 4. Cover letter tailored from `cover_letter_templates.md`.
 5. Warm intro attempted (via `recruiter_crm.json`) BEFORE submitting if possible.
 6. `date_applied` and `followup_schedule.next_due` set post-submit.

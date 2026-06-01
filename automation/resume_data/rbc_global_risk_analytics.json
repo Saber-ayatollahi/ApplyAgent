@@ -27,7 +27,7 @@
       "Basel"
     ]
   },
-  "summary": "Quantitative risk and model-governance professional with ~7 years across market and balance-sheet risk, derivatives valuation, and independent model review, aligned to an Associate Director, Global Risk Analytics mandate. Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative) at Moody’s Analytics, independently reviewing and validating pricing and scenario model outputs across rates, FX, and inflation. Strong in Python, MATLAB, SQL, stochastic / Monte Carlo simulation, and statistics, with applied knowledge of Basel-aligned market-risk and stress-testing frameworks. CFA charterholder, dual MSc.",
+  "summary": "Quantitative risk and model-governance professional with ~7 years across market and balance-sheet risk, derivatives valuation, and independent model review, aligned to an Associate Director, Global Risk Analytics mandate. Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative) at Moody’s Analytics, reviewing pricing and scenario outputs across rates, FX, and inflation. Strong in Python, MATLAB, SQL, stochastic and Monte Carlo simulation, and statistics, with applied knowledge of Basel-aligned market-risk and stress-testing frameworks. CFA charterholder, dual MSc.",
   "core_skills": [
     "Market Risk & Balance-Sheet Risk",
     "Derivatives Valuation – Rates, FX, Inflation",
@@ -53,7 +53,7 @@
                 "Hold delegated sign-off authority for valuation, sensitivity, and ALM outputs across multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions before release.",
                 "Independently review and validate derivatives pricing and sensitivity outputs across rates, FX, and inflation, ensuring sensitivities and scenario impacts are consistent at portfolio-level aggregates.",
                 "Review aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes.",
-                "Oversee interest-rate and market exposure under parallel and non-parallel shock scenarios, aligned with IRRBB and Basel Committee market-risk frameworks.",
+                "Oversee interest-rate risk and duration analysis under parallel and non-parallel rate-shock scenarios, aligned with IRRBB and Basel Committee frameworks.",
                 "Document model assumptions, limitations, and testing results to support internal validation and approval, consistent with model-governance documentation standards."
               ]
             },
