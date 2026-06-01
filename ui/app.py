@@ -602,7 +602,11 @@ def _render_add_suppression_form(sectors_module) -> None:
                     "Company", key="_supp_form_company_name",
                     placeholder="RBC, KOHO, …",
                     help="Free text — canonicalized via brand_aliases. "
-                         "RBC ⇄ Royal Bank of Canada match the same key.",
+                         "RBC ⇄ Royal Bank of Canada match the same key. "
+                         "This is a TTL'd triage mute (still scraped). For a "
+                         "PERMANENT source-level block that stops fetching "
+                         "entirely, use 🚫 Excluded companies on the ① Inputs "
+                         "card.",
                 )
         with c_dur:
             ttl_choice = st.selectbox(
@@ -651,6 +655,128 @@ def _render_add_suppression_form(sectors_module) -> None:
                     icon="⚠️",
                 )
             st.rerun()
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def _excludable_company_groups() -> list[tuple[str, list[dict]]]:
+    """Canonical-deduped TARGETS companies grouped by sector, for the exclude
+    checkbox UI.
+
+    Returns [(sector, [{canon, label, names:[...]}, ...]), ...] with the Big-6
+    sector first. De-dupes by canonical key so RBC / RBC Global Asset
+    Management collapse onto ONE checkbox (avoids a Streamlit duplicate-key
+    crash AND makes the one-box-affects-two behaviour explicit via `names`).
+    Display label = the SHORTEST raw name for the key (deterministic). Cached
+    5 min — TARGETS is a static module constant."""
+    try:
+        sys.path.insert(0, str(ROOT / "automation"))
+        from jd_scraper import TARGETS  # noqa: E402
+        from brand_aliases import canonical_brand  # noqa: E402
+    except Exception:
+        return []
+
+    # canon -> {sector, names:set}. First sector wins for grouping; the bank
+    # block is listed before its asset-management siblings in TARGETS, so the
+    # Big-6 entries land under "Canadian Big 6 Banks".
+    by_canon: dict[str, dict] = {}
+    sector_order: list[str] = []
+    for t in TARGETS:
+        name = t.get("name", "")
+        sector = t.get("sector", "") or "(unsectored)"
+        canon = canonical_brand(name).lower()
+        if not canon:
+            continue
+        if canon not in by_canon:
+            by_canon[canon] = {"sector": sector, "names": []}
+            if sector not in sector_order:
+                sector_order.append(sector)
+        by_canon[canon]["names"].append(name)
+
+    groups: dict[str, list[dict]] = {}
+    for canon, info in by_canon.items():
+        label = min(info["names"], key=len)  # shortest = cleanest display name
+        groups.setdefault(info["sector"], []).append({
+            "canon": canon, "label": label, "names": sorted(info["names"]),
+        })
+
+    # Big-6 first (the headline use case), then the rest in TARGETS order.
+    ordered = sorted(
+        sector_order,
+        key=lambda s: (0 if "Big 6" in s else 1, sector_order.index(s)),
+    )
+    return [(s, sorted(groups[s], key=lambda g: g["label"])) for s in ordered]
+
+
+def _render_excluded_companies_admin() -> None:
+    """Permanent company exclude-list admin — checkboxes over TARGETS.
+
+    Distinct from suppressions: this is a PERMANENT, source-level block (the
+    scraper never queries the company, both Gmail paths drop its rows, and
+    worklist rebuild never re-materializes them). No TTL, no reason.
+
+    State model is Cluster-A-safe: the on-disk `data/excludes.json` is the SOLE
+    source of truth, read FRESH every render. The checkbox `value` derives from
+    disk membership; on a change we diff the widget return against DISK (never
+    against a seeded session value), write immediately, and rerun. So an
+    unrelated rerun on the same card can never drift the rendered state."""
+    try:
+        from automation import excludes as _excl  # noqa: WPS433
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"Exclude-list module unavailable: {exc}", icon="⚠️")
+        return
+
+    try:
+        disk_set = _excl.load()
+    except Exception as exc:  # noqa: BLE001
+        st.warning(f"Could not read exclude-list: {exc}", icon="⚠️")
+        return
+
+    groups = _excludable_company_groups()
+    if not groups:
+        st.caption("Target list unavailable — cannot render exclude controls.")
+        return
+
+    st.caption(
+        "Tick a company to **permanently** stop fetching its jobs — from the "
+        "web scrape, both Gmail paths, and worklist rebuilds. Untick to bring "
+        "it back. This is a hard source-level block; for a temporary lane "
+        "mute use 🔇 suppressions on the ③ Triage card instead."
+    )
+
+    for sector, items in groups:
+        st.markdown(f"**{sector}**")
+        # Up to 3 checkboxes per row to keep the list compact.
+        for i in range(0, len(items), 3):
+            cols = st.columns(3)
+            for col, item in zip(cols, items[i:i + 3]):
+                canon = item["canon"]
+                label = item["label"]
+                # Name the siblings one box silences, so it's never a surprise.
+                others = [n for n in item["names"] if n != label]
+                help_txt = (f"Also affects: {', '.join(others)} "
+                            f"(shared canonical key {canon!r})." if others
+                            else f"Canonical key {canon!r}.")
+                shown = label + (f"  ＋{len(others)}" if others else "")
+                on_disk = canon in disk_set
+                checked = col.checkbox(
+                    shown, value=on_disk, key=f"_excl_cb_{canon}",
+                    help=help_txt,
+                )
+                if checked != on_disk:           # diff vs DISK, never session
+                    try:
+                        if checked:
+                            _excl.add(label)
+                        else:
+                            _excl.remove(label)
+                    except Exception as exc:  # noqa: BLE001
+                        st.error(f"Exclude-list write failed: {exc}", icon="❌")
+                    else:
+                        verb = "Excluded" if checked else "Restored"
+                        st.toast(f"{verb} {label}"
+                                 + (f" (+{len(others)} sibling"
+                                    f"{'s' if len(others) != 1 else ''})"
+                                    if others else ""))
+                    st.rerun()
 
 
 def _classify_worklist_against_cache() -> dict:
@@ -790,6 +916,7 @@ def render_two_sources_panel(container=None) -> None:
     gmail_alerts = gmail_diag.get("linkedin_alerts_seen", 0)
     gmail_parsed = gmail_diag.get("rows_parsed", 0)
     gmail_geo_drops = gmail_diag.get("rows_dropped_location", 0)
+    gmail_excluded_drops = gmail_diag.get("rows_dropped_excluded", 0)
     gmail_quarantine = len(gmail_diag.get("quarantine", []) or [])
     gmail_age = (_file_age_hours(gmail_path) if gmail_path else None)
 
@@ -807,6 +934,7 @@ def render_two_sources_panel(container=None) -> None:
     wl_gmail = wl_stats.get("gmail", 0)
     wl_both = wl_stats.get("both", 0)
     wl_new = wl_stats.get("new_since_last_score", 0)
+    wl_excluded = wl_stats.get("excluded_dropped", 0)
     wl_merges = len(wl_d.get("merged_pairs", []) or [])
     wl_quarantine = len(wl_d.get("quarantine", []) or [])
     wl_age = _file_age_hours(wl_path) if wl_path.exists() else None
@@ -870,6 +998,8 @@ def render_two_sources_panel(container=None) -> None:
                 _bits = []
                 if gmail_geo_drops:
                     _bits.append(f"{gmail_geo_drops} geo")
+                if gmail_excluded_drops:
+                    _bits.append(f"{gmail_excluded_drops} excluded")
                 if gmail_quarantine:
                     _bits.append(f"{gmail_quarantine} ⚠ quarantine")
                 if _bits:
@@ -903,6 +1033,8 @@ def render_two_sources_panel(container=None) -> None:
                 _wl_bits = []
                 if wl_merges:
                     _wl_bits.append(f"{wl_merges} merges")
+                if wl_excluded:
+                    _wl_bits.append(f"{wl_excluded} excluded")
                 if wl_quarantine:
                     _wl_bits.append(f"{wl_quarantine} ⚠ quarantine")
                 if _wl_bits:
@@ -953,6 +1085,30 @@ def render_two_sources_panel(container=None) -> None:
                 f"and make ~{cls['needs_llm']:,} API call(s) for the "
                 f"uncached ones."
             )
+
+    # ── Permanent company exclude-list ──────────────────────────────────
+    # Always-visible summary (names listed even when collapsed) so an
+    # accidental tick is obvious at a glance. The checkbox admin is gated
+    # behind an inspect toggle that auto-opens on first run (nothing excluded
+    # yet) for discoverability. Reads disk fresh — the count is cheap.
+    target.markdown("")  # spacer
+    try:
+        from automation import excludes as _excl_mod  # noqa: WPS433
+        _excl_entries = _excl_mod.list_excluded()
+    except Exception:
+        _excl_entries = []
+    _excl_n = len(_excl_entries)
+    if _excl_n:
+        _names = ", ".join(e.get("name", "?") for e in _excl_entries)
+        target.caption(f"🚫 **{_excl_n} excluded** (never fetched): {_names}")
+    else:
+        target.caption("🚫 No companies excluded — tick one below to never "
+                       "fetch its jobs again.")
+    if _vc_inspect_toggle(
+        "inputs_exclude", "🚫 Excluded companies (never fetch)",
+        default=(_excl_n == 0),
+    ):
+        _render_excluded_companies_admin()
 
 
 def render_latest_outputs_row(container=None, key_prefix: str = "out") -> None:
@@ -1042,6 +1198,17 @@ def _vc_inspect_toggle(stage: str, label: str, default: bool = False) -> bool:
     return st.session_state[_key]
 
 
+# v3.2: maps each stage-card inspect toggle to the Pipeline sub-page that hosts
+# it, so a banner CTA can cross pages (see _route_banner_cta). Keys match the
+# `_vc_inspect_<stage>` toggle names; values are the `_nav_sub_🎯 Pipeline` keys.
+_TOGGLE_TO_SUBPAGE = {
+    "worklist": "Refresh",   # ② Worklist inspect → ① Refresh view
+    "triage":   "Score",     # ③ Triage / suppressions → ② Score view
+    "scoring":  "Score",     # ④ Scoring verdicts → ② Score view
+    "promote":  "Promote",   # ⑤ Auto-promote → ③ Promote view
+}
+
+
 def _route_banner_cta(action: str | None, active_runs: list | None = None) -> None:
     """Make the top-of-page banner CTA actually *do* something.
 
@@ -1054,20 +1221,29 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
                          [✅ Apply to tracker] commit button (preview→commit,
                          the flow the user picked). Skips the launch if a run
                          is already active.
-      • score          → open ⑤ (the Score button lives in the run card). Not
+      • score          → open ④ Scoring (② Score view — the 🤖 Score worklist
+                         button lives there after the v3.2 split). Not
                          auto-launched — scoring costs API spend, so the user
                          clicks the cost-labelled button themselves.
-      • review_verdicts → open ④ (verdicts live in the scored card).
-      • review_suppressions → open ③ Triage (suppression admin lives there).
-      • refresh / setup / retry_* → open ⑤ (scrape/Gmail launch buttons).
+      • review_verdicts → ② Score (verdicts live in the ④ scored card).
+      • review_suppressions → ② Score (③ Triage suppression admin).
+      • refresh / setup / retry_* → ① Refresh, where the always-visible 🛰
+                         scrape / 📬 Gmail launch buttons live on the ① Inputs
+                         card. (No inspect toggle — those buttons aren't gated.)
       • stop_run       → signal-stop the active run immediately.
       • quarantine     → open ② so the user can inspect the merged pool.
       • set_api_key    → guidance toast (the key widget owns its sidebar
                          expander; we can't force it open from here).
 
+    Page routing: `open_toggle` opens a card's _vc_inspect_<stage> flag AND
+    implies its host sub-page via _TOGGLE_TO_SUBPAGE. `target_view` overrides
+    the destination sub-page WITHOUT opening a toggle — used for the refresh/
+    setup/retry CTAs whose launch buttons are always-visible on ① Refresh.
+
     All paths end in st.rerun() so the freshly-set toggle/flags take effect.
     """
     open_toggle = None          # which _vc_inspect_<stage> to force-open
+    target_view = None          # explicit Pipeline sub-page (Refresh/Score/Promote)
     toast = None
 
     if action == "promote":
@@ -1092,8 +1268,11 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
         else:
             toast = "A run is active — opened ⑤; preview once it finishes."
     elif action == "score":
-        open_toggle = "promote"
-        toast = "Opened ⑤ — hit 🤖 Score worklist (cost shown on the button)."
+        # 🤖 Score worklist now lives on the ④ Scoring card (② Score view),
+        # not the ⑤ run card — route there. Not auto-launched: scoring costs
+        # API spend, so the user clicks the cost-labelled button themselves.
+        open_toggle = "scoring"
+        toast = "Opened ④ Scoring — hit 🤖 Score worklist (cost shown on the button)."
     elif action in ("review_verdicts",):
         open_toggle = "scoring"
         toast = "Opened ④ Scoring — inspect verdicts to hand-pick roles."
@@ -1101,15 +1280,15 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
         open_toggle = "triage"
         toast = "Opened ③ Triage — manage suppressions in the admin panel."
     elif action == "refresh":
-        open_toggle = "promote"
-        toast = "Opened ⑤ — launch 🛰 scrape / 📬 Gmail to refresh inputs."
+        target_view = "Refresh"
+        toast = "Opened ① Refresh — launch 🛰 scrape / 📬 Gmail to refresh inputs."
     elif action == "setup":
-        open_toggle = "promote"
-        toast = ("Opened ⑤ — connect Gmail in the sidebar, then launch a "
-                 "scrape to populate the worklist.")
+        target_view = "Refresh"
+        toast = ("Opened ① Refresh — connect Gmail in the sidebar, then launch "
+                 "a scrape to populate the worklist.")
     elif action and action.startswith("retry_"):
-        open_toggle = "promote"
-        toast = f"Opened ⑤ — relaunch the {action[len('retry_'):]} stage."
+        target_view = "Refresh"
+        toast = f"Opened ① Refresh — relaunch the {action[len('retry_'):]} stage."
     elif action == "stop_run":
         _runs = active_runs or []
         if _runs:
@@ -1131,6 +1310,17 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
 
     if open_toggle:
         st.session_state[f"_vc_inspect_{open_toggle}"] = True
+    # v3.2: the stage cards now live on 3 separate Pipeline sub-pages, so
+    # opening a toggle is no longer enough — we must also switch to the page
+    # that hosts that card, or the toggle opens an off-page card and nothing
+    # visible happens. This handler runs AFTER the Pipeline sub-radio has
+    # instantiated, so a direct write to its key is dropped by Streamlit.
+    # Stash the target in a non-widget key; the pre-radio transfer block
+    # (near the legacy-nav shim) applies it next run. An explicit target_view
+    # wins over the toggle-implied page (for CTAs with no card to open).
+    _sub = target_view or _TOGGLE_TO_SUBPAGE.get(open_toggle)
+    if _sub:
+        st.session_state["_pipe_pending_view"] = _sub
     if toast:
         st.toast(toast)
     st.rerun()
@@ -2369,6 +2559,123 @@ def _fmt_eta(secs: float | None) -> str:
     return f"{secs // 3600}h {(secs % 3600) // 60}m"
 
 
+def _render_scorer_status(container=None, scorer_running: bool = False) -> None:
+    """Always-visible operational summary of the LAST scoring run — the
+    'how did scoring go' table for the ② Score page's ④ Scoring card.
+
+    Distinct from `render_scorer_progress` (which is the LIVE in-flight panel,
+    only shown while state=='running'). This reads the persisted
+    `fit_scorer_progress.json` (counters survive past the run) + the latest
+    `*_scored.json` (stage counts, scored_at, fatal api_error) and shows:
+    total input · triaged · scored · cached(free) · new(paid) · errors ·
+    model · last-run age, plus a fatal-error warning and a Logs expander.
+
+    Sources are all on-disk; degrades to a single caption when nothing has run.
+    """
+    tgt = container if container is not None else st
+
+    # While a run is live the LIVE panel above owns the numbers — don't show a
+    # stale post-run snapshot underneath it.
+    if scorer_running:
+        tgt.caption("🟡 Scoring in progress — live counts in the panel above.")
+        return
+
+    prog = load_scorer_progress() or {}
+    # Latest scored artifact (worklist_scored.json or scan_*_scored.json).
+    _scored_files = sorted(OUT_DIR.glob("*_scored.json"),
+                           key=lambda p: p.stat().st_mtime, reverse=True)
+    sc = {}
+    scored_name = None
+    if _scored_files:
+        scored_name = _scored_files[0].name
+        try:
+            sc = json.loads(_scored_files[0].read_text(encoding="utf-8"))
+        except Exception:
+            sc = {}
+
+    if not prog and not sc:
+        tgt.caption("No scoring run yet — run the scorer from the launch card.")
+        return
+
+    total_input = sc.get("total_input")
+    triaged = sc.get("stage1_passed")
+    scored = sc.get("stage2_scored", prog.get("current"))
+    cached = prog.get("cache_hits")
+    cost = prog.get("cost") or {}
+    new_paid = cost.get("llm_calls")
+    if new_paid is None and scored is not None and cached is not None:
+        new_paid = max(scored - cached, 0)
+    errors = prog.get("errors")
+
+    # Model: prefer the model(s) actually used this run (per_model in the cost
+    # block), else the configured constant. Strip the date suffix for display.
+    model = None
+    per_model = cost.get("per_model") or {}
+    if per_model:
+        model = max(per_model, key=lambda m: (per_model[m] or {}).get("calls", 0))
+    if not model:
+        try:
+            from fit_scorer import MODEL as _fs_model  # type: ignore
+            model = _fs_model
+        except Exception:
+            model = None
+    model_disp = None
+    if model:
+        # claude-haiku-4-5-20251001 -> haiku-4-5
+        m = model.replace("claude-", "")
+        m = "-".join(part for part in m.split("-") if not part.isdigit() or len(part) < 5)
+        model_disp = m
+
+    # Last-run age from scored_at (ISO, possibly trailing 'Z').
+    last_age_h = None
+    _sat = sc.get("scored_at")
+    if _sat:
+        try:
+            _dt = datetime.fromisoformat(_sat.rstrip("Z"))
+            last_age_h = (datetime.now(timezone.utc).replace(tzinfo=None) - _dt).total_seconds() / 3600.0
+        except Exception:
+            last_age_h = None
+
+    def _v(x):
+        return f"{x:,}" if isinstance(x, int) else (x if x is not None else "—")
+
+    tgt.markdown("**📊 Last scoring run**")
+    _r1 = tgt.columns(4)
+    _r1[0].metric("Input", _v(total_input))
+    _r1[1].metric("Triaged", _v(triaged))
+    _r1[2].metric("Scored", _v(scored))
+    _r1[3].metric("Errors", _v(errors))
+    _r2 = tgt.columns(4)
+    _r2[0].metric("Cached (free)", _v(cached))
+    _r2[1].metric("New (paid)", _v(new_paid))
+    _r2[2].metric("Model", model_disp or "—")
+    _r2[3].metric("Last run", _humanize_age_h(last_age_h))
+
+    if sc.get("api_error"):
+        tgt.warning(f"⚠️ Last run hit a fatal API error: {sc['api_error']}", icon="⚠️")
+
+    # Logs: tail the most recent score/pipeline run.
+    with tgt.expander("📜 Scoring logs (latest run)", expanded=False):
+        try:
+            _runs = scan_runner.list_runs(limit=20)
+            _score_run = next(
+                (r for r in _runs
+                 if any(k in (r.get("label") or "").lower()
+                        for k in ("score", "pipeline", "fit_scorer"))),
+                None,
+            )
+            if _score_run and _score_run.get("log_path"):
+                st.caption(f"`{_score_run.get('label', '?')}` · "
+                           f"{_score_run.get('state', '?')} · "
+                           f"{human_elapsed(_score_run.get('started_at'), _score_run.get('finished_at'))}")
+                _tail = scan_runner.tail_log(_score_run["log_path"], max_bytes=8000)
+                st.code(_tail or "(empty log)", language="text")
+            else:
+                st.caption("No score/pipeline run log found.")
+        except Exception as _e:  # noqa: BLE001
+            st.caption(f"Logs unavailable: {_e}")
+
+
 def render_scorer_progress(container=None, title: str = "🤖 Scoring in progress"):
     """Render a live progress bar + ETA + recent candidates table for the fit scorer.
 
@@ -3124,7 +3431,9 @@ _NAV_GROUPS = {
         ("Follow-ups",  "🔔 Follow-ups"),
     ],
     "🎯 Pipeline": [
-        ("",            "🎯 Pipeline"),     # single-page group, no sub-radio
+        ("Refresh",     "🎯 Pipeline · Refresh"),   # ① Inputs + ② Worklist
+        ("Score",       "🎯 Pipeline · Score"),     # ③ Triage + ④ Scoring
+        ("Promote",     "🎯 Pipeline · Promote"),   # ⑤ Auto-promote + ⑥ Tracker
     ],
     "📋 Roles": [
         ("Tracker",     "📋 Jobs Kanban"),
@@ -3148,6 +3457,10 @@ _LEGACY_PAGE_TO_GROUP = {
     for group, items in _NAV_GROUPS.items()
     for (child_label, child_page) in items
 }
+# v3.2: the former single "🎯 Pipeline" page split into 3 sub-pages. A saved
+# nav state (or AppTest / external write) using the old string resolves to the
+# ① Refresh view so old deep-links and existing tests keep working.
+_LEGACY_PAGE_TO_GROUP["🎯 Pipeline"] = ("🎯 Pipeline", "Refresh")
 
 
 # Backwards-compat: if the user (or the AppTest harness) wrote one of
@@ -3159,8 +3472,31 @@ _nav_state = st.session_state.get("_applyagent_nav")
 if _nav_state in _LEGACY_PAGE_TO_GROUP:
     _legacy_group, _legacy_child = _LEGACY_PAGE_TO_GROUP[_nav_state]
     st.session_state["_applyagent_nav"] = _legacy_group
-    if _legacy_child:
+    # A genuine OLD child page-name (e.g. "📥 Outcome Inbox" → Replies)
+    # unambiguously dictates its child, so force it — otherwise a stale
+    # sub-pick left over from a previous visit to that group wins and the
+    # deep-link lands on the wrong page. The ONLY exception is the bare
+    # "🎯 Pipeline" SELF-alias (key == group): it has no inherent child, so an
+    # explicit pick (a banner CTA's pending view, or a saved Score/Promote
+    # selection) must survive rather than being reset to Refresh every rerun.
+    _is_self_alias = (_nav_state == _legacy_group)
+    if _legacy_child and not (
+        _is_self_alias and st.session_state.get(f"_nav_sub_{_legacy_group}")
+    ):
         st.session_state[f"_nav_sub_{_legacy_group}"] = _legacy_child
+
+# Deferred nav jump (v3.2). Streamlit drops a write to a widget's key made
+# AFTER that widget is instantiated in the same run. A banner CTA fired from
+# the Pipeline page runs after the Pipeline sub-radio has already rendered, so
+# it can't switch the sub-page directly. Instead it stashes the target in the
+# non-widget key `_pipe_pending_view`; we transfer it to the sub-radio key HERE
+# — before the radios instantiate — then clear it. (Cross-GROUP jumps already
+# work because the destination group's sub-radio hasn't rendered yet; this
+# covers the within-Pipeline case the banner needs.)
+_pending_view = st.session_state.pop("_pipe_pending_view", None)
+if _pending_view in ("Refresh", "Score", "Promote"):
+    st.session_state["_applyagent_nav"] = "🎯 Pipeline"
+    st.session_state["_nav_sub_🎯 Pipeline"] = _pending_view
 
 _nav_pick = st.sidebar.radio(
     "Navigate",
@@ -5174,28 +5510,32 @@ elif page == "📥 Outcome Inbox":
 # ============================================================================
 # 🎯 PIPELINE  — the agentic flow, end-to-end
 # ============================================================================
-elif page == "🎯 Pipeline":
-    st.title("🎯 Agentic Pipeline")
-    st.caption(
-        "Scrape → Score → Triage → Promote → Tailor. "
-        "One flow; one click runs the whole chain. Each stage can also be run in isolation."
-    )
-
-    # ---------- Layout toggle (strangler-fig) ----------
-    # Two layouts coexist behind this flag while the vertical 6-card design
-    # (docs/pipeline_redesign_mockup.md) reaches parity with the legacy
-    # tabbed layout. Both call the SAME tested render functions; only the
-    # arrangement differs. Default ON (vertical) once parity is verified;
-    # the classic tabs remain one toggle away as an escape hatch.
-    _vert_default = st.session_state.get("_pipe_vertical_layout", True)
-    with st.sidebar:
-        _PIPE_VERTICAL = st.toggle(
-            "🧱 Vertical pipeline layout",
-            value=_vert_default,
-            key="_pipe_vertical_layout",
-            help="New top-to-bottom stage-card flow with per-card downloads. "
-                 "Turn off to fall back to the classic tabbed layout.",
-        )
+elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
+              "🎯 Pipeline · Promote"):
+    # v3.2 — the former single Pipeline page is split into 3 sub-pages
+    # (Refresh / Score / Promote) selected by the sidebar sub-radio. The
+    # preamble (state computation + banner + shared chrome) is identical for
+    # all three; `_pipe_view` selects which 2 stage cards render at the
+    # dispatcher below. The legacy "🎯 Pipeline" page string resolves to
+    # Refresh via the nav back-compat alias.
+    _pipe_view = page.rsplit("·", 1)[-1].strip()  # "Refresh" | "Score" | "Promote"
+    # The classic-tabs escape hatch is gone; the vertical card layout is the
+    # only layout now, split across the 3 views below.
+    _view_titles = {
+        "Refresh": "🎯 Pipeline · ① Refresh",
+        "Score":   "🎯 Pipeline · ② Score",
+        "Promote": "🎯 Pipeline · ③ Promote",
+    }
+    _view_captions = {
+        "Refresh": "Pull jobs in (web scrape + Gmail) and build the worklist. "
+                   "Stages ① Inputs + ② Worklist.",
+        "Score":   "Triage the pool and score fit with the LLM. "
+                   "Stages ③ Triage + ④ Scoring.",
+        "Promote": "Promote scored roles into the tracker and act on them. "
+                   "Stages ⑤ Auto-promote + ⑥ Tracker.",
+    }
+    st.title(_view_titles.get(_pipe_view, "🎯 Agentic Pipeline"))
+    st.caption(_view_captions.get(_pipe_view, ""))
 
     # ---------- Banner state machine (priority ladder) ---------
     # The single primary CTA, computed every render from on-disk state per
@@ -5254,26 +5594,26 @@ elif page == "🎯 Pipeline":
         _bn = pipeline_state.compute_next_action(_bn_snap)
         _promotable_n = getattr(_bn_snap, "promotable_count", None)
 
-        with st.container(border=True):
-            _bn_c1, _bn_c2 = st.columns([5, 2], vertical_alignment="center")
-            with _bn_c1:
-                st.markdown(f"### {_bn.icon} {_bn.headline}")
-                if _bn.detail:
-                    st.caption(_bn.detail)
-                if _bn.chips:
-                    chip_md = "  ".join(
-                        f"{c.icon} {c.label}" for c in _bn.chips
-                    )
-                    st.caption(chip_md)
-            with _bn_c2:
-                if _bn.cta_label:
-                    # Live CTA: clicking routes to the matching stage card —
-                    # opens its inspect toggle so the body is visible, and for
-                    # the explicitly-actionable states launches the work
-                    # (promote-preview, score, stop). Streamlit has no scroll
-                    # anchor, so "go to the stage" = expand its card. See
-                    # _route_banner_cta for the per-action behaviour.
-                    if st.button(
+        # The next-action banner renders ONLY on the ③ Promote view. The
+        # snapshot above is still computed on every view because the ⑤
+        # Auto-promote card consumes `_promotable_n`; only the visible banner
+        # is gated. The Dashboard has its own (richer) Next-Best-Action hero,
+        # and Refresh/Score shouldn't be dominated by a promote CTA — so the
+        # banner is Promote-only here.
+        if _pipe_view == "Promote":
+            with st.container(border=True):
+                _bn_c1, _bn_c2 = st.columns([5, 2], vertical_alignment="center")
+                with _bn_c1:
+                    st.markdown(f"### {_bn.icon} {_bn.headline}")
+                    if _bn.detail:
+                        st.caption(_bn.detail)
+                    if _bn.chips:
+                        chip_md = "  ".join(
+                            f"{c.icon} {c.label}" for c in _bn.chips
+                        )
+                        st.caption(chip_md)
+                with _bn_c2:
+                    if _bn.cta_label and st.button(
                         _bn.cta_label, key=f"_banner_cta_{_bn.state}",
                         type="primary", width="stretch",
                     ):
@@ -5390,41 +5730,60 @@ elif page == "🎯 Pipeline":
             if _latest_scored:
                 st.caption(f"📁 Scored: `{_latest_scored.name}` ({_age_label(_latest_scored)})")
         with la3:
-            # "What to do next" — the key question
-            _scored_matches_scan = False
-            if _latest_web and _latest_scored:
-                _scored_matches_scan = _latest_web.stem in _latest_scored.name
-            _has_real_scores = False
-            if _latest_scored:
-                try:
-                    _sd = json.loads(_latest_scored.read_text(encoding="utf-8"))
-                    _has_real_scores = bool(_sd.get("stage2_scored"))
-                except Exception:
-                    pass
+            # The "Next step" hint answers a pull-jobs-in / get-them-scored
+            # workflow question ("have I scanned? have I scored?"). On the ③
+            # Promote view the user already has scored data and is acting on it —
+            # and the Promote-only next-action banner (doc §503) owns "what now?"
+            # there. Rendering this hint on Score/Promote duplicated/contradicted
+            # that banner, so it's gated to ① Refresh only.
+            if _pipe_view == "Refresh":
+                # "What to do next" — the key question.
+                # Freshness is decided by MTIME, not by filename stem. The pipeline
+                # scores the merged worklist (`worklist.json` → `worklist_scored.json`,
+                # the v3 worklist contract), so the old `scan_<stamp>` stem is NOT in
+                # the scored filename — a stem match falsely reported "not scored yet"
+                # even with 512 real LLM scores on disk. A scored artifact is current
+                # when it's at least as new as the latest web scan.
+                _scored_is_current = False
+                if _latest_web and _latest_scored:
+                    try:
+                        _scored_is_current = (
+                            _latest_scored.stat().st_mtime >= _latest_web.stat().st_mtime
+                        )
+                    except Exception:
+                        _scored_is_current = False
+                _has_real_scores = False
+                if _latest_scored:
+                    try:
+                        _sd = json.loads(_latest_scored.read_text(encoding="utf-8"))
+                        _has_real_scores = bool(_sd.get("stage2_scored"))
+                    except Exception:
+                        pass
 
-            st.markdown("**Next step**")
-            if not _latest_web:
-                st.caption("🔴 No scan — run a scrape first")
-            elif not _latest_scored or not _scored_matches_scan:
-                st.caption(
-                    f"🟡 Scan exists but not scored yet. "
-                    f"Run scorer on `{_latest_web.name}`"
-                )
-            elif not _has_real_scores:
-                st.caption(
-                    "🟡 Only rule-triaged (dry-run) — "
-                    "run with API key to get LLM scores"
-                )
-            elif _last_event_state == "failed":
-                st.caption("🔴 Last run failed — check error, fix, re-run")
-            else:
-                st.caption("🟢 Scan + score complete — review Inspect tab")
+                st.markdown("**Next step**")
+                if not _latest_web:
+                    st.caption("🔴 No scan — run a scrape first")
+                elif not _latest_scored or not _scored_is_current:
+                    st.caption(
+                        f"🟡 New scan since last score. "
+                        f"Run scorer on `{_latest_web.name}`"
+                    )
+                elif not _has_real_scores:
+                    st.caption(
+                        "🟡 Only rule-triaged (dry-run) — "
+                        "run with API key to get LLM scores"
+                    )
+                elif _last_event_state == "failed":
+                    st.caption("🔴 Last run failed — check error, fix, re-run")
+                else:
+                    st.caption("🟢 Scan + score complete — review Inspect tab")
 
-    # ---------- Nightly refresh strip ----------
+    # ---------- Nightly refresh strip (Refresh view only) ----------
     # nightly_refresh.py runs daily at 6:30 AM via Windows Task Scheduler
     # (ApplyAgent_NightlyRefresh) and produces delta_YYYYMMDD.json +
     # brief_YYYYMMDD.json. Surface its last run so the user knows the
-    # background loop is alive (or noticed it's stalled).
+    # background loop is alive (or noticed it's stalled). The nightly loop IS
+    # the refresh/scrape path, so this strip lives on the ① Refresh view.
     try:
         _delta_files = sorted(OUT_DIR.glob("delta_*.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -5436,7 +5795,8 @@ elif page == "🎯 Pipeline":
         _latest_delta = None
         _latest_brief = None
 
-    with st.container(border=True):
+    if _pipe_view == "Refresh":
+      with st.container(border=True):
         nc1, nc2, nc3 = st.columns([2, 3, 2])
         with nc1:
             st.markdown("**Nightly refresh** (6:30 AM daily)")
@@ -5467,8 +5827,39 @@ elif page == "🎯 Pipeline":
             st.markdown("**Schedule**")
             st.caption("Windows Task Scheduler · `ApplyAgent_NightlyRefresh`")
             st.caption("Run manually: `schtasks /run /tn ApplyAgent_NightlyRefresh`")
+            # 🌅 Full refresh — runs the whole nightly chain NOW (scrape →
+            # rebuild → score → brief). Relocated here from the Promote run card
+            # (v3.2 strict split): it's the in-app equivalent of the scheduled
+            # nightly above, so it belongs on the ① Refresh view beside it.
+            # Guards recomputed locally (the run-card locals aren't in scope here).
+            _nr_key_ok = api_key.is_key_valid()
+            _nr_can_run = not any_work_active
+            _nr_scrape_age = _web_scan_age_hours()
+            _nr_scrape_fresh = _nr_scrape_age is not None and _nr_scrape_age < 24
+            _nr_brief_today = _today_brief_exists()
+            _nr_help = ("Scrape → rebuild worklist → score → morning brief. "
+                        "~25 min, ~$0.03. Requires API key.")
+            if _nr_scrape_fresh:
+                _nr_help += (f" ⚠️ Scan is only {_nr_scrape_age:.0f}h old — "
+                             "the scrape step will likely find nothing new.")
+            if _nr_brief_today:
+                _nr_help += " ⚠️ Today's brief already exists — will overwrite."
+            if not _nr_key_ok:
+                _nr_help += " 🔑 Set an API key in the sidebar first."
+            if st.button("🌅 Full refresh now", width="stretch",
+                         key="_vc_refresh_full_refresh",
+                         disabled=(not _nr_key_ok or not _nr_can_run),
+                         help=_nr_help):
+                rec = scan_runner.start_run("nightly_refresh", [
+                    sys.executable, str(ROOT / "automation" / "nightly_refresh.py"),
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Full refresh"}
+                st.toast("🌅 Full refresh launched!", icon="🚀")
+                st.rerun()
 
-    st.markdown("---")
+    if _pipe_view == "Refresh":
+        st.markdown("---")
 
     # ---------- Pause / resume / checkpoint status ----------
     # The scraper drops scan_checkpoint.json after each company and watches for
@@ -5521,9 +5912,10 @@ elif page == "🎯 Pipeline":
     #   - a checkpoint to resume (paused state, scraper not running).
     # An orphaned pause flag with no checkpoint and no scraper renders nothing
     # — the cleanup above will eventually remove it.
+    # Scrape pause/resume controls are refresh-specific → ① Refresh view only.
     _show_scrape_panel = (
-        _scraper_active
-        or (_ckpt is not None)
+        _pipe_view == "Refresh"
+        and (_scraper_active or (_ckpt is not None))
     )
     if _show_scrape_panel:
         with st.container(border=True):
@@ -5632,22 +6024,9 @@ elif page == "🎯 Pipeline":
             elif _ckpt:
                 st.caption(f"Checkpoint file: `{_ckpt_path}` · signature {_ckpt.get('targets_signature', '?')}")
 
-    # ---------- Top: pipeline stepper with live status ----------
-    def _stage_card(col, emoji: str, name: str, info: dict | None,
-                    data_summary: str = "", running: bool = False):
-        state = (info or {}).get("state", "—")
-        badge = {"running": "🟡 running", "finished": "🟢 done",
-                 "failed": "🔴 failed", "skipped": "⚪ skipped",
-                 "—": "⚪ —"}.get(state, state)
-        col.markdown(f"#### {emoji} {name}")
-        col.caption(badge)
-        if info and info.get("elapsed_sec"):
-            col.caption(f"⏱ {info['elapsed_sec']}s")
-        if data_summary:
-            col.caption(data_summary)
-
-    # Build stage summaries from latest pipeline status + filesystem
-    stages_info = (pipe or {}).get("stages", {})
+    # (The old `_stage_card` stepper helper + `stages_info` were superseded by
+    # the Pipeline funnel visualization and the per-view stage cards; removed
+    # in the v3.2 split as confirmed-dead code.)
 
     # ---------- Worklist status strip ----------
     # ONE source of truth: worklist.json. Auto-rebuilt by jd_scraper and
@@ -5857,7 +6236,11 @@ elif page == "🎯 Pipeline":
         scan_f and scored_f and scan_f.stem in scored_f.name
     )
 
-    with st.expander(
+    # The funnel spans scrape → triage → score → tracker; show it on Refresh
+    # (scrape/dedup focus) and Score (triage/coverage focus). Promote stays
+    # lean — the ⑤ card's promotable headline already carries the end count.
+    if _pipe_view in ("Refresh", "Score"):
+      with st.expander(
         f"📊 Pipeline funnel"
         + (f" — `{_funnel_scan_name}`" if _funnel_scan_name else " — no scan")
         + (" 🤖 scoring…" if scorer_running else
@@ -5949,12 +6332,15 @@ elif page == "🎯 Pipeline":
             "Scraped → deduplicated → keyword pre-filter → LLM scored → promoted to tracker."
         )
 
-    if pipeline_running:
-        st.info(
-            f"⏱️ Pipeline running — elapsed {human_elapsed(pipe['started_at'])}",
-            icon="🎯",
-        )
-    if zero_companies:
+    # (The "⏱️ Pipeline running" st.info banner was removed: it duplicated the
+    # always-visible _pipeline_live_panel() — which renders on all three views
+    # with a live log tail + elapsed timer + Stop button — so it was pure
+    # redundant chrome.)
+
+    # zero_companies is a SCRAPE diagnostic (which targets returned 0 candidates)
+    # → it belongs only on the ① Refresh (pull-jobs-in) view, alongside the other
+    # scrape chrome (nightly strip, pause/resume).
+    if _pipe_view == "Refresh" and zero_companies:
         with st.expander(f"⚠️ {len(zero_companies)} companies returned 0 candidates — click to inspect"):
             st.caption(
                 "These targets produced no candidates. Common causes: "
@@ -5965,7 +6351,12 @@ elif page == "🎯 Pipeline":
             )
             st.code("\n".join(f"  • {n}" for n in zero_companies), language="text")
 
-    st.markdown("---")
+    # This rule caps the diagnostics preamble (funnel + scrape diagnostics) before
+    # the live panel + stage cards. The funnel renders on Refresh + Score only, so
+    # the divider matches that scope — Promote stays lean (no funnel, no stray
+    # rule); previously it was ungated and left an orphaned separator on Promote.
+    if _pipe_view in ("Refresh", "Score"):
+        st.markdown("---")
 
     # ---------- Main tabs ----------
     # Three tabs: Run (chain + Score-a-URL expander), Inspect (triage
@@ -6134,13 +6525,12 @@ elif page == "🎯 Pipeline":
 
     # ================== CARD/TAB: Run (launch + advanced + score-URL) ======
     def _render_run_card():
-        # --- Quick actions: the 3 things the user actually does ---
-        # Buttons FIRST, config SECOND. Most visits to this page are
-        # "launch something" or "check what's running". The detailed
-        # configuration (scrape strategy, concurrency, etc.) is in an
-        # expander below for power-user tuning.
+        # --- Promote launch + power-user config ---
+        # Buttons FIRST, config SECOND. This card lives on the ③ Promote view;
+        # after the v3.2 strict split it offers only the 📋 Promote launch plus
+        # the Advanced pipeline form (full chain for power users). Scrape/Gmail
+        # launches live on ① Refresh, scoring on ④ Scoring.
         key_ok_here = api_key.is_key_valid()
-        _gmail_ok = gmail_ui.is_connected()
         _can_run = not any_work_active
 
         # Show a clear blocker banner BEFORE the buttons so user knows why
@@ -6155,137 +6545,49 @@ elif page == "🎯 Pipeline":
                 icon="🔑",
             )
 
+        # ⚡ Launch is now PROMOTE-ONLY (v3.2 strict split). This card lives on
+        # the ③ Promote view, so the only stage-launch that belongs here is
+        # 📋 Promote scored. The other launches were relocated to the view that
+        # owns their stage so each page only offers actions for its own intent:
+        #   • 🛰 Refresh scrape / 🌐 Full scrape / 📬 Refresh Gmail / 🌅 Full
+        #     refresh → ① Inputs + nightly strip on the ① Refresh view
+        #   • 🤖 Score worklist + 🔗 Score-a-URL → ④ Scoring on the ② Score view
+        # (doc §485-487, §116/§154/§167, §575). Advanced config below still
+        # carries every knob for power users who want the full chain from here.
         st.markdown("#### ⚡ Launch")
         _ws_total = _wstats.get("total", 0)
         _ws_scored_exists = _wstatus.get("worklist_scored_exists", False)
-
-        _scrape_age_h = _web_scan_age_hours()
-        _scrape_fresh = _scrape_age_h is not None and _scrape_age_h < 24
-
+        # Target counts feed the Advanced-config scrape-strategy selectbox below
+        # (the launch buttons that used to consume this moved to ① Refresh).
         _counts = _target_counts()
-        qa1, qa2, qa3, qa4, qa5 = st.columns(5)
-        with qa1:
-            if st.button(f"🛰 Refresh scrape ({_counts['core']})", width='stretch',
-                         disabled=(not _can_run or _scrape_fresh),
-                         help=f"Re-scrape the {_counts['core']} core targets. ~15-30 min, "
-                              "no API key needed. Auto-rebuilds the worklist "
-                              "when done so the scorer sees the new rows."):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Refresh scrape"}
-                st.toast("🛰 Scrape launched!", icon="🚀")
-                st.rerun()
-            if st.button(f"🌐 Full scrape ({_counts['full']})", width='stretch',
-                         disabled=(not _can_run or _scrape_fresh),
-                         help=f"Scrape ALL {_counts['full']} targets — {_counts['core']} core "
-                              f"plus the {_counts['expansion']}-company expansion list. "
-                              "~20-40 min, no API key needed. Auto-rebuilds the "
-                              "worklist when done so the scorer sees the new rows."):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "full", "--skip-score", "--skip-promote",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full scrape"}
-                st.toast("🌐 Full scrape launched!", icon="🚀")
-                st.rerun()
-            if _scrape_fresh:
-                st.caption(f"🟢 Scan is {_scrape_age_h:.0f}h old — fresh enough")
-        with qa2:
-            _gmail_age_h = _latest_glob_age_hours("scan_gmail_*.json")
-            _gmail_fresh = _gmail_age_h is not None and _gmail_age_h < 1
-            _gmail_help = ("Pull LinkedIn alert emails from last 30d. "
-                           "~10-30s, free. Auto-rebuilds the worklist.")
-            if _gmail_fresh:
-                _gmail_help += (f" ⚠️ Last fetch {_gmail_age_h*60:.0f}m ago — "
-                                "likely no new mail.")
-            if st.button("📬 Refresh Gmail", width='stretch',
-                         disabled=(not _gmail_ok or not _can_run),
-                         help=_gmail_help):
-                rec = scan_runner.start_run("gmail_fetch", [
-                    sys.executable,
-                    str(ROOT / "automation" / "gmail_fetch.py"), "--days", "30",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Gmail fetch"}
-                st.toast("📬 Gmail fetch launched!", icon="🚀")
-                st.rerun()
-            if not _gmail_ok:
-                st.caption("🔌 Connect Gmail in sidebar")
-            elif _gmail_fresh:
-                st.caption(f"⚠️ Fetched {_gmail_age_h*60:.0f}m ago")
-        with qa3:
-            _scored_age_h = _file_age_hours(OUT_DIR / "worklist_scored.json")
-            _scored_fresh = _scored_age_h is not None and _scored_age_h < 0.5
-            _score_label = (
-                f"🤖 Score worklist ({_ws_total})" if _ws_total
-                else "🤖 Score (no rows)"
-            )
-            _score_help = (f"Score the {_ws_total}-row worklist. "
-                           "~5-15 min on first run, near-free on re-runs "
-                           "(fit_cache is persistent). Requires API key.")
-            if _scored_fresh:
-                _score_help += (f" ⚠️ Last score {_scored_age_h*60:.0f}m ago — "
-                                "rescore only if rows changed.")
-            if st.button(_score_label, width='stretch',
-                         type="primary" if (key_ok_here and _ws_total) else "secondary",
-                         disabled=(not _can_run or not key_ok_here or not _ws_total),
-                         help=_score_help):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--skip-scrape", "--skip-promote",
-                    "--score-concurrency", "6",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Score worklist"}
-                st.toast("🤖 Scorer launched!", icon="🚀")
-                st.rerun()
-            if _scored_fresh:
-                st.caption(f"⚠️ Scored {_scored_age_h*60:.0f}m ago")
-        with qa4:
-            _promote_age_h = _latest_glob_age_hours("promote_report_*.md")
-            _promote_fresh = _promote_age_h is not None and _promote_age_h < 24
-            _promote_label = "📋 Promote scored" if _ws_scored_exists else "📋 (score first)"
-            _promote_help = ("Promote scored roles into the tracker. "
-                             "Reads worklist_scored.json. Dry-run first; "
-                             "use the advanced form below for --commit.")
-            if _promote_fresh:
-                _promote_help += (f" ⚠️ Last promote {_promote_age_h:.0f}h ago — "
-                                  "review the report before re-running.")
-            if st.button(_promote_label, width='stretch',
-                         disabled=(not _can_run or not _ws_scored_exists),
-                         help=_promote_help):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--skip-scrape", "--skip-score",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Promote scored"}
-                # Arm the Apply button (see _route_banner_cta promote branch).
-                st.session_state["_promote_preview_armed"] = True
-                st.toast("📋 Promote launched!", icon="🚀")
-                st.rerun()
-            if _promote_fresh:
-                st.caption(f"⚠️ Promoted {_promote_age_h:.0f}h ago")
-        with qa5:
-            _brief_today = _today_brief_exists()
-            _full_help = ("Scrape → rebuild worklist → score → morning brief. "
-                          "~25 min, ~$0.03. Requires API key.")
-            if _scrape_fresh:
-                _full_help += (f" ⚠️ Scan is only {_scrape_age_h:.0f}h old — "
-                               "scrape step will likely find nothing new.")
-            if _brief_today:
-                _full_help += " ⚠️ Today's brief already exists — will overwrite."
-            if st.button("🌅 Full refresh", width='stretch',
-                         disabled=(not key_ok_here or not _can_run),
-                         help=_full_help):
-                nightly_cmd_list = [sys.executable, str(ROOT / "automation" / "nightly_refresh.py")]
-                rec = scan_runner.start_run("nightly_refresh", nightly_cmd_list)
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Full refresh"}
-                st.toast("🌅 Full refresh launched!", icon="🚀")
-                st.rerun()
-            if _scrape_fresh:
-                st.caption(f"⚠️ Scan {_scrape_age_h:.0f}h old — scrape will be a no-op")
-            elif _brief_today:
-                st.caption("⚠️ Today's brief exists — will overwrite")
+
+        _promote_age_h = _latest_glob_age_hours("promote_report_*.md")
+        _promote_fresh = _promote_age_h is not None and _promote_age_h < 24
+        _promote_label = "📋 Promote scored" if _ws_scored_exists else "📋 (score first)"
+        _promote_help = ("Promote scored roles into the tracker. "
+                         "Reads worklist_scored.json. Dry-run first; "
+                         "use the advanced form below for --commit.")
+        if _promote_fresh:
+            _promote_help += (f" ⚠️ Last promote {_promote_age_h:.0f}h ago — "
+                              "review the report before re-running.")
+        if st.button(_promote_label, width='stretch', key="_vc_promote_launch",
+                     type="primary" if _ws_scored_exists else "secondary",
+                     disabled=(not _can_run or not _ws_scored_exists),
+                     help=_promote_help):
+            rec = scan_runner.start_run("pipeline", [
+                sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                "--skip-scrape", "--skip-score",
+            ])
+            st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Promote scored"}
+            # Arm the Apply button (see _route_banner_cta promote branch).
+            st.session_state["_promote_preview_armed"] = True
+            st.toast("📋 Promote launched!", icon="🚀")
+            st.rerun()
+        if not _ws_scored_exists:
+            st.caption("⏸ Score the worklist first (② Score → 🤖 Score worklist) "
+                       "— promote reads `worklist_scored.json`.")
+        elif _promote_fresh:
+            st.caption(f"⚠️ Promoted {_promote_age_h:.0f}h ago")
 
         # Stop button — shown whenever any job is active (all launch buttons are
         # disabled then, so this is the only way the user can unblock).
@@ -6307,22 +6609,14 @@ elif page == "🎯 Pipeline":
         # Latest outputs — every action emits a JSON artifact; this row gives
         # one-click JSON + xlsx access without bouncing to History. In the
         # vertical layout each stage card already carries its own download
-        # row, so this combined panel would render every artifact a SECOND
-        # time — only show it in the classic tab layout (doc §427).
-        if not _PIPE_VERTICAL:
-            render_latest_outputs_row(key_prefix="pipe_run")
+        # row, so the combined Latest-outputs panel (every artifact a SECOND
+        # time) is intentionally NOT rendered here — the per-stage download
+        # rows cover it (doc §427). The 3-view layout has no classic tab path.
 
-        # Gmail trash cleanup panel — only renders when there's an
-        # un-trashed scan_gmail_*.json. Same widget as the Dashboard,
-        # surfaced here too so users running the Gmail fetch from the
-        # Pipeline page see the prompt without bouncing back to home.
-        render_gmail_trash_panel()
-
-        # (Note: a previous log-regex 'Gmail fetch summary' panel was
-        # superseded by render_gmail_trash_panel(), which reads structured
-        # `harvest_diagnostics` from the scan envelope rather than parsing
-        # log strings. Single panel covers both: diagnostics + score-now
-        # CTA + trash cleanup, all on one card.)
+        # (Gmail trash-cleanup panel was removed from this Promote card in the
+        # v3.2 split: Gmail can no longer be fetched from here — the 📬 Refresh
+        # Gmail button moved to ① Inputs, which already renders the trash panel
+        # right after it. Keeping a second copy on Promote was dead chrome.)
 
         # --- Recent runs: what actually happened ---
         st.markdown("---")
@@ -6454,8 +6748,12 @@ elif page == "🎯 Pipeline":
                 st.success(f"Pipeline launched (`{rec.run_id}`, pid {rec.pid})")
                 st.rerun()
 
-        # ---------- Score a single URL (expander inside Run tab) ----------
-        st.markdown("---")
+    # ---------- Score a single URL (persistent expander) ----------
+    # Relocated out of the Promote run card into its own sibling closure so the
+    # ④ Scoring card (② Score view) can host it — it's a manual side-channel
+    # scorer, conceptually a Score action, not a promote one (doc §575/§155).
+    # Body indentation is unchanged from when it lived in _render_run_card.
+    def _render_score_a_url():
         with st.expander("🔗 Score a single URL (ad-hoc, no scan needed)",
                           expanded=False):
             st.caption("Paste any job URL for a fresh LLM fit score. ~5s, ~$0.001.")
@@ -6514,6 +6812,17 @@ elif page == "🎯 Pipeline":
                     st.error("Scorer did not return JSON:")
                     st.code(log_text[-1500:], language="text")
                     return
+                # score_url warns (but allows) when the URL's company is on the
+                # permanent exclude-list — surface it so a manual override is
+                # never silent. Marker phrase is emitted by score_url.py.
+                if "on the permanent exclude-list" in log_text:
+                    st.warning(
+                        "⚠ This company is on your permanent **exclude-list**. "
+                        "Scored anyway (manual override) — the bulk scrape, "
+                        "Gmail, and worklist still skip it. Untick it under "
+                        "🚫 Excluded companies if you want it back in the funnel.",
+                        icon="🚫",
+                    )
                 verdict = fit.get("fit_verdict", "?")
                 score = fit.get("fit_score", "?")
                 tier = fit.get("tier", "?")
@@ -6553,12 +6862,9 @@ elif page == "🎯 Pipeline":
 
     # ================== CARD/TAB: Scored (+ triage sub-tabs) ===============
     def _render_scored_card():
-        # Suppression admin moved to the ③ Triage card (doc §280/§368/§446) —
-        # in the classic tab layout it still belongs with Scored, so render
-        # it here only when NOT using the vertical layout (the vertical ③
-        # card calls _render_suppressions_admin itself).
-        if not _PIPE_VERTICAL:
-            _render_suppressions_admin()
+        # Suppression admin lives on the ② Score view's ③ Triage card
+        # (doc §280/§368/§446), which calls _render_suppressions_admin itself —
+        # so the scored card no longer renders it (avoids a double-mount).
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -7156,53 +7462,19 @@ elif page == "🎯 Pipeline":
     # True when there's no worklist yet — drives the ⏸ "will activate" copy.
     _pipe_empty = (_wstats.get("total", 0) == 0)
 
-    if not _PIPE_VERTICAL:
-        # ---------------- Classic tabbed layout (escape hatch) ------------
-        render_two_sources_panel()
-        _tab_run, _tab_worklist, _tab_scored, _tab_history = st.tabs(
-            ["🚀 Run", "📋 Worklist", "🎯 Scored", "📜 History"]
-        )
-        with _tab_worklist:
-            _render_worklist_card()
-        with _tab_run:
-            _render_run_card()
-        with _tab_scored:
-            _render_scored_card()
-        with _tab_history:
-            _render_history_card()
-    else:
-        # ---------------- Vertical 6-stage card flow ----------------------
-        # Stage-jump rail. Streamlit has no in-page scroll-anchor, so this
-        # can't literally jump — but the three stages with a gated heavy body
-        # (Worklist/Scoring/Promote) get a button that OPENS that card's
-        # inspect toggle, so a click does something real. The toggle-less
-        # stages (Inputs/Triage/Tracker) render as plain labels. `help=` shows
-        # the one-line description on hover.
-        _rail = st.columns(6)
-        _rail_labels = [
-            ("① Inputs", "Two job-list sources", None),
-            ("② Worklist", "Merged + deduped pool", "worklist"),
-            ("③ Triage", "Rule-based filter", None),
-            ("④ Scoring", "LLM fit verdicts", "scoring"),
-            ("⑤ Promote", "Into the tracker", "promote"),
-            ("⑥ Tracker", "Active job list", None),
-        ]
-        for _ci, (_lbl, _hlp, _toggle) in enumerate(_rail_labels):
-            if _toggle:
-                if _rail[_ci].button(_lbl, key=f"_rail_jump_{_toggle}",
-                                     width="stretch", help=_hlp):
-                    st.session_state[f"_vc_inspect_{_toggle}"] = True
-                    st.rerun()
-            else:
-                _rail[_ci].caption(_lbl, help=_hlp)
+    # ---------------- 3-view card dispatcher (v3.2) -------------------
+    # The six stage cards are split across the three sub-pages. Each card
+    # body stays exactly where it was (8-space indented under its view
+    # guard) — only the wrapping `if _pipe_view == ...:` changes. Stage
+    # header chips read these derived flags regardless of view.
+    _src_ok = bool(scan_f or _latest_gm)
+    _wl_ok = bool(_wstatus.get("worklist_exists"))
+    _scored_ok = bool(score_count)
+    _ws_scored_exists = bool(_wstatus.get("worklist_scored_exists"))
+    _ws_total = _wstats.get("total", 0)
 
-        _src_ok = bool(scan_f or _latest_gm)
-        _wl_ok = bool(_wstatus.get("worklist_exists"))
-        _scored_ok = bool(score_count)
-        # Derive here (these are locals of _render_run_card, not globals).
-        _ws_scored_exists = bool(_wstatus.get("worklist_scored_exists"))
-        _ws_total = _wstats.get("total", 0)
-
+    # ═══════════════ ① REFRESH view: ① Inputs + ② Worklist ═══════════
+    if _pipe_view == "Refresh":
         # ── ① INPUTS ──────────────────────────────────────────────────
         with st.container(border=True):
             st.markdown(
@@ -7250,6 +7522,30 @@ elif page == "🎯 Pipeline":
                                                     "label": "Gmail fetch"}
                 st.toast("📬 Gmail fetch launched!", icon="🚀")
                 st.rerun()
+            # 🌐 Full scrape — core + expansion list. Relocated here from the
+            # Promote run card (v3.2 strict split): a scrape is a pull-jobs-in
+            # action, so it belongs on ① Inputs, not the promote card. Reuses
+            # the per-source freshness/active-run guards computed just above.
+            if st.button(f"🌐 Full scrape ({_in_counts['full']})", width="stretch",
+                         key="_vc_inputs_full_scrape",
+                         disabled=(not _in_can_run or _in_scrape_fresh),
+                         help=f"Scrape ALL {_in_counts['full']} targets — "
+                              f"{_in_counts['core']} core plus the "
+                              f"{_in_counts['expansion']}-company expansion list. "
+                              "~20–40 min, no API key needed. Auto-rebuilds the "
+                              "worklist when done so the scorer sees the new rows."
+                              + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
+                                 if _in_scrape_fresh else "")):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--scrape-mode", "full", "--skip-score", "--skip-promote",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Full scrape"}
+                st.toast("🌐 Full scrape launched!", icon="🚀")
+                st.rerun()
+            if _in_scrape_fresh:
+                st.caption(f"🟢 Scan is {_in_scrape_age:.0f}h old — fresh enough")
             render_gmail_trash_panel()
             _vc_download_row("inputs")
 
@@ -7275,15 +7571,49 @@ elif page == "🎯 Pipeline":
                     f" · 🔇 {_hidden} hidden by {_n_mutes} mute"
                     f"{'s' if _n_mutes != 1 else ''}" if _hidden else ""
                 )
+                # Richer dedup picture: exact-URL + near-dup merges and the
+                # new-since-last-score count. dedup_stats isn't in
+                # worklist.status(), so read it straight from the envelope
+                # (one cheap guarded read; the table reads this file anyway).
+                _dedup = {}
+                try:
+                    _wl_env = json.loads(_wl_p.read_text(encoding="utf-8"))
+                    _dedup = _wl_env.get("dedup_stats") or {}
+                except Exception:
+                    _dedup = {}
+                _merge_bits = ""
+                _dx, _dn = _dedup.get("dropped_url"), _dedup.get("dropped_near")
+                if _dx or _dn:
+                    _merge_bits = (f" · ✂️ {_dx or 0} exact + {_dn or 0} "
+                                   f"near-dup merged")
+                _new_n = _wstats.get("new_since_last_score")
+                _new_bits = f" · 🆕 {_new_n:,} new since last score" if _new_n else ""
                 st.caption(
                     f"🛰 {_wstats.get('scrape', 0):,} scrape · "
                     f"📬 {_wstats.get('gmail', 0):,} gmail · "
-                    f"🔁 {_wstats.get('both', 0):,} both" + _mute_note
+                    f"🔁 {_wstats.get('both', 0):,} both"
+                    + _merge_bits + _new_bits + _mute_note
                 )
+            # Auto-open the worklist table right after a rebuild/scrape/Gmail
+            # completes so the user immediately sees the fresh deduped pool.
+            # Compares worklist.status()'s rebuilt_at to a session cache. On the
+            # FIRST Pipeline render of a session we seed the cache to the
+            # current value so a cold load stays CLOSED (perf — ~1,400 rows);
+            # it only auto-opens on a rebuild that happens DURING the session.
+            _rebuilt = _wstatus.get("rebuilt_at")
+            if "_seen_rebuilt_at" not in st.session_state:
+                st.session_state["_seen_rebuilt_at"] = _rebuilt   # cold-load seed
+            elif _rebuilt and _rebuilt != st.session_state["_seen_rebuilt_at"]:
+                st.session_state["_vc_inspect_worklist"] = True   # force open
+                st.session_state["_seen_rebuilt_at"] = _rebuilt   # one-shot
             if _vc_inspect_toggle("worklist", "Inspect worklist rows"):
+                if _rebuilt:
+                    st.caption(f"🕒 Worklist rebuilt {_rebuilt}")
                 _render_worklist_card()
             _vc_download_row("worklist")
 
+    # ═══════════════ ② SCORE view: ③ Triage + ④ Scoring ═════════════
+    if _pipe_view == "Score":
         # ── ③ TRIAGE ──────────────────────────────────────────────────
         with st.container(border=True):
             _tr_in = score_input or scrape_count or 0
@@ -7312,16 +7642,58 @@ elif page == "🎯 Pipeline":
                 f"{_stage_chip(scorer_running, _scored_ok, empty=_pipe_empty and not score_count)} "
                 + (f"{score_count:,} scored" if score_count else "not scored yet")
             )
-            if scorer_running:
-                st.caption("🟡 Scoring in progress — see the live panel above. "
-                           "Actions are disabled until it finishes.")
+            # 🤖 Score worklist — the stage's primary launch action. Relocated
+            # here from the Promote run card (v3.2 strict split): scoring is what
+            # the ② Score view is FOR, so its launch belongs on the ④ card, not
+            # the promote card (doc §154). Guards recomputed locally — the
+            # run-card locals aren't in scope here.
+            _sc_key_ok = api_key.is_key_valid()
+            _sc_can_run = not any_work_active
+            _sc_ws_total = _wstats.get("total", 0)
+            _sc_age_h = _file_age_hours(OUT_DIR / "worklist_scored.json")
+            _sc_fresh = _sc_age_h is not None and _sc_age_h < 0.5
+            _sc_label = (f"🤖 Score worklist ({_sc_ws_total})" if _sc_ws_total
+                         else "🤖 Score (no rows)")
+            _sc_help = (f"Score the {_sc_ws_total}-row worklist. ~5–15 min on "
+                        "first run, near-free on re-runs (fit_cache is "
+                        "persistent). Requires API key.")
+            if not _sc_key_ok:
+                _sc_help += " 🔑 Set an API key in the sidebar first."
+            elif _sc_fresh:
+                _sc_help += (f" ⚠️ Last score {_sc_age_h*60:.0f}m ago — "
+                             "rescore only if rows changed.")
+            if st.button(_sc_label, width="stretch", key="_vc_scoring_score_worklist",
+                         type="primary" if (_sc_key_ok and _sc_ws_total) else "secondary",
+                         disabled=(not _sc_can_run or not _sc_key_ok or not _sc_ws_total),
+                         help=_sc_help):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-promote",
+                    "--score-concurrency", "6",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Score worklist"}
+                st.toast("🤖 Scorer launched!", icon="🚀")
+                st.rerun()
+            if _sc_fresh and _sc_key_ok and _sc_ws_total:
+                st.caption(f"⚠️ Scored {_sc_age_h*60:.0f}m ago")
+            # Always-visible operational summary of the last run (cached vs new,
+            # model, errors, logs). While a run is live it defers to the live
+            # progress panel rendered above the cards.
+            _render_scorer_status(scorer_running=scorer_running)
             # Scored card hosts the suppression admin + triage sub-tabs +
             # manual-selection promote. Heavy body is button-gated.
             if _vc_inspect_toggle("scoring", "Inspect verdicts + manage suppressions",
                                   default=True):
                 _render_scored_card()
+            # 🔗 Score-a-single-URL — manual side-channel scorer, persistent
+            # expander on the ④ card (doc §575/§155). Relocated from the Promote
+            # run card with the rest of the scoring controls.
+            _render_score_a_url()
             _vc_download_row("scored")
 
+    # ═══════════════ ③ PROMOTE view: ⑤ Auto-promote + ⑥ Tracker ═════
+    if _pipe_view == "Promote":
         # ── ⑤ AUTO-PROMOTE ────────────────────────────────────────────
         with st.container(border=True):
             # Headline shows the post-suppression promotable count (rows above
@@ -7345,11 +7717,12 @@ elif page == "🎯 Pipeline":
                 + _promo_headline
             )
             st.caption(
-                "Launch + advanced config + score-a-single-URL live here. "
+                "Promote launch + advanced pipeline config live here. "
                 "Promote reads worklist_scored.json; preview before commit "
-                "in the Advanced expander."
+                "in the Advanced expander. (Scrape/Gmail launches moved to "
+                "① Refresh; scoring + score-a-URL to ④ Scoring.)"
             )
-            if _vc_inspect_toggle("promote", "Launch / advanced / score-a-URL",
+            if _vc_inspect_toggle("promote", "Promote launch / advanced config",
                                   default=True):
                 _render_run_card()
             _vc_download_row("promote")

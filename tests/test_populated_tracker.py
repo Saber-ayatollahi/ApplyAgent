@@ -272,8 +272,11 @@ def main() -> int:
             encoding="utf-8",
         )
 
-        # Run the pages that exercise the new code
-        target_pages = ["🏠 Dashboard", "🎯 Pipeline", "📋 Jobs Kanban"]
+        # Run the pages that exercise the new code. The Pipeline page split
+        # into 3 sub-pages (v3.2); exercise all three.
+        target_pages = ["🏠 Dashboard", "🎯 Pipeline · Refresh",
+                        "🎯 Pipeline · Score", "🎯 Pipeline · Promote",
+                        "📋 Jobs Kanban"]
         results = []
         print(f"E2E populated-tracker AppTest - {len(target_pages)} pages")
         for p in target_pages:

@@ -417,6 +417,113 @@ The fresh-clone reviewer flagged that Phase 2 shipped the suppressions *engine* 
 
 Every verb supports `--json` so future UI work in Phase 3 (the SUPPRESSIONS section of the Pipeline page) can shell out instead of importing the module. The subprocess + in-process tests in `automation/_tests/test_suppressions_cli.py` lock the contract: 18 cases covering round-trips, mutual-exclusion guards (`--days` vs `--until`), no-op lift semantics, and the `__main__` entrypoint.
 
+## v3.1.2 — permanent company exclude-list (source-level block)
+
+Distinct from suppressions. Suppression is a TTL'd preference signal applied **at triage** — the company is still scraped and its rows still sit in the worklist; they just don't reach scoring/promote until the mute lapses. The exclude-list is a **permanent, source-level block**: the user picks companies (initially the 6 Canadian Big-6 banks) that should never be fetched or shown again. Driven by the user's actual ask — *"no longer want to see new jobs from the Big 6 Canadian banks."*
+
+### Design
+
+- **New module `automation/excludes.py`** mirrors `suppressions.py`'s lazy-seed + lock-safe persistence but is deliberately simpler: **no TTL, no reason, no audit/event log, no history, no pending-archive queue.** Live file `data/excludes.json` (gitignored), lazy-created from committed `data/excludes.example.json`. API: `load() -> set[str]`, `list_excluded()`, `is_excluded(name, snapshot=None)`, `add(name)`, `remove(name)`, `filter_targets(targets, snapshot=None)`, `filter_rows(rows, snapshot=None)`. CLI: `add`/`remove`/`list`/`--smoke`, all `--json`.
+- **Canonical matching everywhere** via `brand_aliases.canonical_brand()`. This is load-bearing on the **scrape side too** (not just Gmail): `TD Asset Management` uses TD Bank's Workday tenant and `BMO Asset Management` uses BMO's, so a raw-name match would leave the sibling, which then queries the excluded bank's board and re-tags the jobs. Excluding `TD Bank` (key `td`) therefore also excludes `TD Asset Management`; the UI checkbox label names the affected siblings so it's not a silent surprise.
+- **brand_aliases fix:** added `banque nationale` / `banque nationale du canada` / `banque nationale financiere` / `bnc` → `nbc`. Without these, `canonical_brand('Banque Nationale')` returned `banque` and a Quebec-sourced National Bank alert leaked past an NBC exclude.
+
+### Four enforcement points (not three)
+
+1. **Web scrape** — `jd_scraper.main()` calls `excludes.filter_targets(targets)` **after** the expansion-build and `--company`/`--sector` include filters, **before** `scan()`. So `_targets_signature` reflects the filtered set on both write and `--resume` (a stale checkpoint mismatches rather than resurrecting an excluded company), and the excluded tenant is never primed in `_wd_cache`.
+2. **`jd_scraper --gmail` harvest loop** — drops alert rows whose company canonicalizes to an excluded key; `gmail_diag.dropped_excluded` records the count.
+3. **Standalone `gmail_fetch.py`** (the UI "Refresh Gmail" button) — an audited `filter_rows` stage between the geo gate and the envelope write; `harvest_diagnostics.rows_dropped_excluded` + `excluded_dropped_rows` mirror the geo audit-trail shape.
+4. **`worklist.rebuild()`** — **the primary can't-leak chokepoint.** rebuild() replays the latest web scan + the last 30 days of `scan_gmail_*.json` on every run, so without filtering here an excluded company's on-disk rows would re-materialize for ~30 days after the tick. Both `_add` paths are guarded (the Gmail guard sits after `_clean_alert_fields` so canonicalization sees the cleaned name); `stats.excluded_dropped` records the count. Points 1–3 become cost optimizations that also stop fetching; point 4 guarantees nothing on disk resurfaces.
+
+### Why no score/promote guard is needed (downstream-propagation audit)
+
+A review raised that `fit_scorer.py` and `auto_promote.py` don't re-check the exclude-list (unlike suppressions, which IS re-checked at promote time). Audited every retrieval/consumer path; the conclusion is that **filtering at the source propagates to every automated consumer**, so a downstream guard would be redundant:
+
+- **`fit_scorer`** scores `worklist.json` (the rebuild-filtered pool) by default, or `--scan <file>` of a scan that `jd_scraper` already wrote post-exclude. Both inputs are clean.
+- **`auto_promote`** promotes `worklist_scored.json`, derived from that clean pool.
+- **`scan_delta` → `morning_brief --auto-add`** (the nightly auto-add-to-tracker chain) diffs the raw `scan_*.json`, which `jd_scraper` wrote **after** `filter_targets`. The delta is clean, so the auto-added rows are clean.
+
+The invariant the user articulated: *"if a job is not retrieved it never makes it to the scorer."* Because exclusion happens at fetch, no excluded row exists on disk for a downstream stage to pick up. (The contrast with suppressions — which *are* re-checked at promote — is that suppression rows are deliberately KEPT on disk and only muted at triage, so a mute added mid-pipeline needs a second look; exclusion deletes the row at the source, so there's nothing to re-check.)
+
+The one exception, `score_url.py`, is handled explicitly below.
+
+### Fifth touch-point: `score_url.py` — warn but allow (manual override)
+
+`score_url.py` (and its UI "Score this URL" button) is the deliberate manual-override path: paste a single JD URL the scraper missed (a friend's employer, a role outside TARGETS) and optionally `--add-to-tracker`. It does NOT route through `worklist.rebuild()`, so the exclude-list does not apply automatically. Per the user's decision this is **warn-but-allow**, not block: pasting the URL is explicit intent.
+
+- When the resolved company canonicalizes to an excluded key, `score_url` prints a `⚠` warning carrying the stable marker phrase `"on the permanent exclude-list"` to stderr, then scores anyway. With `--add-to-tracker` it re-announces (`⚠ Adding an EXCLUDED company …`) so the override is never silent.
+- The UI's `_render_score_url` greps the merged log for that marker phrase and renders a `🚫` warning banner above the verdict. The marker string is a cross-file coupling pinned by `test_excludes_score_url.py`.
+- A malformed/unreadable exclude file never blocks a manual score (the check is wrapped in a swallow).
+
+### UI
+
+A checkbox admin (`_render_excluded_companies_admin()`) over the **canonical-deduped** TARGETS, grouped by sector (Big-6 first), mounted in `render_two_sources_panel()` (the shared ① Inputs entry). State model is **Cluster-A-safe**: `data/excludes.json` is the sole source of truth, read fresh each render; the checkbox `value` derives from disk membership and a change diffs against **disk** (never a seeded session value) then writes + reruns. De-dup-by-canonical avoids a `StreamlitDuplicateElementKey` crash on the RBC/TD/BMO pairs; the display label is the shortest raw name and names its siblings inline (`RBC ＋1`). An always-visible `🚫 N excluded: …names…` caption sits above the toggle (so an accidental tick is obvious at a glance) and the toggle auto-opens on first run (N==0) for discoverability. The scrape/Gmail/worklist funnel captions gain a `🚫 N excluded` bit. The suppression company-mute help cross-references the exclude control.
+
+### Out of scope / deferred
+
+- **Existing rows already in worklist/tracker before the tick** — untouched; the user archives them. Future rebuilds won't re-add them.
+- **No `run_pipeline.py` change** — it subprocesses `jd_scraper`, which reads the file directly; no flag/env/snapshot pass-through needed (exclusion is applied synchronously at fetch/rebuild, unlike the minutes-long pipeline run that needs a frozen suppression snapshot).
+- **Free-text add, sector-level exclude, TTL/reason/audit** — omitted by design; checkboxes over TARGETS, permanent until unchecked.
+- **FR aliases for the other 5 banks** — only National Bank surfaces in French commonly; revisit if a leak is observed.
+
+### Defense-in-depth deliberately NOT added
+
+- **No `fit_scorer` / `auto_promote` exclude guard** — considered and rejected after the propagation audit above. Source-level filtering means no excluded row reaches them in any automated flow; a guard would be dead code on the normal path and would only fire if an operator hand-points `--scan` at a pre-exclude raw artifact (treated as an explicit override, same spirit as `score_url`).
+
+### Implementation hardening discovered during integration
+
+Three real defects were found and fixed while wiring this up (all regression-tested):
+- **`excludes.py` must be bare-importable.** The UI and `run_pipeline.py` launch `jd_scraper.py` / `gmail_fetch.py` / `worklist.py` as bare scripts (`__package__ == ''`), and those import `excludes` with no degradation path — so a hard `from .safe_json import …` would crash a real scrape/rebuild. `excludes.py` dual-imports its own deps (try package, fall back to bare), mirroring `worklist.py`'s `brand_aliases` import.
+- **Shared-mutable-default.** `_EMPTY_LIVE` as a module constant handed out via `dict(...)` (a *shallow* copy) shared its inner `companies` list, so the first `add()` on a not-yet-created file appended into the shared list and poisoned every later "empty" default — in tests AND in the long-lived Streamlit process. Replaced with an `_empty_live()` factory.
+- **Malformed-field false match.** `_canon(["RBC"])` did `str(["RBC"])` → `"['RBC']"`, which `canonical_brand`'s substring match resolved to `rbc`, wrongly excluding a row with a list/dict company field. `_canon` now returns `''` for any non-`str` input.
+
+Tests: `automation/_tests/test_excludes.py` (module + canonical + scrape/gmail filters + FR alias + shared-tenant + malformed-field + dormant fast-path), `test_excludes_worklist.py` (the rebuild chokepoint), `test_excludes_cli.py` (CLI + gitignore safety + UI dedup logic), `test_excludes_score_url.py` (warn-but-allow contract + the score_url↔UI marker-phrase coupling).
+
+## v3.2 — Pipeline page split into 3 sub-pages (Refresh / Score / Promote)
+
+**Supersedes** the original "tabs gone, one vertical scroll" design (§"Stage card layout") and retires the `_PIPE_VERTICAL` strangler-fig toggle + classic-tabs escape hatch. Driven by Saber's report that the single Pipeline page — one mega-scroll mixing input-gathering, scoring, and promote — is a *temporal-intent* overload (gather vs. evaluate vs. act). The 6 stage cards split 2-per-page:
+
+- **① Refresh** = ① Inputs + ② Worklist (pull jobs in, build the worklist)
+- **② Score** = ③ Triage + ④ Scoring (filter + LLM fit)
+- **③ Promote** = ⑤ Auto-promote + ⑥ Tracker (promote into the tracker + act)
+
+### Mechanism (low-risk view-dispatch)
+
+The ~800-line preamble and the four `_render_*_card` closures stay exactly in place — **not** hoisted to module scope (that was considered and rejected as the higher-risk path: dozens of `_wstats`→`ctx.*` rewrites, each a latent `NameError`). Instead:
+
+- The router matches the three page strings via one clause: `elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score", "🎯 Pipeline · Promote")`. A `_pipe_view = page.rsplit("·",1)[-1].strip()` selects the view.
+- Each of the 6 stage-card `with st.container(border=True):` blocks keeps its original 8-space indent; only the wrapping guard changes from the old `if not _PIPE_VERTICAL: … else:` to `if _pipe_view == "<View>":`. No card body moves or re-indents.
+- View-specific chrome is guarded the same way: the nightly-refresh strip and the scrape pause/resume controls render only on **Refresh**; the funnel renders on **Refresh + Score** (Promote stays lean — the ⑤ card's promotable headline carries the end count); the banner, last-activity strip, and `_pipeline_live_panel()` render on **all three**.
+
+### Nav + cross-page routing
+
+- `_NAV_GROUPS["🎯 Pipeline"]` gains three children (`Refresh`/`Score`/`Promote`); the existing sub-radio machinery renders them with no further change. Default = Refresh.
+- **Back-compat:** `_LEGACY_PAGE_TO_GROUP["🎯 Pipeline"] = ("🎯 Pipeline", "Refresh")` so a saved nav state / AppTest / external write using the old string lands on Refresh. The legacy shim was tightened to **only seed the sub-page when one isn't already chosen** — otherwise the Refresh alias would clobber an explicit Score/Promote pick (or a banner CTA jump) every rerun.
+- **`_route_banner_cta` cross-page fix (load-bearing):** with the cards now on separate pages, opening an inspect toggle is no longer enough — the CTA must also switch the nav to the page hosting that card. A `_TOGGLE_TO_SUBPAGE = {worklist:Refresh, triage:Score, scoring:Score, promote:Promote}` map drives setting `_applyagent_nav` + `_nav_sub_🎯 Pipeline` alongside the toggle. Same proven pattern as the ⑥ Tracker "→ Jobs Kanban" deep-link.
+
+### Next-action banner is Promote-only
+
+The next-action banner (`compute_next_action`) renders **only on the ③ Promote view**. The Dashboard already owns the cross-surface "what now?" via its own richer Next-Best-Action hero (`compute_next_best_action` — jobs + recruiters + outcomes with lane multipliers), and a dominant red "Promote N" CTA on the *Refresh* (pull-jobs-in) and *Score* views was off-key. The snapshot is still **computed** on every view (the ⑤ Auto-promote card consumes `_promotable_n`); only the visible banner is gated to Promote. Pinned by `test_banner_cta_is_a_live_button_on_promote` (CTA present on Promote) + `test_banner_absent_on_refresh_and_score` (no `_banner_cta_*` button on Refresh/Score).
+
+### Fixed: "Next step" panel contradicted the banner (pre-existing)
+
+The last-activity strip's "Next step" hint decided "scored?" by **filename-stem match** (`scan_<stamp>` in the scored filename). Since the pipeline scores the merged worklist (`worklist.json` → `worklist_scored.json`, the v3 worklist contract), the stem never matched and it falsely said "Scan exists but not scored yet" even with 512 real LLM scores on disk — directly contradicting the banner's "N ready to promote". Now decided by **mtime freshness** (scored artifact is current iff at least as new as the latest web scan), which is naming-convention-agnostic.
+
+### ② Score — operational "Last scoring run" status table
+
+The ④ Scoring card gained an always-visible status block (`_render_scorer_status`, distinct from the live `render_scorer_progress` panel) so the user sees *how scoring went* without opening the heavy verdict inspector: an `st.metric` grid of **Input · Triaged · Scored · Errors / Cached(free) · New(paid) · Model · Last run (age)**, a fatal `api_error` warning, and a collapsed **📜 Scoring logs** expander (tails the latest score/pipeline run via `scan_runner`). All sourced from on-disk artifacts already written — `fit_scorer_progress.json` (cache_hits, cost.llm_calls, errors, cost.per_model) + `worklist_scored.json` (stage counts, scored_at, api_error); model display falls back to the `FIT_SCORER_MODEL` constant when per-run attribution is absent. While a run is live it defers to the live progress panel. No scorer/worklist code changed — read-only.
+
+### ① Refresh — worklist auto-opens after a session rebuild + freshness header
+
+The ② Worklist inspect table defaults closed (perf — ~1,400 rows). It now **auto-opens once** when a scrape/Gmail/rebuild completes *during the session*, detected by comparing `worklist.status().rebuilt_at` against a session cache (`_seen_rebuilt_at`). The cache is **seeded on the first Pipeline render** so a cold load stays closed; it's one-shot per distinct `rebuilt_at` (the user can re-close until the next rebuild). When open, a `🕒 Worklist rebuilt <ts>` caption sits at the top so freshness is always visible. The header dedup caption was enriched from raw source counts to also show `✂️ N exact + M near-dup merged · 🆕 K new since last score` (from the envelope's `dedup_stats` + `stats`). Pinned by `test_worklist_closed_on_cold_load`, `test_worklist_autoopens_after_session_rebuild`, `test_scorer_status_renders_on_score`, `test_worklist_dedup_line_present_on_refresh`.
+
+### Out of scope / retained
+
+- **Footer (audit pack + run history)** lives on **Promote** only — the "end of the pipeline, grab everything" surface.
+- The intra-page stage-jump rail is dropped (each view has 2 cards, no scroll tax; cross-stage movement is the sub-radio).
+- Per-card `_vc_inspect_*` defaults preserved (scoring/promote open by default; worklist/triage closed for first-load perf).
+
+Tests: `tests/test_pipeline_vertical_layout.py` rewritten for the 3 views (per-view header assertions incl. negative "no other view's card leaks", audit/launch on Promote, worklist-inspect on Refresh, bulk-confirm on Score, plus a regression guard that `_route_banner_cta` sets the right sub-page). `tests/test_pages.py` + `test_consolidated_nav.py` + `test_populated_tracker.py` updated to the 3 page strings. `automation/_tests/test_pipeline_state.py` unaffected (the pure banner-state functions are untouched).
+
 ## Implementation scope
 
 ### v3 (visibility)
