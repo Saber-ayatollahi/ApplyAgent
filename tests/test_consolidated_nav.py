@@ -17,6 +17,12 @@ APP = ROOT / "ui" / "app.py"
 
 sys.path.insert(0, str(ROOT / "ui"))
 sys.path.insert(0, str(ROOT / "automation"))
+# Also put the repo ROOT on the path so the pages' lazy `from automation
+# import …` calls resolve during AppTest render. (pytest injects rootdir
+# automatically, but this file is run bare via `python tests/…`, so without
+# this the Dashboard/Review/Follow-up pages raise "No module named 'automation'"
+# mid-render and the route looks broken when it is only mis-pathed.)
+sys.path.insert(0, str(ROOT))
 
 from streamlit.testing.v1 import AppTest  # noqa: E402
 
@@ -59,7 +65,22 @@ def _run_one(group: str, sub: str | None, expected_page: str) -> dict:
             len(at.tabs) + len(at.dataframe) + len(at.button)
             + len(at.radio) + len(at.metric) + len(at.markdown)
         )
-        out["ok"] = not out["exceptions"] and out["n_widgets"] > 0
+        # The app stashes the page key it actually resolved to. Assert it
+        # matches the route we requested — otherwise a wrong-sub-page bug
+        # (e.g. Score requested, Refresh rendered) would render fine and slip
+        # past a structural-only check. This is the discriminating assertion.
+        # AppTest's session_state proxy supports `in`/`[]` but not `.get()`.
+        resolved = (at.session_state["_resolved_page"]
+                    if "_resolved_page" in at.session_state else None)
+        out["resolved"] = resolved
+        if resolved != expected_page:
+            out["exceptions"].append(
+                f"resolved to {resolved!r}, expected {expected_page!r}")
+        out["ok"] = (
+            not out["exceptions"]
+            and out["n_widgets"] > 0
+            and resolved == expected_page
+        )
     except Exception as e:
         out["exceptions"] = [
             f"AppTest harness crashed: {e}\n{traceback.format_exc()}"

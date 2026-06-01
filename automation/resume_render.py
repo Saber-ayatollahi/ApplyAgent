@@ -260,7 +260,11 @@ def _kw_present(keyword, text):
     k = keyword.lower().strip()
     if not k:
         return False
-    return re.search(r"(?<!\w)" + re.escape(k) + r"(?!\w)", text) is not None
+    # Lowercase `text` here too so the whole-token match is genuinely
+    # case-insensitive regardless of caller (keyword_report already passes
+    # lowercased text; .lower() is idempotent so this is free for it).
+    return re.search(r"(?<!\w)" + re.escape(k) + r"(?!\w)",
+                     text.lower()) is not None
 
 def keyword_report(content):
     text = _all_text(content).lower()
@@ -326,6 +330,7 @@ def to_pdf(docx_path, out_dir):
     canonical file is now stale."""
     soffice = shutil.which("libreoffice") or shutil.which("soffice")
     if not soffice:
+        print("  WARNING: PDF skipped (libreoffice/soffice not found on PATH).")
         return None
     import os
     import tempfile
@@ -339,7 +344,7 @@ def to_pdf(docx_path, out_dir):
         # drive letter in the URI authority on Windows (file://C:/…), which LO
         # ignores — falling back to the shared profile we're trying to avoid.
         try:
-            subprocess.run(
+            proc = subprocess.run(
                 [soffice, f"-env:UserInstallation={profile.as_uri()}",
                  "--headless", "--convert-to", "pdf", "--outdir", td, str(docx_path)],
                 check=False, capture_output=True, timeout=PDF_CONVERT_TIMEOUT)
@@ -349,6 +354,15 @@ def to_pdf(docx_path, out_dir):
             return None
         tmp_pdf = Path(td) / (stem + ".pdf")
         if not tmp_pdf.exists():
+            # soffice WAS found and ran, but produced no PDF (corrupt docx,
+            # soffice crash, unsupported feature). Surface the real cause —
+            # never report it as "not found on PATH". stderr/stdout are
+            # captured above; decode best-effort and trim to a readable tail.
+            def _tail(stream: bytes) -> str:
+                return (stream or b"").decode("utf-8", "replace").strip()[-300:]
+            detail = _tail(proc.stderr) or _tail(proc.stdout) or "no diagnostic output"
+            print(f"  WARNING: PDF conversion failed (soffice exit {proc.returncode}, "
+                  f"no PDF produced); PDF skipped. soffice said: {detail}")
             return None
         dest = Path(out_dir) / (stem + ".pdf")
         # Stage the result in the destination dir so os.replace is atomic
@@ -489,8 +503,8 @@ def main():
             pdf_path = to_pdf(out, Path(out).resolve().parent)
             if pdf_path:
                 print(f"pdf      {pdf_path}")
-            else:
-                print("  WARNING: PDF skipped (libreoffice/soffice not found on PATH)")
+            # else: to_pdf() already printed the specific cause (not on PATH /
+            # timeout / conversion failed / file locked) — don't override it.
     else:
         folder, docx_path, pdf_path = bundle(content, args.bundle_base,
                                              make_pdf=not args.no_pdf, on_date=args.date)
@@ -498,8 +512,8 @@ def main():
         print(f"docx     {docx_path.name}")
         if pdf_path:
             print(f"pdf      {pdf_path.name}")
-        elif not args.no_pdf:
-            print("  WARNING: PDF skipped (libreoffice/soffice not found on PATH)")
+        # elif not args.no_pdf: to_pdf() (called inside bundle()) already
+        # printed the specific cause — don't override it with a guess.
 
     lines = estimate_lines(content)
     flag = "OK" if lines <= TWO_PAGE_LINE_BUDGET else "OVER 2-PAGE BUDGET"

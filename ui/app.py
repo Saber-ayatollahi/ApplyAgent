@@ -3537,6 +3537,12 @@ else:
     page = next((c[1] for c in _children if c[0] == _sub_pick),
                 _children[0][1])
 
+# Expose the resolved page key so the AppTest harness can assert that nav
+# resolved to the EXPECTED route (not just that *some* page rendered). Without
+# this, a wrong-sub-page bug (e.g. Score requested but Refresh rendered) would
+# still render fine and pass a structural-only check. Cheap, side-effect-free.
+st.session_state["_resolved_page"] = page
+
 # ── Sidebar urgency strip ──────────────────────────────────────────────
 # Surfaces the most time-sensitive action counts so they're visible from
 # any page without navigating to CRM.

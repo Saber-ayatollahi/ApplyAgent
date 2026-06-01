@@ -1565,7 +1565,18 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                           f"to fallback model", file=sys.stderr)
                     break  # exit attempt loop, try next model
                 parsed = json.loads(m.group(0))
-                parsed.setdefault("fit_score", 1)
+                # Coerce + clamp fit_score to the documented 1-10 integer range.
+                # setdefault only fills an ABSENT key; the LLM intermittently
+                # emits an out-of-range int or a non-numeric value (it even does
+                # this for other format rules — see the prompt notes below), and
+                # an unsanitized value would mis-sort the Action Plan or raise a
+                # TypeError in the sort key downstream. Default to 1 on anything
+                # unparseable.
+                try:
+                    _fs = int(parsed.get("fit_score", 1))
+                except (TypeError, ValueError):
+                    _fs = 1
+                parsed["fit_score"] = max(1, min(10, _fs))
                 parsed.setdefault("fit_verdict", "skip")
                 parsed.setdefault("top_3_reasons", [])
                 parsed.setdefault("skill_gaps", [])

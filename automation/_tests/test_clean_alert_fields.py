@@ -240,4 +240,14 @@ check("Real corrupt #3 (Vancouver, BC, mode D no match)",
 print(f"\n{PASS} pass / {FAIL} fail")
 for f in FAILS:
     print(f)
-sys.exit(0 if FAIL == 0 else 1)
+
+
+def test_all_checks_pass():
+    """Pytest entrypoint. The checks above run at import time and accumulate
+    into the module-level FAIL counter; assert none failed so this file is a
+    real pytest test rather than a collection-aborting standalone script."""
+    assert FAIL == 0, "\n".join(FAILS)
+
+
+if __name__ == "__main__":
+    sys.exit(0 if FAIL == 0 else 1)
