@@ -197,6 +197,30 @@ def main() -> int:
                 )
     rows_dropped_location = len(raw_rows) - len(rows)
 
+    # Permanent exclude-list: drop rows whose company canonicalizes to an
+    # excluded key (e.g. "RBC Capital Markets" → rbc). Source-level block,
+    # distinct from triage suppressions; same module the scraper uses. Audit
+    # trail mirrors the geo-drop shape so the xlsx export can show it.
+    try:
+        import excludes  # type: ignore
+    except ImportError:
+        from . import excludes  # type: ignore
+    rows, _excluded_dropped = excludes.filter_rows(rows)
+    excluded_dropped_rows = [
+        {
+            "company": r.get("company", ""),
+            "title": r.get("title", ""),
+            "location": r.get("location", ""),
+            "posted_date": r.get("posted_date", ""),
+            "source": r.get("source", ""),
+            "gmail_uid": r.get("gmail_uid", ""),
+            "link": r.get("link", ""),
+            "drop_reason": "excluded_company",
+        }
+        for r in _excluded_dropped
+    ]
+    rows_dropped_excluded = len(excluded_dropped_rows)
+
     print(f"[gmail_fetch] inbox match: {len(messages)} sender-classified, "
           f"{len(alert_msgs)} LinkedIn alert(s); "
           f"parsed {len(raw_rows)} row(s) from {msgs_with_rows} digest(s) "
@@ -207,10 +231,18 @@ def main() -> int:
               f"non-GTA row(s) — kept {len(rows)}", file=sys.stderr)
         for ex in dropped_loc_examples:
             print(f"  · drop: {ex}", file=sys.stderr)
+    if rows_dropped_excluded:
+        print(f"[gmail_fetch] exclude-list: dropped {rows_dropped_excluded} "
+              f"row(s) from excluded companies — kept {len(rows)}",
+              file=sys.stderr)
+        for r in excluded_dropped_rows[:5]:
+            print(f"  · drop: {r.get('company','?')} — "
+                  f"{(r.get('title') or '?')[:60]}", file=sys.stderr)
 
     if args.dry_run:
         print(f"\n[gmail_fetch] DRY RUN: would write {len(rows)} row(s) "
-              f"({rows_dropped_location} dropped by geo filter).")
+              f"({rows_dropped_location} dropped by geo filter, "
+              f"{rows_dropped_excluded} by exclude-list).")
         for r in rows[:10]:
             print(f"  · {r.get('company','?')} — {(r.get('title') or '?')[:70]}")
         if len(rows) > 10:
@@ -233,12 +265,14 @@ def main() -> int:
         "digests_without_rows": msgs_without_rows,
         "rows_parsed": len(raw_rows),
         "rows_dropped_location": rows_dropped_location,
+        "rows_dropped_excluded": rows_dropped_excluded,
         "rows_kept": len(rows),
         "dropped_location_examples": dropped_loc_examples,
         # Full audit trail — every row dropped at each filter stage. Lets the
         # xlsx export show input → each filter → output, so users can see
-        # WHICH roles got rejected and why (geo vs. parser regression).
+        # WHICH roles got rejected and why (geo vs. exclude-list vs. parser).
         "geo_dropped_rows": geo_dropped_rows,
+        "excluded_dropped_rows": excluded_dropped_rows,
         # Parser-regression guard: any quarantined rows surface here so the
         # UI / audit-pack can show them. Healthy runs have empty list.
         "quarantine": [

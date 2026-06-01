@@ -278,6 +278,29 @@ def main() -> int:
     print(f"[score_url] Role: {company} — {title} ({sector or 'sector unknown'})",
           file=sys.stderr)
 
+    # Exclude-list: score_url is the ONE deliberate manual-override path (the
+    # bulk scrape / Gmail / worklist paths all filter excluded companies at the
+    # source). Pasting a URL is explicit intent, so we WARN but still score and
+    # — if asked — add to the tracker. The warning carries a stable marker
+    # phrase ("on the permanent exclude-list") so the UI can surface it.
+    try:
+        import excludes  # type: ignore
+    except ImportError:
+        try:
+            from . import excludes  # type: ignore
+        except Exception:
+            excludes = None  # type: ignore
+    if excludes is not None:
+        try:
+            if excludes.is_excluded(company):
+                canon = excludes._canon(company)
+                print(f"[score_url] ⚠ WARNING: {company!r} (key {canon!r}) is on "
+                      f"the permanent exclude-list — scoring anyway (manual "
+                      f"override). Bulk scrape/Gmail/worklist still skip it.",
+                      file=sys.stderr)
+        except Exception:
+            pass  # a malformed exclude file must never block a manual score
+
     # Bypass cache if rescore requested
     if args.rescore:
         cache = fit_scorer._cache_path_fit(url)
@@ -316,6 +339,14 @@ def main() -> int:
         print()
 
     if args.add_to_tracker:
+        if excludes is not None:
+            try:
+                if excludes.is_excluded(company):
+                    print(f"[score_url] ⚠ Adding an EXCLUDED company "
+                          f"({company!r}) to the tracker by manual override.",
+                          file=sys.stderr)
+            except Exception:
+                pass
         _add_to_tracker(url, role, fit)
 
     return 0

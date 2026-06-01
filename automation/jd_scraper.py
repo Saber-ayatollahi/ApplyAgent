@@ -1485,6 +1485,25 @@ def main() -> int:
             print(f"ERROR: no companies matched sector {args.sector!r}", file=sys.stderr)
             return 1
 
+    # Permanent exclude-list (source-level block; distinct from triage
+    # suppressions). Drop excluded companies by CANONICAL key BEFORE scan() so
+    # their Workday tenant is never queried — even by an asset-management
+    # sibling that shares it — and so _targets_signature reflects the filtered
+    # set on both write and --resume. Identity no-op when nothing is excluded.
+    try:
+        import excludes  # type: ignore
+    except ImportError:
+        from . import excludes  # type: ignore
+    _before_excl = len(targets)
+    targets = excludes.filter_targets(targets)
+    if len(targets) != _before_excl:
+        print(f"[scan] exclude-list dropped {_before_excl - len(targets)} "
+              f"target(s) before scan.", file=sys.stderr)
+    if not targets:
+        print("ERROR: every target is on the exclude-list — nothing to scrape.",
+              file=sys.stderr)
+        return 1
+
     raw, diagnostics = scan(targets, linkedin_only=args.linkedin_only,
                              workday_only=args.workday_only,
                              skip_linkedin=getattr(args, "skip_linkedin", False),
@@ -1533,6 +1552,16 @@ def main() -> int:
             global _current_company_ctx, _current_sector_ctx
             _current_company_ctx = "(gmail)"
             _current_sector_ctx = ""
+            # Permanent exclude-list: drop alert rows whose company canonicalizes
+            # to an excluded key (e.g. "RBC Capital Markets" → rbc). Snapshot
+            # loaded once before the loop (the per-row is_excluded call is a
+            # hot path). Same module the scrape-side filter uses.
+            try:
+                import excludes  # type: ignore
+            except ImportError:
+                from . import excludes  # type: ignore
+            _excl = excludes.load()
+            dropped_excluded = 0
             kept: list[dict] = []
             for g in gmail_rows:
                 if not g.get("link"):
@@ -1540,6 +1569,9 @@ def main() -> int:
                 if g["link"] in seen_tracker:
                     continue
                 if _is_negative_log(g):
+                    continue
+                if excludes.is_excluded(g.get("company"), _excl):
+                    dropped_excluded += 1
                     continue
                 # Attach minimal sector/company plumbing so downstream diagnostics work.
                 # Company comes from the email; we can't sector it confidently here,
@@ -1553,9 +1585,11 @@ def main() -> int:
                     1 for g in gmail_rows
                     if g.get("link") in seen_tracker
                 ),
+                "dropped_excluded": dropped_excluded,
             }
             print(f"[scan] Gmail: harvested {len(gmail_rows)} alert row(s), "
-                  f"kept {len(kept)} (after tracker + negative-title filter).",
+                  f"kept {len(kept)} (after tracker + negative-title + "
+                  f"exclude-list filter; {dropped_excluded} excluded).",
                   file=sys.stderr)
         except Exception as e:
             print(f"[scan] Gmail harvest failed: {e}", file=sys.stderr)
