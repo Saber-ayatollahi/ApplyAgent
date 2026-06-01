@@ -285,6 +285,19 @@ def rebuild(quarantine: bool = True) -> dict:
     prev_first_seen = _previous_pool_first_seen()
     prev_scored = _previous_scored_urls()
 
+    # Permanent exclude-list (source-level block; distinct from triage
+    # suppressions). THIS is the can't-leak chokepoint: rebuild() replays the
+    # latest web scan + the last 30 days of scan_gmail_*.json on every run, so
+    # without filtering HERE an excluded company's rows already sitting on disk
+    # would be re-materialized into worklist.json for ~30 days after the user
+    # excludes it. Snapshot loaded once (per-row is_excluded is a hot path).
+    try:
+        import excludes  # type: ignore
+    except ImportError:
+        from . import excludes  # type: ignore
+    _excl = excludes.load()
+    excluded_dropped = 0
+
     by_url: dict[str, dict] = {}
     by_ct: dict[tuple[str, str], str] = {}  # ct_key → url (for near-dup merge)
     # Audit-pack trail. Records every collision we silently merge so users can
@@ -341,6 +354,9 @@ def rebuild(quarantine: bool = True) -> dict:
             by_ct[ct] = u
 
     for r in web_rows:
+        if excludes.is_excluded(r.get("company"), _excl):
+            excluded_dropped += 1
+            continue
         _add(r, "scrape")
     # Gmail rows from older scans pre-date the parser cleanup pass. Run them
     # through _clean_alert_fields here so dedup keys match the post-fix scrape
@@ -392,6 +408,11 @@ def rebuild(quarantine: bool = True) -> dict:
             if _geo_keep is not None and not _geo_keep(r.get("location") or ""):
                 geo_dropped += 1
                 continue
+            # Exclude-list check AFTER _clean_alert_fields so canonicalization
+            # sees the cleaned company name (e.g. "BMO · Toronto, ON" → "BMO").
+            if excludes.is_excluded(r.get("company"), _excl):
+                excluded_dropped += 1
+                continue
             _add(r, "gmail")
     if quarantine_dropped:
         print(f"[worklist] quarantined {len(quarantine_dropped)} gmail "
@@ -401,7 +422,8 @@ def rebuild(quarantine: bool = True) -> dict:
     rows: list[dict] = []
     stats = {"scrape": 0, "gmail": 0, "both": 0, "total": 0,
              "new_since_last_score": 0,
-             "gmail_geo_dropped": geo_dropped}
+             "gmail_geo_dropped": geo_dropped,
+             "excluded_dropped": excluded_dropped}
     for u, r in by_url.items():
         r["is_new_since_last_score"] = (u not in prev_scored)
         if r["is_new_since_last_score"]:

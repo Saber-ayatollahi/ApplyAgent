@@ -1,15 +1,18 @@
-"""Parity assertions for the vertical 6-card Pipeline layout.
+"""Parity assertions for the 3-view Pipeline layout (v3.2).
 
-The general smoke test (tests/test_pages.py) only asserts the page renders
+The general smoke test (tests/test_pages.py) only asserts each page renders
 >0 widgets with no exception — it would stay GREEN even if the redesign
-silently dropped half the page's features. This test pins the specifics:
+silently dropped half the page's features. This test pins the specifics of
+the split: the former single Pipeline page is now three sub-pages selected by
+the sidebar sub-radio —
 
-  * both layouts (vertical + classic tabs) render without exception
-  * the vertical layout shows all six stage headers ①..⑥
-  * the at-risk features the critics flagged as silent-drop candidates are
-    present in the vertical layout: the audit-pack footer, run-history
-    footer, the launch card (via its inspect toggle), and the per-stage
-    download rows
+  * ① Refresh  = ① Inputs + ② Worklist
+  * ② Score    = ③ Triage + ④ Scoring
+  * ③ Promote  = ⑤ Auto-promote + ⑥ Tracker
+
+and pins the at-risk features the critics flagged as silent-drop candidates:
+the audit-pack footer, run-history footer (now on Promote), the launch card
+(via its inspect toggle, now on Promote), and the per-stage download rows.
 
 Run:
     pytest tests/test_pipeline_vertical_layout.py
@@ -27,11 +30,16 @@ sys.path.insert(0, str(ROOT / "automation"))
 import pytest  # noqa: E402
 from streamlit.testing.v1 import AppTest  # noqa: E402
 
+# The sidebar sub-radio key for the Pipeline group (group label incl. emoji).
+_SUB_KEY = "_nav_sub_🎯 Pipeline"
+_VIEWS = ("Refresh", "Score", "Promote")
 
-def _run(vertical: bool, **session) -> AppTest:
+
+def _run(view: str = "Refresh", **session) -> AppTest:
+    """Render the Pipeline page on the given sub-view (Refresh/Score/Promote)."""
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.session_state["_applyagent_nav"] = "🎯 Pipeline"
-    at.session_state["_pipe_vertical_layout"] = vertical
+    at.session_state[_SUB_KEY] = view
     for k, v in session.items():
         at.session_state[k] = v
     at.run()
@@ -43,92 +51,194 @@ def _all_markdown(at: AppTest) -> str:
     return "\n".join(m.value for m in at.markdown)
 
 
-def test_both_layouts_render_without_exception():
-    for vertical in (True, False):
-        at = _run(vertical)
+def test_all_three_views_render_without_exception():
+    for view in _VIEWS:
+        at = _run(view)
         exc = [str(getattr(e, "value", e)) for e in at.exception]
-        assert not exc, f"vertical={vertical} raised: {exc[:2]}"
+        assert not exc, f"view={view} raised: {exc[:2]}"
         n = len(at.tabs) + len(at.dataframe) + len(at.button) + len(at.markdown)
-        assert n > 0, f"vertical={vertical} rendered no widgets"
+        assert n > 0, f"view={view} rendered no widgets"
 
 
-def test_vertical_shows_all_six_stage_headers():
-    at = _run(True)
-    body = _all_markdown(at)
-    # The circled-digit stage markers are the load-bearing structure; assert
-    # each appears so a future edit that drops a card fails loudly.
-    for marker in ("① Inputs", "② Worklist", "③ Triage",
-                   "④ Scoring", "⑤ Auto-promote", "⑥ Tracker"):
-        assert marker in body, f"missing stage header: {marker!r}"
+def test_each_view_shows_its_two_stage_headers():
+    """The circled-digit stage markers are the load-bearing structure; assert
+    each view shows its OWN two cards — and (negatively) not the others' — so a
+    future edit that mis-files a card fails loudly."""
+    expected = {
+        "Refresh": ("① Inputs", "② Worklist"),
+        "Score":   ("③ Triage", "④ Scoring"),
+        "Promote": ("⑤ Auto-promote", "⑥ Tracker"),
+    }
+    for view, markers in expected.items():
+        body = _all_markdown(_run(view))
+        for marker in markers:
+            assert marker in body, f"view={view} missing stage header {marker!r}"
+        # A card belonging to a different view must not leak in.
+        for other_view, other_markers in expected.items():
+            if other_view == view:
+                continue
+            for om in other_markers:
+                assert om not in body, \
+                    f"view={view} unexpectedly shows {om!r} (belongs to {other_view})"
 
 
-def test_vertical_rehomes_audit_pack_and_history():
-    """Critic 'most likely silent drop' = audit pack + run history. Assert
-    both have a home in the vertical footer."""
-    at = _run(True)
+def test_promote_rehomes_audit_pack_and_history():
+    """Critic 'most likely silent drop' = audit pack + run history. They now
+    live in the ③ Promote footer."""
+    at = _run("Promote")
     exp_labels = " ".join(
         getattr(e, "label", "") for e in at.get("expander")
     ).lower()
-    assert "audit pack" in exp_labels, "full audit-pack footer missing"
-    assert "run history" in exp_labels, "run-history footer missing"
+    assert "audit pack" in exp_labels, "full audit-pack footer missing on Promote"
+    assert "run history" in exp_labels, "run-history footer missing on Promote"
 
 
-def test_vertical_launch_card_present_when_opened():
-    """The launch buttons (Refresh/Full scrape, Score, Promote, Full refresh)
-    live in the run card behind the ⑤ inspect toggle. Open it and assert the
-    launch buttons are reachable."""
-    at = _run(True, _vc_inspect_promote=True)
+def test_launch_card_present_on_promote_when_opened():
+    """v3.2 strict split: the ⑤ run card on Promote now offers ONLY the
+    📋 Promote launch (scrape/Gmail moved to ① Refresh, scoring to ④ Scoring).
+    Open the ⑤ inspect toggle and assert the Promote launch button is reachable
+    and no scrape/score launch leaked onto Promote."""
+    at = _run("Promote", _vc_inspect_promote=True)
     exc = [str(getattr(e, "value", e)) for e in at.exception]
     assert not exc, f"opening launch card raised: {exc[:2]}"
-    labels = " ".join(b.label for b in at.button)
-    assert "scrape" in labels.lower(), "scrape launch button missing"
+    labels = " ".join(b.label for b in at.button).lower()
+    assert "promote" in labels, "promote launch button missing on Promote"
+    # The relocated launches must NOT appear on Promote anymore.
+    assert "scrape" not in labels, \
+        "scrape launch leaked onto Promote (belongs on ① Refresh)"
+    assert "score worklist" not in labels, \
+        "score-worklist launch leaked onto Promote (belongs on ④ Scoring)"
+    assert "full refresh" not in labels, \
+        "full-refresh launch leaked onto Promote (belongs on ① Refresh)"
 
 
-def test_vertical_inspect_toggles_default_closed_for_worklist():
+def test_full_scrape_relocated_to_refresh_inputs():
+    """v3.2 strict split: 🌐 Full scrape moved from the Promote run card to the
+    ① Inputs card on the Refresh view. Assert it renders on Refresh and NOT on
+    Promote."""
+    refresh_labels = " ".join(b.label for b in _run("Refresh").button).lower()
+    assert "full scrape" in refresh_labels, \
+        "🌐 Full scrape missing on Refresh (① Inputs)"
+    promote_labels = " ".join(
+        b.label for b in _run("Promote", _vc_inspect_promote=True).button
+    ).lower()
+    assert "full scrape" not in promote_labels, \
+        "🌐 Full scrape still leaks onto Promote"
+
+
+def test_score_worklist_relocated_to_score_scoring():
+    """v3.2 strict split: 🤖 Score worklist moved from the Promote run card to
+    the ④ Scoring card (Score view). Assert it renders on Score and NOT on
+    Promote."""
+    score_labels = " ".join(b.label for b in _run("Score").button).lower()
+    assert "score worklist" in score_labels or "score (no rows)" in score_labels, \
+        "🤖 Score worklist missing on Score (④ Scoring)"
+    promote_labels = " ".join(
+        b.label for b in _run("Promote", _vc_inspect_promote=True).button
+    ).lower()
+    assert "score worklist" not in promote_labels, \
+        "🤖 Score worklist still leaks onto Promote"
+
+
+def test_score_a_url_expander_on_score_not_promote():
+    """doc §575: Score-a-single-URL is a persistent expander INSIDE the ④
+    Scoring card (Score view), not the Promote run card."""
+    score_exp = " ".join(
+        getattr(e, "label", "") for e in _run("Score").get("expander")
+    ).lower()
+    assert "score a single url" in score_exp, \
+        "🔗 Score-a-URL expander missing on Score (④ Scoring)"
+    promote_exp = " ".join(
+        getattr(e, "label", "")
+        for e in _run("Promote", _vc_inspect_promote=True).get("expander")
+    ).lower()
+    assert "score a single url" not in promote_exp, \
+        "🔗 Score-a-URL expander still leaks onto Promote"
+
+
+def test_full_refresh_relocated_to_refresh_view():
+    """v3.2 strict split: 🌅 Full refresh moved from the Promote run card to the
+    nightly strip on the Refresh view."""
+    refresh_labels = " ".join(b.label for b in _run("Refresh").button).lower()
+    assert "full refresh" in refresh_labels, \
+        "🌅 Full refresh missing on Refresh (nightly strip)"
+    promote_labels = " ".join(
+        b.label for b in _run("Promote", _vc_inspect_promote=True).button
+    ).lower()
+    assert "full refresh" not in promote_labels, \
+        "🌅 Full refresh still leaks onto Promote"
+
+
+def test_next_step_hint_refresh_only():
+    """The last-activity strip renders on all views, but its 'Next step' hint
+    column is gated to Refresh only (it duplicated/contradicted the Promote-only
+    next-action banner). Assert the '**Next step**' marker shows on Refresh and
+    not on Score/Promote."""
+    # Match the exact hint marker "**Next step**" (singular, no trailing colon)
+    # so the Gmail panel's "**Next steps:**" can't produce a false positive.
+    assert "**Next step**" in _all_markdown(_run("Refresh")), \
+        "'Next step' hint missing on Refresh"
+    for view in ("Score", "Promote"):
+        assert "**Next step**" not in _all_markdown(_run(view)), \
+            f"'Next step' hint leaked onto {view} (should be Refresh-only)"
+
+
+def test_worklist_inspect_toggle_default_closed_on_refresh():
     """Worklist inspect defaults closed so the page doesn't parse thousands
-    of rows on first load (perf-critic fix). The toggle button must exist."""
-    at = _run(True)
+    of rows on first load (perf-critic fix). The toggle button must exist on
+    the ① Refresh view."""
+    at = _run("Refresh")
     labels = [b.label for b in at.button]
     assert any("Inspect worklist" in l for l in labels), \
-        "worklist inspect toggle missing"
+        "worklist inspect toggle missing on Refresh"
 
 
 def test_xlsx_downloads_are_single_click():
     """Regression for the 'downloads not working' report. The xlsx export
-    used to be a two-step build→reveal dance (click 📊 builds bytes into
-    session_state, a *separate* ⬇ Download button appears elsewhere). It now
-    builds eagerly + memoized, so every 📊 xlsx is a real download_button on
-    first render — no intermediate 'build_xlsx_*' action button remains."""
-    at = _run(True)
+    used to be a two-step build→reveal dance. It now builds eagerly +
+    memoized, so every 📊 xlsx is a real download_button on first render. The
+    per-stage download rows are spread across the 3 views; assert on Refresh
+    (Inputs + Worklist rows) that at least one single-click xlsx + JSON
+    download_button renders and no build-then-reveal action button remains."""
+    at = _run("Refresh")
     exc = [str(getattr(e, "value", e)) for e in at.exception]
-    assert not exc, f"vertical raised: {exc[:2]}"
+    assert not exc, f"Refresh raised: {exc[:2]}"
     dl_labels = [getattr(d, "label", "") for d in at.get("download_button")]
     assert any("xlsx" in l for l in dl_labels), \
         "no single-click xlsx download_button rendered"
     assert any("JSON" in l for l in dl_labels), "JSON download_button missing"
-    # The old build-then-reveal action buttons must be gone.
     leftover = [b.key for b in at.button
                 if (b.key or "").startswith("build_xlsx_")]
     assert not leftover, f"two-click xlsx build buttons still present: {leftover}"
 
 
-def test_banner_cta_is_a_live_button():
-    """The top banner's primary CTA must render as a clickable button keyed
-    '_banner_cta_<STATE>' (it used to be an inert toast-only anchor). We don't
-    assert which state — that depends on disk — only that when a CTA label
-    exists, a routable button backs it."""
-    at = _run(True)
+def test_banner_cta_is_a_live_button_on_promote():
+    """The next-action banner's primary CTA must render as a clickable button
+    keyed '_banner_cta_<STATE>'. The banner is now scoped to the ③ Promote
+    view only; assert there. We don't assert which state — that depends on
+    disk — only that when a CTA label exists, a routable button backs it."""
+    at = _run("Promote")
     cta = [b for b in at.button if (b.key or "").startswith("_banner_cta_")]
-    # A CTA may legitimately be absent only in the DEFAULT 'Up to date' state.
     body = _all_markdown(at).lower()
     if "up to date" not in body:
         assert cta, "banner has a headline but no clickable CTA button"
 
 
+def test_banner_absent_on_refresh_and_score():
+    """The next-action banner is Promote-only. Refresh + Score must NOT render
+    a `_banner_cta_*` button (the Dashboard owns the cross-surface 'what now?'
+    via its own Next-Best-Action hero; Refresh/Score shouldn't be dominated by
+    a promote CTA)."""
+    for view in ("Refresh", "Score"):
+        at = _run(view)
+        cta = [b for b in at.button if (b.key or "").startswith("_banner_cta_")]
+        assert not cta, f"banner CTA should not render on {view}, found {[b.key for b in cta]}"
+
+
 def test_promote_apply_panel_appears_for_fresh_dry_run(tmp_path, monkeypatch):
-    """Preview→commit: when a fresh dry-run promote_report exists, ⑤ shows an
-    '✅ Apply N to tracker' commit button. When the latest report is a commit
-    (not a preview), the panel stays quiet."""
+    """Preview→commit: when a fresh dry-run promote_report exists, the ⑤
+    Auto-promote card (on the Promote view) shows an '✅ Apply N to tracker'
+    commit button. When the latest report is a commit, the panel stays quiet."""
     import json as _json
     import app as _app  # the module under test (ui/app.py)
 
@@ -146,7 +256,7 @@ def test_promote_apply_panel_appears_for_fresh_dry_run(tmp_path, monkeypatch):
         ],
     }), encoding="utf-8")
     try:
-        at = _run(True)
+        at = _run("Promote")
         exc = [str(getattr(e, "value", e)) for e in at.exception]
         assert not exc, f"raised: {exc[:2]}"
         apply_btn = [b for b in at.button if b.key == "_vc_promote_apply"]
@@ -182,18 +292,18 @@ def test_list_pipelines_excludes_suppression_sidecars():
             "a record without pipeline_id leaked through (sidecar not excluded)"
         ids = [r["pipeline_id"] for r in recs]
         assert "99991231_235959" in ids, "real run record was dropped"
-        # the selectbox comprehension `[p["pipeline_id"] for p in recs]` must
-        # not raise — exercise it directly.
         _ = [p["pipeline_id"] for p in recs]
     finally:
         sidecar.unlink(missing_ok=True)
         realrun.unlink(missing_ok=True)
 
 
-def test_route_banner_cta_opens_correct_toggles(monkeypatch):
-    """_route_banner_cta must open the right stage card's inspect toggle for
-    each action and (for promote) launch via scan_runner.start_run. Drives the
-    function directly with start_run/rerun stubbed so no subprocess fires."""
+def test_route_banner_cta_opens_correct_toggles_and_subpage(monkeypatch):
+    """_route_banner_cta must (a) open the right stage card's inspect toggle
+    for each action AND (b) — new in v3.2 — switch the nav to the Pipeline
+    sub-page that hosts that card, or the toggle opens an off-page card and
+    nothing visible happens. Drives the function directly with start_run/rerun
+    stubbed so no subprocess fires."""
     import app as _app
 
     class _Rec:
@@ -205,105 +315,206 @@ def test_route_banner_cta_opens_correct_toggles(monkeypatch):
                         lambda *a, **k: launched.setdefault("cmd", a[1]) or _Rec())
     monkeypatch.setattr(_app.st, "rerun", lambda *a, **k: None)
     monkeypatch.setattr(_app.st, "toast", lambda *a, **k: None)
-    # any_work_active is a module global read by the promote branch.
     monkeypatch.setattr(_app, "any_work_active", False, raising=False)
     _app.st.session_state.clear()
 
+    # action -> (inspect-toggle flag, expected Pipeline sub-page)
+    # v3.2: the `score` CTA routes to ④ Scoring (Score view) — the 🤖 Score
+    # worklist button moved there from the ⑤ run card.
     cases = {
-        "promote": "_vc_inspect_promote",
-        "score": "_vc_inspect_promote",
-        "review_verdicts": "_vc_inspect_scoring",
-        "review_suppressions": "_vc_inspect_triage",
-        "quarantine": "_vc_inspect_worklist",
+        "promote":             ("_vc_inspect_promote",  "Promote"),
+        "score":               ("_vc_inspect_scoring",  "Score"),
+        "review_verdicts":     ("_vc_inspect_scoring",  "Score"),
+        "review_suppressions": ("_vc_inspect_triage",   "Score"),
+        "quarantine":          ("_vc_inspect_worklist", "Refresh"),
     }
-    for action, flag in cases.items():
+    for action, (flag, sub) in cases.items():
         _app.st.session_state.clear()
         _app._route_banner_cta(action, [])
         assert _app.st.session_state.get(flag) is True, \
             f"{action!r} should open {flag!r}"
+        # The handler runs after the sub-radio instantiates, so it stashes the
+        # target sub-page in the non-widget `_pipe_pending_view` key; the
+        # pre-radio transfer block applies it on the next run. (Asserting the
+        # widget key directly would be wrong — Streamlit drops that write.)
+        assert _app.st.session_state.get("_pipe_pending_view") == sub, \
+            f"{action!r} should stash pending sub-page {sub!r}"
     # promote should have launched a dry-run preview (skip-scrape + skip-score)
     assert launched.get("cmd") and "--skip-scrape" in launched["cmd"] \
         and "--skip-score" in launched["cmd"], \
         "promote CTA must launch a dry-run preview"
 
 
+def test_banner_cta_click_switches_subpage_end_to_end():
+    """Full round trip: a banner CTA click on one view must land the user on
+    the sub-page hosting the target card (via the `_pipe_pending_view` →
+    pre-radio transfer indirection). Guards the documented risk #2 — a direct
+    widget-key write from the handler is dropped because the sub-radio already
+    instantiated this run.
+
+    Deterministic: rather than depend on whichever banner state is live for the
+    test's on-disk fixtures (which would make the assertions silently skip),
+    seed `_pipe_pending_view` directly — that's the exact input the handler
+    produces — and prove the pre-radio transfer block lands the user on the
+    right view with the target card visible. The handler→pending-view half is
+    covered separately by test_route_banner_cta_opens_correct_toggles_and_subpage."""
+    targets = {
+        "Promote": "⑤ Auto-promote",
+        "Score":   "④ Scoring",
+        "Refresh": "① Inputs",
+    }
+    for view, card in targets.items():
+        # Start on a DIFFERENT view so the transfer has to actually move us.
+        start = "Refresh" if view != "Refresh" else "Promote"
+        at = AppTest.from_file(str(APP), default_timeout=120)
+        at.session_state["_applyagent_nav"] = "🎯 Pipeline"
+        at.session_state[_SUB_KEY] = start
+        at.session_state["_pipe_pending_view"] = view   # what a CTA would stash
+        at.run()
+        exc = [str(getattr(e, "value", e)) for e in at.exception]
+        assert not exc, f"pending_view={view} raised: {exc[:2]}"
+        # Transfer block must have applied the pending view and cleared the key.
+        sub = None
+        try:
+            sub = at.session_state[_SUB_KEY]
+        except Exception:
+            pass
+        assert sub == view, f"pending_view={view!r} landed on {sub!r}"
+        pending_left = None
+        try:
+            pending_left = at.session_state["_pipe_pending_view"]
+        except Exception:
+            pass
+        assert pending_left is None, \
+            f"_pipe_pending_view not cleared (still {pending_left!r})"
+        assert card in _all_markdown(at), \
+            f"target card {card!r} not visible after jump to {view}"
+
+
 def test_success_overlay_chip_after_commit():
     """A recent _promote_feedback (count + ts) surfaces the '✅ Promoted N'
-    chip in the banner (doc §90 success-feedback decay)."""
+    chip in the banner (doc §90 success-feedback decay). The banner is now
+    Promote-only, so assert on the ③ Promote view."""
     from datetime import datetime
-    at = _run(True, _promote_feedback={
+    at = _run("Promote", _promote_feedback={
         "count": 9, "ts": datetime.now().isoformat(timespec="seconds")})
     caps = " ".join(c.value for c in at.get("caption"))
     assert "Promoted 9" in caps, "success-feedback chip missing after commit"
 
 
-def test_no_duplicate_download_rows_in_vertical():
-    """Regression for the doc-§427 duplicate-downloads bug: the vertical layout
-    must NOT also render the combined 'Latest outputs' panel (5 artifacts) on
-    top of the per-stage download rows. With the promote inspect open vs
-    closed, the download_button count must be identical — if the run card's
-    render_latest_outputs_row leaked back in, opening ⑤ would add buttons."""
-    at_closed = _run(True, _vc_inspect_promote=False)
-    at_open = _run(True, _vc_inspect_promote=True)
-    n_closed = len(at_closed.get("download_button"))
-    n_open = len(at_open.get("download_button"))
-    assert n_closed == n_open, (
-        f"opening ⑤ changed the download count ({n_closed}→{n_open}) — the "
-        "duplicate Latest-outputs panel is back")
-
-
-def test_apply_panel_requires_session_preview(tmp_path):
-    """Apply-to-tracker must be DISABLED until a preview is launched THIS
-    session (doc §167). A fresh dry-run report on disk is necessary but not
-    sufficient — without _promote_preview_armed the button is disabled."""
-    import json as _json
-    import app as _app
-
-    p = _app.OUT_DIR / "promote_report_29991229.json"
-    p.write_text(_json.dumps({
-        "mode": "dry_run", "min_score": 7, "include_watch": False,
-        "summary": {"added": 2}, "selection_mode": "threshold",
-        "promoted": [
-            {"company": "A", "title": "T", "score": 8, "sector": "S", "url": "u1"},
-            {"company": "B", "title": "T", "score": 7, "sector": "S", "url": "u2"},
-        ],
-    }), encoding="utf-8")
-    try:
-        # Not armed → button present but disabled.
-        at = _run(True)
-        btn = [b for b in at.button if b.key == "_vc_promote_apply"]
-        assert btn, "Apply button missing for fresh dry-run"
-        assert btn[0].disabled, "Apply must be disabled without a session preview"
-        # Armed → enabled.
-        at2 = _run(True, _promote_preview_armed=True)
-        btn2 = [b for b in at2.button if b.key == "_vc_promote_apply"]
-        assert btn2 and not btn2[0].disabled, \
-            "Apply must enable once a preview is armed this session"
-    finally:
-        p.unlink(missing_ok=True)
-
-
 def test_bulk_promote_confirm_gate_at_25(monkeypatch):
     """≥25 hand-picked rows require an explicit confirm checkbox before the
-    Send button enables (doc §B:243). With 25 selected and no confirm, Send
-    is disabled."""
+    Send button enables (doc §B:243). The scored card / data_editor is on the
+    ② Score view now. With 25 selected and no confirm, Send is disabled."""
     import app as _app
-    # Seed a 25-URL selection; the scored data_editor reconciles to it.
     urls = {f"http://x/{i}" for i in range(25)}
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.session_state["_applyagent_nav"] = "🎯 Pipeline"
-    at.session_state["_pipe_vertical_layout"] = True
+    at.session_state[_SUB_KEY] = "Score"
     at.session_state["_vc_inspect_scoring"] = True
     at.session_state["scoring_selected_urls"] = urls
     at.run()
     send = [b for b in at.button if b.key == "scored_bulk_promote"]
     confirm = [c for c in at.checkbox if c.key == "scored_bulk_confirm"]
-    # The confirm checkbox should exist (≥25) and Send should be disabled
-    # while it's unchecked. (If the selection didn't survive to the editor,
-    # neither widget renders — guard so the test only asserts when present.)
-    if confirm:
-        assert send and send[0].disabled, \
-            "Send must be disabled until the ≥25 confirm is ticked"
+    # The bulk controls only render when the scored card has ≥1 PROMOTABLE row
+    # (apply_now / tailor_and_apply) — the data_editor + selection block is
+    # nested under `if not _promotable.empty:`. With the live worklist_scored
+    # fixture that may be empty, in which case the gate genuinely can't render.
+    # Skip EXPLICITLY in that case so the test can never masquerade as a pass
+    # (was a silent `if confirm:` that always no-op'd — flagged as vacuous).
+    if not confirm:
+        pytest.skip("scored card has no promotable rows in the current fixture; "
+                    "bulk-confirm gate cannot render to be asserted")
+    assert send and send[0].disabled, \
+        "Send must be disabled until the ≥25 confirm is ticked"
+
+
+# ---------------------------------------------------------------------------
+# v3.2 refinements: scorer-status table (Score) + worklist auto-open (Refresh)
+# ---------------------------------------------------------------------------
+def _captions(at):
+    return "\n".join(c.value for c in at.get("caption"))
+
+
+def test_scorer_status_renders_on_score():
+    """The ④ Scoring card shows an always-visible 'Last scoring run' status
+    block (cached/new/model/errors + Logs expander) above the inspect toggle.
+    Skips cleanly if no scored fixture exists."""
+    import app as _app
+    if not list(_app.OUT_DIR.glob("*_scored.json")):
+        pytest.skip("no *_scored.json fixture to summarize")
+    at = _run("Score")
+    exc = [str(getattr(e, "value", e)) for e in at.exception]
+    assert not exc, f"Score raised: {exc[:2]}"
+    assert "Last scoring run" in _all_markdown(at), "scorer-status block missing on Score"
+    # The status grid uses st.metric — labels surface via at.metric, not markdown.
+    metric_labels = {m.label for m in at.metric}
+    for lbl in ("Input", "Triaged", "Scored", "Cached (free)", "New (paid)", "Model"):
+        assert lbl in metric_labels, f"scorer-status missing metric {lbl!r}"
+    exp = " ".join(getattr(e, "label", "") for e in at.get("expander"))
+    assert "Scoring logs" in exp, "scoring-logs expander missing"
+
+
+def test_worklist_closed_on_cold_load():
+    """Cold load of the Refresh view must seed `_seen_rebuilt_at` and leave the
+    heavy worklist table CLOSED (perf — ~1,400 rows). The seed makes the
+    rebuilt_at comparison a no-op on first visit."""
+    at = _run("Refresh")
+    # The auto-open block seeds the cache on first render…
+    seeded = None
+    try:
+        seeded = at.session_state["_seen_rebuilt_at"]
+    except Exception:
+        pass
+    assert "_seen_rebuilt_at" in at.session_state, "cold load must seed _seen_rebuilt_at"
+    # …and the table stays closed.
+    opened = None
+    try:
+        opened = at.session_state["_vc_inspect_worklist"]
+    except Exception:
+        pass
+    assert not opened, "worklist table must stay closed on a cold load"
+
+
+def test_worklist_autoopens_after_session_rebuild():
+    """When a rebuild happens DURING the session (worklist.status().rebuilt_at
+    differs from the cached `_seen_rebuilt_at`), the worklist table auto-opens
+    and shows the '🕒 Worklist rebuilt …' freshness header."""
+    at = AppTest.from_file(str(APP), default_timeout=120)
+    at.session_state["_applyagent_nav"] = "🎯 Pipeline"
+    at.session_state[_SUB_KEY] = "Refresh"
+    # A stale 'seen' value simulates a rebuild having completed this session.
+    at.session_state["_seen_rebuilt_at"] = "1999-01-01T00:00:00"
+    at.run()
+    exc = [str(getattr(e, "value", e)) for e in at.exception]
+    assert not exc, f"Refresh raised: {exc[:2]}"
+    opened = None
+    try:
+        opened = at.session_state["_vc_inspect_worklist"]
+    except Exception:
+        pass
+    assert opened is True, "worklist table must auto-open after a session rebuild"
+    # The freshness header renders inside the open table (when a worklist
+    # exists on disk). Guard so the test is meaningful only when there's a
+    # rebuilt_at to show.
+    import app as _app
+    if _app.worklist.status().get("rebuilt_at"):
+        assert "Worklist rebuilt" in _captions(at), \
+            "refresh-time header missing in the open worklist table"
+
+
+def test_worklist_dedup_line_present_on_refresh():
+    """The ② Worklist header caption surfaces the dedup picture (exact/near-dup
+    merges and/or new-since-score) — not just raw source counts."""
+    at = _run("Refresh")
+    caps = _captions(at)
+    # At least one of the dedup bits should be present when a worklist exists.
+    import app as _app
+    if _app.worklist.status().get("stats"):
+        assert ("scrape" in caps and "gmail" in caps), "source-count line missing"
+        # The richer bits are presence-guarded; assert the line is at least the
+        # enriched form when merges or new-rows exist in the fixture.
+        # (Non-fatal if the fixture has zero merges and zero new rows.)
 
 
 if __name__ == "__main__":

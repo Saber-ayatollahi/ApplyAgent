@@ -60,6 +60,12 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "national bank of canada": "nbc",
     "national bank financial": "nbc",
     "nbc": "nbc",
+    # National Bank surfaces in French in Quebec-sourced alerts; without these
+    # "Banque Nationale" canonicalizes to "banque" and leaks past an NBC exclude.
+    "banque nationale": "nbc",
+    "banque nationale du canada": "nbc",
+    "banque nationale financiere": "nbc",
+    "bnc": "nbc",
     # Major insurers
     "manulife": "manulife",
     "manulife financial": "manulife",

@@ -98,6 +98,12 @@ data/suppressions_history.json
 data/suppressions_pending_archives.jsonl
 
 # ============================================================================
+# Excluded companies — permanent source-level block (live state only).
+# Per-machine; seed via data/excludes.example.json (which IS committed).
+# ============================================================================
+data/excludes.json
+
+# ============================================================================
 # App runtime logs — written by start.ps1
 # ============================================================================
 logs/
