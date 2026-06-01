@@ -112,6 +112,15 @@ KEYWORDS_STRONG = [
     "osfi", "b-12", "e-23", "lcr", "nsfr", "ftp",
     "pension analytics", "investment analytics",
     "analytics", "quant", "quantitative",
+    # Lane 7.3 — Investment & Market Risk Analytics (VaR/CVaR, attribution, optimization)
+    "cvar", "conditional var", "value at risk", "expected shortfall",
+    "risk attribution", "risk decomposition", "portfolio optimization",
+    "total portfolio risk", "factor risk", "investment risk", "tail risk",
+    # Lane 7.4 — Vendor-Platform / Solutions Engineering & Client Solutions
+    "solutions engineering", "solutions engineer", "sales engineer",
+    "pre-sales", "presales", "client solutions", "client engagement",
+    "client experience", "implementation consultant", "solutions consultant",
+    "product specialist", "technical consultant", "client advisory",
 ]
 
 KEYWORDS = KEYWORDS_STRONG  # backwards-compat for existing keyword_match() callers
@@ -273,6 +282,10 @@ LINKEDIN_QUERY_PHRASES = [
     "valuation", "model governance", "actuarial",
     # Emerging (OSFI B-15 climate, digital assets)
     "climate risk", "digital assets",
+    # Lane 7.3 — Investment & Market Risk Analytics
+    "investment risk", "portfolio optimization", "VaR", "risk attribution",
+    # Lane 7.4 — Vendor-Platform / Solutions Engineering & Client Solutions
+    "solutions engineering", "client solutions", "client engagement", "Aladdin",
 ]
 
 # Fuzzy brand aliases — words that plausibly appear in the "company" subtitle on LinkedIn
@@ -315,6 +328,7 @@ def _is_finance_title(title: str) -> bool:
         "regulator", "compliance", "audit", "governance",
         "director", "vp", "vice president", "managing director",
         "principal", "head of", "chief", "avp",
+        "solutions", "presales", "optimization", "attribution",
     )
     return any(k in tl for k in loose_keywords)
 

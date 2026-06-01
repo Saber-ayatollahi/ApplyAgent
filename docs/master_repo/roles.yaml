@@ -67,7 +67,7 @@ roles:
   - id: role_ortec
     employer: "Ortec Finance Canada"
     division: null
-    title: "Senior Consultant — Asset-Liability Management & Risk"
+    title: "Consultant — Asset-Liability Management & Risk"
     location: "Toronto, ON"
     period_start: "2019-02"
     period_end: "2021-09"
@@ -80,7 +80,14 @@ roles:
       - "Advised clients on Strategic Asset Allocation (SAA) to meet long-term objectives and helped clients navigate Tactical Asset Allocation (TAA) risk through stress testing and sensitivity analysis."
       - "Designed stochastic risk management frameworks for specific client mandates."
       - "Presented findings at client on-site meetings, including discussions with investment committees at pension-fund clients."
+      - "Performed cash flow, liquidity, and hedging analysis (interest rate, inflation, and currency) for international clients."
+      - "Modelled pension-fund (actuarial) liabilities alongside all major investment-product types and economic variables."
+      - "Performed portfolio optimization — both asset-only and asset-liability (surplus) — based on VaR and CVaR using Ortec's GLASS platform."
+      - "Performed risk decomposition and risk attribution (contribution-to-risk, risk budgeting) and explored near-optimal portfolios around the efficient frontier to test the robustness of allocation recommendations."
+      - "Led onboarding and the ALM study for the University Pension Plan (UPP), where three single-employer university plans merged into a new jointly-sponsored pension plan (JSPP) — on a team of three developing and validating the model capturing all Funding Policy dynamics, and studying duration, currency, inflation, and leverage overlay strategies."
     project_ids:
       - proj_ortec_alm_studies
       - proj_ortec_scenario_generators
       - proj_ortec_ldi_studies
+      - proj_ortec_upp
+      - proj_ortec_portfolio_optimization

@@ -278,7 +278,7 @@ def render_positioning(pos_data: dict) -> list[str]:
     §7 (original has them there). The inter-section separator before §8 is
     added by the top-level driver — so we trim trailing '---' here."""
     lines = [
-        "## 7. TARGET ROLE POSITIONING — **TWO ANGLES ONLY**",
+        "## 7. TARGET ROLE POSITIONING",
         "",
         f"> **Decision {pos_data['positioning_decision_date']}:** "
         f"{pos_data['positioning_decision_note'].strip()}",
@@ -289,7 +289,7 @@ def render_positioning(pos_data: dict) -> list[str]:
         is_last = idx == len(angles) - 1
         if angle.get("adhoc_only"):
             lines.append(
-                f"### {angle['number']} — Ad-hoc third lane: {angle['name']} (opportunistic)"
+                f"### {angle['number']} — Opportunistic: {angle['name']}"
             )
             lines.append(angle["trigger_description"].strip())
             lines.append("")

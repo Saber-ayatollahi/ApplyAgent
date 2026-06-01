@@ -1,6 +1,6 @@
 # Target Companies — Saber Ayatollahi, CFA | 2026 Job Search
 
-> **Profile snapshot:** CFA Charterholder · Dual MSc (Financial Modelling + Chemical Engineering, Western University) · ~7 years in ALM, interest rate risk in the banking book (IRRBB), derivatives valuation, model governance, multi-asset cash flow analytics, and institutional platform delivery. Formal sign-off authority on $10–25bn portfolios at Moody's Analytics. Insurance-accounting transformation (EY). Pension + asset manager + buy-side platform cross-sector exposure. Python/SQL + agentic AI workflow experience (rare at senior finance level).
+> **Profile snapshot:** CFA Charterholder · Dual MSc (Financial Modelling + Chemical Engineering, Western University) · ~7 years in ALM, interest rate risk in the banking book (IRRBB), derivatives valuation, model governance, multi-asset cash flow analytics, VaR/CVaR portfolio optimization & risk decomposition (Ortec GLASS), LDI, and institutional platform / solutions-engineering delivery. Delegated sign-off authority on multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative) at Moody's Analytics. Insurance-accounting transformation (EY). Pension + asset manager + buy-side platform cross-sector exposure. Python/SQL + agentic AI workflow experience (rare at senior finance level).
 
 ---
 
@@ -408,9 +408,9 @@ Schroders has a Toronto presence focused on institutional clients. Multi-asset r
 
 ## 6. Analytics & Risk Vendors
 
-These firms build the platforms and models that banks, pension funds, and asset managers rely on. Saber's background at Moody's Analytics is the direct credential for both practitioner-to-vendor transitions and lateral moves within this sector. These roles also offer a natural path into Product Management for risk/FinTech.
+**PRIMARY lane (elevated 2026-05-30 from secondary/Tier-2).** This is now one of Saber's core target lanes, not a fallback. He spent ~4 years at Moody's Analytics delivering, configuring, and validating a multi-asset investment-risk platform — a direct competitor to Aladdin, MSCI, and S&P — led a Calypso→PFaroe client migration, and translated client requirements into platform configuration. That is precisely the vendor-platform / Solutions-Engineering profile these firms hire for, and it is exactly the work behind his BlackRock VP Solutions Engineering (Aladdin) interview. Solutions Engineering, Client Solutions, Implementation/Onboarding, Client Engagement, and Pre-Sales / Sales Engineering role families are firmly **in-scope** alongside the analytics/model-risk tracks. These roles also offer a natural path into Product Management for risk/FinTech.
 
-**Eligible role families:** Director – Client Solutions / Advisory · Senior Analytics Specialist · Model Risk Consultant · Product Manager (Risk/ALM platforms) · Solutions Engineering
+**Eligible role families (vendor-platform = primary):** Solutions Engineer / Solutions Engineering Lead · VP/Director – Client Engagement & Client Solutions · Implementation / Onboarding Specialist · Pre-Sales / Sales Engineer (risk & analytics platforms) · Director – Client Solutions / Advisory · Senior Analytics Specialist · Model Risk Consultant · Product Manager (Risk/ALM platforms)
 
 ---
 
@@ -459,6 +459,87 @@ Morningstar DBRS (formerly DBRS Morningstar) is the dominant Canadian credit rat
 
 ---
 
+### SS&C Technologies (Algorithmics)
+**Priority: ★★★★★ | Direct Moody's RiskFrontier competitor | Toronto-based**
+
+Algorithmics (now SS&C) is a Toronto-headquartered enterprise risk-analytics platform and one of the closest direct competitors to Saber's Moody's platform work, with extensive Moody's→Algorithmics alumni overlap. Strong fit for Solutions Engineering, implementation, and client-solutions roles where his platform-delivery and migration experience transfers verbatim.
+
+*Target teams: Solutions Engineering / Implementation, Client Solutions, Risk Analytics.*
+
+---
+
+### Numerix
+**Priority: ★★★★☆ | Derivatives pricing & risk platform**
+
+Numerix builds cross-asset derivatives pricing and risk analytics used by banks and buy-side risk teams. Smaller footprint means broader individual scope. Saber's derivatives-valuation and platform-configuration background maps directly onto pre-sales / solutions-engineering and client-implementation mandates.
+
+*Target teams: Solutions Engineering, Pre-Sales / Sales Engineering, Client Implementation.*
+
+---
+
+### Prometeia
+**Priority: ★★★★☆ | ALM / IRRBB specialist vendor | Toronto/NA presence**
+
+Italian-HQ'd ALM and IRRBB analytics specialist with a North American footprint — directly on-profile given Saber's IRRBB and ALM platform-delivery depth. A strong fit for client-engagement and implementation roles deploying ALM/IRRBB software to banks and insurers.
+
+*Target teams: Client Solutions / Engagement, ALM/IRRBB Implementation, Advisory.*
+
+---
+
+### FIS (Adenza)
+**Priority: ★★★★☆ | Capital markets & risk platform (Adenza / Calypso-adjacent)**
+
+FIS, now incorporating Adenza, runs a broad capital-markets, treasury, and risk platform suite. The Adenza/treasury-risk product lines overlap with Saber's risk-platform delivery and his Calypso migration experience. Solutions-engineering and implementation roles here are a clean fit. *(Also tracked under Market Infrastructure as FIS Global.)*
+
+*Target teams: Solutions Engineering, Implementation / Onboarding, Risk & Treasury platform Client Solutions.*
+
+---
+
+### Nasdaq (Calypso / AxiomSL)
+**Priority: ★★★★☆ | Calypso & AxiomSL risk/regulatory platforms**
+
+Nasdaq's financial-technology arm owns Calypso (cross-asset trading/risk) and AxiomSL (regulatory & risk reporting). Saber's Calypso→PFaroe migration leadership is a direct, named credential for Calypso-platform solutions-engineering and implementation roles. *(Nasdaq already tracked under Analytics & Risk Vendors.)*
+
+*Target teams: Calypso Solutions Engineering, AxiomSL Implementation, Client Engagement.*
+
+---
+
+### Clearwater Analytics
+**Priority: ★★★☆☆ | Investment accounting, reporting & analytics SaaS**
+
+Clearwater is a fast-growing SaaS platform for investment accounting, reporting, and analytics serving insurers, asset managers, and corporates. Client-onboarding and solutions-engineering roles suit Saber's platform-configuration and client-requirements-translation background; the insurance-client base also intersects his EY insurance-accounting experience.
+
+*Target teams: Solutions Engineering, Client Onboarding / Implementation, Client Solutions.*
+
+---
+
+### Broadridge Financial Solutions
+**Priority: ★★★☆☆ | Investment management & capital-markets platforms**
+
+Broadridge provides investor-communications and capital-markets / investment-management technology at scale. Relevant solutions-engineering and client-implementation roles exist across its asset-management and capital-markets platform lines. *(Also tracked under Market Infrastructure as Broadridge.)*
+
+*Target teams: Solutions Engineering, Client Implementation, Investment Management platform Client Solutions.*
+
+---
+
+### Finastra
+**Priority: ★★★☆☆ | Treasury, capital-markets & risk banking software**
+
+Finastra runs a large banking-software portfolio spanning treasury, capital markets, and risk. Solutions-engineering, pre-sales, and implementation roles on the treasury/risk product lines align with Saber's platform-delivery profile. *(Also tracked under Market Infrastructure as Finastra.)*
+
+*Target teams: Solutions Engineering, Pre-Sales, Treasury/Risk platform Implementation.*
+
+---
+
+### Moody's Analytics (lateral move)
+**Priority: ★★★★☆ | Current-employer lateral into a Solutions-Engineering / Client-Solutions track**
+
+A lateral within Moody's Analytics into a Solutions Engineering, Client Services, or implementation role would let Saber convert his deep platform knowledge into a client-facing vendor-platform track without leaving the ecosystem he knows best. Worth pursuing in parallel as a low-risk, high-credibility option. *(Moody's Corporation already tracked under Analytics & Risk Vendors.)*
+
+*Target teams: Solutions Engineering, Client Services / Client Solutions, Implementation.*
+
+---
+
 ## Role Eligibility Summary
 
 | Role family | Fit | Key evidence from profile |
@@ -469,8 +550,10 @@ Morningstar DBRS (formerly DBRS Morningstar) is the dominant Canadian credit rat
 | Portfolio Risk Manager (buy-side) | ★★★★☆ | Multi-asset valuation, derivatives, scenario analytics |
 | Fixed Income / Rates Risk | ★★★★☆ | Curve construction, duration, spread calibration, stress scenarios |
 | Senior Quant Analyst / Strats | ★★★★☆ | Dual MSc, Python/SQL, stochastic modelling, scenario generators |
+| **Solutions Engineering / Client Solutions (vendor platform)** | **★★★★★** | **PRIMARY lane. ~4 yrs delivering/configuring/validating a multi-asset risk platform at Moody's; Calypso→PFaroe migration; client-requirements translation; BlackRock VP Solutions Engineering (Aladdin) interview** |
 | ALM Consultant / Client Solutions | ★★★★☆ | Ortec + Moody's institutional client delivery across pension/AM verticals |
-| Aladdin / Risk Platform Analytics | ★★★★☆ | Platform build, multi-asset analytics, institutional client workflows |
+| Aladdin / Risk Platform Analytics | ★★★★★ | Platform build, multi-asset analytics, institutional client workflows; competing-platform delivery is a unique angle |
+| Pre-Sales / Implementation / Onboarding (risk & analytics SaaS) | ★★★★☆ | Platform configuration + client-requirements translation + migration leadership |
 | Product Manager – Risk/FinTech | ★★★☆☆ | Agentic AI + platform delivery differentiates vs. pure PM candidates |
 | Insurance-accounting Transformation / Actuarial Risk | ★★★☆☆ | EY experience, but better matched to insurance context (excluded here) |
 
@@ -479,10 +562,10 @@ Morningstar DBRS (formerly DBRS Morningstar) is the dominant Canadian credit rat
 ## Prioritized Attack Order
 
 **Tier 1 — Highest probability of fit + active hiring:**
-Scotiabank (ALM Modelling / Model Validation), RBC (ALM & Group Risk), Bloomberg (IR Modeling Quant role), HOOPP, OMERS, Ontario Teachers', CPP Investments
+Scotiabank (ALM Modelling / Model Validation), RBC (ALM & Group Risk), Bloomberg (IR Modeling Quant role), HOOPP, OMERS, Ontario Teachers', CPP Investments, **BlackRock (Aladdin Solutions Engineering / Client Engagement)**, **SS&C Algorithmics** — vendor-platform / Solutions-Engineering is now a primary lane
 
 **Tier 2 — Strong fit; less confirmed active hiring:**
-TD Bank, BMO, BlackRock (Aladdin), Manulife Investment Management, Sun Life Investment Management, JPMorgan Chase, S&P Global, MSCI
+TD Bank, BMO, Manulife Investment Management, Sun Life Investment Management, JPMorgan Chase, S&P Global, MSCI, **Nasdaq (Calypso/AxiomSL)**, **FIS (Adenza)**, **Numerix**, **Prometeia**, **Moody's Analytics (Solutions-Engineering lateral)**
 
 **Tier 3 — Strong fit; lower volume or more selective:**
 CIBC, Goldman Sachs, Brookfield AM, RBC GAM, PSP, PIMCO, Citibank Canada, OPTrust

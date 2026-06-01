@@ -68,6 +68,26 @@ not_hands_on:
     aliases: ["LangGraph", "CrewAI", "AutoGen", "LangChain production"]
     adjacent_note: "Hobbyist level; Claude Code + Cursor IDE is the evidenced stack"
 
+  - canonical: "FRTB (Fundamental Review of the Trading Book)"
+    severity: hard
+    aliases: ["FRTB", "SA-FRTB", "IMA", "market risk capital", "sensitivities-based method"]
+    adjacent_note: "Banking-book IRRBB + Basel awareness; no trading-book FRTB implementation"
+
+  - canonical: "Counterparty Credit Risk (CCR / xVA)"
+    severity: hard
+    aliases: ["CCR", "counterparty credit risk", "PFE", "EPE", "EAD", "CVA", "DVA", "xVA", "SA-CCR"]
+    adjacent_note: "Derivatives-valuation exposure; no CCR/xVA desk experience"
+
+  - canonical: "Trading-book market risk (VaR backtesting / P&L attribution)"
+    severity: hard
+    aliases: ["trading book market risk", "VaR backtesting", "P&L attribution", "market risk limits", "intraday VaR", "FRTB backtesting"]
+    adjacent_note: "Buy-side VaR/CVaR optimization (GLASS) — NOT trading-desk VaR/backtesting"
+
+  - canonical: "CCAR / bank regulatory capital stress testing (submissions)"
+    severity: soft
+    aliases: ["CCAR", "DFAST", "capital stress testing", "regulatory stress testing", "supervisory stress test"]
+    adjacent_note: "Reverse-stress / scenario-engine work is CCAR-analogous, not US-bank CCAR submissions"
+
   - canonical: "Hedge fund quant-research (pure research)"
     severity: soft
     aliases: ["hedge fund quant research", "portfolio construction HF", "statistical arbitrage"]

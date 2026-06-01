@@ -219,3 +219,52 @@ projects:
       - sk_investment_committee_presentation
     outcomes:
       - "At least one client adopted a duration-extension recommendation following presentation to investment committee."
+
+  - id: proj_ortec_upp
+    name: "University Pension Plan (UPP) ALM study — JSPP merger"
+    role_id: role_ortec
+    period_display: "2020 - 2021"
+    status: "Delivered"
+    problem: >
+      Three single-employer Ontario university pension plans merged to form a
+      new jointly-sponsored pension plan (JSPP); the combined plan needed an
+      ALM study and a model capturing all Funding Policy dynamics across the
+      legacy and new balance sheets.
+    approach: >
+      Led onboarding and the ALM study on a team of three responsible for
+      developing and validating the model capturing all Funding Policy rules;
+      modelled the balance sheets and policies of the legacy university plans
+      and the new UPP plan; studied duration, currency, and inflation overlay
+      strategies and the impact of introducing leverage into the asset mix.
+    skill_ids:
+      - sk_alm
+      - sk_funding_ratio
+      - sk_actuarial_liability
+      - sk_duration_gap
+      - sk_model_review_challenge
+    outcomes:
+      - "Delivered the merged-plan ALM model and study; model validated to capture full Funding Policy dynamics."
+
+  - id: proj_ortec_portfolio_optimization
+    name: "Portfolio optimization - asset-only & asset-liability (VaR/CVaR)"
+    role_id: role_ortec
+    period_display: "Feb 2019 - Sep 2021"
+    status: "Delivered in client engagements"
+    problem: >
+      Pension and institutional clients needed optimized allocations balancing
+      return objectives against downside and surplus risk.
+    approach: >
+      Performed both asset-only and asset-liability (surplus) portfolio
+      optimization based on VaR and CVaR (Expected Shortfall) using Ortec's
+      GLASS platform; performed risk decomposition / attribution and explored
+      near-optimal portfolios around the efficient frontier to test robustness;
+      translated results into allocation recommendations.
+    stack: ["Ortec GLASS"]
+    skill_ids:
+      - sk_portfolio_optimization
+      - sk_var_cvar
+      - sk_risk_decomposition
+      - sk_stochastic_modelling
+      - sk_multi_asset_portfolio
+    outcomes:
+      - "Optimized allocations informed client SAA recommendations under explicit risk budgets."

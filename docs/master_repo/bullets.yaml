@@ -51,6 +51,10 @@ section_groups:
       - b_ortec_saa_taa
       - b_ortec_stochastic_frameworks
       - b_ortec_investment_committee
+      - b_ortec_portfolio_optimization
+      - b_ortec_hedging_analysis
+      - b_ortec_actuarial_liabilities
+      - b_ortec_upp_merger
 
 bullets:
   # ---- Moody's ----
@@ -257,3 +261,39 @@ bullets:
     has_metric: false
     length: full
     text: "Presented ALM study findings to investment committees at Canadian pension-fund clients on-site."
+
+  - id: b_ortec_portfolio_optimization
+    variant_tags: [QUANT, ALM]
+    role_id: role_ortec
+    project_id: proj_ortec_portfolio_optimization
+    skill_ids: [sk_portfolio_optimization, sk_var_cvar, sk_risk_decomposition]
+    has_metric: false
+    length: full
+    text: "Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR using Ortec's GLASS platform — with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations."
+
+  - id: b_ortec_hedging_analysis
+    variant_tags: [ALM, QUANT]
+    role_id: role_ortec
+    project_id: proj_ortec_alm_studies
+    skill_ids: [sk_hedging_analysis, sk_cash_flow_projection, sk_liquidity_gap]
+    has_metric: false
+    length: full
+    text: "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients."
+
+  - id: b_ortec_actuarial_liabilities
+    variant_tags: [ALM]
+    role_id: role_ortec
+    project_id: proj_ortec_alm_studies
+    skill_ids: [sk_actuarial_liability, sk_alm]
+    has_metric: false
+    length: full
+    text: "Modelled pension-fund (actuarial) liabilities alongside all major investment-product types and economic variables."
+
+  - id: b_ortec_upp_merger
+    variant_tags: [ALM, QUANT]
+    role_id: role_ortec
+    project_id: proj_ortec_upp
+    skill_ids: [sk_alm, sk_actuarial_liability, sk_model_review_challenge, sk_funding_ratio]
+    has_metric: false
+    length: full
+    text: "Led onboarding and the ALM study for a three-plan university pension merger (new jointly-sponsored plan) — on a team of three developing and validating the model capturing all Funding Policy dynamics, evaluating duration, currency, inflation, and leverage overlay strategies."

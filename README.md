@@ -1,7 +1,7 @@
 # Saber Ayatollahi — Toronto Finance Job Search System
 
 > **Campaign:** 2026-05-03 → 2026-07-12 (10 weeks).
-> **Target:** Director / VP roles in Toronto — primary ALM / IRRBB / Model Governance; secondary Vendor-Platform / Client Solutions.
+> **Target:** Director / VP roles in Toronto — two primary families: **Risk & Model Analytics** (ALM/IRRBB/Treasury · Model Validation · Investment & Market Risk Analytics) and **Vendor-Platform / Solutions Engineering**; opportunistic: trading-book market-risk capital (FRTB/CCR/CCAR), consulting.
 > **Architecture:** 5 Python agents + Streamlit dashboard + persistent Claude memory.
 
 ---

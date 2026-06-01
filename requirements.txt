@@ -24,3 +24,6 @@ pyyaml>=6.0
 
 # Cross-process file locking (safe_json helper)
 portalocker>=2.7
+
+# Resume rendering (automation/resume_render.py)
+python-docx>=1.1.0

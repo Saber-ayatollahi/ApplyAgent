@@ -3,11 +3,13 @@
 # that the tailor and scorer prompts refer to.
 ---
 strategy_notes_md: |
-  - Primary narrative: **ALM / IRRBB / Model Governance — sign-off authority on multi-asset institutional portfolios, cash-flow-engine build, LDI practitioner depth.** Every Big 6 and insurer cover letter opens on a concrete capability tied to the target team (not on regulatory-calendar framing).
-  - Secondary narrative: **Vendor-platform practitioner who already knows your buyers.** Every BlackRock / Bloomberg / MSCI / S&P cover letter opens on this hook.
+  - **Two primary families** (see §7): **Risk & Model Analytics** (7.1 ALM/IRRBB/Treasury · 7.2 Model Validation · 7.3 Investment & Market Risk Analytics) and **Vendor-Platform / Solutions Engineering** (7.4). Both run active outbound.
+  - **Risk & Model Analytics narrative:** delegated sign-off on multi-asset institutional portfolios, cash-flow-engine build, IRRBB shock analytics, and hands-on VaR/CVaR optimization + LDI practitioner depth. Open each bank/pension/insurer cover letter on a concrete capability tied to the target team.
+  - **Vendor-Platform / Solutions Engineering narrative:** "I've delivered, configured, and validated the platform that competes with yours, and I know your buyers because many are my clients." Lead BlackRock Aladdin / MSCI / S&P / Bloomberg / SS&C cover letters on this. (Active BlackRock VP Solutions Engineering interview — this lane is a confirmed strong fit.)
+  - **Opportunistic, cover-letter-owned:** 7.5 Trading-Book Market Risk Capital (FRTB/CCR/CCAR) — pursue strong individual matches only; never claim the trading-desk capital machinery. 7.6 Consulting/Advisory — on trigger only.
   - Toronto-only geography — all target companies have confirmed Toronto presence.
-  - Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). For every tailored application, attempt at least one warm-intro pathway before submitting.
+  - Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). Attempt at least one warm-intro pathway before submitting.
   - Cadence: 8 apps/wk · 10 outreach messages/wk · 3 coffees/wk · 1 LinkedIn post/wk (see `operating_cadence.md`).
-  - Use `jd_tailor.py` to draft resume + cover letter variants before applying; never ship a generic resume.
+  - Generate resumes via `automation/resume_render.py` (single-column, ATS-safe; see `docs/resume_agent_instructions.md`); never ship a generic resume.
 
-last_updated_footer: "*Last updated: 2026-05-03 | v2 rewrite: narrowed positioning, added tagged bullet library, STAR story bank, resolved year-count and sign-off framing inconsistencies.*"
+last_updated_footer: "*Last updated: 2026-05-30 | v3: re-segmented positioning into two primary families (Risk & Model Analytics; Vendor-Platform / Solutions Engineering) with named sub-lanes; enriched Ortec record (VaR/CVaR optimization, risk decomposition, hedging, actuarial liabilities, UPP); corrected Ortec title to Consultant; standardized delegated sign-off / $5-25bn framing.*"

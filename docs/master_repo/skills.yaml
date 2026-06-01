@@ -489,6 +489,94 @@ skills:
   # -------------------------------------------------------------------------
   # 4.5 Financial Transformation & Regulatory Programs
   # -------------------------------------------------------------------------
+  - id: sk_portfolio_optimization
+    name: "Portfolio optimization (asset-only & asset-liability / surplus)"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "portfolio optimization"
+      - "mean-variance optimization"
+      - "asset allocation optimization"
+      - "surplus optimization"
+      - "asset-liability optimization"
+      - "near-optimal optimization"
+      - "robust optimization"
+      - "efficient frontier"
+    evidence_project_ids: [proj_ortec_portfolio_optimization]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_risk_decomposition
+    name: "Risk decomposition & attribution (contribution-to-risk / risk budgeting)"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "risk decomposition"
+      - "risk attribution"
+      - "risk contribution"
+      - "contribution to risk"
+      - "marginal risk"
+      - "component VaR"
+      - "risk budgeting"
+      - "factor risk decomposition"
+    evidence_project_ids: [proj_ortec_portfolio_optimization, proj_ortec_alm_studies]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_var_cvar
+    name: "VaR & CVaR (Conditional VaR / Expected Shortfall)"
+    category: portfolio_investment_risk
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "VaR"
+      - "Value at Risk"
+      - "CVaR"
+      - "Conditional VaR"
+      - "Expected Shortfall"
+      - "ES"
+      - "tail risk"
+    evidence_project_ids: [proj_ortec_portfolio_optimization]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_actuarial_liability
+    name: "Pension actuarial liability modelling"
+    category: alm_irrbb_balance_sheet
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "actuarial liabilities"
+      - "liability modelling"
+      - "pension liabilities"
+      - "funding policy modelling"
+    evidence_project_ids: [proj_ortec_upp, proj_ortec_alm_studies]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
+  - id: sk_hedging_analysis
+    name: "Interest-rate, inflation & currency hedging analysis"
+    category: rates_fixed_income_derivatives
+    is_primary: false
+    level: proficient
+    years: 3
+    aliases:
+      - "hedging"
+      - "interest rate hedging"
+      - "inflation hedging"
+      - "currency hedging"
+      - "FX hedging"
+      - "overlay strategies"
+    evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_upp]
+    evidence_role_ids: [role_ortec]
+    interview_depth: true
+
   - id: sk_ifrs17
     name: "IFRS 17 transformation delivery"
     display: "IFRS 17 & IFRS 9 transformation delivery (EY)"

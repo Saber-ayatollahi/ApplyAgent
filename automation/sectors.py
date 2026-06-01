@@ -18,7 +18,7 @@ TIER_OF: dict[str, int] = {
     "Canadian Big 6 Banks":        1,
     "Canadian Pension Funds":      1,
     "US & Global Asset Managers":  2,
-    "Analytics & Risk Vendors":    2,
+    "Analytics & Risk Vendors":    1,
     "Canadian Insurers":           2,
     "Big 4 Risk Advisory":         3,
     "Pension/ALM Consulting":      3,

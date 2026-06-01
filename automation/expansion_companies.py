@@ -74,9 +74,9 @@ EXPANSION_TARGETS = [
     # ───── Exchange / market infrastructure ─────
     {"name": "TMX Group", "sector": "Market Infrastructure", "linkedin_slug": "tmx-group", "workday": None},
     {"name": "Fundserv", "sector": "Market Infrastructure", "linkedin_slug": "fundserv", "workday": None},
-    {"name": "Finastra", "sector": "Market Infrastructure", "linkedin_slug": "finastra", "workday": None},
-    {"name": "FIS Global", "sector": "Market Infrastructure", "linkedin_slug": "fis", "workday": None},
-    {"name": "Broadridge", "sector": "Market Infrastructure", "linkedin_slug": "broadridge", "workday": None},
+    {"name": "Finastra", "sector": "Analytics & Risk Vendors", "linkedin_slug": "finastra", "workday": None},
+    {"name": "FIS Global", "sector": "Analytics & Risk Vendors", "linkedin_slug": "fis", "workday": None},
+    {"name": "Broadridge", "sector": "Analytics & Risk Vendors", "linkedin_slug": "broadridge", "workday": None},
     {"name": "DTCC", "sector": "Market Infrastructure", "linkedin_slug": "dtcc", "workday": None},
     {"name": "Cboe Canada", "sector": "Market Infrastructure", "linkedin_slug": "cboe-global-markets", "workday": None},
 
@@ -89,6 +89,12 @@ EXPANSION_TARGETS = [
     {"name": "Quantifi", "sector": "Analytics & Risk Vendors", "linkedin_slug": "quantifi", "workday": None},
     {"name": "ION Group", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ion-group", "workday": None},
     {"name": "Murex", "sector": "Analytics & Risk Vendors", "linkedin_slug": "murex", "workday": None},
+
+    # ───── Vendor-platform / risk-analytics (PRIMARY lane, elevated 2026-05-30) ─────
+    {"name": "SS&C Technologies (Algorithmics)", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ss-c-technologies", "workday": None},
+    {"name": "Numerix", "sector": "Analytics & Risk Vendors", "linkedin_slug": "numerix", "workday": None},
+    {"name": "Prometeia", "sector": "Analytics & Risk Vendors", "linkedin_slug": "prometeia", "workday": None},
+    {"name": "Clearwater Analytics", "sector": "Analytics & Risk Vendors", "linkedin_slug": "clearwater-analytics", "workday": None},
 
     # ───── Regulators & Crown corps ─────
     {"name": "OSFI", "sector": "Regulators & Crown", "linkedin_slug": "office-of-the-superintendent-of-financial-institutions", "workday": None},

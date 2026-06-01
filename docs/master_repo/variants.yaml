@@ -2,38 +2,38 @@
 # | "build_month" | "on_trigger" | "retired". Retired variants stay here for
 # historical reference so the tailor can refuse activation.
 ---
-update_date: "2026-05-03"
+update_date: "2026-05-30"
 
 variants:
   - id: var_alm
-    label: "ALM / IRRBB (primary)"
-    role_focus: "Big 6 banks, pensions, insurers"
-    file: "Saber_Ayatollahi_Spring_2026_ALM.docx"
-    status: "Update this week"
+    label: "ALM / IRRBB / Treasury (primary)"
+    role_focus: "Big-6 Treasury/ALM/IRRBB, insurer ALM, pension ALM/LDI"
+    file: "Saber_Ayatollahi_ALM.docx"
+    status: "active"
     variant_tag: ALM
   - id: var_val
-    label: "Model Validation"
-    role_focus: "RBC, TD, CIBC, BMO, Scotia validation teams, BNY, State Street"
-    file: "Saber_Ayatollahi_Spring_2026_Validation.docx"
-    status: "Build this week"
+    label: "Model Risk & Validation (primary)"
+    role_focus: "Big-6 Model Risk Management, BNY, State Street, insurers"
+    file: "Saber_Ayatollahi_Validation.docx"
+    status: "active"
     variant_tag: VAL
   - id: var_ven
-    label: "Vendor-Platform"
-    role_focus: "BlackRock Aladdin, Bloomberg, MSCI, S&P, FactSet, SS&C Algorithmics"
-    file: "Saber_Ayatollahi_Spring_2026_VendorPlatform.docx"
-    status: "Build this week"
+    label: "Vendor-Platform / Solutions Engineering (primary)"
+    role_focus: "BlackRock Aladdin (Solutions Engineering/Client Engagement), MSCI, S&P, Bloomberg, FactSet, SS&C, Numerix"
+    file: "Saber_Ayatollahi_VendorPlatform.docx"
+    status: "active"
     variant_tag: VEN
   - id: var_quant
-    label: "Quant / Fixed Income Analytics"
-    role_focus: "PIMCO, Wellington, RBC GAM, TDAM, CPP/OTPP/OMERS quant teams"
-    file: "Saber_Ayatollahi_Spring_2026_Quant.docx"
-    status: "Build this month"
+    label: "Investment & Market Risk Analytics (primary)"
+    role_focus: "Maple-8 pensions (CPP/OTPP/OMERS/HOOPP), RBC GAM, TDAM; bank enterprise market-risk-measurement; also seeds the opportunistic trading-book-capital (FRTB/CCR/CCAR) variant"
+    file: "Saber_Ayatollahi_InvestmentMarketRisk.docx"
+    status: "active"
     variant_tag: QUANT
   - id: var_con
     label: "Consulting / Advisory *(opportunistic)*"
-    role_focus: "EY FSRM, Mercer, WTW, Deloitte FSI"
-    file: "Saber_Ayatollahi_Spring_2026_Consulting.docx"
-    status: "Build on trigger"
+    role_focus: "EY FSRM, Mercer, WTW, Deloitte FSI, Oliver Wyman"
+    file: "Saber_Ayatollahi_Consulting.docx"
+    status: "on_trigger"
     variant_tag: CON
 
 retired:

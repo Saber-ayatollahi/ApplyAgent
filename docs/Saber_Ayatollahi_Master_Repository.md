@@ -94,7 +94,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 ---
 
 ### 3.3 Ortec Finance Canada
-**Role:** Senior Consultant — Asset-Liability Management & Risk
+**Role:** Consultant — Asset-Liability Management & Risk
 **Location:** Toronto, ON
 **Period:** Feb 2019 – Sep 2021 (~2.5 years)
 
@@ -105,6 +105,11 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Advised clients on Strategic Asset Allocation (SAA) to meet long-term objectives and helped clients navigate Tactical Asset Allocation (TAA) risk through stress testing and sensitivity analysis.
 - Designed stochastic risk management frameworks for specific client mandates.
 - Presented findings at client on-site meetings, including discussions with investment committees at pension-fund clients.
+- Performed cash flow, liquidity, and hedging analysis (interest rate, inflation, and currency) for international clients.
+- Modelled pension-fund (actuarial) liabilities alongside all major investment-product types and economic variables.
+- Performed portfolio optimization — both asset-only and asset-liability (surplus) — based on VaR and CVaR using Ortec's GLASS platform.
+- Performed risk decomposition and risk attribution (contribution-to-risk, risk budgeting) and explored near-optimal portfolios around the efficient frontier to test the robustness of allocation recommendations.
+- Led onboarding and the ALM study for the University Pension Plan (UPP), where three single-employer university plans merged into a new jointly-sponsored pension plan (JSPP) — on a team of three developing and validating the model capturing all Funding Policy dynamics, and studying duration, currency, inflation, and leverage overlay strategies.
 
 ---
 
@@ -123,6 +128,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Funding ratio & solvency analytics
 - OSFI B-12 (IRRBB revision, Q1 2026 consultations) awareness and applied familiarity
 - OSFI LAR 2026 (liquidity adequacy) alignment
+- Pension actuarial liability modelling
 
 ### 4.2 Interest Rate, Fixed Income & Derivatives
 - Yield curve construction & calibration
@@ -132,6 +138,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Spread calibration & cross-asset interaction analysis
 - Stochastic modelling & Monte Carlo simulation
 - Scenario-generator design and validation
+- Interest-rate, inflation & currency hedging analysis
 
 ### 4.3 Model Governance & Risk Controls *(primary)*
 - Formal sign-off authority across multi-asset institutional portfolios
@@ -148,6 +155,9 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Duration positioning & cross-asset exposure analysis
 - Security-level to portfolio-level aggregation
 - Investment-risk oversight for multi-asset mandates
+- Portfolio optimization (asset-only & asset-liability / surplus)
+- Risk decomposition & attribution (contribution-to-risk / risk budgeting)
+- VaR & CVaR (Conditional VaR / Expected Shortfall)
 
 ### 4.5 Financial Transformation & Regulatory Programs
 - IFRS 17 & IFRS 9 transformation delivery (EY)
@@ -248,6 +258,10 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - `[ALM][CON]` Advised clients on Strategic Asset Allocation (SAA) and Tactical Asset Allocation (TAA) trade-offs via stress testing and sensitivity analysis.
 - `[ALM][CON]` Designed stochastic risk-management frameworks tailored to specific client mandates.
 - `[CON]` Presented ALM study findings to investment committees at Canadian pension-fund clients on-site.
+- `[QUANT][ALM]` Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR using Ortec's GLASS platform — with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations.
+- `[ALM][QUANT]` Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.
+- `[ALM]` Modelled pension-fund (actuarial) liabilities alongside all major investment-product types and economic variables.
+- `[ALM][QUANT]` Led onboarding and the ALM study for a three-plan university pension merger (new jointly-sponsored plan) — on a team of three developing and validating the model capturing all Funding Policy dynamics, evaluating duration, currency, inflation, and leverage overlay strategies.
 
 ---
 
@@ -325,44 +339,74 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 
 ---
 
-## 7. TARGET ROLE POSITIONING — **TWO ANGLES ONLY**
+## 7. TARGET ROLE POSITIONING
 
-> **Decision 2026-05-03:** Retired 5 of the original 7 angles (Portfolio Manager, Product Manager, Project/Program Manager, Valuations-as-primary, Asset Management Quant-as-primary). Not removed from capability — removed from *active outbound*. If a specific role appears that fits a retired angle exceptionally well, treat it as a one-off and draft ad hoc from the bullet library. Do not run parallel searches on retired angles.
+> **Decision 2026-05-30:** Re-expanded from the 2-angle (2026-05-03) structure. Broke "risk" into three distinct hiring lanes (ALM/IRRBB/Treasury; Model Validation; Investment & Market Risk Analytics) on the strength of the enriched Ortec record (VaR/CVaR asset & asset-liability optimization via GLASS, risk decomposition, hedging, actuarial liabilities, UPP merger) plus the Moody's governance/model-dev work. Elevated Vendor-Platform / Solutions Engineering to PRIMARY (candidate preference + active BlackRock Aladdin SE interview). The sell-side trading-desk capital machinery (FRTB / CCR-xVA / VaR backtesting / US-CCAR submissions) is the one honest gap — handled as an opportunistic, cover-letter-owned lane, not an active search.
 
-### 7.1 — PRIMARY: ALM / IRRBB / Model Governance
-**Best-fit titles:** Director — ALM & Balance Sheet Risk · Director — IRRBB Modelling · Senior Manager/Director — Model Risk & Validation · Head of ALM Analytics · Director — Treasury Risk · VP — Balance Sheet Risk
+### 7.1 — PRIMARY: ALM / IRRBB / Treasury & Balance-Sheet Risk
+**Best-fit titles:** Director / Senior Manager — ALM & Balance-Sheet Risk · Director — IRRBB Modelling · Director — Treasury Risk · Head of ALM Analytics · Associate Director — ALM Risk Modelling
 
-**Evidence stack:** Sign-off authority on multi-asset institutional portfolios (Moody's) · Cash flow projection engine design and delivery (Moody's) · IRRBB-analogous shock analytics and curve calibration (Moody's) · LDI and stochastic scenario generators (Ortec) · Model governance framework operation (Moody's).
+**Evidence stack:** Delegated sign-off authority on multi-asset institutional portfolios (Moody's) · Enterprise cash-flow projection & liquidity-gap engine, design and delivery (Moody's) · IRRBB-analogous parallel / non-parallel shock analytics and curve calibration (Moody's) · ALM studies, LDI, multi-currency/inflation hedging, actuarial liabilities, UPP merger (Ortec) · Funding-ratio & duration-gap analytics across pension and institutional mandates (Ortec).
 
-**Summary angle (45–55 words):**
-> Asset-Liability Management and balance sheet risk professional with ~7 years spanning institutional ALM analytics, IRRBB modelling, liquidity projection, and model governance. Currently operates sign-off authority on multi-asset institutional portfolios at Moody's Analytics. CFA + dual MSc (Financial Modelling + Engineering). LDI background from Ortec Finance, IFRS 17 / IFRS 9 delivery from EY.
+**Summary angle (45–60 words):**
+> Asset-Liability Management and balance-sheet risk professional with ~7 years across institutional ALM analytics, IRRBB modelling, liquidity and cash-flow projection, and funding-ratio analytics. Holds delegated sign-off authority on multi-asset institutional portfolios at Moody's Analytics and built an enterprise cash-flow projection engine. LDI, hedging, and actuarial-liability depth from Ortec. CFA + dual MSc.
 
-**Target employers:** Scotiabank, RBC, BMO, CIBC, TD, National Bank, Equitable Bank/EQB, HSBC Canada, Citibank Canada, JPMorgan Canada; CPP, OTPP, OMERS, HOOPP, PSP, OPTrust, CAAT, IMCO; Manulife, Sun Life, Canada Life, Intact, iA, RGA.
-
----
-
-### 7.2 — SECONDARY: Vendor-Platform / Client Solutions
-**Best-fit titles:** Director — Aladdin Client Engagement · Senior Analytics Specialist · Director — Risk Solutions · Product Manager (Risk/ALM platforms) · Senior Quantitative Analyst — IR Modelling · Director — Client Advisory
-
-**Evidence stack:** Institutional platform delivery at Moody's (direct parallel to Aladdin, S&P Risk Solutions, MSCI Analytics, Bloomberg Financial Solutions) · Calypso→PFaroe migration leadership · Client-translation across investment teams and dev · Agentic-AI workflow design (Claude Code, Cursor).
-
-**Summary angle (45–55 words):**
-> Senior finance-technology professional bridging institutional investment teams and enterprise risk platforms. ~4 years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform competing directly with Aladdin, MSCI, and S&P Risk Solutions. CFA + dual MSc + agentic AI workflow experience — rare combination at the finance/platform boundary.
-
-**Target employers:** BlackRock (Aladdin), Bloomberg (Financial Solutions), MSCI, S&P Global, FactSet, Morningstar DBRS, SS&C Algorithmics, Numerix, Prometeia.
+**Target employers:** Banks (Treasury/ALM/IRRBB): RBC, TD, Scotiabank, BMO, CIBC, National Bank, EQB, HSBC Canada; Insurers (ALM): Manulife, Sun Life, Canada Life, Intact, iA, RGA; Pensions (ALM/LDI): HOOPP, OMERS, OPTrust, CAAT.
 
 ---
 
-### 7.3 — Ad-hoc third lane: Consulting / Advisory (opportunistic)
-Only activate if an EY boomerang, Mercer/WTW LDI-specific role, Deloitte FSI Director-level risk advisory role, or Oliver Wyman FS role surfaces. Do not run active search. If activated, lead with Ortec advisory roots + EY transformation evidence.
+### 7.2 — PRIMARY: Model Risk, Validation & Governance
+**Best-fit titles:** Senior Manager / Director — Model Risk & Validation · Director — Model Governance · Manager — Model Validation (ALM / Treasury / Market) · Director — Model Development & Validation
+
+**Evidence stack:** Operates within a formal model-governance framework; delegated sign-off, independent review & challenge (Moody's) · Documentation to validation standards; escalation of economically-indefensible outputs (Moody's) · Model development: cash-flow engine, stochastic scenario generators, validation tooling (Moody's, Ortec) · Spreadsheet→Python migration under model-governance audit (Moody's).
+
+**Summary angle (45–60 words):**
+> Model-risk and validation professional operating within a formal model-governance framework at Moody's Analytics — delegated sign-off on valuation, sensitivity, and ALM outputs, independent review and challenge, and documentation to validation standards. Also develops models (cash-flow engine, stochastic scenario generators) and validation tooling. CFA + dual MSc; OSFI E-23 / SR 11-7 aware.
+
+**Target employers:** Big-6 Model Risk Management: RBC, TD, CIBC, BMO, Scotiabank, National Bank; Custodians / AM: BNY, State Street, RBC I&TS; Insurers: Manulife, Sun Life, Canada Life.
+
+---
+
+### 7.3 — PRIMARY: Investment & Market Risk Analytics
+**Best-fit titles:** Director / VP — Total Portfolio Risk · Director — Investment Risk · Senior Manager — Market Risk Analytics (measurement) · Senior Quantitative Risk Analyst · Director — Portfolio Risk & Analytics
+
+**Evidence stack:** Asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR via Ortec GLASS · Risk decomposition / attribution and near-optimal frontier robustness analysis (Ortec) · Multi-asset portfolio-level analytics, sensitivities, stress & scenario analysis (Moody's) · LDI and stochastic / Monte Carlo scenario generation (Ortec) · CFA + dual MSc (Financial Modelling + Engineering) quant foundation.
+
+**Summary angle (45–60 words):**
+> Investment- and market-risk analytics professional with hands-on VaR/CVaR portfolio optimization, risk decomposition and attribution, stress and scenario analysis, and LDI across multi-asset institutional mandates (Ortec + Moody's). Strong stochastic / Monte Carlo and Python foundation; CFA + dual MSc. Fits total-portfolio-risk, investment-risk, and enterprise market-risk-measurement roles.
+
+**Target employers:** Maple-8 pensions: CPP, OTPP, OMERS, HOOPP, PSP, OPTrust, CAAT, IMCO; Asset managers: RBC GAM, TDAM, Mackenzie, CI, Fidelity Canada; Bank enterprise market-risk-measurement teams (non-trading-desk).
+
+---
+
+### 7.4 — PRIMARY: Vendor-Platform / Solutions Engineering & Client Solutions
+**Best-fit titles:** VP — Solutions Engineering (Aladdin) · VP / Director — Aladdin Client Engagement · Director — Risk Solutions / Client Advisory · Senior Analytics Specialist — Investment/Risk Platforms · Product Manager — Risk/ALM platforms
+
+**Evidence stack:** Institutional platform delivery at Moody's — direct parallel to Aladdin, MSCI, S&P Risk Solutions, Bloomberg · Led the Calypso→PFaroe migration for all assigned client accounts · Client requirements translation between investment teams and product/dev (PO scoping) · Front-to-back ALM/portfolio/risk workflow fluency; CFA + quant credibility for client demos · Agentic-AI workflow design (Claude Code, Cursor).
+
+**Summary angle (45–60 words):**
+> Finance-technology professional bridging institutional investment teams and enterprise risk/analytics platforms. ~4 years at Moody's Analytics onboarding, configuring, and validating the multi-asset platform that competes directly with Aladdin, MSCI, and S&P — led the Calypso→PFaroe migration and translated client requirements into product/dev work. CFA + dual MSc + agentic-AI workflows. Built for Solutions Engineering and client-solutions roles.
+
+**Target employers:** BlackRock Aladdin (Solutions Engineering, Client Engagement, Client Experience); MSCI, S&P Global, Bloomberg (Financial Solutions), FactSet, Morningstar DBRS; SS&C Algorithmics, Numerix, Prometeia, Moody's Analytics.
+
+---
+
+### 7.5 — Opportunistic: Trading-Book Market Risk Capital (FRTB / CCR-xVA / CCAR)
+Activate for strong individual matches (e.g., RBC Global Risk Analytics). Lead with quant/model-validation transferability; never claim FRTB/CCR/CCAR hands-on. See gaps.yaml for the exact gap list.
+
+---
+
+### 7.6 — Opportunistic: Consulting / Advisory
+Activate if an EY boomerang, Mercer/WTW LDI-specific role, Deloitte FSI Director-level risk advisory role, or Oliver Wyman FS role surfaces. Not an active search. Lead with Ortec advisory roots + EY transformation evidence.
 
 ---
 
 ## 8. SUMMARY-STATEMENT BANK
 
 ### Short (LinkedIn headline, 150 chars)
-- `v-ALM-short` *Director-level ALM & IRRBB specialist · CFA · Moody's Analytics · ex-Ortec LDI · sign-off authority on multi-asset institutional portfolios*
-- `v-VEN-short` *Senior risk-analytics practitioner bridging institutional investment teams and enterprise platforms · CFA · Moody's Analytics · agentic AI workflow builder*
+- `v-ALM-short` *ALM / IRRBB & model-validation specialist · CFA · Moody's Analytics · delegated sign-off on multi-asset institutional portfolios · ex-Ortec LDI*
+- `v-VEN-short` *Investment & market-risk analytics · CFA · VaR/CVaR optimization, risk decomposition, LDI · Moody's Analytics + ex-Ortec*
+- `v-SE-short` *Aladdin-adjacent Solutions Engineering candidate · CFA · 4 yrs delivering & validating a multi-asset investment platform competing with Aladdin/MSCI/S&P*
 
 ### Medium (resume header, 40–70 words)
 Covered in §7.1 and §7.2.
@@ -370,10 +414,10 @@ Covered in §7.1 and §7.2.
 ### Long (cover-letter opening paragraph, 110–140 words)
 
 - `v-ALM-long`
-> I am an Asset-Liability Management and model-governance specialist currently at Moody's Analytics, where I hold sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios. Over the past four years I have led the design of a multi-scenario cash flow projection engine, operated IRRBB analytics under parallel and non-parallel rate shocks, and validated derivatives outputs at portfolio-level ALM aggregates. Before Moody's, I delivered insurance-accounting transformation at EY, and stochastic ALM studies for Canadian pension funds at Ortec Finance. I hold the CFA charter and dual MSc degrees (Financial Modelling, Chemical Engineering). I am writing because [TARGET COMPANY]'s [TARGET TEAM] is building exactly the ALM and model-governance capability where I have spent my career — and it is where my practitioner depth most directly translates.
+> I am an Asset-Liability Management and model-governance specialist currently at Moody's Analytics, where I hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5–25bn per engagement). Over the past four years I have led the design of a multi-scenario cash flow projection engine, operated IRRBB analytics under parallel and non-parallel rate shocks, and validated derivatives outputs at portfolio-level ALM aggregates. Before Moody's, I delivered insurance-accounting transformation at EY, and stochastic ALM studies for Canadian pension funds at Ortec Finance. I hold the CFA charter and dual MSc degrees (Financial Modelling, Chemical Engineering). I am writing because [TARGET COMPANY]'s [TARGET TEAM] is building exactly the ALM and model-governance capability where I have spent my career — and it is where my practitioner depth most directly translates.
 
 - `v-VEN-long`
-> I have spent four years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform that competes most directly with your own. At the institutional-client layer I have onboarded U.S. and Canadian pension funds, asset managers, and consulting firms; at the modelling layer I hold sign-off authority on valuation and ALM outputs for portfolios ranging into the mid-billions; at the engineering layer I have re-built spreadsheet workflows into production Python pipelines and have deployed agentic-AI workflows (Claude Code, Cursor) to accelerate code generation and validation. Prior roles at EY (insurance-accounting transformation) and Ortec Finance (pension ALM and LDI) extend the practitioner bench on the client side of the platform. I know your buyers because many of them are my current clients.
+> I have spent four years at Moody's Analytics delivering, configuring, and validating the multi-asset analytics platform that competes most directly with your own. At the institutional-client layer I have onboarded U.S. and Canadian pension funds, asset managers, and consulting firms; at the modelling layer I hold delegated sign-off authority on valuation and ALM outputs for portfolios of $5–25bn per engagement; at the engineering layer I have re-built spreadsheet workflows into production Python pipelines and have deployed agentic-AI workflows (Claude Code, Cursor) to accelerate code generation and validation. Prior roles at EY (insurance-accounting transformation) and Ortec Finance (pension ALM and LDI) extend the practitioner bench on the client side of the platform. I know your buyers because many of them are my current clients.
 
 ---
 
@@ -407,15 +451,15 @@ Contact each BEFORE final-round interviews; confirm they can speak to the specif
 
 ---
 
-## 10. RESUME VARIANTS ON FILE (update 2026-05-03)
+## 10. RESUME VARIANTS ON FILE (update 2026-05-30)
 
 | Variant | Role focus | File | Status |
 |---|---|---|---|
-| ALM / IRRBB (primary) | Big 6 banks, pensions, insurers | `Saber_Ayatollahi_Spring_2026_ALM.docx` | Update this week |
-| Model Validation | RBC, TD, CIBC, BMO, Scotia validation teams, BNY, State Street | `Saber_Ayatollahi_Spring_2026_Validation.docx` | Build this week |
-| Vendor-Platform | BlackRock Aladdin, Bloomberg, MSCI, S&P, FactSet, SS&C Algorithmics | `Saber_Ayatollahi_Spring_2026_VendorPlatform.docx` | Build this week |
-| Quant / Fixed Income Analytics | PIMCO, Wellington, RBC GAM, TDAM, CPP/OTPP/OMERS quant teams | `Saber_Ayatollahi_Spring_2026_Quant.docx` | Build this month |
-| Consulting / Advisory *(opportunistic)* | EY FSRM, Mercer, WTW, Deloitte FSI | `Saber_Ayatollahi_Spring_2026_Consulting.docx` | Build on trigger |
+| ALM / IRRBB / Treasury (primary) | Big-6 Treasury/ALM/IRRBB, insurer ALM, pension ALM/LDI | `Saber_Ayatollahi_ALM.docx` | active |
+| Model Risk & Validation (primary) | Big-6 Model Risk Management, BNY, State Street, insurers | `Saber_Ayatollahi_Validation.docx` | active |
+| Vendor-Platform / Solutions Engineering (primary) | BlackRock Aladdin (Solutions Engineering/Client Engagement), MSCI, S&P, Bloomberg, FactSet, SS&C, Numerix | `Saber_Ayatollahi_VendorPlatform.docx` | active |
+| Investment & Market Risk Analytics (primary) | Maple-8 pensions (CPP/OTPP/OMERS/HOOPP), RBC GAM, TDAM; bank enterprise market-risk-measurement; also seeds the opportunistic trading-book-capital (FRTB/CCR/CCAR) variant | `Saber_Ayatollahi_InvestmentMarketRisk.docx` | active |
+| Consulting / Advisory *(opportunistic)* | EY FSRM, Mercer, WTW, Deloitte FSI, Oliver Wyman | `Saber_Ayatollahi_Consulting.docx` | on_trigger |
 
 Retired variants (no longer in rotation): Portfolio Manager (`_PM.docx`), Product Manager (`_Product.docx`), Project/Program Manager.
 
@@ -423,13 +467,15 @@ Retired variants (no longer in rotation): Portfolio Manager (`_PM.docx`), Produc
 
 ## 11. JOB-SEARCH STRATEGY NOTES
 
-- Primary narrative: **ALM / IRRBB / Model Governance — sign-off authority on multi-asset institutional portfolios, cash-flow-engine build, LDI practitioner depth.** Every Big 6 and insurer cover letter opens on a concrete capability tied to the target team (not on regulatory-calendar framing).
-- Secondary narrative: **Vendor-platform practitioner who already knows your buyers.** Every BlackRock / Bloomberg / MSCI / S&P cover letter opens on this hook.
+- **Two primary families** (see §7): **Risk & Model Analytics** (7.1 ALM/IRRBB/Treasury · 7.2 Model Validation · 7.3 Investment & Market Risk Analytics) and **Vendor-Platform / Solutions Engineering** (7.4). Both run active outbound.
+- **Risk & Model Analytics narrative:** delegated sign-off on multi-asset institutional portfolios, cash-flow-engine build, IRRBB shock analytics, and hands-on VaR/CVaR optimization + LDI practitioner depth. Open each bank/pension/insurer cover letter on a concrete capability tied to the target team.
+- **Vendor-Platform / Solutions Engineering narrative:** "I've delivered, configured, and validated the platform that competes with yours, and I know your buyers because many are my clients." Lead BlackRock Aladdin / MSCI / S&P / Bloomberg / SS&C cover letters on this. (Active BlackRock VP Solutions Engineering interview — this lane is a confirmed strong fit.)
+- **Opportunistic, cover-letter-owned:** 7.5 Trading-Book Market Risk Capital (FRTB/CCR/CCAR) — pursue strong individual matches only; never claim the trading-desk capital machinery. 7.6 Consulting/Advisory — on trigger only.
 - Toronto-only geography — all target companies have confirmed Toronto presence.
-- Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). For every tailored application, attempt at least one warm-intro pathway before submitting.
+- Warm intros over cold applications for Director+ roles (~70% of Director-level hiring is referral-driven in Toronto finance). Attempt at least one warm-intro pathway before submitting.
 - Cadence: 8 apps/wk · 10 outreach messages/wk · 3 coffees/wk · 1 LinkedIn post/wk (see `operating_cadence.md`).
-- Use `jd_tailor.py` to draft resume + cover letter variants before applying; never ship a generic resume.
+- Generate resumes via `automation/resume_render.py` (single-column, ATS-safe; see `docs/resume_agent_instructions.md`); never ship a generic resume.
 
 ---
 
-*Last updated: 2026-05-03 | v2 rewrite: narrowed positioning, added tagged bullet library, STAR story bank, resolved year-count and sign-off framing inconsistencies.*
+*Last updated: 2026-05-30 | v3: re-segmented positioning into two primary families (Risk & Model Analytics; Vendor-Platform / Solutions Engineering) with named sub-lanes; enriched Ortec record (VaR/CVaR optimization, risk decomposition, hedging, actuarial liabilities, UPP); corrected Ortec title to Consultant; standardized delegated sign-off / $5-25bn framing.*

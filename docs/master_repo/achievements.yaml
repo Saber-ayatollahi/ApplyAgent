@@ -9,7 +9,7 @@
 achievements:
   - id: ach_signoff_aum
     strength: high
-    claim: "Sign-off authority on multi-asset institutional portfolios ranging $5-25bn per engagement, cumulatively ~$50bn+."
+    claim: "Delegated sign-off authority on multi-asset institutional portfolios ranging $5-25bn per engagement, cumulatively ~$50bn+."
     evidence_role_id: role_moodys
     evidence_project_ids: [proj_cashflow_engine]
     audience: [banking, pension, insurer, consulting]
@@ -36,6 +36,21 @@ achievements:
     evidence_role_id: role_moodys
     evidence_project_ids: [proj_calypso_to_pfaroe]
     audience: [vendor, consulting]
+
+  - id: ach_ortec_var_cvar_optimization
+    strength: medium
+    claim: "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR — with risk decomposition and near-optimal frontier analysis — for pension and institutional clients (Ortec GLASS)."
+    evidence_role_id: role_ortec
+    evidence_project_ids: [proj_ortec_portfolio_optimization]
+    audience: [pension, asset_manager, banking]
+    caveats: "Buy-side optimization VaR/CVaR — not trading-desk VaR backtesting; frame accordingly."
+
+  - id: ach_ortec_upp_merger
+    strength: medium
+    claim: "Led onboarding and the ALM study for a three-plan university pension merger (new jointly-sponsored plan); on a team of three developing and validating the model capturing all Funding Policy dynamics."
+    evidence_role_id: role_ortec
+    evidence_project_ids: [proj_ortec_upp]
+    audience: [pension, consulting]
 
   - id: ach_ldi_duration_extension
     strength: low
