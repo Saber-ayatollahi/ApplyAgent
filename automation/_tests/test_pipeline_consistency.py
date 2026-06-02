@@ -159,12 +159,39 @@ class TestInputBreadcrumb:
 class TestSha8Compatibility:
     """`fit_scorer._input_breadcrumb` and `pipeline_state._worklist_sha8`
     MUST produce identical sha8 values for the same row set. If they ever
-    drift, every consistency check silently lies. This is the canary test."""
+    drift, every consistency check silently lies. This is the canary test.
+
+    These fixtures DELIBERATELY include URLs that exercise
+    `worklist.norm_url`'s special cases — LinkedIn /jobs/view/<id>
+    tracking redirects, Greenhouse gh_jid IDs that survive query
+    stripping, Workday currentJobId, etc. A reader that uses a naive
+    "strip-query-and-lowercase" canonicalizer would silently disagree
+    with the writer on these URLs — exactly the bug we hit in
+    production (same 2,015 rows, two different sha8s)."""
 
     @pytest.mark.parametrize("rows", [
+        # Trivial URLs — both implementations agree even without norm_url.
         [_row("https://a.com/1")],
         [_row("https://a.com/1"), _row("https://b.com/2")],
+        # Query / fragment / case noise — fallback path handles these.
         [_row("https://A.com/1/?q=1"), _row("https://b.com/2#x")],
+        # LinkedIn /jobs/view/<id> with tracking — norm_url collapses to
+        # bare /jobs/view/<id>; naive fallback would too (queries get
+        # stripped) but the trailing-slash + case interactions can differ.
+        [_row("https://www.linkedin.com/jobs/view/3829471028/"
+              "?refId=abc&trk=public_jobs")],
+        # Greenhouse with gh_jid — THE bug case. norm_url PRESERVES
+        # gh_jid as an identity query param; naive strip-query would
+        # produce a different canonical form → different sha8.
+        [_row("https://boards.greenhouse.io/acme/jobs/4567?gh_jid=4567"),
+         _row("https://boards.greenhouse.io/acme/jobs/4568?gh_jid=4568")],
+        # Workday with currentJobId — same survival rule as gh_jid.
+        [_row("https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/"
+              "job/Senior?currentJobId=R_1234")],
+        # Mixed bag — the real worklist has all of these together.
+        [_row("https://a.com/1"),
+         _row("https://www.linkedin.com/jobs/view/12345/?trk=foo"),
+         _row("https://boards.greenhouse.io/x/jobs/99?gh_jid=99")],
         [],
     ])
     def test_round_trip(self, tmp_path: Path, rows: list[dict]) -> None:
@@ -172,7 +199,12 @@ class TestSha8Compatibility:
         p.write_text("{}", encoding="utf-8")
         writer_sha = fit_scorer._input_breadcrumb(p, rows)["sha8"]
         reader_sha = ps._worklist_sha8(rows)
-        assert writer_sha == reader_sha
+        assert writer_sha == reader_sha, (
+            f"Writer sha8 ({writer_sha}) ≠ reader sha8 ({reader_sha}) "
+            f"for rows={rows}. The two canonicalizers have drifted — "
+            f"check that pipeline_state._canonicalize_link still calls "
+            f"worklist.norm_url with the same fallback as fit_scorer."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -274,6 +306,45 @@ class TestDeriveConsistency:
         _write_scored(tmp_path, scored_count=1, input_block=None)
         c = ps.derive_consistency(tmp_path)
         assert c.global_state == "no_breadcrumb"
+
+    def test_no_breadcrumb_when_only_scored_lacks_breadcrumb(
+            self, tmp_path: Path) -> None:
+        """Real-world transition case: user just clicked 🎯 Run triage
+        (so worklist_triage.json has a fresh breadcrumb that matches the
+        worklist), but worklist_scored.json is still the legacy file from
+        before this fix shipped (no breadcrumb).
+
+        Banner must NOT say ✅ "all consistent" — that would gaslight
+        the user into trusting an unverifiable scored snapshot. Must
+        say `no_breadcrumb` so the user knows to re-score to enable
+        drift detection."""
+        rows = [_row("https://a.com/1"), _row("https://b.com/2")]
+        _write_worklist(tmp_path, rows)
+        sha = ps._worklist_sha8(rows)
+        # Triage written by the new code — has breadcrumb, consistent.
+        _write_triage(tmp_path, passed=2, dropped=0,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 2, "sha8": sha})
+        # Scored written before this fix — no breadcrumb.
+        _write_scored(tmp_path, scored_count=2, input_block=None)
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "no_breadcrumb"
+
+    def test_drift_beats_no_breadcrumb(self, tmp_path: Path) -> None:
+        """When one stage has proven drift AND another stage lacks a
+        breadcrumb, drift wins — we have something concrete to tell the
+        user, don't hide behind 'unknown'."""
+        rows = [_row(f"https://a.com/{i}") for i in range(5)]
+        _write_worklist(tmp_path, rows)
+        old_sha = ps._worklist_sha8(rows[:3])
+        # Triage drifted (has breadcrumb pointing at smaller worklist).
+        _write_triage(tmp_path, passed=2, dropped=1,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 3, "sha8": old_sha})
+        # Scored has no breadcrumb at all.
+        _write_scored(tmp_path, scored_count=1, input_block=None)
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "drift_at_triage"
 
 
 # ---------------------------------------------------------------------------

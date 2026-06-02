@@ -249,53 +249,86 @@ class PipelineConsistency:
     def global_state(self) -> str:
         """One word the banner copy keys off of.
 
-        Values:
+        Values (priority order; first match wins):
           empty             — no worklist (nothing to be consistent with)
-          ok                — every existing downstream stage matches worklist
-          drift_at_triage   — triage was built against a different worklist
-          drift_at_scoring  — scoring was built against a different worklist
-          mixed_drift       — both triage AND scoring drifted (worklist
-                              changed since each was last run)
-          no_breadcrumb     — stages exist but lack input breadcrumb (old
-                              artifacts from before this fix; assume drift)
-        """
+          mixed_drift       — BOTH triage AND scoring have breadcrumbs and
+                              both drifted (proven mismatch on both sides)
+          drift_at_triage   — triage has a breadcrumb that doesn't match;
+                              scoring is either absent, consistent, or
+                              breadcrumb-less (proven mismatch wins)
+          drift_at_scoring  — scoring has a breadcrumb that doesn't match;
+                              triage is either absent, consistent, or
+                              breadcrumb-less (proven mismatch wins)
+          no_breadcrumb     — at least one existing stage lacks a breadcrumb
+                              (legacy artifact from before this fix). We
+                              CAN'T prove drift, but we also can't claim
+                              ✅; banner says "consistency unknown".
+          ok                — every existing downstream stage has a
+                              breadcrumb AND all match the current worklist.
+
+        Drift beats no_breadcrumb on purpose: if scored.sha is wrong we
+        want to TELL the user to re-score, not hand-wave it as legacy."""
         if not self.worklist_exists:
             return "empty"
-        # Detect "we can't prove anything" — both stages have no breadcrumb.
-        # Surface this distinctly so we don't cry wolf on legacy files.
-        tr_no_crumb = self.triage.exists and self.triage.input_sha8 is None
-        sc_no_crumb = self.scored.exists and self.scored.input_sha8 is None
-        if (self.triage.exists or self.scored.exists) and \
-                tr_no_crumb and not self.scored.exists:
-            return "no_breadcrumb"
-        if (self.scored.exists or self.triage.exists) and \
-                sc_no_crumb and not self.triage.exists:
-            return "no_breadcrumb"
-        if tr_no_crumb and sc_no_crumb:
-            return "no_breadcrumb"
-        triage_bad = self.triage.exists and not self.triage.is_consistent \
-            and self.triage.input_sha8 is not None
-        scored_bad = self.scored.exists and not self.scored.is_consistent \
-            and self.scored.input_sha8 is not None
-        if triage_bad and scored_bad:
+        # Proven drift — only when the stage has a breadcrumb to compare.
+        triage_drifted = (self.triage.exists
+                         and self.triage.input_sha8 is not None
+                         and not self.triage.is_consistent)
+        scored_drifted = (self.scored.exists
+                         and self.scored.input_sha8 is not None
+                         and not self.scored.is_consistent)
+        if triage_drifted and scored_drifted:
             return "mixed_drift"
-        if triage_bad:
+        if triage_drifted:
             return "drift_at_triage"
-        if scored_bad:
+        if scored_drifted:
             return "drift_at_scoring"
+        # No proven drift. Now check whether anything is breadcrumb-less.
+        # Any existing stage without a breadcrumb means we can't honestly
+        # paint everything green — surface as no_breadcrumb so the banner
+        # tells the user "re-run to enable drift detection."
+        triage_unproven = self.triage.exists and self.triage.input_sha8 is None
+        scored_unproven = self.scored.exists and self.scored.input_sha8 is None
+        if triage_unproven or scored_unproven:
+            return "no_breadcrumb"
+        # Everything that exists has a breadcrumb and matches.
         return "ok"
 
 
 def _canonicalize_link(url: str) -> str:
-    """Canonical form used for the consistency sha8.
+    """Canonical form used for the consistency sha8 — MUST match
+    `fit_scorer._canonicalize_url` (the writer side).
 
-    Duplicated from `fit_scorer._canonicalize_url` to keep this module
-    self-contained (no automation imports — pipeline_state must remain
-    stdlib-only per its module docstring). The TWO MUST MATCH; that's
-    literally how downstream artifacts compare against the live worklist.
+    Trying to maintain two independent implementations of "canonical URL"
+    is how we got the 7556b1ba ≠ 791ca5b1 bug: a worklist of identical
+    row counts hashed to different sha8s because the writer used
+    `worklist.norm_url` (which preserves Greenhouse's gh_jid query param)
+    and the reader stripped all queries. Single-implementation rule:
+    delegate to worklist.norm_url, with the SAME fallback the writer has.
 
-    If you update either side, update both. Add a round-trip test
-    (`test_breadcrumb_sha_matches_consistency_sha`) to catch drift early."""
+    Imports worklist lazily — automation modules are on sys.path when
+    the UI runs (ui/app.py adds them); when run from tests, the
+    automation dir is also added. If norm_url is genuinely unavailable
+    (extracted to a separate package, etc.), the fallback path matches
+    the writer's fallback path; sha8s still agree."""
+    if not url:
+        return ""
+    try:
+        from worklist import norm_url  # type: ignore
+    except ImportError:
+        try:
+            from .worklist import norm_url  # type: ignore
+        except Exception:
+            norm_url = None  # type: ignore
+    if norm_url is not None:
+        try:
+            n = norm_url({"link": url})
+            if n:
+                return n
+        except Exception:
+            pass
+    # Fallback — identical to fit_scorer._canonicalize_url's fallback so
+    # writer and reader still agree when norm_url is unreachable.
     return str(url).split("#", 1)[0].split("?", 1)[0].rstrip("/").lower()
 
 
