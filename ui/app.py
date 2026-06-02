@@ -7652,6 +7652,94 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                 "suppressions. Per-drop rule reasons are in the ④ Scoring "
                 "card's 🚫 Dropped sub-tab and the Triage xlsx below."
             )
+            # 🎯 Run triage — standalone, FREE (no LLM). Runs run_pipeline with
+            # --score-dry-run so stage-1 rule triage runs alone and writes the
+            # passed/dropped split into worklist_scored.json (stage1_only) for
+            # the ④ Scoring card's 🚫 Dropped sub-tab. Lets you review WHICH
+            # rows drop and why BEFORE spending anything on the LLM. Triage is
+            # deterministic + free, so re-running Score afterwards yields the
+            # identical set (unless the worklist changed in between).
+            _tr_total = _wstats.get("total", 0)
+            _tr_label = (f"🎯 Run triage (free · {_tr_total} rows)" if _tr_total
+                         else "🎯 Run triage (no rows)")
+            if st.button(_tr_label, width="stretch", key="_vc_triage_run",
+                         disabled=(any_work_active or not _tr_total),
+                         help="Rule-stage only — no API cost. Produces the "
+                              "passed/dropped split; inspect the drops in the "
+                              "④ Scoring card's 🚫 Dropped sub-tab, then Score "
+                              "when you're happy with what's kept."):
+                rec = scan_runner.start_run("pipeline", [
+                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
+                    "--skip-scrape", "--skip-promote", "--score-dry-run",
+                    "--triage-out", "worklist_triage.json",
+                ])
+                st.session_state["_last_launch"] = {"run_id": rec.run_id,
+                                                    "label": "Run triage"}
+                st.toast("🎯 Triage launched (free)!", icon="🚀")
+                st.rerun()
+
+            # Triage preview — reads the standalone worklist_triage.json the
+            # button above produces (separate file, never clobbers the real
+            # LLM scores in worklist_scored.json). Lets you see WHICH rows drop
+            # and why before paying. Gated behind a toggle so we don't read the
+            # file every rerun.
+            _tr_preview = OUT_DIR / "worklist_triage.json"
+            if _tr_preview.exists():
+                _tr_age = _file_age_hours(_tr_preview)
+                _tr_age_s = (f"{_tr_age*60:.0f}m ago" if _tr_age is not None
+                             and _tr_age < 1 else
+                             f"{_tr_age:.0f}h ago" if _tr_age is not None
+                             else "")
+                if _vc_inspect_toggle(
+                        "triage_preview",
+                        f"👁 Triage preview — which rows dropped ({_tr_age_s})"):
+                    try:
+                        _tp = json.loads(_tr_preview.read_text(encoding="utf-8"))
+                    except Exception:
+                        _tp = {}
+                    _tp_drops = _tp.get("triage_drops") or []
+                    _tp_pass = _tp.get("stage1_passed", 0)
+                    _tp_drop = _tp.get("stage1_dropped", len(_tp_drops))
+                    st.caption(
+                        f"Free rule-triage preview · {_tp_pass:,} would pass · "
+                        f"{_tp_drop:,} would drop. Your LLM scores are untouched "
+                        "— hit 🤖 Score worklist below when you're happy."
+                    )
+                    if _tp_drops:
+                        _tpb = pipeline_state.categorize_drop_reasons(_tp_drops)
+                        _tp_hist = pd.DataFrame(
+                            [{"reason": k, "count": v}
+                             for k, v in _tpb["by_category"].items()])
+                        if not _tp_hist.empty:
+                            st.markdown("**Drop reasons (histogram)**")
+                            st.dataframe(_tp_hist, hide_index=True,
+                                         width='stretch', height=180)
+                        _tp_q = st.text_input(
+                            "Search company/title in dropped rows",
+                            key="triage_preview_q",
+                            placeholder="scotiabank / data engineer / ...")
+                        _tp_rows = []
+                        for d in _tp_drops:
+                            co, ti = d.get("company", ""), d.get("title", "")
+                            if _tp_q:
+                                q = _tp_q.lower()
+                                if q not in co.lower() and q not in ti.lower():
+                                    continue
+                            _tp_rows.append({
+                                "company": co, "title": ti,
+                                "why": ", ".join(d.get("rule_reasons", []))[:120],
+                                "score": d.get("score", 0),
+                                "source": d.get("source", ""),
+                                "url": d.get("link", ""),
+                            })
+                        st.caption(f"Showing {len(_tp_rows):,} of {len(_tp_drops):,}")
+                        if _tp_rows:
+                            st.dataframe(
+                                pd.DataFrame(_tp_rows), hide_index=True,
+                                width='stretch', height=380,
+                                column_config={
+                                    "url": st.column_config.LinkColumn("open")})
+
             # Suppression admin lives here (doc §280) — gated behind a toggle
             # so the page doesn't re-read the registry every rerun.
             if _vc_inspect_toggle("triage", "Manage suppressions (mutes)"):

@@ -166,6 +166,10 @@ def main() -> int:
     ap.add_argument("--score-concurrency", type=int, default=2)
     ap.add_argument("--score-dry-run", action="store_true",
                     help="Rule-stage only, no LLM calls.")
+    ap.add_argument("--triage-out", default=None, metavar="FILE",
+                    help="With --score-dry-run, write the triage preview to "
+                         "this outputs/ filename instead of clobbering "
+                         "worklist_scored.json (preserves existing LLM scores).")
 
     # Promote options
     ap.add_argument("--min-score", type=int, default=7)
@@ -332,12 +336,20 @@ def _run(args, status: dict, pipeline_id: str) -> int:
             cmd += ["--limit", str(args.score_limit)]
         if args.score_dry_run:
             cmd.append("--dry-run")
+            if args.triage_out:
+                cmd += ["--triage-out", args.triage_out]
         rc = _stream(cmd, "score", status, "score", env=child_env)
         if rc != 0:
             status["state"] = "failed"
             _write_status(status)
             return rc
-        scored_path = OUT_DIR / (score_target_path.stem + "_scored.json")
+        # When --triage-out redirected the (dry-run) output, report on THAT
+        # file, not the untouched worklist_scored.json — otherwise the status
+        # shows the prior real-score count for a triage-only run.
+        if args.score_dry_run and args.triage_out:
+            scored_path = OUT_DIR / args.triage_out
+        else:
+            scored_path = OUT_DIR / (score_target_path.stem + "_scored.json")
         if scored_path.exists():
             status["stages"]["score"]["scored_file"] = scored_path.name
             try:

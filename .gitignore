@@ -65,6 +65,12 @@ automation/outputs/*.bak.*.json
 # Progress file — rewritten per candidate during scoring, churns the diff
 automation/outputs/fit_scorer_progress.json
 
+# Standalone triage preview — written by the ③ Triage "Run triage (free)"
+# button (fit_scorer --dry-run --triage-out). Pure UI scratch: regenerated on
+# every click, has NO downstream consumer (the promoter reads worklist_scored
+# .json, not this). Don't commit — it'd churn the diff like the progress file.
+automation/outputs/worklist_triage.json
+
 # Portalocker sidecar lock files (safe_json). These exist alongside the
 # real JSON — presence is semantic-free, content is empty.
 *.lock

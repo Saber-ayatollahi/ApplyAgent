@@ -1677,6 +1677,12 @@ def main() -> int:
                          "bypass the fit cache.")
     ap.add_argument("--dry-run", action="store_true",
                     help="Stage 1 only; don't call LLM.")
+    ap.add_argument("--triage-out", default=None, metavar="FILE",
+                    help="With --dry-run, write the triage preview to this "
+                         "filename in outputs/ INSTEAD of clobbering "
+                         "<scan>_scored.json. Used by the UI's standalone "
+                         "'Run triage (free)' button so a pre-payment preview "
+                         "never destroys the existing LLM scores.")
     ap.add_argument("--rescore", action="store_true",
                     help="Ignore fit cache; re-call LLM for every role.")
     ap.add_argument("--concurrency", type=int, default=4,
@@ -1820,10 +1826,16 @@ def main() -> int:
                "results": triaged,
                "triage_drops": triage_drops,
                "only_filtered": only_filtered}
-        (OUT_DIR / (Path(args.scan).stem + "_scored.json")).write_text(
+        # --triage-out: write the preview to a SEPARATE file so a standalone
+        # triage run never overwrites the existing LLM scores in
+        # <scan>_scored.json. Without it, dry-run keeps its legacy behavior
+        # (writes <scan>_scored.json) for the "Score dry-run" checkbox path.
+        triage_name = (args.triage_out
+                       or (Path(args.scan).stem + "_scored.json"))
+        (OUT_DIR / triage_name).write_text(
             json.dumps(out, indent=2), encoding="utf-8")
         print(f"[fit_scorer] DRY RUN complete. Wrote {args.scan} "
-              f"-> {Path(args.scan).stem}_scored.json", file=sys.stderr)
+              f"-> {triage_name}", file=sys.stderr)
         return 0
 
     # Stage 2 — LLM scoring (parallel)
