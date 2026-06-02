@@ -1387,9 +1387,17 @@ def _vc_download_row(stage: str) -> None:
     elif stage == "triage":
         # Triage-centric export: Passed / Dropped (with rule reasons) /
         # Suppressed sheets — distinct from the verdict-led scored export.
+        # Prefer worklist_triage.json (written by the free 🎯 Run triage
+        # button — fresh, reflects current rules/suppressions) over
+        # worklist_scored.json (the LLM-scored snapshot which can be days
+        # stale and was previously surfacing as "Triage (passed/dropped)
+        # · 7d ago" even right after a triage run). Fall back only when
+        # the user hasn't run the standalone triage yet.
+        _tr = OUT_DIR / "worklist_triage.json"
         _sc = OUT_DIR / "worklist_scored.json"
+        _triage_src = _tr if _tr.exists() else (_sc if _sc.exists() else None)
         render_artifact_download(
-            "🎯 Triage (passed/dropped)", _sc if _sc.exists() else None,
+            "🎯 Triage (passed/dropped)", _triage_src,
             triage_to_xlsx, "vc_triage")
     elif stage == "scored":
         _sc = OUT_DIR / "worklist_scored.json"
@@ -6280,8 +6288,40 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
            " ⚠️ not scored" if scan_f else ""),
         expanded=True,
     ):
-        # Source attribution so user knows where numbers come from
-        if _funnel_scan_name and _funnel_scored_name and not _scored_matches_funnel_scan:
+        # ── Cross-stage consistency banner ────────────────────────────
+        # Generalises the "scan vs scored file mismatch" warning below
+        # using the input-breadcrumb fingerprint written by fit_scorer.
+        # Single source of truth for "are triage/scoring numbers current
+        # with the worklist?" — see ui.pipeline_state.derive_consistency
+        # and the design discussion that motivated input breadcrumbs.
+        try:
+            _cons = pipeline_state.derive_consistency(OUT_DIR)
+            _cons_sev, _cons_head, _cons_detail = \
+                pipeline_state.consistency_banner_copy(_cons)
+            if _cons_sev == "success":
+                st.success(f"✅ {_cons_head}", icon=None)
+            elif _cons_sev == "warn":
+                st.warning(f"🟠 {_cons_head}\n\n{_cons_detail}", icon=None)
+            elif _cons_sev == "info":
+                st.info(f"ℹ️ {_cons_head}\n\n{_cons_detail}", icon=None)
+        except Exception as _cons_err:
+            # Banner failure must not break the funnel. Surface quietly
+            # in the error log; users still see the funnel + the older
+            # scan-vs-scored warning below as a fallback.
+            try:
+                error_log.log_error("consistency_banner", _cons_err,
+                                    module="ui.app")
+            except Exception:
+                pass
+            _cons = None
+
+        # Legacy fallback: when the consistency banner above couldn't run,
+        # keep the old name-prefix mismatch warning so the user still gets
+        # SOME drift signal. The consistency banner subsumes this when it
+        # works (sha8 matching is strictly more accurate than filename
+        # heuristics).
+        if _cons is None and _funnel_scan_name and _funnel_scored_name \
+                and not _scored_matches_funnel_scan:
             st.warning(
                 f"Numbers below mix two files: scan from `{_funnel_scan_name}` "
                 f"but scores from `{_funnel_scored_name}`. "
@@ -7759,11 +7799,68 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
 
         # ── ④ SCORING ─────────────────────────────────────────────────
         with st.container(border=True):
-            st.markdown(
-                f"#### 🤖 ④ Scoring · "
-                f"{_stage_chip(scorer_running, _scored_ok, empty=_pipe_empty and not score_count)} "
-                + (f"{score_count:,} scored" if score_count else "not scored yet")
-            )
+            # Stale-detection now uses the SHA8-based consistency check
+            # (pipeline_state.derive_consistency) instead of ad-hoc mtime
+            # comparisons. Stale = scored snapshot's input sha8 ≠ current
+            # worklist sha8, i.e. it was built against a different worklist
+            # than what's on disk now. Strictly more accurate than mtime:
+            # an mtime can change without the row set changing (file got
+            # rewritten with identical content), and the row set can change
+            # without mtime moving by much (worklist grew but stayed today).
+            _sc_scored_path = OUT_DIR / "worklist_scored.json"
+            _sc_wl_path = OUT_DIR / "worklist.json"
+            _sc_tr_path = OUT_DIR / "worklist_triage.json"
+            _sc_scored_age_h = _file_age_hours(_sc_scored_path)
+            _sc_wl_age_h = _file_age_hours(_sc_wl_path)
+            _sc_tr_age_h = _file_age_hours(_sc_tr_path)
+            try:
+                _sc_cons = pipeline_state.derive_consistency(OUT_DIR)
+            except Exception:
+                _sc_cons = None
+            # Three layers of stale, in priority order:
+            #   1. Scored exists but has no input breadcrumb → can't prove
+            #      consistency. Show as stale (don't pretend ✅).
+            #   2. Scored has breadcrumb but it doesn't match current
+            #      worklist sha8 → definite drift.
+            #   3. Fallback (consistency check unavailable) → mtime
+            #      heuristic, same as before.
+            if _sc_cons is not None and _sc_cons.scored.exists:
+                if _sc_cons.scored.input_sha8 is None:
+                    _sc_is_stale = True
+                else:
+                    _sc_is_stale = not _sc_cons.scored.is_consistent
+            else:
+                _sc_is_stale = (
+                    _sc_scored_age_h is not None
+                    and (
+                        (_sc_wl_age_h is not None and _sc_scored_age_h > _sc_wl_age_h)
+                        or (_sc_tr_age_h is not None and _sc_scored_age_h > _sc_tr_age_h)
+                    )
+                )
+
+            def _fmt_age(h):
+                if h is None:
+                    return ""
+                if h < 1:
+                    return f"{h*60:.0f}m"
+                if h < 24:
+                    return f"{h:.0f}h"
+                return f"{h/24:.0f}d"
+
+            if scorer_running:
+                _sc_chip = "🟡 running"
+            elif _pipe_empty and not score_count:
+                _sc_chip = "⏸"
+            elif _sc_is_stale and score_count:
+                _sc_chip = f"🟠 stale ({_fmt_age(_sc_scored_age_h)} old)"
+            else:
+                _sc_chip = "🟢" if _scored_ok else "⚪"
+            _sc_count_blurb = (f"{score_count:,} scored"
+                               if score_count else "not scored yet")
+            if _sc_is_stale and score_count:
+                _sc_count_blurb += " — snapshot pre-dates current triage pool"
+            st.markdown(f"#### 🤖 ④ Scoring · {_sc_chip} {_sc_count_blurb}")
+
             # 🤖 Score worklist — the stage's primary launch action. Relocated
             # here from the Promote run card (v3.2 strict split): scoring is what
             # the ② Score view is FOR, so its launch belongs on the ④ card, not
@@ -7772,18 +7869,124 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _sc_key_ok = api_key.is_key_valid()
             _sc_can_run = not any_work_active
             _sc_ws_total = _wstats.get("total", 0)
-            _sc_age_h = _file_age_hours(OUT_DIR / "worklist_scored.json")
+            _sc_age_h = _sc_scored_age_h  # alias kept for downstream uses
             _sc_fresh = _sc_age_h is not None and _sc_age_h < 0.5
-            _sc_label = (f"🤖 Score worklist ({_sc_ws_total})" if _sc_ws_total
-                         else "🤖 Score (no rows)")
+
+            # ── Pre-score preview ──────────────────────────────────────
+            # Reads worklist_triage.json (the standalone preview written by
+            # the free 🎯 Run triage button) and breaks the post-triage pool
+            # into:
+            #   • cached       — has fit_cache_v2 file → free re-score
+            #   • in_scored    — URL in previous worklist_scored.json (free
+            #                    via fit_scorer's second-chance read)
+            #   • needs_llm    — no cache, no prior score → actual paid call
+            # Falls back gracefully when the preview file is absent (user
+            # hasn't clicked 🎯 Run triage yet on the current worklist).
+            _sc_pre_total = None  # post-triage row count, or None if no preview
+            _sc_pre_cached = 0
+            _sc_pre_in_scored = 0
+            _sc_pre_needs = 0
+            _sc_pre_stale_scored = 0
+            if _sc_tr_path.exists():
+                try:
+                    import sys as _sp_sys
+                    _ad = str(ROOT / "automation")
+                    if _ad not in _sp_sys.path:
+                        _sp_sys.path.insert(0, _ad)
+                    from fit_scorer import _url_hash as _sp_url_hash  # type: ignore
+                    _sp_tp = json.loads(_sc_tr_path.read_text(encoding="utf-8"))
+                    _sp_rows = _sp_tp.get("results") or []
+                    _sp_fit_dir = OUT_DIR / "fit_cache"
+                    _sp_scored_urls: set[str] = set()
+                    if _sc_scored_path.exists():
+                        try:
+                            _sp_sc = json.loads(
+                                _sc_scored_path.read_text(encoding="utf-8"))
+                            for _r in _sp_sc.get("results", []) or []:
+                                _u = _r.get("link") or _r.get("url") or ""
+                                if _u:
+                                    _sp_scored_urls.add(_u)
+                        except Exception:
+                            pass
+                    _sc_pre_total = len(_sp_rows)
+                    for _r in _sp_rows:
+                        _u = _r.get("link") or _r.get("url") or ""
+                        if not _u:
+                            continue
+                        try:
+                            _has_cache = (_sp_fit_dir
+                                          / f"{_sp_url_hash(_u)}.v2.json").exists()
+                        except Exception:
+                            _has_cache = False
+                        _in_sc = _u in _sp_scored_urls
+                        if _has_cache:
+                            _sc_pre_cached += 1
+                        if _in_sc:
+                            _sc_pre_in_scored += 1
+                            if not _has_cache:
+                                _sc_pre_stale_scored += 1
+                        if not _has_cache and not _in_sc:
+                            _sc_pre_needs += 1
+                except Exception:
+                    _sc_pre_total = None  # treat any failure as "no preview"
+
+            if _sc_pre_total is not None:
+                with st.container(border=True):
+                    st.markdown(
+                        f"**🔎 Score preview** · {_sc_pre_total:,} in today's "
+                        f"triage pool (preview written {_fmt_age(_sc_tr_age_h)} ago)"
+                    )
+                    _c1, _c2, _c3 = st.columns(3)
+                    _c1.metric("Already scored (free)",
+                               f"{_sc_pre_cached:,}",
+                               help="Has a fit_cache_v2 file on disk — re-score "
+                                    "skips the LLM call.")
+                    _c2.metric("Need scoring (paid)",
+                               f"{_sc_pre_needs:,}",
+                               help="No cache and not in any previous scored "
+                                    "snapshot — these are the actual LLM calls.")
+                    _c3.metric("Free via prior snapshot",
+                               f"{_sc_pre_stale_scored:,}",
+                               help="URL is in worklist_scored.json but the "
+                                    "fit_cache file is missing — fit_scorer's "
+                                    "second-chance read reuses the prior verdict "
+                                    "without paying.")
+                    if _sc_pre_needs == 0:
+                        st.caption("✅ Nothing to pay for — every triage-passing "
+                                   "row already has a cache hit or prior verdict.")
+                    elif _sc_is_stale:
+                        st.caption(
+                            f"⚠️ Prior `worklist_scored.json` is {_fmt_age(_sc_scored_age_h)} "
+                            f"old and was built before today's triage. Re-scoring "
+                            "will pay for the "
+                            f"{_sc_pre_needs:,} uncached row(s) and refresh the snapshot."
+                        )
+            else:
+                st.caption("ℹ️ Run 🎯 **Run triage** above to see a per-row "
+                           "cached-vs-paid breakdown before scoring.")
+
+            # Button label now reflects ACTUAL paid work when the preview is
+            # available; falls back to worklist row count otherwise.
+            if _sc_pre_total is not None and _sc_ws_total:
+                _sc_label = (f"🤖 Score worklist ({_sc_pre_needs:,} to pay · "
+                             f"{_sc_pre_cached + _sc_pre_stale_scored:,} free)")
+            else:
+                _sc_label = (f"🤖 Score worklist ({_sc_ws_total})" if _sc_ws_total
+                             else "🤖 Score (no rows)")
             _sc_help = (f"Score the {_sc_ws_total}-row worklist. ~5–15 min on "
                         "first run, near-free on re-runs (fit_cache is "
                         "persistent). Requires API key.")
+            if _sc_pre_total is not None:
+                _sc_help += (f" Today's triage pool: {_sc_pre_total:,} rows, of "
+                             f"which {_sc_pre_needs:,} would hit the LLM.")
             if not _sc_key_ok:
                 _sc_help += " 🔑 Set an API key in the sidebar first."
-            elif _sc_fresh:
+            elif _sc_fresh and not _sc_is_stale:
                 _sc_help += (f" ⚠️ Last score {_sc_age_h*60:.0f}m ago — "
                              "rescore only if rows changed.")
+            elif _sc_is_stale:
+                _sc_help += (f" 🟠 Last score {_fmt_age(_sc_scored_age_h)} old "
+                             "and pre-dates current triage pool.")
             if st.button(_sc_label, width="stretch", key="_vc_scoring_score_worklist",
                          type="primary" if (_sc_key_ok and _sc_ws_total) else "secondary",
                          disabled=(not _sc_can_run or not _sc_key_ok or not _sc_ws_total),

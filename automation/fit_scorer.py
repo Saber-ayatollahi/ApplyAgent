@@ -853,6 +853,39 @@ def _url_hash(url: str) -> str:
     return hashlib.sha1(_canonicalize_url(url).encode("utf-8")).hexdigest()[:16]
 
 
+def _input_breadcrumb(scan_path: Path, roles: list[dict]) -> dict:
+    """Stable fingerprint of the input the scorer was run against.
+
+    Written into every output artifact (`worklist_triage.json`,
+    `worklist_scored.json`) so downstream readers can detect drift:
+    "this scored snapshot was built from a worklist that no longer
+    matches the current worklist on disk." Paired with
+    `ui.pipeline_state.derive_consistency`, which re-hashes the live
+    worklist and compares sha8 values.
+
+    Formula: SHA256(newline-joined sorted unique canonical URLs)[:8].
+    Stable across row-order changes in the source file, and changes
+    iff a row is added, removed, or its URL is rewritten — exactly
+    what the consistency check needs."""
+    try:
+        mtime = scan_path.stat().st_mtime
+    except OSError:
+        mtime = None
+    urls = sorted({
+        _canonicalize_url(r.get("link") or r.get("url") or "")
+        for r in roles
+        if (r.get("link") or r.get("url"))
+    })
+    sha = (hashlib.sha256("\n".join(urls).encode("utf-8")).hexdigest()[:8]
+           if urls else None)
+    return {
+        "path": scan_path.name,
+        "mtime": mtime,
+        "rows": len(roles),
+        "sha8": sha,
+    }
+
+
 # Boilerplate regexes — applied AFTER HTML stripping, before we send to the LLM.
 # Order matters: we strip the biggest noise first (paragraphs), then single lines.
 _BOILERPLATE_PATTERNS = [
@@ -1820,6 +1853,10 @@ def main() -> int:
                   "Drop one of the flags.", file=sys.stderr)
             return 2
         out = {"scan_date": scan.get("scan_date"), "stage1_only": True,
+               # Input breadcrumb — lets the UI detect when this triage
+               # snapshot was built against an older worklist than the
+               # one on disk now (see ui.pipeline_state.derive_consistency).
+               "input": _input_breadcrumb(scan_path, roles),
                "total_input": len(roles), "stage1_passed": len(triaged),
                "stage1_dropped": len(triage_drops),
                "stage1_only_filtered": len(only_filtered),
@@ -1946,6 +1983,11 @@ def main() -> int:
     out = {
         "scan_date": scan.get("scan_date"),
         "scored_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
+        # Input breadcrumb — see _input_breadcrumb docstring. The UI's
+        # ④ Scoring chip / banner read this to decide whether
+        # worklist_scored.json describes the CURRENT worklist or a
+        # historical one (paid scoring runs can lag the worklist by days).
+        "input": _input_breadcrumb(scan_path, roles),
         "total_input": len(roles),
         "stage1_passed": len(triaged),
         "stage1_dropped": len(triage_drops),

@@ -1,0 +1,372 @@
+"""Unit tests for the pipeline-consistency layer.
+
+Three things under test:
+
+1. `fit_scorer._input_breadcrumb` — produces a stable fingerprint of the
+   input scan/worklist that downstream artifacts embed via the `input`
+   key. Stability requirements:
+     - Identical row sets → identical sha8, regardless of row order.
+     - Adding/removing/rewriting a URL → different sha8.
+     - Query strings / fragments / trailing slashes / case differences
+       must NOT change the sha8 (URL canonicalization).
+
+2. `ui.pipeline_state.derive_consistency` — given on-disk worklist +
+   triage + scored files, returns a `PipelineConsistency` whose
+   `global_state` correctly reports `ok` / `drift_at_*` / `empty` /
+   `no_breadcrumb`.
+
+3. The keystone invariant: `_input_breadcrumb(worklist)["sha8"]` must
+   equal `_worklist_sha8(worklist["results"])`. If these ever drift,
+   every downstream consistency check silently returns `drift`. A
+   dedicated round-trip test catches that early.
+
+These tests run on synthetic fixtures only — no dev-environment state.
+"""
+from __future__ import annotations
+
+import json
+import sys
+import time
+from pathlib import Path
+
+import pytest
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent.parent
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "automation"))
+
+from ui import pipeline_state as ps  # noqa: E402
+import fit_scorer  # noqa: E402
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+def _row(link: str, title: str = "Senior Risk Analyst",
+         company: str = "Acme") -> dict:
+    """Minimal worklist-row shape — only the keys the breadcrumb/consistency
+    code actually reads."""
+    return {"link": link, "title": title, "company": company}
+
+
+def _write_worklist(out_dir: Path, rows: list[dict]) -> Path:
+    p = out_dir / "worklist.json"
+    p.write_text(json.dumps({"results": rows}), encoding="utf-8")
+    return p
+
+
+def _write_triage(out_dir: Path, *,
+                  passed: int, dropped: int,
+                  input_block: dict | None) -> Path:
+    """Synthesize a worklist_triage.json with optional input breadcrumb.
+
+    Passing `input_block=None` simulates a legacy file written before
+    breadcrumbs existed — used to test the `no_breadcrumb` global_state."""
+    payload = {
+        "stage1_only": True,
+        "stage1_passed": passed,
+        "stage1_dropped": dropped,
+        "results": [],
+        "triage_drops": [],
+    }
+    if input_block is not None:
+        payload["input"] = input_block
+    p = out_dir / "worklist_triage.json"
+    p.write_text(json.dumps(payload), encoding="utf-8")
+    return p
+
+
+def _write_scored(out_dir: Path, *,
+                  scored_count: int, input_block: dict | None) -> Path:
+    payload = {
+        "stage1_passed": scored_count,
+        "stage1_dropped": 0,
+        "stage2_scored": scored_count,
+        "results": [],
+        "triage_drops": [],
+    }
+    if input_block is not None:
+        payload["input"] = input_block
+    p = out_dir / "worklist_scored.json"
+    p.write_text(json.dumps(payload), encoding="utf-8")
+    return p
+
+
+# ---------------------------------------------------------------------------
+# Layer 1 — breadcrumb stability and round-trip
+# ---------------------------------------------------------------------------
+
+class TestInputBreadcrumb:
+    """`fit_scorer._input_breadcrumb` is the data the consistency check
+    keys off of — its stability properties are load-bearing."""
+
+    def test_same_rows_same_sha(self, tmp_path: Path) -> None:
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        rows = [_row("https://a.com/j/1"), _row("https://b.com/j/2")]
+        a = fit_scorer._input_breadcrumb(p, rows)
+        b = fit_scorer._input_breadcrumb(p, rows)
+        assert a["sha8"] == b["sha8"]
+        assert a["rows"] == 2
+
+    def test_row_order_does_not_affect_sha(self, tmp_path: Path) -> None:
+        """Sha is over a sorted SET, so reordering rows must be invisible —
+        otherwise a no-op rewrite of worklist.json would invalidate every
+        downstream cache file. Critical."""
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        rows_a = [_row("https://a.com/1"), _row("https://b.com/2"),
+                  _row("https://c.com/3")]
+        rows_b = list(reversed(rows_a))
+        assert fit_scorer._input_breadcrumb(p, rows_a)["sha8"] \
+            == fit_scorer._input_breadcrumb(p, rows_b)["sha8"]
+
+    def test_adding_a_row_changes_sha(self, tmp_path: Path) -> None:
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        small = [_row("https://a.com/1")]
+        big = small + [_row("https://b.com/2")]
+        assert fit_scorer._input_breadcrumb(p, small)["sha8"] \
+            != fit_scorer._input_breadcrumb(p, big)["sha8"]
+
+    def test_url_canonicalization_collapses_noise(self, tmp_path: Path) -> None:
+        """Query/fragment/trailing slash/case differences must not change the
+        sha — otherwise the same job listing scraped twice would falsely
+        register as drift."""
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        canonical = [_row("https://example.com/jobs/123")]
+        noisy = [_row("HTTPS://Example.com/jobs/123/?utm_source=foo#section")]
+        assert fit_scorer._input_breadcrumb(p, canonical)["sha8"] \
+            == fit_scorer._input_breadcrumb(p, noisy)["sha8"]
+
+    def test_empty_rows_returns_none_sha(self, tmp_path: Path) -> None:
+        """Empty input → sha is None (not the hash of empty-string).
+        Downstream consistency treats this as 'nothing to compare'."""
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        bc = fit_scorer._input_breadcrumb(p, [])
+        assert bc["sha8"] is None
+        assert bc["rows"] == 0
+
+
+# ---------------------------------------------------------------------------
+# The keystone invariant — writer and reader must hash identically
+# ---------------------------------------------------------------------------
+
+class TestSha8Compatibility:
+    """`fit_scorer._input_breadcrumb` and `pipeline_state._worklist_sha8`
+    MUST produce identical sha8 values for the same row set. If they ever
+    drift, every consistency check silently lies. This is the canary test."""
+
+    @pytest.mark.parametrize("rows", [
+        [_row("https://a.com/1")],
+        [_row("https://a.com/1"), _row("https://b.com/2")],
+        [_row("https://A.com/1/?q=1"), _row("https://b.com/2#x")],
+        [],
+    ])
+    def test_round_trip(self, tmp_path: Path, rows: list[dict]) -> None:
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        writer_sha = fit_scorer._input_breadcrumb(p, rows)["sha8"]
+        reader_sha = ps._worklist_sha8(rows)
+        assert writer_sha == reader_sha
+
+
+# ---------------------------------------------------------------------------
+# Layer 2 — derive_consistency end-to-end
+# ---------------------------------------------------------------------------
+
+class TestDeriveConsistency:
+    """End-to-end: write fixture files into tmp_path, call
+    `derive_consistency`, assert on the structured output. The global_state
+    is the field every UI widget keys off of, so each branch needs a test."""
+
+    def test_empty_when_no_worklist(self, tmp_path: Path) -> None:
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "empty"
+        assert not c.worklist_exists
+
+    def test_ok_when_all_breadcrumbs_match(self, tmp_path: Path) -> None:
+        rows = [_row("https://a.com/1"), _row("https://b.com/2")]
+        _write_worklist(tmp_path, rows)
+        sha = ps._worklist_sha8(rows)
+        _write_triage(tmp_path, passed=2, dropped=0,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 2, "sha8": sha})
+        _write_scored(tmp_path, scored_count=2,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 2, "sha8": sha})
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "ok"
+        assert c.triage.is_consistent
+        assert c.scored.is_consistent
+        assert c.worklist_rows == 2
+
+    def test_drift_at_scoring_when_scored_built_against_older_worklist(
+            self, tmp_path: Path) -> None:
+        """The exact bug we set out to fix: worklist grew, triage was
+        re-run (so it's current), but scoring was last run earlier on a
+        smaller worklist. global_state must call out scoring specifically
+        so the banner tells the user which stage to re-run."""
+        # Current worklist is bigger
+        current_rows = [_row(f"https://a.com/{i}") for i in range(10)]
+        _write_worklist(tmp_path, current_rows)
+        current_sha = ps._worklist_sha8(current_rows)
+        # Triage was just run on the current worklist (consistent)
+        _write_triage(tmp_path, passed=5, dropped=5,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 10, "sha8": current_sha})
+        # Scoring was last run on a SMALLER worklist (drift)
+        old_rows = current_rows[:5]
+        old_sha = ps._worklist_sha8(old_rows)
+        assert old_sha != current_sha
+        _write_scored(tmp_path, scored_count=3,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 5, "sha8": old_sha})
+
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "drift_at_scoring"
+        assert c.triage.is_consistent
+        assert not c.scored.is_consistent
+        assert c.scored.input_rows == 5
+        assert c.worklist_rows == 10
+
+    def test_drift_at_triage_when_only_triage_lags(self, tmp_path: Path) -> None:
+        current_rows = [_row(f"https://a.com/{i}") for i in range(5)]
+        _write_worklist(tmp_path, current_rows)
+        sha = ps._worklist_sha8(current_rows)
+        old_sha = ps._worklist_sha8(current_rows[:3])
+        _write_triage(tmp_path, passed=2, dropped=1,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 3, "sha8": old_sha})
+        # Scoring is fresh, triage is not — unusual but possible if the
+        # user re-scored after a worklist refresh but never re-triaged.
+        _write_scored(tmp_path, scored_count=2,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 5, "sha8": sha})
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "drift_at_triage"
+
+    def test_mixed_drift_when_both_stages_stale(self, tmp_path: Path) -> None:
+        current_rows = [_row(f"https://a.com/{i}") for i in range(10)]
+        _write_worklist(tmp_path, current_rows)
+        old_sha = ps._worklist_sha8(current_rows[:3])
+        _write_triage(tmp_path, passed=2, dropped=1,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 3, "sha8": old_sha})
+        _write_scored(tmp_path, scored_count=2,
+                      input_block={"path": "worklist.json", "mtime": 0,
+                                   "rows": 3, "sha8": old_sha})
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "mixed_drift"
+
+    def test_no_breadcrumb_when_legacy_files_lack_input_block(
+            self, tmp_path: Path) -> None:
+        """Files written before breadcrumbs existed (no `input` block)
+        must report `no_breadcrumb`, not `drift_at_*`. We must not punish
+        users for legacy artifacts."""
+        rows = [_row("https://a.com/1")]
+        _write_worklist(tmp_path, rows)
+        _write_triage(tmp_path, passed=1, dropped=0, input_block=None)
+        _write_scored(tmp_path, scored_count=1, input_block=None)
+        c = ps.derive_consistency(tmp_path)
+        assert c.global_state == "no_breadcrumb"
+
+
+# ---------------------------------------------------------------------------
+# Layer 3 — banner copy is keyed off global_state
+# ---------------------------------------------------------------------------
+
+class TestBannerCopy:
+    """`consistency_banner_copy` is the UI's single source of truth for
+    the user-facing message. Sanity-check each branch returns the right
+    severity and the headline names the right stage."""
+
+    def test_ok_returns_success(self) -> None:
+        rows = [_row("https://a.com/1")]
+        sha = ps._worklist_sha8(rows)
+        c = ps.PipelineConsistency(
+            worklist_exists=True, worklist_rows=1, worklist_sha8=sha,
+            triage=ps.StageConsistency(exists=True, input_sha8=sha,
+                                       is_consistent=True),
+            scored=ps.StageConsistency(exists=True, input_sha8=sha,
+                                       is_consistent=True),
+        )
+        sev, head, _ = ps.consistency_banner_copy(c)
+        assert sev == "success"
+        assert "consistent" in head.lower()
+
+    def test_drift_at_scoring_returns_warn_and_names_scoring(self) -> None:
+        c = ps.PipelineConsistency(
+            worklist_exists=True, worklist_rows=10, worklist_sha8="aaaaaaaa",
+            triage=ps.StageConsistency(exists=True, input_sha8="aaaaaaaa",
+                                       is_consistent=True, input_rows=10),
+            scored=ps.StageConsistency(exists=True, input_sha8="bbbbbbbb",
+                                       is_consistent=False, input_rows=5),
+        )
+        sev, head, detail = ps.consistency_banner_copy(c)
+        assert sev == "warn"
+        assert "scoring" in head.lower() or "scoring" in detail.lower()
+        assert "re-score" in detail.lower()
+
+    def test_empty_returns_info(self) -> None:
+        c = ps.PipelineConsistency()
+        sev, head, _ = ps.consistency_banner_copy(c)
+        assert sev == "info"
+        assert "worklist" in head.lower()
+
+
+# ---------------------------------------------------------------------------
+# derive_snapshot integration — the headline triage numbers should now
+# prefer the fresher of (worklist_triage.json, worklist_scored.json)
+# ---------------------------------------------------------------------------
+
+class TestDeriveSnapshotTriageFreshness:
+    """The bug the user reported: ③ Triage card showed 512/921 (from
+    4d-old worklist_scored.json) while a freshly-run standalone triage
+    in worklist_triage.json said 739/1276. After the fix, derive_snapshot
+    must surface the FRESH numbers when the standalone triage file is
+    newer than the scored snapshot."""
+
+    def test_prefers_fresh_triage_file_when_newer(self, tmp_path: Path) -> None:
+        # worklist not required for this assertion
+        _write_worklist(tmp_path, [_row(f"https://a/{i}") for i in range(10)])
+        # Older scored file says 100/200
+        _write_scored(tmp_path, scored_count=100, input_block=None)
+        # touch to make scored OLD relative to triage
+        scored_path = tmp_path / "worklist_scored.json"
+        sc_payload = json.loads(scored_path.read_text(encoding="utf-8"))
+        sc_payload["stage1_passed"] = 100
+        sc_payload["stage1_dropped"] = 200
+        scored_path.write_text(json.dumps(sc_payload), encoding="utf-8")
+        old_time = time.time() - 86400  # 1 day ago
+        import os as _os
+        _os.utime(scored_path, (old_time, old_time))
+        # Fresh triage file says 739/1276 — this is what the user expects
+        _write_triage(tmp_path, passed=739, dropped=1276, input_block=None)
+
+        snap = ps.derive_snapshot(
+            out_dir=tmp_path,
+            fit_cache_dir=tmp_path / "fit_cache",
+            tracker_path=tmp_path / "tracker.json",
+        )
+        assert snap.triage_passed == 739
+        assert snap.triage_dropped == 1276
+
+    def test_falls_back_to_scored_when_no_triage_file(self, tmp_path: Path) -> None:
+        _write_worklist(tmp_path, [_row("https://a/1")])
+        sc_path = tmp_path / "worklist_scored.json"
+        sc_path.write_text(json.dumps({
+            "stage1_passed": 50, "stage1_dropped": 10, "stage2_scored": 50,
+            "results": [], "triage_drops": [],
+        }), encoding="utf-8")
+        snap = ps.derive_snapshot(
+            out_dir=tmp_path,
+            fit_cache_dir=tmp_path / "fit_cache",
+            tracker_path=tmp_path / "tracker.json",
+        )
+        assert snap.triage_passed == 50
+        assert snap.triage_dropped == 10

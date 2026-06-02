@@ -25,6 +25,7 @@ for translating `Banner` into widgets and shelling out actions.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -202,6 +203,218 @@ class Snapshot:
         scrape being 72h old doesn't justify telling the user to refresh."""
         ages = [a for a in (self.scrape_age_h, self.gmail_age_h) if a is not None]
         return min(ages) if ages else None
+
+
+# ---------------------------------------------------------------------------
+# Cross-stage consistency — "does the scored snapshot still match the
+# current worklist?". Pairs with fit_scorer._input_breadcrumb, which writes
+# the input fingerprint into every output artifact. Lets the UI tell the
+# user "scoring is stale relative to triage" — the disconnect that caused
+# the 512/739 mismatch in the funnel.
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class StageConsistency:
+    """Freshness/consistency of one downstream stage vs the current worklist.
+
+    `is_consistent` is the boolean the UI rendering code branches on:
+    True  → stage's headline numbers describe the current worklist
+    False → stage's headline numbers describe a previous worklist (or
+            the stage was written before breadcrumbs existed and we
+            can't prove it's current)."""
+    exists: bool = False
+    mtime: float | None = None             # epoch seconds, for age calcs
+    primary_count: int = 0                  # stage's headline number
+    input_sha8: str | None = None           # breadcrumb from the file
+    input_rows: int | None = None           # row count it was built against
+    is_consistent: bool = False             # input_sha8 == current worklist sha8
+    source_path: str = ""                   # filename, for help text
+
+
+@dataclass(frozen=True)
+class PipelineConsistency:
+    """Cross-stage consistency view. Computed in ONE pass over disk.
+
+    Every Pipeline-page widget that displays a downstream-stage number
+    should read from this — that's how we kill the bug class where two
+    widgets render disagreeing numbers because they read different files."""
+    worklist_exists: bool = False
+    worklist_rows: int = 0
+    worklist_sha8: str | None = None
+    worklist_mtime: float | None = None
+    triage: StageConsistency = field(default_factory=StageConsistency)
+    scored: StageConsistency = field(default_factory=StageConsistency)
+
+    @property
+    def global_state(self) -> str:
+        """One word the banner copy keys off of.
+
+        Values:
+          empty             — no worklist (nothing to be consistent with)
+          ok                — every existing downstream stage matches worklist
+          drift_at_triage   — triage was built against a different worklist
+          drift_at_scoring  — scoring was built against a different worklist
+          mixed_drift       — both triage AND scoring drifted (worklist
+                              changed since each was last run)
+          no_breadcrumb     — stages exist but lack input breadcrumb (old
+                              artifacts from before this fix; assume drift)
+        """
+        if not self.worklist_exists:
+            return "empty"
+        # Detect "we can't prove anything" — both stages have no breadcrumb.
+        # Surface this distinctly so we don't cry wolf on legacy files.
+        tr_no_crumb = self.triage.exists and self.triage.input_sha8 is None
+        sc_no_crumb = self.scored.exists and self.scored.input_sha8 is None
+        if (self.triage.exists or self.scored.exists) and \
+                tr_no_crumb and not self.scored.exists:
+            return "no_breadcrumb"
+        if (self.scored.exists or self.triage.exists) and \
+                sc_no_crumb and not self.triage.exists:
+            return "no_breadcrumb"
+        if tr_no_crumb and sc_no_crumb:
+            return "no_breadcrumb"
+        triage_bad = self.triage.exists and not self.triage.is_consistent \
+            and self.triage.input_sha8 is not None
+        scored_bad = self.scored.exists and not self.scored.is_consistent \
+            and self.scored.input_sha8 is not None
+        if triage_bad and scored_bad:
+            return "mixed_drift"
+        if triage_bad:
+            return "drift_at_triage"
+        if scored_bad:
+            return "drift_at_scoring"
+        return "ok"
+
+
+def _canonicalize_link(url: str) -> str:
+    """Canonical form used for the consistency sha8.
+
+    Duplicated from `fit_scorer._canonicalize_url` to keep this module
+    self-contained (no automation imports — pipeline_state must remain
+    stdlib-only per its module docstring). The TWO MUST MATCH; that's
+    literally how downstream artifacts compare against the live worklist.
+
+    If you update either side, update both. Add a round-trip test
+    (`test_breadcrumb_sha_matches_consistency_sha`) to catch drift early."""
+    return str(url).split("#", 1)[0].split("?", 1)[0].rstrip("/").lower()
+
+
+def _worklist_sha8(rows: list[dict]) -> str | None:
+    """Same hash formula as fit_scorer._input_breadcrumb. See _canonicalize_link
+    docstring for the synchronization contract."""
+    urls = sorted({
+        _canonicalize_link(r.get("link") or r.get("url") or "")
+        for r in rows
+        if (r.get("link") or r.get("url"))
+    })
+    if not urls:
+        return None
+    return hashlib.sha256("\n".join(urls).encode("utf-8")).hexdigest()[:8]
+
+
+def derive_consistency(out_dir: "Path") -> PipelineConsistency:
+    """Read worklist + downstream artifacts ONCE and return their consistency.
+
+    Pure: no streamlit, no caching, no session-state reads. The Pipeline
+    page caller invokes this at the top of its render and threads the
+    result through every downstream widget.
+
+    Pairs with `fit_scorer._input_breadcrumb`. Artifacts written before
+    breadcrumbs were introduced lack the `input` block; those stages
+    show `input_sha8=None` and the banner reports `no_breadcrumb` instead
+    of crying drift (don't punish the user for legacy files)."""
+    wl_path = out_dir / "worklist.json"
+    tr_path = out_dir / "worklist_triage.json"
+    sc_path = out_dir / "worklist_scored.json"
+
+    wl = _safe_load(wl_path) or {}
+    wl_rows = wl.get("results") or []
+    wl_sha = _worklist_sha8(wl_rows) if wl_rows else None
+    try:
+        wl_mtime = wl_path.stat().st_mtime if wl_path.exists() else None
+    except OSError:
+        wl_mtime = None
+
+    def _stage(path: "Path", primary_key: str) -> StageConsistency:
+        if not path.exists():
+            return StageConsistency(exists=False)
+        try:
+            mtime = path.stat().st_mtime
+        except OSError:
+            return StageConsistency(exists=False)
+        data = _safe_load(path) or {}
+        inp = data.get("input") or {}
+        input_sha = inp.get("sha8")
+        input_rows = inp.get("rows")
+        # Consistent iff both sides have a sha AND they match. Missing
+        # breadcrumb → input_sha is None → is_consistent stays False, but
+        # global_state reports `no_breadcrumb` rather than `drift` so the
+        # banner copy doesn't accuse the user's old files of being wrong.
+        consistent = bool(wl_sha and input_sha and wl_sha == input_sha)
+        return StageConsistency(
+            exists=True,
+            mtime=mtime,
+            primary_count=int(data.get(primary_key) or 0),
+            input_sha8=input_sha,
+            input_rows=input_rows,
+            is_consistent=consistent,
+            source_path=path.name,
+        )
+
+    return PipelineConsistency(
+        worklist_exists=wl_path.exists() and bool(wl_rows),
+        worklist_rows=len(wl_rows),
+        worklist_sha8=wl_sha,
+        worklist_mtime=wl_mtime,
+        triage=_stage(tr_path, "stage1_passed"),
+        scored=_stage(sc_path, "stage2_scored"),
+    )
+
+
+def consistency_banner_copy(c: PipelineConsistency) -> tuple[str, str, str]:
+    """Translate a PipelineConsistency into (severity, headline, detail).
+
+    severity: one of `success` | `warn` | `info` — UI maps to st.success /
+              st.warning / st.info / etc.
+    headline: short phrase for the banner row.
+    detail:   one explanatory sentence the user can act on.
+
+    Centralised here (not inline in app.py) so it has unit tests and
+    so any future refactor of how the banner renders touches one place."""
+    gs = c.global_state
+    if gs == "empty":
+        return ("info", "No worklist yet",
+                "Run a scrape or Gmail fetch to build the worklist first.")
+    if gs == "no_breadcrumb":
+        return ("info", "Consistency unknown (legacy artifacts)",
+                "Older snapshot files lack the input fingerprint. Re-run "
+                "triage or scoring once to enable drift detection.")
+    if gs == "ok":
+        rows = c.worklist_rows
+        sha = (c.worklist_sha8 or "")[:8]
+        return ("success",
+                f"All stages consistent — built from the current "
+                f"{rows:,}-row worklist (sha `{sha}`).",
+                "Funnel numbers across triage / scoring / promote all "
+                "describe the same run.")
+    # Drift cases — name which stage is stale and what to do.
+    drifted = []
+    if gs in ("drift_at_triage", "mixed_drift") and c.triage.exists:
+        drifted.append(
+            f"triage was built against {c.triage.input_rows or '?'} rows "
+            f"(sha `{(c.triage.input_sha8 or '')[:8]}`)")
+    if gs in ("drift_at_scoring", "mixed_drift") and c.scored.exists:
+        drifted.append(
+            f"scoring was built against {c.scored.input_rows or '?'} rows "
+            f"(sha `{(c.scored.input_sha8 or '')[:8]}`)")
+    drift_list = "; ".join(drifted) or "downstream stages do not match worklist"
+    fix = ("Re-score the worklist" if gs in ("drift_at_scoring", "mixed_drift")
+           else "Re-run triage")
+    return ("warn",
+            f"Mixed freshness: current worklist has {c.worklist_rows:,} rows "
+            f"(sha `{(c.worklist_sha8 or '')[:8]}`), but {drift_list}.",
+            f"{fix} to bring downstream numbers in line with the current "
+            "worklist.")
 
 
 # ---------------------------------------------------------------------------
@@ -519,6 +732,26 @@ def derive_snapshot(
     triage_passed = int(scored.get("stage1_passed") or 0)
     triage_dropped = int(scored.get("stage1_dropped") or 0)
     scored_age = _content_age_h(scored_path) if scored_path.exists() else None
+
+    # ── Prefer the fresh standalone triage when it's newer than the
+    # LLM-scored snapshot. The free 🎯 Run triage button writes
+    # `worklist_triage.json` (a separate file precisely so it doesn't
+    # clobber paid LLM scores) — but that means the Triage card was
+    # silently showing stale numbers from worklist_scored.json (e.g.
+    # "512 passed" while a fresh triage said "739 passed"). When the
+    # standalone triage is newer than the last scoring run, use ITS
+    # numbers; the scored file's stage1_* are by definition older.
+    triage_path = out_dir / "worklist_triage.json"
+    if triage_path.exists():
+        try:
+            tr_mtime = triage_path.stat().st_mtime
+            sc_mtime = scored_path.stat().st_mtime if scored_path.exists() else 0
+        except OSError:
+            tr_mtime = sc_mtime = 0
+        if tr_mtime > sc_mtime:
+            tr_data = _safe_load(triage_path) or {}
+            triage_passed = int(tr_data.get("stage1_passed") or triage_passed)
+            triage_dropped = int(tr_data.get("stage1_dropped") or triage_dropped)
 
     # ── Billable / cached / reusable ──
     worklist_urls = {
