@@ -6057,7 +6057,16 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
     # rebuild button — it's there as an escape hatch only.
     _wstatus = worklist.status()
     _wstats = _wstatus.get("stats") or {}
-    with st.container(border=True):
+    # The full Worklist card (headline + new-rows + manual-rebuild) renders only
+    # on ① Refresh — that's the pool-building page. Score/Promote get the pool's
+    # numbers via the funnel + the Scoring-card headline (both read _wstats,
+    # computed above), so the card itself would be redundant there. (Deviates
+    # from pipeline_redesign.md §495 "renders on all three" — deliberate, per
+    # user request to de-duplicate the repeated header.) Uses the same 2-space
+    # `if _pipe_view ==` wrap pattern as the nightly-refresh strip to keep the
+    # 140-line body un-reindented.
+    if _pipe_view == "Refresh":
+      with st.container(border=True):
         if _wstatus.get("worklist_exists"):
             # Three states: scoring-in-progress beats scored beats not-scored.
             # When scorer_running is true the progress file shows current/total,
