@@ -426,6 +426,22 @@ def _clean_alert_fields(title: str, company: str, location: str
     # Strip work-mode tail off location for parity with web scrape
     location = _ALERT_MODE_TAIL.sub("", location or "").strip()
 
+    # Failure mode E: the title still carries a trailing location echo joined by
+    # a bare dash ("<role> - Toronto, ON"). Mode C now splits titles ONLY on the
+    # middle-dot (to preserve hyphenated role names), so a dash-joined location
+    # echo survives into the title and pollutes the dedup key vs the web-scrape
+    # lane (whose titles have no echo). Strip it, but ONLY when the trailing
+    # segment matches the cleaned location field (full string or its city part),
+    # so genuine hyphenated roles ("… Manager - Canada & HQ/DCs") are preserved.
+    if title and location:
+        _echoes = {location.strip().lower()}
+        _city = location.split(",", 1)[0].strip()
+        if _city:
+            _echoes.add(_city.lower())
+        m = re.search(r"\s+[-–—]\s+([^-–—]+?)\s*$", title)
+        if m and m.group(1).strip().lower() in _echoes:
+            title = title[: m.start()].strip()
+
     return title[:180], company[:120], location[:120]
 
 

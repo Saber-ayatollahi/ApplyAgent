@@ -7649,16 +7649,18 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             )
             st.caption(
                 "Rule-based keyword/level/negative-term filter + active "
-                "suppressions. Per-drop rule reasons are in the ④ Scoring "
-                "card's 🚫 Dropped sub-tab and the Triage xlsx below."
+                "suppressions. Run a free triage below to see the per-drop "
+                "rule reasons in the 👁 Triage preview (or the Triage xlsx)."
             )
             # 🎯 Run triage — standalone, FREE (no LLM). Runs run_pipeline with
-            # --score-dry-run so stage-1 rule triage runs alone and writes the
-            # passed/dropped split into worklist_scored.json (stage1_only) for
-            # the ④ Scoring card's 🚫 Dropped sub-tab. Lets you review WHICH
-            # rows drop and why BEFORE spending anything on the LLM. Triage is
-            # deterministic + free, so re-running Score afterwards yields the
-            # identical set (unless the worklist changed in between).
+            # --score-dry-run --triage-out so stage-1 rule triage runs alone and
+            # writes the passed/dropped split to a SEPARATE worklist_triage.json
+            # (never clobbers the real LLM scores in worklist_scored.json). The
+            # drops surface in the 👁 Triage preview directly below — NOT the ④
+            # Scoring card's Dropped sub-tab, which only lists *_scored.json.
+            # Lets you review WHICH rows drop and why BEFORE spending on the LLM.
+            # Triage is deterministic + free, so re-running Score afterwards
+            # yields the identical set (unless the worklist changed in between).
             _tr_total = _wstats.get("total", 0)
             _tr_label = (f"🎯 Run triage (free · {_tr_total} rows)" if _tr_total
                          else "🎯 Run triage (no rows)")
@@ -7666,7 +7668,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                          disabled=(any_work_active or not _tr_total),
                          help="Rule-stage only — no API cost. Produces the "
                               "passed/dropped split; inspect the drops in the "
-                              "④ Scoring card's 🚫 Dropped sub-tab, then Score "
+                              "👁 Triage preview just below, then Score "
                               "when you're happy with what's kept."):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),

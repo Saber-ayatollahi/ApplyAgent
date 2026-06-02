@@ -185,6 +185,26 @@ def main() -> int:
 
     args = ap.parse_args()
 
+    # --triage-out only makes sense for a triage-only preview. Two illegal
+    # combinations (CLI-only — the UI never builds them, but the flag is public)
+    # would silently mislead, so refuse them up front, mirroring fit_scorer's
+    # --only-url + --dry-run refusal:
+    #   • without --score-dry-run, --triage-out has nothing to redirect.
+    #   • with promote enabled, the score stage writes only the stage1-only
+    #     triage file (no fit verdicts) while promote reads worklist_scored.json
+    #     — so a stale prior real-score file would be promoted while status
+    #     reports "0 scored". A triage preview must never feed promote.
+    if args.triage_out and not args.score_dry_run:
+        print("ERROR: --triage-out requires --score-dry-run (it redirects the "
+              "triage-only preview; there is nothing to redirect otherwise).",
+              flush=True)
+        return 2
+    if args.triage_out and not args.skip_promote:
+        print("ERROR: --triage-out cannot be combined with promote. A triage "
+              "preview produces no fit scores; promoting would silently use a "
+              "stale worklist_scored.json. Add --skip-promote.", flush=True)
+        return 2
+
     # Preflight the Anthropic API if this run will actually call the LLM.
     # Catches revoked/stale/empty-credit keys BEFORE we burn 15 min scraping
     # and then fail every scorer worker. Skip when the scorer itself is

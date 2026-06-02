@@ -91,7 +91,10 @@ _LI_JOB_RE = re.compile(
 # trackingId), but these must survive — e.g. Greenhouse encodes the job id
 # ONLY in ?gh_jid=, so two Stripe roles on .../jobs/search?gh_jid=A vs =B are
 # different postings that would otherwise collapse to one key and lose a row.
-_ID_QUERY_PARAMS = ("gh_jid", "jobid", "currentjobid", "jid", "id", "lever")
+# NB: Lever is intentionally absent — it encodes the job id in the URL PATH
+# (jobs.lever.co/<slug>/<id>), never a ?lever= query param, so it needs no
+# identity-param entry; the path already disambiguates its postings.
+_ID_QUERY_PARAMS = ("gh_jid", "jobid", "currentjobid", "jid", "id")
 
 
 def norm_url(row: dict) -> str:
@@ -388,32 +391,35 @@ def rebuild(quarantine: bool = True) -> dict:
         nt = _normalize_title(row.get("title", ""))
         # Near-dup collision: same (co,title) seen via a different URL.
         # Keep the existing entry but upgrade its source tag if needed.
+        #
+        # REVERSIBILITY NOTE (audit fix #3): two distinct postings that share a
+        # degenerate title stem (e.g. two different "Senior Manager" reqs at the
+        # same company) must NOT collapse into one row. That protection lives at
+        # the by_ct WRITE below — a degenerate-title row never claims the ct_key
+        # (line: `if ct and not _is_degenerate_title(nt)`), so a later distinct
+        # row with the same stem never finds `ct in by_ct` and is inserted
+        # separately. Therefore, by construction, every row reaching THIS branch
+        # has a non-degenerate title (the stored key owner was non-degenerate,
+        # and the key includes the normalized title, so this row matches it).
+        # Do not add a degenerate-title special-case here — it would be dead
+        # code; fix the by_ct write guard instead if that invariant ever moves.
         if ct and ct in by_ct and by_ct[ct] != u:
             existing_url = by_ct[ct]
             existing = by_url[existing_url]
-            # REVERSIBILITY GUARD (audit fix #3): if BOTH rows are distinct
-            # LinkedIn job ids AND the title is a degenerate stem (no
-            # specialization), they are NOT safely the same role — keep both
-            # rather than silently dropping the second. Distinct reqs with only
-            # a bare "Senior Manager" title must not collapse.
-            if (_is_degenerate_title(nt)
-                    and _is_linkedin_url(u) and _is_linkedin_url(existing_url)):
-                pass  # fall through to insert as a separate row
-            else:
-                merged_pairs.append({
-                    "kept_url": existing_url,
-                    "kept_source": existing.get("source", ""),
-                    "kept_title": existing.get("title", ""),
-                    "dropped_url": u,
-                    "dropped_source": src,
-                    "dropped_title": row.get("title", ""),
-                    "company": row.get("company", ""),
-                    "title": row.get("title", ""),
-                    "reason": "near_dup_company_title",
-                })
-                if existing["source"] != src and existing["source"] != "both":
-                    existing["source"] = "both"
-                return
+            merged_pairs.append({
+                "kept_url": existing_url,
+                "kept_source": existing.get("source", ""),
+                "kept_title": existing.get("title", ""),
+                "dropped_url": u,
+                "dropped_source": src,
+                "dropped_title": row.get("title", ""),
+                "company": row.get("company", ""),
+                "title": row.get("title", ""),
+                "reason": "near_dup_company_title",
+            })
+            if existing["source"] != src and existing["source"] != "both":
+                existing["source"] = "both"
+            return
         if u in by_url:
             entry = by_url[u]
             merged_pairs.append({
@@ -477,8 +483,13 @@ def rebuild(quarantine: bool = True) -> dict:
             _geo_keep = None
     quarantine_dropped: list[dict] = []  # unrepairable misparse / artifacts
     repaired_count = 0
+    gmail_input_count = 0  # rows actually iterated — feeds input_total so the
+                           # reconciliation invariant derives from THIS pass,
+                           # not a second re-read of the files (which could
+                           # diverge under a concurrent fetch and false-alarm).
     for gp in gmail_files:
         for r in _read_envelope(gp).get("results", []) or []:
+            gmail_input_count += 1
             if _clean_alert_fields is not None:
                 t, c, l = _clean_alert_fields(
                     r.get("title", ""), r.get("company", ""),
@@ -501,8 +512,18 @@ def rebuild(quarantine: bool = True) -> dict:
             # (e.g. company="Treasury Manager", title="Treasury Manager KOHO").
             # The real company is the trailing remainder of the title. Recover
             # it and re-add the role rather than discarding ~119 genuine jobs.
+            #
+            # GUARD (regression fix): do NOT repair when the company field is
+            # itself a bare degenerate stem ("Senior Manager", "Director", …).
+            # Since gmail_reader now keeps hyphenated titles whole (no longer
+            # truncated at the dash), a row like company="Senior Manager",
+            # title="Senior Manager - Risk Management American Express" would
+            # otherwise trip the prefix test and fabricate a garbage company
+            # ("Risk Management American Express"). A degenerate stem prefixing
+            # the title is the role name leading the title, not a field-swap.
             if (len(_c) > 5 and _t.startswith(_c)
-                    and len(_t) > len(_c) + 2):
+                    and len(_t) > len(_c) + 2
+                    and not _is_degenerate_title(_normalize_title(_c))):
                 real_company = _t[len(_c):].strip(" -–—·,|").strip()
                 # Repair only if the recovered company looks like a real
                 # company (short-ish, not itself a role stem). Otherwise the
@@ -558,12 +579,14 @@ def rebuild(quarantine: bool = True) -> dict:
         rows.append(r)
     stats["total"] = len(rows)
 
-    # Total input = every raw row read from sources. Counted directly from the
-    # disposition buckets (every input row lands in exactly one) so the figure
-    # is self-consistent with what we retained — no re-reading the files.
-    input_total = (len(web_rows)
-                   + sum(len(_read_envelope(p).get("results", []) or [])
-                         for p in gmail_files))
+    # Total input = every raw row actually iterated this pass: the web rows
+    # plus the gmail rows counted INSIDE the processing loop (gmail_input_count).
+    # Deriving it from the same iteration that fills the disposition buckets —
+    # rather than re-reading the gmail files — makes the reconciliation
+    # invariant immune to a concurrent gmail_fetch rewriting/removing a file
+    # between the two reads (which would otherwise flip balanced=False with no
+    # real row loss), and removes a redundant parse of every gmail file.
+    input_total = len(web_rows) + gmail_input_count
     # RECONCILIATION (audit guarantee): every input row must land in exactly one
     # disposition bucket. If accounted != input, a silent-loss path exists.
     accounted = (stats["total"] + len(merged_pairs) + len(quarantine_dropped)
