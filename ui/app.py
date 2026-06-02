@@ -6252,6 +6252,37 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
         except Exception:
             pass
 
+    # Prefer the FRESH standalone triage file for the triage headline
+    # numbers (total_input / stage1_passed / stage1_dropped) when the
+    # user has clicked 🎯 Run triage more recently than they last
+    # scored. The scored snapshot bakes in triage stats from its own
+    # run, which can be days stale — the user explicitly hit Run triage
+    # to get a CURRENT view of the rule-pass pool. score_count
+    # (stage2_scored, LLM verdicts) stays from the scored file —
+    # standalone triage doesn't produce verdicts. This is the same
+    # preference logic as pipeline_state.derive_snapshot but applied
+    # to the variables the funnel + ③ Triage card actually read.
+    _ti_path = OUT_DIR / "worklist_triage.json"
+    if _ti_path.exists():
+        try:
+            _ti_mtime = _ti_path.stat().st_mtime
+            _sc_mtime = scored_f.stat().st_mtime if scored_f else 0
+        except OSError:
+            _ti_mtime = _sc_mtime = 0
+        if _ti_mtime > _sc_mtime:
+            try:
+                _td = json.loads(_ti_path.read_text(encoding="utf-8"))
+                # Override with fresh numbers; keep score_count
+                # (LLM-verdict total) untouched.
+                _ti_total = _td.get("total_input")
+                _ti_pass = _td.get("stage1_passed")
+                if _ti_total is not None:
+                    score_input = _ti_total
+                if _ti_pass is not None:
+                    score_pass = _ti_pass
+            except Exception:
+                pass
+
     apply_n = verdict_counts.get("apply_now", 0)
     tailor_n = verdict_counts.get("tailor_and_apply", 0)
     actionable_n = apply_n + tailor_n
