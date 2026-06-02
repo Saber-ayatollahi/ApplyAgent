@@ -438,9 +438,18 @@ def _clean_alert_fields(title: str, company: str, location: str
         _city = location.split(",", 1)[0].strip()
         if _city:
             _echoes.add(_city.lower())
-        m = re.search(r"\s+[-–—]\s+([^-–—]+?)\s*$", title)
-        if m and m.group(1).strip().lower() in _echoes:
-            title = title[: m.start()].strip()
+        # Test the suffix after EACH " - " separator (from the last inward).
+        # The suffix may itself contain dashes (so hyphenated places like
+        # "Winston-Salem, NC" match), but is only stripped when the whole
+        # suffix equals a known echo — exact set membership, so a genuine
+        # hyphenated role ("… Manager - Canada & HQ/DCs") is never removed.
+        for _sep in re.finditer(r"\s+[-–—]\s+", title):
+            if title[_sep.end():].strip().lower() in _echoes:
+                title = title[: _sep.start()].strip()
+                break
+    # Mode D may have stripped a trailing company token that equalled the city,
+    # leaving a dangling separator ("Senior Analyst -"); drop it for a clean key.
+    title = re.sub(r"\s*[-–—]\s*$", "", title).strip()
 
     return title[:180], company[:120], location[:120]
 

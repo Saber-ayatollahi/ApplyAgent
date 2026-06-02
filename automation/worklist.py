@@ -513,18 +513,29 @@ def rebuild(quarantine: bool = True) -> dict:
             # The real company is the trailing remainder of the title. Recover
             # it and re-add the role rather than discarding ~119 genuine jobs.
             #
-            # GUARD (regression fix): do NOT repair when the company field is
-            # itself a bare degenerate stem ("Senior Manager", "Director", …).
-            # Since gmail_reader now keeps hyphenated titles whole (no longer
-            # truncated at the dash), a row like company="Senior Manager",
-            # title="Senior Manager - Risk Management American Express" would
-            # otherwise trip the prefix test and fabricate a garbage company
-            # ("Risk Management American Express"). A degenerate stem prefixing
-            # the title is the role name leading the title, not a field-swap.
+            # GUARDS (regression fixes): startswith() alone is too coarse — it
+            # also matches shapes that are NOT field-swaps and would fabricate a
+            # garbage company. A genuine swap joins ROLE to RealCo with
+            # WHITESPACE ("Treasury Manager KOHO"); reject everything else:
+            #   • mid-word prefix: company="Treasury Manager" ⊂ title="Treasury
+            #     Managerial Group" → slice cuts mid-word into "ial Group".
+            #     Detect: the char after the prefix is alphanumeric, not space.
+            #   • hyphenated role: title="Treasury Manager - Capital Markets" →
+            #     " - <spec>" is a role detail, not a company. Detect: the
+            #     remainder is dash-led. (gmail_reader now keeps hyphenated
+            #     titles whole, so these reach here intact.)
+            #   • bare degenerate stem company ("Senior Manager"): a
+            #     whitespace-joined remainder is ambiguous role-spill
+            #     ("Senior Manager Risk Management American Express"), not a
+            #     reliable company — refuse rather than guess.
+            _after = _t[len(_c):]
+            _swap_boundary = (bool(_after) and _after[0].isspace()
+                              and _after.lstrip()[:1] not in ("-", "–", "—"))
             if (len(_c) > 5 and _t.startswith(_c)
                     and len(_t) > len(_c) + 2
+                    and _swap_boundary
                     and not _is_degenerate_title(_normalize_title(_c))):
-                real_company = _t[len(_c):].strip(" -–—·,|").strip()
+                real_company = _after.strip(" -–—·,|").strip()
                 # Repair only if the recovered company looks like a real
                 # company (short-ish, not itself a role stem). Otherwise the
                 # row is genuinely corrupt — quarantine it.

@@ -170,6 +170,36 @@ def test_misparse_repair_refuses_degenerate_company(redirected_outputs):
     assert "Risk Management American Express" not in companies, companies
 
 
+def test_misparse_repair_refuses_midword_prefix(redirected_outputs):
+    """ROUND-2 GUARD: company is a mid-word substring prefix of the title's
+    first word ('Treasury Manager' ⊂ 'Treasury Managerial Group'). A true swap
+    joins on whitespace; a mid-word cut would fabricate 'ial Group'. Refuse."""
+    tmp = redirected_outputs
+    gmail = [{"link": "https://ca.linkedin.com/jobs/view/midword-1",
+              "company": "Treasury Manager",
+              "title": "Treasury Managerial Group",
+              "location": "Toronto, ON"}]
+    _write_inputs(tmp, [], gmail)
+    env = _rebuild_env(tmp)
+    assert env["reconciliation"]["repaired"] == 0, env["reconciliation"]
+    assert "ial Group" not in [r.get("company") for r in env["results"]]
+
+
+def test_misparse_repair_refuses_dash_joined_role(redirected_outputs):
+    """ROUND-2 GUARD: a hyphenated role ('Treasury Manager - Capital Markets')
+    is NOT a field-swap (swaps join role→company on whitespace, not ' - ').
+    Must not fabricate company='Capital Markets'."""
+    tmp = redirected_outputs
+    gmail = [{"link": "https://ca.linkedin.com/jobs/view/dashrole-1",
+              "company": "Treasury Manager",
+              "title": "Treasury Manager - Capital Markets",
+              "location": "Toronto, ON"}]
+    _write_inputs(tmp, [], gmail)
+    env = _rebuild_env(tmp)
+    assert env["reconciliation"]["repaired"] == 0, env["reconciliation"]
+    assert "Capital Markets" not in [r.get("company") for r in env["results"]]
+
+
 def test_artifact_row_quarantined(redirected_outputs):
     """LinkedIn section-header rows ('Jobs similar to …') are quarantined,
     never turned into a fake company."""
@@ -332,3 +362,57 @@ def test_worklist_to_xlsx_pre_ledger_backcompat():
     finally:
         import shutil
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
+# gmail_reader Mode E — trailing location-echo strip (round-2 fixes)
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize("title,company,location,expected", [
+    # positive strip: full-location echo
+    ("Analyst - Toronto, ON", "X", "Toronto, ON", "Analyst"),
+    # city-part match (location has province, title has only city)
+    ("Director - Toronto", "X", "Toronto, ON", "Director"),
+    # genuine hyphenated role MUST be preserved (not a location)
+    ("Manager - Customer Risk Analysis", "X", "Toronto, ON",
+     "Manager - Customer Risk Analysis"),
+    ("EHS Manager - Canada & HQ/DCs", "Acme", "Toronto, ON",
+     "EHS Manager - Canada & HQ/DCs"),
+    # multi-dash: strip only the trailing echo segment
+    ("Senior Manager - Risk - Toronto, ON", "X", "Toronto, ON",
+     "Senior Manager - Risk"),
+    # hyphenated city name (echo segment itself contains a dash)
+    ("Analyst - Winston-Salem, NC", "X", "Winston-Salem, NC", "Analyst"),
+    # Mode D stripped a city-equals-company token first; clean the dangling dash
+    ("Senior Analyst - Toronto", "Toronto", "Toronto, ON", "Senior Analyst"),
+    # empty location: nothing to match, leave title alone
+    ("Analyst - Toronto, ON", "X", "", "Analyst - Toronto, ON"),
+])
+def test_mode_e_location_echo(title, company, location, expected):
+    from gmail_reader import _clean_alert_fields  # type: ignore
+    got_title, _, _ = _clean_alert_fields(title, company, location)
+    assert got_title == expected, f"{title!r} -> {got_title!r} (expected {expected!r})"
+
+
+# ---------------------------------------------------------------------------
+# run_pipeline --triage-out guards (round-1 guards, round-2 test lock)
+# ---------------------------------------------------------------------------
+def test_run_pipeline_triage_out_requires_dry_run(monkeypatch):
+    """--triage-out without --score-dry-run must be refused (exit 2) before any
+    side effect."""
+    import run_pipeline  # type: ignore
+    monkeypatch.setattr(sys, "argv", [
+        "run_pipeline.py", "--skip-scrape", "--skip-promote",
+        "--triage-out", "x.json",
+    ])
+    assert run_pipeline.main() == 2
+
+
+def test_run_pipeline_triage_out_refuses_promote(monkeypatch):
+    """--triage-out with promote enabled (no --skip-promote) must be refused —
+    promoting would silently use a stale worklist_scored.json."""
+    import run_pipeline  # type: ignore
+    monkeypatch.setattr(sys, "argv", [
+        "run_pipeline.py", "--skip-scrape", "--score-dry-run",
+        "--triage-out", "x.json",
+    ])
+    assert run_pipeline.main() == 2
