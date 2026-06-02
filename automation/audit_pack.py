@@ -673,23 +673,142 @@ def tracker_to_xlsx(path: Path) -> bytes:
 
 
 def worklist_to_xlsx(path: Path) -> bytes:
-    """xlsx for worklist.json — pool sheet + merge-pairs sheet."""
+    """xlsx for worklist.json — a 3-sheet AUDIT workbook (replaces the old
+    Pool+Merges pair) plus a reconciliation summary, so you can answer
+    'is the dedup wrong?' from the download alone.
+
+    Sheets:
+      - Summary  : reconciliation (input == kept + every drop bucket) so any
+                   silent row loss is visible at a glance, + per-bucket counts.
+      - Raw      : the FULL disposition ledger — every input row that survives
+                   in results PLUS every dropped row, each tagged with a
+                   `disposition` (kept / merged / quarantined / excluded / geo /
+                   no_url). Filter `disposition` to audit any single filter.
+      - Merged   : dedup detail — kept vs dropped URL AND title side-by-side,
+                   so a wrong near-dup merge is obvious.
+      - Dropped  : every non-merge removal (quarantine + excluded + geo +
+                   no_url) with its reason, in one place.
+
+    Back-compat: worklist.json written before the disposition-ledger change
+    won't have the excluded/geo_dropped/no_url_dropped lists; those sheets just
+    come out with the rows that do exist (merges + quarantine), and Summary
+    reflects whatever reconciliation block is present.
+    """
     env = _read_json(path)
-    pool_df = _df_from_rows(
-        env.get("results", []),
-        columns=["sector", "company", "title", "location", "source",
-                 "first_seen", "in_pool_since", "is_new_since_last_score",
-                 "posted_date", "link"],
+    results = env.get("results", []) or []
+    merged = env.get("merged_pairs", []) or []
+    quarantine = env.get("quarantine", []) or []
+    excluded = env.get("excluded", []) or []
+    geo = env.get("geo_dropped", []) or []
+    no_url = env.get("no_url_dropped", []) or []
+    rec = env.get("reconciliation") or {}
+    stats = env.get("stats") or {}
+    dedup = env.get("dedup_stats") or {}
+
+    # ── Raw: the full disposition ledger ─────────────────────────────────────
+    ledger: list[dict] = []
+    for r in results:
+        ledger.append({
+            "disposition": "kept",
+            "company": r.get("company", ""), "title": r.get("title", ""),
+            "sector": r.get("sector", ""), "location": r.get("location", ""),
+            "source": r.get("source", ""), "reason": "",
+            "link": r.get("link", ""), "merged_into": "",
+        })
+    for m in merged:
+        ledger.append({
+            "disposition": "merged",
+            "company": m.get("company", ""),
+            "title": m.get("dropped_title", m.get("title", "")),
+            "sector": "", "location": "",
+            "source": m.get("dropped_source", ""), "reason": m.get("reason", ""),
+            "link": m.get("dropped_url", ""), "merged_into": m.get("kept_url", ""),
+        })
+    for q in quarantine:
+        ledger.append({
+            "disposition": "quarantined",
+            "company": q.get("company", ""), "title": q.get("title", ""),
+            "sector": "", "location": "", "source": "gmail",
+            "reason": q.get("reason", "misparse"),
+            "link": q.get("link", ""), "merged_into": "",
+        })
+    for e in excluded:
+        ledger.append({
+            "disposition": "excluded",
+            "company": e.get("company", ""), "title": e.get("title", ""),
+            "sector": "", "location": "", "source": e.get("source", ""),
+            "reason": e.get("reason", "excluded_company"),
+            "link": e.get("link", ""), "merged_into": "",
+        })
+    for g in geo:
+        ledger.append({
+            "disposition": "geo",
+            "company": g.get("company", ""), "title": g.get("title", ""),
+            "sector": "", "location": g.get("location", ""),
+            "source": g.get("source", ""), "reason": g.get("reason", "outside_geo"),
+            "link": g.get("link", ""), "merged_into": "",
+        })
+    for n in no_url:
+        ledger.append({
+            "disposition": "no_url",
+            "company": n.get("company", ""), "title": n.get("title", ""),
+            "sector": "", "location": "", "source": n.get("source", ""),
+            "reason": n.get("reason", "no_canonical_url"),
+            "link": n.get("link", ""), "merged_into": "",
+        })
+    raw_df = _df_from_rows(
+        ledger,
+        columns=["disposition", "company", "title", "sector", "location",
+                 "source", "reason", "link", "merged_into"],
     )
+
     merges_df = _df_from_rows(
-        env.get("merged_pairs", []),
-        columns=["company", "title", "reason", "kept_source",
-                 "dropped_source", "kept_url", "dropped_url"],
+        merged,
+        columns=["company", "reason", "kept_title", "dropped_title",
+                 "kept_source", "dropped_source", "kept_url", "dropped_url"],
     )
+
+    # ── Dropped: every non-merge removal in one sheet ────────────────────────
+    dropped_rows = [row for row in ledger
+                    if row["disposition"] in ("quarantined", "excluded",
+                                              "geo", "no_url")]
+    dropped_df = _df_from_rows(
+        dropped_rows,
+        columns=["disposition", "company", "title", "location", "source",
+                 "reason", "link"],
+    )
+
+    # ── Summary: reconciliation + counts ─────────────────────────────────────
+    summary_rows = [
+        ("Rebuilt at", env.get("rebuilt_at", "—")),
+        ("Scan date", env.get("scan_date", "—")),
+        ("", ""),
+        ("Input rows (all sources)", rec.get("input", dedup.get("input", "—"))),
+        ("Kept (worklist pool)", rec.get("kept", stats.get("total", len(results)))),
+        ("Merged (deduped away)", rec.get("merged", len(merged))),
+        ("Quarantined (unrepairable)", rec.get("quarantined", len(quarantine))),
+        ("Excluded (block-list)", rec.get("excluded", len(excluded))),
+        ("Geo-dropped (outside GTA)", rec.get("geo_dropped", len(geo))),
+        ("No-URL dropped", rec.get("no_url_dropped", len(no_url))),
+        ("Repaired (misparse fixed)", rec.get("repaired", stats.get("repaired", "—"))),
+        ("", ""),
+        ("Accounted for", rec.get("accounted", "—")),
+        ("Reconciliation balanced?",
+         "YES — every input row accounted for" if rec.get("balanced")
+         else (f"NO — {rec.get('unaccounted', '?')} row(s) unaccounted"
+               if rec else "(pre-ledger worklist; rebuild to populate)")),
+    ]
+    summary_df = _df_from_rows(
+        [{"metric": k, "value": v} for k, v in summary_rows],
+        columns=["metric", "value"],
+    )
+
     buf = io.BytesIO()
     with pd.ExcelWriter(buf, engine="openpyxl") as xw:
-        _truncate_str_cells(pool_df).to_excel(xw, sheet_name="Pool", index=False)
-        _truncate_str_cells(merges_df).to_excel(xw, sheet_name="Merges", index=False)
+        _truncate_str_cells(summary_df).to_excel(xw, sheet_name="Summary", index=False)
+        _truncate_str_cells(raw_df).to_excel(xw, sheet_name="Raw", index=False)
+        _truncate_str_cells(merges_df).to_excel(xw, sheet_name="Merged", index=False)
+        _truncate_str_cells(dropped_df).to_excel(xw, sheet_name="Dropped", index=False)
     return buf.getvalue()
 
 

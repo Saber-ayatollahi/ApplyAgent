@@ -86,19 +86,38 @@ _LI_JOB_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Query params that IDENTIFY a distinct posting on a shared path. For
+# non-LinkedIn URLs we strip the query (tracking noise: utm_*, refId,
+# trackingId), but these must survive — e.g. Greenhouse encodes the job id
+# ONLY in ?gh_jid=, so two Stripe roles on .../jobs/search?gh_jid=A vs =B are
+# different postings that would otherwise collapse to one key and lose a row.
+_ID_QUERY_PARAMS = ("gh_jid", "jobid", "currentjobid", "jid", "id", "lever")
+
 
 def norm_url(row: dict) -> str:
     """Canonical URL for dedup. LinkedIn /jobs/view/<id> collapses tracking
     redirects to the bare job id; everything else strips query/fragment
-    and normalizes case + trailing slash."""
+    and normalizes case + trailing slash — but PRESERVES identity query
+    params (gh_jid, jobId, currentJobId, …) so distinct postings sharing a
+    path stay distinct."""
     raw = (row.get("link") or row.get("url") or row.get("job_url") or "").strip()
     if not raw:
         return ""
     m = _LI_JOB_RE.search(raw)
     if m:
         return f"https://www.linkedin.com/jobs/view/{m.group(1)}"
-    base = raw.split("#", 1)[0].split("?", 1)[0]
-    return base.rstrip("/").lower()
+    base = raw.split("#", 1)[0]
+    path, _sep, query = base.partition("?")
+    norm = path.rstrip("/").lower()
+    if query:
+        ids = []
+        for part in query.split("&"):
+            k, eq, v = part.partition("=")
+            if eq and v and k.lower() in _ID_QUERY_PARAMS:
+                ids.append(f"{k.lower()}={v}")
+        if ids:
+            norm += "?" + "&".join(sorted(ids))
+    return norm
 
 
 def _normalize_title(title: str) -> str:
@@ -140,6 +159,46 @@ def _ct_key(company: str, title: str) -> tuple[str, str] | None:
     if not co or not nt:
         return None
     return (co, nt)
+
+
+# A normalized title made of ONLY these tokens carries no role specialization;
+# it must NOT be used as a standalone near-dup key, or two genuinely different
+# reqs at the same company (e.g. distinct "Senior Manager" postings) collapse
+# into one. Such rows fall back to URL-only dedup (distinct LinkedIn ids stay
+# distinct). Mirrors the over-merge the title-dash truncation used to cause.
+_DEGENERATE_TITLES = frozenset({
+    "senior manager", "manager", "director", "senior director",
+    "vp", "avp", "associate", "analyst", "senior analyst",
+    "risk management", "consultant", "specialist", "advisor", "lead",
+    "associate director", "managing director", "officer",
+})
+
+
+def _is_degenerate_title(normalized_title: str) -> bool:
+    """True if the normalized title is a bare seniority/role stem with no
+    specialization — unsafe as a sole near-dup key."""
+    return normalized_title in _DEGENERATE_TITLES
+
+
+# LinkedIn-alert section headers / parser artifacts that arrive shaped like a
+# job row (company field holds the header text). These are NOT jobs and must be
+# dropped BEFORE the misparse-repair step, or repair would turn the header into
+# a bogus company. Matched case-insensitively against the company field.
+_ARTIFACT_COMPANY_PREFIXES = (
+    "jobs similar to", "people also viewed", "more jobs", "similar jobs",
+    "recommended for you", "jobs you may be interested in",
+)
+
+
+def _is_artifact_row(company: str) -> bool:
+    c = (company or "").strip().lower()
+    return any(c.startswith(p) for p in _ARTIFACT_COMPANY_PREFIXES)
+
+
+def _is_linkedin_url(u: str) -> bool:
+    """True if a canonical URL is a LinkedIn /jobs/view/<id> key — used to
+    decide whether two distinct ids are genuinely different postings."""
+    return u.startswith("https://www.linkedin.com/jobs/view/")
 
 
 # ---------------------------------------------------------------------------
@@ -304,36 +363,66 @@ def rebuild(quarantine: bool = True) -> dict:
     # see WHICH gmail/scrape URL pair collapsed into one row, with company +
     # title context. Consumed by audit_pack.py.
     merged_pairs: list[dict] = []
+    # Disposition row-lists (audit fix): every dropped row is RETAINED as a
+    # record so the worklist reconciles exactly (input == kept + every drop
+    # bucket) and the 3-sheet export can show real rows, not just counts.
+    excluded_rows: list[dict] = []     # blocked by the permanent exclude-list
+    geo_rows: list[dict] = []          # outside the Toronto/Canada-remote gate
+    no_url_dropped: list[dict] = []    # no canonical URL (was a silent drop)
 
     def _add(row: dict, src: str):
         u = norm_url(row)
         if not u:
+            # No canonical URL → previously dropped with NO trace. Retain it as
+            # a record so the row is auditable and the funnel reconciles.
+            no_url_dropped.append({
+                "company": row.get("company", ""),
+                "title": row.get("title", ""),
+                "link": (row.get("link") or row.get("url")
+                         or row.get("job_url") or ""),
+                "source": src,
+                "reason": "no_canonical_url",
+            })
             return
         ct = _ct_key(row.get("company", ""), row.get("title", ""))
+        nt = _normalize_title(row.get("title", ""))
         # Near-dup collision: same (co,title) seen via a different URL.
         # Keep the existing entry but upgrade its source tag if needed.
         if ct and ct in by_ct and by_ct[ct] != u:
             existing_url = by_ct[ct]
             existing = by_url[existing_url]
-            merged_pairs.append({
-                "kept_url": existing_url,
-                "kept_source": existing.get("source", ""),
-                "dropped_url": u,
-                "dropped_source": src,
-                "company": row.get("company", ""),
-                "title": row.get("title", ""),
-                "reason": "near_dup_company_title",
-            })
-            if existing["source"] != src and existing["source"] != "both":
-                existing["source"] = "both"
-            return
+            # REVERSIBILITY GUARD (audit fix #3): if BOTH rows are distinct
+            # LinkedIn job ids AND the title is a degenerate stem (no
+            # specialization), they are NOT safely the same role — keep both
+            # rather than silently dropping the second. Distinct reqs with only
+            # a bare "Senior Manager" title must not collapse.
+            if (_is_degenerate_title(nt)
+                    and _is_linkedin_url(u) and _is_linkedin_url(existing_url)):
+                pass  # fall through to insert as a separate row
+            else:
+                merged_pairs.append({
+                    "kept_url": existing_url,
+                    "kept_source": existing.get("source", ""),
+                    "kept_title": existing.get("title", ""),
+                    "dropped_url": u,
+                    "dropped_source": src,
+                    "dropped_title": row.get("title", ""),
+                    "company": row.get("company", ""),
+                    "title": row.get("title", ""),
+                    "reason": "near_dup_company_title",
+                })
+                if existing["source"] != src and existing["source"] != "both":
+                    existing["source"] = "both"
+                return
         if u in by_url:
             entry = by_url[u]
             merged_pairs.append({
                 "kept_url": u,
                 "kept_source": entry.get("source", ""),
+                "kept_title": entry.get("title", ""),
                 "dropped_url": u,
                 "dropped_source": src,
+                "dropped_title": row.get("title", ""),
                 "company": row.get("company", ""),
                 "title": row.get("title", ""),
                 "reason": "exact_url",
@@ -350,12 +439,19 @@ def rebuild(quarantine: bool = True) -> dict:
         )
         new_row["in_pool_since"] = prev_first_seen.get(u) or _today()
         by_url[u] = new_row
-        if ct:
+        # Only claim the ct_key for future near-dup merges when the title is
+        # specific. A degenerate stem must not "own" the key, or the next
+        # distinct role at this company would merge into it.
+        if ct and not _is_degenerate_title(nt):
             by_ct[ct] = u
 
     for r in web_rows:
         if excludes.is_excluded(r.get("company"), _excl):
-            excluded_dropped += 1
+            excluded_rows.append({
+                "company": r.get("company", ""), "title": r.get("title", ""),
+                "link": r.get("link", ""), "source": "scrape",
+                "reason": "excluded_company",
+            })
             continue
         _add(r, "scrape")
     # Gmail rows from older scans pre-date the parser cleanup pass. Run them
@@ -379,8 +475,8 @@ def rebuild(quarantine: bool = True) -> dict:
             from .location_filter import keep_for_toronto_pipeline as _geo_keep  # type: ignore
         except Exception:
             _geo_keep = None
-    geo_dropped = 0
-    quarantine_dropped: list[dict] = []  # title==company-prefix corruption
+    quarantine_dropped: list[dict] = []  # unrepairable misparse / artifacts
+    repaired_count = 0
     for gp in gmail_files:
         for r in _read_envelope(gp).get("results", []) or []:
             if _clean_alert_fields is not None:
@@ -388,42 +484,72 @@ def rebuild(quarantine: bool = True) -> dict:
                     r.get("title", ""), r.get("company", ""),
                     r.get("location", ""))
                 r = {**r, "title": t, "company": c, "location": l}
-            # AGENTIC GUARD: defense-in-depth against the May-2026 misparse.
-            # If a legacy scan_gmail file still has title-startswith-company
-            # corruption (gmail_fetch's parse-time guard would catch it on
-            # fresh runs, but we also replay old files here), quarantine
-            # rather than poison the pool. The repair script can be re-run
-            # separately to retroactively fix the source files.
             _c = (r.get("company") or "").strip()
             _t = (r.get("title") or "").strip()
-            if (len(_c) > 5 and _t.startswith(_c)
-                    and len(_t) > len(_c) + 2):
+            # Parser-artifact rows (LinkedIn section headers like "Jobs similar
+            # to …") arrive shaped like a job with the header in `company`.
+            # They are NOT jobs — drop BEFORE repair so we never fabricate a
+            # company out of a header.
+            if _is_artifact_row(_c):
                 quarantine_dropped.append({
-                    "source_file": gp.name,
-                    "company": _c,
-                    "title": _t,
-                    "link": r.get("link", ""),
+                    "source_file": gp.name, "company": _c, "title": _t,
+                    "link": r.get("link", ""), "reason": "parser_artifact",
                 })
                 continue
+            # MISPARSE REPAIR (audit fix #1): the May-2026 corruption swaps the
+            # fields — `company` holds the ROLE and `title` is "<role> <RealCo>"
+            # (e.g. company="Treasury Manager", title="Treasury Manager KOHO").
+            # The real company is the trailing remainder of the title. Recover
+            # it and re-add the role rather than discarding ~119 genuine jobs.
+            if (len(_c) > 5 and _t.startswith(_c)
+                    and len(_t) > len(_c) + 2):
+                real_company = _t[len(_c):].strip(" -–—·,|").strip()
+                # Repair only if the recovered company looks like a real
+                # company (short-ish, not itself a role stem). Otherwise the
+                # row is genuinely corrupt — quarantine it.
+                if (real_company
+                        and len(real_company) <= 60
+                        and not _is_degenerate_title(_normalize_title(real_company))):
+                    r = {**r, "company": real_company, "title": _c}
+                    _c = real_company
+                    repaired_count += 1
+                else:
+                    quarantine_dropped.append({
+                        "source_file": gp.name, "company": _c, "title": _t,
+                        "link": r.get("link", ""), "reason": "misparse_unrepairable",
+                    })
+                    continue
             if _geo_keep is not None and not _geo_keep(r.get("location") or ""):
-                geo_dropped += 1
+                geo_rows.append({
+                    "company": _c, "title": _t, "link": r.get("link", ""),
+                    "location": r.get("location", ""), "source": "gmail",
+                    "reason": "outside_geo",
+                })
                 continue
             # Exclude-list check AFTER _clean_alert_fields so canonicalization
             # sees the cleaned company name (e.g. "BMO · Toronto, ON" → "BMO").
             if excludes.is_excluded(r.get("company"), _excl):
-                excluded_dropped += 1
+                excluded_rows.append({
+                    "company": _c, "title": _t, "link": r.get("link", ""),
+                    "source": "gmail", "reason": "excluded_company",
+                })
                 continue
             _add(r, "gmail")
+    if repaired_count:
+        print(f"[worklist] repaired {repaired_count} misparsed gmail row(s) "
+              f"(recovered company from swapped title field)", file=sys.stderr)
     if quarantine_dropped:
-        print(f"[worklist] quarantined {len(quarantine_dropped)} gmail "
-              f"row(s) with title==company prefix — see merged_pairs/"
-              f"quarantine in worklist.json", file=sys.stderr)
+        print(f"[worklist] quarantined {len(quarantine_dropped)} unrepairable "
+              f"gmail row(s) — see quarantine in worklist.json", file=sys.stderr)
 
     rows: list[dict] = []
+    geo_dropped = len(geo_rows)
+    excluded_dropped = len(excluded_rows)
     stats = {"scrape": 0, "gmail": 0, "both": 0, "total": 0,
              "new_since_last_score": 0,
              "gmail_geo_dropped": geo_dropped,
-             "excluded_dropped": excluded_dropped}
+             "excluded_dropped": excluded_dropped,
+             "repaired": repaired_count}
     for u, r in by_url.items():
         r["is_new_since_last_score"] = (u not in prev_scored)
         if r["is_new_since_last_score"]:
@@ -431,6 +557,35 @@ def rebuild(quarantine: bool = True) -> dict:
         stats[r["source"]] = stats.get(r["source"], 0) + 1
         rows.append(r)
     stats["total"] = len(rows)
+
+    # Total input = every raw row read from sources. Counted directly from the
+    # disposition buckets (every input row lands in exactly one) so the figure
+    # is self-consistent with what we retained — no re-reading the files.
+    input_total = (len(web_rows)
+                   + sum(len(_read_envelope(p).get("results", []) or [])
+                         for p in gmail_files))
+    # RECONCILIATION (audit guarantee): every input row must land in exactly one
+    # disposition bucket. If accounted != input, a silent-loss path exists.
+    accounted = (stats["total"] + len(merged_pairs) + len(quarantine_dropped)
+                 + geo_dropped + excluded_dropped + len(no_url_dropped))
+    reconciliation = {
+        "input": input_total,
+        "kept": stats["total"],
+        "merged": len(merged_pairs),
+        "quarantined": len(quarantine_dropped),
+        "geo_dropped": geo_dropped,
+        "excluded": excluded_dropped,
+        "no_url_dropped": len(no_url_dropped),
+        "repaired": repaired_count,
+        "accounted": accounted,
+        "balanced": accounted == input_total,
+        "unaccounted": input_total - accounted,
+    }
+    if not reconciliation["balanced"]:
+        print(f"[worklist] WARNING: reconciliation off by "
+              f"{reconciliation['unaccounted']} row(s) "
+              f"(input={input_total}, accounted={accounted}) — a disposition "
+              f"path is losing rows silently.", file=sys.stderr)
 
     envelope = {
         "version": 1,
@@ -445,19 +600,25 @@ def rebuild(quarantine: bool = True) -> dict:
         "stats": stats,
         # dedup_stats kept for back-compat with funnel UI
         "dedup_stats": {
-            "input": len(web_rows) + sum(
-                len(_read_envelope(p).get("results", []) or [])
-                for p in gmail_files
-            ),
+            "input": input_total,
             "output": stats["total"],
             "dropped_url": sum(1 for m in merged_pairs if m["reason"] == "exact_url"),
             "dropped_near": sum(1 for m in merged_pairs if m["reason"] == "near_dup_company_title"),
         },
+        # Full disposition ledger — every input row is in results[] or exactly
+        # one of these lists. reconciliation.balanced proves no silent loss.
+        "reconciliation": reconciliation,
         "merged_pairs": merged_pairs,
-        # Misparse quarantine: rows dropped because their `<company>` value
-        # was a title prefix of `<title>` (parser regression sentinel).
-        # Empty list on healthy runs.
+        # Misparse quarantine: unrepairable corruption + parser artifacts.
+        # Empty list on healthy runs. (Repairable field-swaps are now FIXED
+        # and re-added to results[], not dropped here.)
         "quarantine": quarantine_dropped,
+        # Rows blocked by the permanent company exclude-list (retained for audit).
+        "excluded": excluded_rows,
+        # Rows dropped by the Toronto/Canada-remote geo gate (retained for audit).
+        "geo_dropped": geo_rows,
+        # Rows with no canonical URL — formerly a silent drop, now traceable.
+        "no_url_dropped": no_url_dropped,
         "results": rows,
     }
     _atomic_write_json(WORKLIST, envelope)

@@ -351,6 +351,13 @@ def _canonical_li_job_url(raw_url: str) -> str | None:
 # from broken UTF-8 round-trips) as separators — we've seen the latter on
 # scans persisted before stdio was reconfigured.
 _ALERT_SEP = r"\s+(?:[·�]|[-–—])\s+"
+# Title-only separator: the company·location subtitle cell is ALWAYS introduced
+# by the LinkedIn middle-dot (·) or its mojibake (�), NEVER by a hyphen. A bare
+# dash in a title is part of the role name ("Senior Manager - Customer Risk
+# Analysis"), so splitting titles on it truncates distinct roles into generic
+# stems ("Senior Manager") and drives false near-dup merges. Mode C uses THIS;
+# the company/location splits keep _ALERT_SEP (their cells can use a dash).
+_ALERT_TITLE_SEP = r"\s+[·�]\s+"
 _ALERT_ACTIVITY_PHRASE = (
     r"(?:Actively recruiting|"
     r"\d+\s+(?:connection|connections|company alumni|school alumni|alumni)|"
@@ -396,12 +403,13 @@ def _clean_alert_fields(title: str, company: str, location: str
                 location = new_loc
 
     # Failure mode C: `title` field has the company-and-location echo trailing.
-    # Drop everything from " · " onward — the cell joins title to subtitle that way.
-    if title and re.search(_ALERT_SEP, title):
-        title = re.split(_ALERT_SEP, title, maxsplit=1)[0].strip()
-        # After splitting, also drop the company name if it's the last word(s)
-        # before the separator — safer to leave it alone; the regex split
-        # already cut at the separator, so the company name shouldn't be there.
+    # Drop everything from the middle-dot onward — the cell joins title to
+    # subtitle that way. Split ONLY on the middle-dot (_ALERT_TITLE_SEP), never
+    # a bare dash, so a hyphenated role ("Senior Manager - Customer Risk
+    # Analysis") keeps its specialization instead of collapsing to "Senior
+    # Manager" and false-merging with other roles at the same company.
+    if title and re.search(_ALERT_TITLE_SEP, title):
+        title = re.split(_ALERT_TITLE_SEP, title, maxsplit=1)[0].strip()
 
     # Failure mode D: title ends with the full company name redundantly. E.g.
     # "Treasury Manager KOHO" — drop the trailing company token if present.
