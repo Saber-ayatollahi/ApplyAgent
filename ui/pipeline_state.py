@@ -412,16 +412,54 @@ def consistency_banner_copy(c: PipelineConsistency) -> tuple[str, str, str]:
     headline: short phrase for the banner row.
     detail:   one explanatory sentence the user can act on.
 
-    Centralised here (not inline in app.py) so it has unit tests and
-    so any future refactor of how the banner renders touches one place."""
+    The headline ALWAYS names the specific stage(s) involved — never
+    "snapshot files" or "downstream stages" in the abstract. The whole
+    point of the consistency view is to direct the user's attention;
+    a vague banner forces them to hunt for which stage is stale."""
     gs = c.global_state
     if gs == "empty":
         return ("info", "No worklist yet",
                 "Run a scrape or Gmail fetch to build the worklist first.")
+
     if gs == "no_breadcrumb":
-        return ("info", "Consistency unknown (legacy artifacts)",
-                "Older snapshot files lack the input fingerprint. Re-run "
-                "triage or scoring once to enable drift detection.")
+        # Identify exactly which stage(s) lack a breadcrumb and which are
+        # fresh, so the user knows what to re-run AND what they can trust.
+        legacy = []
+        proven_fresh = []
+        if c.triage.exists and c.triage.input_sha8 is None:
+            legacy.append(("triage", "🎯 Run triage"))
+        elif c.triage.exists and c.triage.is_consistent:
+            proven_fresh.append("triage")
+        if c.scored.exists and c.scored.input_sha8 is None:
+            legacy.append(("scoring", "🤖 Score worklist"))
+        elif c.scored.exists and c.scored.is_consistent:
+            proven_fresh.append("scoring")
+
+        legacy_names = ", ".join(name for name, _ in legacy)
+        # If only one stage is legacy, name the specific action button.
+        if len(legacy) == 1:
+            action = legacy[0][1]
+            head = (f"{legacy_names.capitalize()} snapshot is legacy "
+                    f"(no input fingerprint)")
+            detail_parts = []
+            if proven_fresh:
+                detail_parts.append(
+                    f"{'/'.join(proven_fresh).capitalize()} is current with "
+                    f"the {c.worklist_rows:,}-row worklist "
+                    f"(sha `{(c.worklist_sha8 or '')[:8]}`).")
+            detail_parts.append(
+                f"Click **{action}** once to embed a fingerprint and "
+                f"enable drift detection going forward.")
+            return ("info", head, " ".join(detail_parts))
+        else:
+            # Both stages legacy — generic but still names them.
+            return ("info",
+                    "Triage and scoring snapshots are legacy "
+                    "(no input fingerprint)",
+                    "Re-run 🎯 Triage and 🤖 Score worklist once each "
+                    "to embed fingerprints — after that, drift between "
+                    "stages will be flagged automatically.")
+
     if gs == "ok":
         rows = c.worklist_rows
         sha = (c.worklist_sha8 or "")[:8]
@@ -430,13 +468,16 @@ def consistency_banner_copy(c: PipelineConsistency) -> tuple[str, str, str]:
                 f"{rows:,}-row worklist (sha `{sha}`).",
                 "Funnel numbers across triage / scoring / promote all "
                 "describe the same run.")
+
     # Drift cases — name which stage is stale and what to do.
     drifted = []
-    if gs in ("drift_at_triage", "mixed_drift") and c.triage.exists:
+    if gs in ("drift_at_triage", "mixed_drift") and c.triage.exists \
+            and c.triage.input_sha8 is not None:
         drifted.append(
             f"triage was built against {c.triage.input_rows or '?'} rows "
             f"(sha `{(c.triage.input_sha8 or '')[:8]}`)")
-    if gs in ("drift_at_scoring", "mixed_drift") and c.scored.exists:
+    if gs in ("drift_at_scoring", "mixed_drift") and c.scored.exists \
+            and c.scored.input_sha8 is not None:
         drifted.append(
             f"scoring was built against {c.scored.input_rows or '?'} rows "
             f"(sha `{(c.scored.input_sha8 or '')[:8]}`)")

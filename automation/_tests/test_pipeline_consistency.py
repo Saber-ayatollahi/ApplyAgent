@@ -389,6 +389,59 @@ class TestBannerCopy:
         assert sev == "info"
         assert "worklist" in head.lower()
 
+    def test_no_breadcrumb_names_specific_stale_stage_scoring(self) -> None:
+        """When ONLY scoring is legacy (fresh triage), the banner must
+        name 'scoring' (not 'snapshot files') AND point to the specific
+        action button. Generic copy forces the user to hunt for what
+        to fix; specific copy is the whole point of the banner."""
+        sha = "abcd1234"
+        c = ps.PipelineConsistency(
+            worklist_exists=True, worklist_rows=2015, worklist_sha8=sha,
+            triage=ps.StageConsistency(exists=True, input_sha8=sha,
+                                       is_consistent=True, input_rows=2015),
+            scored=ps.StageConsistency(exists=True, input_sha8=None,
+                                       is_consistent=False),
+        )
+        sev, head, detail = ps.consistency_banner_copy(c)
+        assert sev == "info"
+        # Headline names the stale stage by name.
+        assert "scoring" in head.lower()
+        assert "triage" not in head.lower()  # don't confuse the user
+        # Detail acknowledges what IS fresh + points to the specific action.
+        assert "triage" in detail.lower() and "current" in detail.lower()
+        assert "score worklist" in detail.lower()
+
+    def test_no_breadcrumb_names_specific_stale_stage_triage(self) -> None:
+        """Symmetric case — only triage is legacy."""
+        sha = "abcd1234"
+        c = ps.PipelineConsistency(
+            worklist_exists=True, worklist_rows=100, worklist_sha8=sha,
+            triage=ps.StageConsistency(exists=True, input_sha8=None,
+                                       is_consistent=False),
+            scored=ps.StageConsistency(exists=True, input_sha8=sha,
+                                       is_consistent=True, input_rows=100),
+        )
+        sev, head, detail = ps.consistency_banner_copy(c)
+        assert sev == "info"
+        assert "triage" in head.lower()
+        assert "scoring" not in head.lower()
+        assert "scoring" in detail.lower() and "current" in detail.lower()
+        assert "run triage" in detail.lower()
+
+    def test_no_breadcrumb_both_legacy_names_both(self) -> None:
+        """Both stages legacy — banner still names them by stage rather
+        than the generic 'older snapshot files'."""
+        sha = "abcd1234"
+        c = ps.PipelineConsistency(
+            worklist_exists=True, worklist_rows=100, worklist_sha8=sha,
+            triage=ps.StageConsistency(exists=True, input_sha8=None,
+                                       is_consistent=False),
+            scored=ps.StageConsistency(exists=True, input_sha8=None,
+                                       is_consistent=False),
+        )
+        _, head, _ = ps.consistency_banner_copy(c)
+        assert "triage" in head.lower() and "scoring" in head.lower()
+
 
 # ---------------------------------------------------------------------------
 # derive_snapshot integration — the headline triage numbers should now
