@@ -477,6 +477,7 @@ def scored_to_xlsx(path: Path) -> bytes:
         scored_rows.append({
             "company": r.get("company", ""),
             "title": r.get("title", ""),
+            "sector": r.get("sector", ""),
             "location": r.get("location", ""),
             "fit_verdict": f.get("fit_verdict", ""),
             "fit_score": f.get("fit_score", ""),
@@ -490,8 +491,8 @@ def scored_to_xlsx(path: Path) -> bytes:
         })
     scored_df = _df_from_rows(
         scored_rows,
-        columns=["company", "title", "location", "fit_verdict", "fit_score",
-                 "tier", "summary", "top_3_reasons", "skill_gaps",
+        columns=["company", "title", "sector", "location", "fit_verdict",
+                 "fit_score", "tier", "summary", "top_3_reasons", "skill_gaps",
                  "stage1_score", "source", "link"],
     )
 

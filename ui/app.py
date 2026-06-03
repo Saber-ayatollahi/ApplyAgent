@@ -7595,20 +7595,24 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _in_gmail_ok = gmail_ui.is_connected()
             _in_counts = _target_counts()
             _ic1, _ic2 = st.columns(2)
-            if _ic1.button(f"🛰 Refresh scrape ({_in_counts['core']})",
+            if _ic1.button(f"🛰 Refresh scrape ({_in_counts['full']})",
                            width="stretch", key="_vc_inputs_refresh_scrape",
                            disabled=(not _in_can_run or _in_scrape_fresh),
-                           help="Re-scrape the core targets (~15–30 min, no API "
-                                "key). Auto-rebuilds the worklist."
-                                + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
-                                   if _in_scrape_fresh else "")):
+                           help=(f"Re-scrape ALL {_in_counts['full']} targets "
+                                 f"({_in_counts['core']} core + "
+                                 f"{_in_counts['expansion']} expansion). "
+                                 "~20–40 min, no API key. Auto-rebuilds the "
+                                 "worklist. Use ⚡ Quick core scrape below for "
+                                 "the faster core-only pass."
+                                 + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
+                                    if _in_scrape_fresh else ""))):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
+                    "--scrape-mode", "full", "--skip-score", "--skip-promote",
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id,
-                                                    "label": "Refresh scrape"}
-                st.toast("🛰 Scrape launched!", icon="🚀")
+                                                    "label": "Refresh scrape (full)"}
+                st.toast("🛰 Full scrape launched!", icon="🚀")
                 st.rerun()
             if _ic2.button("📬 Refresh Gmail", width="stretch",
                            key="_vc_inputs_refresh_gmail",
@@ -7625,27 +7629,28 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                                     "label": "Gmail fetch"}
                 st.toast("📬 Gmail fetch launched!", icon="🚀")
                 st.rerun()
-            # 🌐 Full scrape — core + expansion list. Relocated here from the
-            # Promote run card (v3.2 strict split): a scrape is a pull-jobs-in
-            # action, so it belongs on ① Inputs, not the promote card. Reuses
-            # the per-source freshness/active-run guards computed just above.
-            if st.button(f"🌐 Full scrape ({_in_counts['full']})", width="stretch",
-                         key="_vc_inputs_full_scrape",
+            # ⚡ Quick core scrape — the faster core-only pass (66 targets, no
+            # expansion list). Demoted to the secondary slot: 🛰 Refresh scrape
+            # above now defaults to the FULL list (159) so complete coverage is
+            # the default action; this is the quick option when you just want a
+            # fast core refresh. Reuses the per-source freshness/active-run
+            # guards computed just above.
+            if st.button(f"⚡ Quick core scrape ({_in_counts['core']})",
+                         width="stretch", key="_vc_inputs_core_scrape",
                          disabled=(not _in_can_run or _in_scrape_fresh),
-                         help=f"Scrape ALL {_in_counts['full']} targets — "
-                              f"{_in_counts['core']} core plus the "
-                              f"{_in_counts['expansion']}-company expansion list. "
-                              "~20–40 min, no API key needed. Auto-rebuilds the "
-                              "worklist when done so the scorer sees the new rows."
+                         help=f"Faster core-only scrape — {_in_counts['core']} "
+                              f"core targets, skips the {_in_counts['expansion']}-"
+                              "company expansion list. ~15–30 min, no API key. "
+                              "Use 🛰 Refresh scrape above for full coverage."
                               + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
                                  if _in_scrape_fresh else "")):
                 rec = scan_runner.start_run("pipeline", [
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "full", "--skip-score", "--skip-promote",
+                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
                 ])
                 st.session_state["_last_launch"] = {"run_id": rec.run_id,
-                                                    "label": "Full scrape"}
-                st.toast("🌐 Full scrape launched!", icon="🚀")
+                                                    "label": "Core scrape"}
+                st.toast("⚡ Core scrape launched!", icon="🚀")
                 st.rerun()
             if _in_scrape_fresh:
                 st.caption(f"🟢 Scan is {_in_scrape_age:.0f}h old — fresh enough")

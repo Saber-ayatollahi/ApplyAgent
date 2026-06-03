@@ -283,6 +283,47 @@ def test_phase4_scored_to_xlsx_emits_suppressed_sheet():
         assert sup_companies == {"RBC", "Acme"}
 
 
+def test_scored_sheet_includes_sector_column():
+    """The Scored sheet must carry `sector` (it was previously omitted
+    even though the JSON results, the UI table, and the markdown report
+    all have it). Regression guard for that inconsistency."""
+    import audit_pack  # type: ignore
+    from openpyxl import load_workbook
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out_dir = Path(tmp) / "outputs"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        scored = {
+            "scan_date": "29991231",
+            "stage1_passed": 2, "stage1_dropped": 0,
+            "results": [
+                {"company": "RBC", "title": "Director ALM",
+                 "sector": "Canadian Big 6 Banks", "location": "Toronto",
+                 "link": "https://x.co/1", "source": "scrape",
+                 "fit": {"fit_verdict": "apply_now", "fit_score": 9, "tier": 1,
+                         "summary": "great", "top_3_reasons": ["a", "b"],
+                         "skill_gaps": []}},
+                {"company": "KOHO", "title": "Treasury Manager",
+                 "sector": "Fintech", "location": "Remote",
+                 "link": "https://x.co/2", "source": "linkedin",
+                 "fit": {"fit_verdict": "apply_now", "fit_score": 8, "tier": 1,
+                         "summary": "strong", "top_3_reasons": ["c"],
+                         "skill_gaps": ["x"]}},
+            ],
+            "triage_drops": [],
+        }
+        scored_path = out_dir / "worklist_scored.json"
+        scored_path.write_text(json.dumps(scored), encoding="utf-8")
+
+        data = audit_pack.scored_to_xlsx(scored_path)
+        wb = load_workbook(io.BytesIO(data), read_only=True)
+        rows = _read_sheet_rows(wb, "Scored")
+        assert "sector" in rows[0], "Scored sheet must have a sector column"
+        by_co = {r["company"]: r for r in rows}
+        assert by_co["RBC"]["sector"] == "Canadian Big 6 Banks"
+        assert by_co["KOHO"]["sector"] == "Fintech"
+
+
 def test_phase4_promote_to_xlsx_has_selection_mode_and_race_sheet():
     """promote_to_xlsx emits selection_mode columns + Suppressed (race) sheet
     + Run meta sheet."""
