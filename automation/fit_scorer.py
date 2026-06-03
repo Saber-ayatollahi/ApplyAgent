@@ -1950,16 +1950,26 @@ def main() -> int:
     progress_begin(args.scan, len(triaged))
 
     def score_one(r):
-        # Short-circuit immediately if a fatal API error was already detected
-        if _abort_event.is_set():
+        # Detect cache hit FIRST. The abort gate (cost cap or fatal API
+        # error) is about SPEND — a cache hit costs nothing, so we must
+        # still serve it even after _abort_event is set. Only rows that
+        # would require a fresh, PAID LLM call get short-circuited.
+        #
+        # This ordering matters: previously the abort check ran before the
+        # cache lookup, so a tripped $2 cost cap buried every remaining row
+        # as a fake `skip` — including rows with a perfectly good cached
+        # verdict (e.g. an apply_now match). Those verdicts cost $0 to
+        # serve; burying them lost real signal for no spend.
+        from_cache = _cache_path_fit(r["link"]).exists()
+        if _abort_event.is_set() and not from_cache:
             r["fit"] = {"fit_score": 0, "fit_verdict": "skip",
                         "top_3_reasons": ["aborted_fatal_api_error"],
                         "skill_gaps": [], "tier": 4,
-                        "summary": "Skipped — scorer aborted due to API error."}
+                        "summary": "Skipped — scorer aborted (cost cap or API "
+                                   "error) before this row was scored. Re-run "
+                                   "to score it."}
             return r, False, True
 
-        # Detect cache hit BEFORE calling (so the UI can show cache-hit rate).
-        from_cache = _cache_path_fit(r["link"]).exists()
         error = False
         try:
             jd = fetch_jd(r["link"])
@@ -1991,6 +2001,21 @@ def main() -> int:
     scored.sort(key=lambda r: (-r["fit"].get("fit_score", 0), r["fit"].get("tier", 4)))
 
     api_error = _abort_reason[0] if _abort_reason else None
+
+    # Count rows that were NOT actually scored — abort placeholders stamped
+    # by score_one (cost cap / fatal API) or fatal returns in score_with_llm.
+    # These carry a real-looking `skip`/`error` verdict, so the verdict
+    # histogram alone hides them; the UI reads stage2_unscored to surface
+    # "N rows unscored — re-run to finish" instead of silently counting them
+    # as skips. Same marker set as _load_prev_fit_index's reuse blocklist.
+    _ABORT_MARKERS = {"aborted_fatal_api_error", "aborted", "fatal_api",
+                      "LLM_failure"}
+    unscored_count = sum(
+        1 for r in scored
+        if any(m in ((r.get("fit") or {}).get("top_3_reasons") or [])
+               for m in _ABORT_MARKERS)
+    )
+
     out = {
         "scan_date": scan.get("scan_date"),
         "scored_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
@@ -2004,6 +2029,10 @@ def main() -> int:
         "stage1_dropped": len(triage_drops),
         "stage1_only_filtered": len(only_filtered),
         "stage2_scored": len(scored),
+        # Of stage2_scored, how many are abort placeholders (not real
+        # verdicts). 0 on a clean run. Surfaced by the UI's ④ Scoring card
+        # and the consistency banner as an incompleteness signal.
+        "stage2_unscored": unscored_count,
         "api_error": api_error,
         "results": scored,
         # Triage audit trail — consumed by the UI's Triage page so the user

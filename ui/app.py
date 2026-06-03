@@ -7878,17 +7878,32 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     return f"{h:.0f}h"
                 return f"{h/24:.0f}d"
 
+            # Incompleteness (aborted run) — read from the consistency object
+            # computed above. A run truncated by the cost cap leaves rows with
+            # placeholder `skip` verdicts; surface them distinctly so "739
+            # scored" doesn't overstate real coverage.
+            _sc_unscored = (_sc_cons.scored.unscored_count
+                            if _sc_cons and _sc_cons.scored.exists else 0)
+            _sc_incomplete = bool(_sc_cons and _sc_cons.scored.exists
+                                  and _sc_cons.scored.incomplete)
             if scorer_running:
                 _sc_chip = "🟡 running"
             elif _pipe_empty and not score_count:
                 _sc_chip = "⏸"
+            elif _sc_incomplete and score_count:
+                _sc_chip = f"🟠 incomplete ({_sc_unscored:,} unscored)"
             elif _sc_is_stale and score_count:
                 _sc_chip = f"🟠 stale ({_fmt_age(_sc_scored_age_h)} old)"
             else:
                 _sc_chip = "🟢" if _scored_ok else "⚪"
             _sc_count_blurb = (f"{score_count:,} scored"
                                if score_count else "not scored yet")
-            if _sc_is_stale and score_count:
+            if _sc_incomplete and score_count:
+                _sc_real = max(score_count - _sc_unscored, 0)
+                _sc_count_blurb = (
+                    f"{score_count:,} rows — {_sc_unscored:,} unscored "
+                    f"(cost cap/API), {_sc_real:,} real")
+            elif _sc_is_stale and score_count:
                 _sc_count_blurb += " — snapshot pre-dates current triage pool"
             st.markdown(f"#### 🤖 ④ Scoring · {_sc_chip} {_sc_count_blurb}")
 
@@ -7993,6 +8008,45 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             "will pay for the "
                             f"{_sc_pre_needs:,} uncached row(s) and refresh the snapshot."
                         )
+
+                    # ── Estimated cost vs the per-run cost cap ───────────
+                    # Surfaces what the paid rows will cost AND the cost_guard
+                    # cap, so a run that would truncate (like the $2 cap that
+                    # stamped 126 rows as unscored) is visible BEFORE you click
+                    # — with the exact env var to raise it.
+                    if _sc_pre_needs > 0:
+                        # Observed ~$0.0045/row for Haiku scoring; round up a
+                        # touch so the estimate trends conservative.
+                        _EST_PER_PAID_ROW = 0.005
+                        _est_cost = _sc_pre_needs * _EST_PER_PAID_ROW
+                        try:
+                            from cost_guard import CostGuard as _CG  # type: ignore
+                            _run_cap = _CG.from_env().per_run_cap_usd
+                        except Exception:
+                            _run_cap = None
+                        _cost_line = (
+                            f"💵 Est. **~${_est_cost:.2f}** for {_sc_pre_needs:,} "
+                            f"paid row(s) (~${_EST_PER_PAID_ROW:.3f} each)")
+                        if _run_cap is not None:
+                            _cost_line += f" · per-run cap **${_run_cap:.2f}**"
+                        st.caption(_cost_line)
+                        if _run_cap is not None and _est_cost > _run_cap:
+                            _affordable = int(_run_cap / _EST_PER_PAID_ROW)
+                            _suggest = max(1.0, round(_est_cost * 1.2 + 0.49))
+                            st.warning(
+                                f"⚠️ The estimate (~${_est_cost:.2f}) exceeds the "
+                                f"per-run cap (${_run_cap:.2f}) — the run will stop "
+                                f"after ~{_affordable:,} paid rows and stamp the "
+                                f"rest as unscored `skip`s. To finish in one pass, "
+                                f"raise the cap: set the env var "
+                                f"`COST_GUARD_PER_RUN_CAP_USD={_suggest:.0f}` before "
+                                f"launching (daily cap also applies).",
+                                icon=None)
+                        elif _run_cap is not None:
+                            st.caption(
+                                "💡 Tip: the per-run cap is a safety brake. For a "
+                                "large first-pass run, raise it with "
+                                "`COST_GUARD_PER_RUN_CAP_USD` (e.g. `4`).")
             else:
                 st.caption("ℹ️ Run 🎯 **Run triage** above to see a per-row "
                            "cached-vs-paid breakdown before scoring.")

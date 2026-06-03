@@ -229,6 +229,16 @@ class StageConsistency:
     input_rows: int | None = None           # row count it was built against
     is_consistent: bool = False             # input_sha8 == current worklist sha8
     source_path: str = ""                   # filename, for help text
+    # Incompleteness signals — a stage can be CONSISTENT (built from the
+    # current worklist) yet INCOMPLETE (aborted partway by the cost cap or
+    # an API error). These let the banner say "scored, but 125 rows didn't
+    # finish" instead of a falsely-reassuring green ✅.
+    api_error: str | None = None            # top-level api_error from the file
+    unscored_count: int = 0                 # abort-placeholder rows
+
+    @property
+    def incomplete(self) -> bool:
+        return bool(self.api_error) or self.unscored_count > 0
 
 
 @dataclass(frozen=True)
@@ -384,6 +394,20 @@ def derive_consistency(out_dir: "Path") -> PipelineConsistency:
         # global_state reports `no_breadcrumb` rather than `drift` so the
         # banner copy doesn't accuse the user's old files of being wrong.
         consistent = bool(wl_sha and input_sha and wl_sha == input_sha)
+        # Incompleteness — read the cheap top-level fields written by
+        # fit_scorer (api_error, stage2_unscored). Older files predate
+        # stage2_unscored; fall back to counting abort-marker rows so the
+        # signal still works on the current (already-written) scored file.
+        api_error = data.get("api_error")
+        unscored = data.get("stage2_unscored")
+        if unscored is None:
+            _markers = ("aborted_fatal_api_error", "aborted", "fatal_api",
+                        "LLM_failure")
+            unscored = sum(
+                1 for r in (data.get("results") or [])
+                if any(m in ((r.get("fit") or {}).get("top_3_reasons") or [])
+                       for m in _markers)
+            )
         return StageConsistency(
             exists=True,
             mtime=mtime,
@@ -392,6 +416,8 @@ def derive_consistency(out_dir: "Path") -> PipelineConsistency:
             input_rows=input_rows,
             is_consistent=consistent,
             source_path=path.name,
+            api_error=api_error,
+            unscored_count=int(unscored or 0),
         )
 
     return PipelineConsistency(
@@ -420,6 +446,29 @@ def consistency_banner_copy(c: PipelineConsistency) -> tuple[str, str, str]:
     if gs == "empty":
         return ("info", "No worklist yet",
                 "Run a scrape or Gmail fetch to build the worklist first.")
+
+    # Incomplete scoring takes precedence over drift / ok. A run that
+    # aborted partway (cost cap or API error) needs finishing regardless
+    # of whether its breadcrumb matches the worklist — and a
+    # consistent-but-incomplete file would otherwise render a falsely
+    # reassuring green ✅. The unscored rows carry placeholder `skip`
+    # verdicts, so they're invisible in the verdict histogram; this is
+    # the only place the user learns they exist.
+    if c.scored.exists and c.scored.incomplete:
+        n = c.scored.unscored_count
+        err = (c.scored.api_error or "").lower()
+        why = ("cost cap" if "cost" in err or "cap" in err
+               else "API error" if err else "cost cap or API error")
+        head = (f"Scoring incomplete — {n:,} row{'s' if n != 1 else ''} unscored"
+                if n else "Scoring aborted before completion")
+        detail = (
+            f"The last scoring run stopped early ({why}); "
+            f"{('those ' + format(n, ',') + ' rows') if n else 'some rows'} "
+            f"carry placeholder verdicts (shown as `skip`), not real scores. "
+            f"Re-run 🤖 Score worklist to finish — already-scored rows are "
+            f"free (cached), so only the unscored rows cost anything."
+        )
+        return ("warn", head, detail)
 
     if gs == "no_breadcrumb":
         # Identify exactly which stage(s) lack a breadcrumb and which are

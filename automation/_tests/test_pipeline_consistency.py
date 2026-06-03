@@ -79,16 +79,23 @@ def _write_triage(out_dir: Path, *,
 
 
 def _write_scored(out_dir: Path, *,
-                  scored_count: int, input_block: dict | None) -> Path:
+                  scored_count: int, input_block: dict | None,
+                  api_error: str | None = None,
+                  unscored: int | None = None,
+                  results: list[dict] | None = None) -> Path:
     payload = {
         "stage1_passed": scored_count,
         "stage1_dropped": 0,
         "stage2_scored": scored_count,
-        "results": [],
+        "results": results if results is not None else [],
         "triage_drops": [],
     }
     if input_block is not None:
         payload["input"] = input_block
+    if api_error is not None:
+        payload["api_error"] = api_error
+    if unscored is not None:
+        payload["stage2_unscored"] = unscored
     p = out_dir / "worklist_scored.json"
     p.write_text(json.dumps(payload), encoding="utf-8")
     return p
@@ -468,6 +475,142 @@ class TestBannerCopy:
         )
         _, head, _ = ps.consistency_banner_copy(c)
         assert "triage" in head.lower() and "scoring" in head.lower()
+
+
+# ---------------------------------------------------------------------------
+# Incompleteness — a CONSISTENT scored file can still be INCOMPLETE (the
+# cost cap or an API error aborted it partway). The banner must warn, not
+# show green ✅. Regression guard for the $2-cap-buried-126-rows incident.
+# ---------------------------------------------------------------------------
+
+class TestIncompleteScoring:
+    def test_consistent_but_incomplete_warns_not_ok(self, tmp_path: Path) -> None:
+        """The exact production case: scored file matches the worklist sha8
+        (consistent) but api_error is set and 126 rows are unscored. Banner
+        must be a 'warn' that names the unscored count — NOT the green
+        'all stages consistent' success."""
+        rows = [_row(f"https://a.com/{i}") for i in range(10)]
+        _write_worklist(tmp_path, rows)
+        sha = ps._worklist_sha8(rows)
+        bc = {"path": "worklist.json", "mtime": 0, "rows": 10, "sha8": sha}
+        _write_triage(tmp_path, passed=10, dropped=0, input_block=bc)
+        _write_scored(tmp_path, scored_count=10, input_block=bc,
+                      api_error="cost_guard: per-run cap exceeded: $2.000 >= $2.00",
+                      unscored=126)
+        c = ps.derive_consistency(tmp_path)
+        assert c.scored.is_consistent          # breadcrumb matches
+        assert c.scored.incomplete             # but it didn't finish
+        sev, head, detail = ps.consistency_banner_copy(c)
+        assert sev == "warn"
+        assert "incomplete" in head.lower()
+        assert "126" in head
+        assert "cost cap" in detail.lower()
+        assert "re-run" in detail.lower()
+
+    def test_unscored_count_falls_back_to_marker_count(
+            self, tmp_path: Path) -> None:
+        """A scored file written before stage2_unscored existed (no such
+        key) must still report incompleteness by counting abort-marker
+        rows in results."""
+        rows = [_row("https://a.com/1")]
+        _write_worklist(tmp_path, rows)
+        sha = ps._worklist_sha8(rows)
+        bc = {"path": "worklist.json", "mtime": 0, "rows": 1, "sha8": sha}
+        aborted_results = [
+            {"link": "https://x/1",
+             "fit": {"fit_verdict": "skip",
+                     "top_3_reasons": ["aborted_fatal_api_error"]}},
+            {"link": "https://x/2",
+             "fit": {"fit_verdict": "apply_now",
+                     "top_3_reasons": ["great match"]}},
+        ]
+        # NOTE: unscored=None → key absent → reader must count markers.
+        _write_scored(tmp_path, scored_count=2, input_block=bc,
+                      api_error="cost_guard: cap", unscored=None,
+                      results=aborted_results)
+        c = ps.derive_consistency(tmp_path)
+        assert c.scored.unscored_count == 1    # counted the 1 aborted row
+        assert c.scored.incomplete
+
+    def test_clean_run_is_not_incomplete(self, tmp_path: Path) -> None:
+        rows = [_row("https://a.com/1")]
+        _write_worklist(tmp_path, rows)
+        sha = ps._worklist_sha8(rows)
+        bc = {"path": "worklist.json", "mtime": 0, "rows": 1, "sha8": sha}
+        _write_triage(tmp_path, passed=1, dropped=0, input_block=bc)
+        _write_scored(tmp_path, scored_count=1, input_block=bc,
+                      api_error=None, unscored=0)
+        c = ps.derive_consistency(tmp_path)
+        assert not c.scored.incomplete
+        sev, head, _ = ps.consistency_banner_copy(c)
+        assert sev == "success"  # clean + consistent → green
+
+
+# ---------------------------------------------------------------------------
+# fit_scorer output: stage2_unscored count + the abort-serves-cache fix
+# ---------------------------------------------------------------------------
+
+class TestScorerUnscoredCount:
+    def test_stage2_unscored_counts_abort_markers(self) -> None:
+        """fit_scorer should expose how many of stage2_scored are abort
+        placeholders so the UI doesn't count them as real skips. We test
+        the counting logic shape against the marker set."""
+        markers = {"aborted_fatal_api_error", "aborted", "fatal_api",
+                   "LLM_failure"}
+        scored = [
+            {"fit": {"fit_verdict": "skip",
+                     "top_3_reasons": ["aborted_fatal_api_error"]}},
+            {"fit": {"fit_verdict": "apply_now", "top_3_reasons": ["good"]}},
+            {"fit": {"fit_verdict": "skip", "top_3_reasons": ["real skip"]}},
+            {"fit": {"fit_verdict": "error", "top_3_reasons": ["fatal_api"]}},
+        ]
+        unscored = sum(
+            1 for r in scored
+            if any(m in ((r.get("fit") or {}).get("top_3_reasons") or [])
+                   for m in markers))
+        assert unscored == 2  # the two abort-marker rows, not the real skip
+
+
+class TestAbortServesCache:
+    """Bug 1: after the cost cap / fatal API abort trips, a row with a
+    cached verdict must STILL be served (cache hits cost nothing). Only
+    rows needing a fresh paid call get the abort placeholder. This tests
+    the underlying guarantee in score_with_llm that the score_one fix
+    relies on: the cache lookup happens BEFORE the abort gate."""
+
+    def test_cache_served_even_after_abort(self, tmp_path: Path,
+                                           monkeypatch) -> None:
+        monkeypatch.setattr(fit_scorer, "FIT_CACHE", tmp_path)
+        role = {"link": "https://co.com/job/1", "company": "Co",
+                "title": "ALM Analyst"}
+        cache_path = fit_scorer._cache_path_fit(role["link"])
+        real_verdict = {"fit_score": 8, "fit_verdict": "apply_now",
+                        "top_3_reasons": ["strong ALM match"], "tier": 1}
+        cache_path.write_text(json.dumps(real_verdict), encoding="utf-8")
+
+        fit_scorer._abort_event.set()
+        try:
+            out = fit_scorer.score_with_llm(None, role, "jd text")
+        finally:
+            fit_scorer._abort_event.clear()
+        # Must serve the cached apply_now, NOT a skip/error abort placeholder.
+        assert out["fit_verdict"] == "apply_now"
+        assert out["fit_score"] == 8
+
+    def test_no_cache_aborts(self, tmp_path: Path, monkeypatch) -> None:
+        monkeypatch.setattr(fit_scorer, "FIT_CACHE", tmp_path)
+        # ensure no prev-fit second-chance reuse interferes
+        monkeypatch.setattr(fit_scorer, "_prev_fit_index", {})
+        role = {"link": "https://co.com/job/2", "company": "Co",
+                "title": "Risk Lead"}
+        fit_scorer._abort_event.set()
+        try:
+            out = fit_scorer.score_with_llm(None, role, "jd text")
+        finally:
+            fit_scorer._abort_event.clear()
+        # No cache + abort → placeholder (never makes a paid call).
+        assert out["fit_verdict"] in ("error", "skip")
+        assert out["fit_score"] == 0
 
 
 # ---------------------------------------------------------------------------
