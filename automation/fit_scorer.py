@@ -842,9 +842,20 @@ def _canonicalize_url(url: str) -> str:
         except Exception:
             norm_url = None  # type: ignore
     if norm_url is not None:
-        n = norm_url({"link": url})
-        if n:
-            return n
+        # Wrap defensively: norm_url calls .strip() on the link and raises
+        # if a row carries a non-string link (int/list from a malformed
+        # scan). MUST stay symmetric with the reader side
+        # (pipeline_state._canonicalize_link), which wraps the same call —
+        # otherwise writer and reader would canonicalize a bad row
+        # differently and produce disagreeing sha8s (the exact drift bug
+        # this whole feature exists to catch). Both fall back to the same
+        # split-and-lower string form below.
+        try:
+            n = norm_url({"link": url})
+            if n:
+                return n
+        except Exception:
+            pass
     base = str(url).split("#", 1)[0].split("?", 1)[0]
     return base.rstrip("/").lower()
 

@@ -482,8 +482,17 @@ def consistency_banner_copy(c: PipelineConsistency) -> tuple[str, str, str]:
             f"scoring was built against {c.scored.input_rows or '?'} rows "
             f"(sha `{(c.scored.input_sha8 or '')[:8]}`)")
     drift_list = "; ".join(drifted) or "downstream stages do not match worklist"
-    fix = ("Re-score the worklist" if gs in ("drift_at_scoring", "mixed_drift")
-           else "Re-run triage")
+    if gs == "mixed_drift":
+        # Both triage AND scoring lag the worklist. Re-scoring runs triage
+        # first in this pipeline, so a single 🤖 Score worklist refreshes
+        # both — but say so explicitly rather than implying only scoring
+        # was stale.
+        fix = ("Re-score the worklist (the scoring run re-runs triage "
+               "first, refreshing both stages)")
+    elif gs == "drift_at_scoring":
+        fix = "Re-score the worklist"
+    else:
+        fix = "Re-run triage"
     return ("warn",
             f"Mixed freshness: current worklist has {c.worklist_rows:,} rows "
             f"(sha `{(c.worklist_sha8 or '')[:8]}`), but {drift_list}.",
@@ -824,8 +833,16 @@ def derive_snapshot(
             tr_mtime = sc_mtime = 0
         if tr_mtime > sc_mtime:
             tr_data = _safe_load(triage_path) or {}
-            triage_passed = int(tr_data.get("stage1_passed") or triage_passed)
-            triage_dropped = int(tr_data.get("stage1_dropped") or triage_dropped)
+            # Use `is not None`, not `or` — a fresh triage that legitimately
+            # passed 0 rows (everything dropped) must override the stale
+            # scored count, not fall back to it. Matches the app.py funnel
+            # override site, which already guards on None.
+            _tp = tr_data.get("stage1_passed")
+            _td = tr_data.get("stage1_dropped")
+            if _tp is not None:
+                triage_passed = int(_tp)
+            if _td is not None:
+                triage_dropped = int(_td)
 
     # ── Billable / cached / reusable ──
     worklist_urls = {

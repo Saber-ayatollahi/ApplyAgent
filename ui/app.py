@@ -7915,7 +7915,6 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             # hasn't clicked 🎯 Run triage yet on the current worklist).
             _sc_pre_total = None  # post-triage row count, or None if no preview
             _sc_pre_cached = 0
-            _sc_pre_in_scored = 0
             _sc_pre_needs = 0
             _sc_pre_stale_scored = 0
             if _sc_tr_path.exists():
@@ -7952,10 +7951,12 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                         _in_sc = _u in _sp_scored_urls
                         if _has_cache:
                             _sc_pre_cached += 1
-                        if _in_sc:
-                            _sc_pre_in_scored += 1
-                            if not _has_cache:
-                                _sc_pre_stale_scored += 1
+                        # "Free via prior snapshot" = in the previous scored
+                        # file but cache file is gone (second-chance read
+                        # reuses the verdict without paying). cached wins
+                        # over this bucket via the `not _has_cache` guard.
+                        if _in_sc and not _has_cache:
+                            _sc_pre_stale_scored += 1
                         if not _has_cache and not _in_sc:
                             _sc_pre_needs += 1
                 except Exception:

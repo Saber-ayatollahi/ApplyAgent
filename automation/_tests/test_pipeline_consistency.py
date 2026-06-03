@@ -206,6 +206,33 @@ class TestSha8Compatibility:
             f"worklist.norm_url with the same fallback as fit_scorer."
         )
 
+    def test_writer_does_not_crash_on_non_string_link(
+            self, tmp_path: Path) -> None:
+        """A malformed row whose link is a non-string (int/list — seen with
+        corrupt scans) must NOT crash _input_breadcrumb. The breadcrumb is
+        built while assembling the scored-file output dict AFTER all the LLM
+        work; a raise here would discard the whole run's results."""
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        rows = [{"link": 12345}, {"link": "https://a.com/1"}]
+        # Must not raise.
+        bc = fit_scorer._input_breadcrumb(p, rows)
+        assert bc["sha8"] is not None  # the good row still contributes
+
+    def test_non_string_link_writer_reader_symmetric(
+            self, tmp_path: Path) -> None:
+        """Even for a non-string link, writer and reader must still agree —
+        both wrap norm_url in try/except and fall back to the same str()
+        canonical form. Guards against the asymmetry where one side drops
+        the bad row and the other keeps it (→ disagreeing sha8s, the exact
+        drift bug this feature exists to catch)."""
+        p = tmp_path / "worklist.json"
+        p.write_text("{}", encoding="utf-8")
+        rows = [{"link": 12345}, {"link": "https://a.com/1"}]
+        writer_sha = fit_scorer._input_breadcrumb(p, rows)["sha8"]
+        reader_sha = ps._worklist_sha8(rows)
+        assert writer_sha == reader_sha
+
 
 # ---------------------------------------------------------------------------
 # Layer 2 — derive_consistency end-to-end
@@ -494,3 +521,30 @@ class TestDeriveSnapshotTriageFreshness:
         )
         assert snap.triage_passed == 50
         assert snap.triage_dropped == 10
+
+    def test_fresh_triage_with_zero_passed_still_overrides(
+            self, tmp_path: Path) -> None:
+        """A fresh standalone triage that legitimately passed 0 rows
+        (e.g. a heavy suppression list dropped everything) must override
+        the stale scored count — not fall back to it because 0 is falsy.
+        Regression guard for the `or` → `is not None` fix."""
+        import os as _os
+        _write_worklist(tmp_path, [_row(f"https://a/{i}") for i in range(5)])
+        # Older scored file says 50 passed.
+        sc_path = tmp_path / "worklist_scored.json"
+        sc_path.write_text(json.dumps({
+            "stage1_passed": 50, "stage1_dropped": 0, "stage2_scored": 50,
+            "results": [], "triage_drops": [],
+        }), encoding="utf-8")
+        old = time.time() - 86400
+        _os.utime(sc_path, (old, old))
+        # Fresh triage passed ZERO (everything dropped).
+        _write_triage(tmp_path, passed=0, dropped=5, input_block=None)
+        snap = ps.derive_snapshot(
+            out_dir=tmp_path,
+            fit_cache_dir=tmp_path / "fit_cache",
+            tracker_path=tmp_path / "tracker.json",
+        )
+        assert snap.triage_passed == 0, \
+            "fresh triage passing 0 must override stale 50, not fall back"
+        assert snap.triage_dropped == 5
