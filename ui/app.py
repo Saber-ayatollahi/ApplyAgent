@@ -2989,7 +2989,14 @@ def render_gmail_trash_panel(container=None,
     n_rows = len(rows)
     diag = env.get("harvest_diagnostics") or {}
     alerts = env.get("gmail_alerts") or {}
-    uids = alerts.get("contributing_uids") or []
+    # Trash the BROADER processed set (every alert we parsed + made a
+    # keep/drop decision on, incl. all-US ones whose every job was
+    # geo-dropped). Falls back to contributing_uids for envelopes written
+    # before processed_uids existed. _contributing_uids kept for the
+    # "produced matches vs all-filtered" caption below.
+    _contributing_uids = alerts.get("contributing_uids") or []
+    uids = alerts.get("processed_uids") or _contributing_uids
+    _uids_filtered_only = max(len(uids) - len(_contributing_uids), 0)
 
     # Has the worklist been scored AFTER this Gmail fetch landed?
     # Old logic checked for a dedicated scan_gmail_<stamp>_scored.json,
@@ -3228,14 +3235,29 @@ def render_gmail_trash_panel(container=None,
                 )
                 do_delete = False
             elif uids:
+                _trash_help = (
+                    "Opens a read-write IMAP session and moves the listed "
+                    "UIDs to [Gmail]/Trash. Reversible from Gmail UI; "
+                    "auto-purges after 30 days."
+                )
+                if _uids_filtered_only:
+                    _trash_help += (
+                        f" Includes {_uids_filtered_only} all-US / "
+                        "geo-filtered alert(s) that produced no Toronto "
+                        "matches — they're spent, so they get cleaned up too."
+                    )
                 do_delete = st.button(
                     f"🗑 Move {len(uids)} alert(s) to Trash",
                     width='stretch',
                     key=f"gmail_trash_{latest.stem}",
-                    help="Opens a read-write IMAP session and moves the "
-                         "listed UIDs to [Gmail]/Trash. Reversible from "
-                         "Gmail UI; auto-purges after 30 days.",
+                    help=_trash_help,
                 )
+                if _uids_filtered_only:
+                    st.caption(
+                        f"Incl. {_uids_filtered_only} all-US/filtered alert(s) "
+                        "(no Toronto match) + "
+                        f"{len(_contributing_uids)} that produced matches."
+                    )
             else:
                 st.button("🗑 (no UIDs to delete)",
                            width='stretch', disabled=True,

@@ -45,15 +45,32 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 
 
-def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
+def _emit_scan_shape(rows: list[dict], source_label: str,
+                     processed_uids: list[str] | None = None) -> dict:
     """Wrap Gmail rows in the envelope worklist + the legacy fit_scorer
-    paths expect. Stamps a `gmail_alerts` block listing the UIDs of every
-    email that contributed at least one row — the UI uses this to offer
-    'move these N alerts to Gmail Trash'."""
+    paths expect. Stamps a `gmail_alerts` block the UI uses to offer
+    'move these N alerts to Gmail Trash':
+
+      contributing_uids — emails that produced at least one KEPT row.
+      processed_uids    — emails we parsed a job from and made a keep/drop
+                          decision on, INCLUDING ones whose every job was
+                          geo-dropped (all-US) or exclude-listed. Superset
+                          of contributing_uids. This is what cleanup trashes
+                          — otherwise an all-US alert (zero kept rows) never
+                          enters the delete set and piles up in the inbox.
+
+    `processed_uids` defaults to contributing_uids when not supplied, so
+    older callers keep their prior (conservative) behavior."""
     contributing_uids = sorted({
         str(r.get("gmail_uid")) for r in rows
         if r.get("gmail_uid")
     })
+    if processed_uids is None:
+        processed_uids = contributing_uids
+    else:
+        # Always a superset of contributing — union guards against a caller
+        # passing a partial list.
+        processed_uids = sorted(set(processed_uids) | set(contributing_uids))
     return {
         "scan_date": datetime.now().strftime("%Y-%m-%d"),
         "scan_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -72,6 +89,7 @@ def _emit_scan_shape(rows: list[dict], source_label: str) -> dict:
         },
         "gmail_alerts": {
             "contributing_uids": contributing_uids,
+            "processed_uids": processed_uids,
             "deleted": False,
             "deleted_at": None,
             "delete_result": None,
@@ -256,7 +274,17 @@ def main() -> int:
     fname = args.output or f"scan_gmail_{stamp}.json"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out_path = OUT_DIR / fname
-    envelope = _emit_scan_shape(rows, source_label="gmail_linkedin_alert")
+    # processed_uids = every alert email we parsed a job from and made a
+    # keep/drop decision on (raw_rows = kept + geo-dropped + exclude-dropped;
+    # quarantined rows are NOT in raw_rows, so a parse-problem email is left
+    # in the inbox for re-processing rather than auto-trashed). This is the
+    # set the UI cleanup trashes, so all-US alerts (zero kept rows) get
+    # cleaned up instead of accumulating.
+    _processed_uids = sorted({
+        str(r.get("gmail_uid")) for r in raw_rows if r.get("gmail_uid")
+    })
+    envelope = _emit_scan_shape(rows, source_label="gmail_linkedin_alert",
+                                processed_uids=_processed_uids)
     envelope["harvest_diagnostics"] = {
         "days_window": args.days,
         "imap_messages_matched": len(messages),
