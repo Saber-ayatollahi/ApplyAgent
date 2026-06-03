@@ -3036,8 +3036,14 @@ def render_gmail_trash_panel(container=None,
                        help="Alerts that yielded ≥1 job row. 'Miss' = "
                             "digest matched but parser extracted nothing.")
             d3.metric("Rows parsed",
-                       diag.get("rows_after_parse", n_rows),
-                       help="Total job rows extracted before any dedup")
+                       # Envelope key is `rows_parsed` (len of raw_rows before
+                       # geo/dedup). The old `rows_after_parse` lookup never
+                       # matched, so this silently showed n_rows (KEPT, often
+                       # 0 for all-US fetches) — making a 18-row all-US fetch
+                       # read "Rows parsed: 0". Fall back old→new→n_rows.
+                       diag.get("rows_parsed",
+                                diag.get("rows_after_parse", n_rows)),
+                       help="Total job rows extracted before geo filter / dedup")
             # Build the 'New rows' delta from all three drop sources so
             # the user sees exactly where the funnel is leaking.
             _drop_parts = []
@@ -3105,8 +3111,85 @@ def render_gmail_trash_panel(container=None,
                         f"({', '.join(parts)}). Nothing new to score.",
                         icon="✅",
                     )
-            # Still allow trash even with 0 rows? No — UIDs only contain
-            # rows-producing alerts, so uids is necessarily empty here.
+            # GEO-DROP / all-US case: alerts WERE parsed, but every job was
+            # outside the GTA (e.g. Charlotte, NYC). None of the branches above
+            # match (alerts_seen>0, digests_without_rows=0, dedup drops=0), so
+            # historically this fell straight to `return True` with no message
+            # and — the real bug — no delete option. processed_uids now carries
+            # these all-US alert UIDs, so surface a diagnostic AND offer to
+            # trash them (self-contained here; the main path's preview/score
+            # UI below assumes kept rows exist).
+            _geo_dropped = diag.get("rows_dropped_location", 0)
+            if _geo_dropped:
+                _ex = diag.get("dropped_location_examples") or []
+                st.info(
+                    f"📍 {diag.get('linkedin_alerts_seen', 0)} alert(s) seen — "
+                    f"all {_geo_dropped} job(s) were outside the GTA"
+                    + (f" (e.g. {', '.join(_ex[:3])})" if _ex else "")
+                    + ". Nothing new to score, but you can clear these "
+                    "alerts below.",
+                    icon="📍",
+                )
+            if uids and not alerts.get("deleted"):
+                st.markdown("**Clean up:**")
+                _zc1, _zc2 = st.columns(2)
+                with _zc1:
+                    _zero_trash = st.button(
+                        f"🗑 Move {len(uids)} alert(s) to Trash",
+                        width='stretch', key=f"gmail_trash_zero_{latest.stem}",
+                        help="Moves these alert emails to [Gmail]/Trash "
+                             "(reversible, auto-purges after 30 days). These "
+                             "are all-US alerts that produced no GTA match.",
+                    )
+                with _zc2:
+                    _zero_hide = st.button(
+                        "🙈 Hide", width='stretch',
+                        key=f"gmail_trash_zero_hide_{latest.stem}",
+                        help="Dismiss without deleting; next fetch resets.",
+                    )
+                if _zero_trash:
+                    try:
+                        sys.path.insert(0, str(ROOT / "automation"))
+                        import gmail_reader as _gr  # type: ignore
+                        with st.spinner(f"Moving {len(uids)} alert(s) to Trash…"):
+                            res = _gr.delete_messages(uids)
+                    except Exception as e:
+                        st.error(f"Delete failed before IMAP call: {e}")
+                        return True
+                    env.setdefault("gmail_alerts", {})
+                    env["gmail_alerts"]["deleted"] = True
+                    env["gmail_alerts"]["deleted_at"] = \
+                        datetime.now().isoformat(timespec="seconds")
+                    env["gmail_alerts"]["delete_result"] = {
+                        "moved": res.moved, "failed": res.failed,
+                        "errors": list(res.errors or [])[:10]}
+                    try:
+                        latest.write_text(json.dumps(env, indent=2,
+                                          ensure_ascii=False), encoding="utf-8")
+                    except Exception as e:
+                        st.warning(f"Trash succeeded but persisting failed: {e}")
+                    if res.failed == 0:
+                        st.success(f"✅ Moved {res.moved} alert(s) to Gmail "
+                                   "Trash. They'll auto-purge after 30 days.")
+                    else:
+                        st.warning(f"Moved {res.moved}, failed {res.failed}. "
+                                   f"Errors: {res.errors[:3]}")
+                    st.rerun()
+                if _zero_hide:
+                    env.setdefault("gmail_alerts", {})
+                    env["gmail_alerts"]["deleted"] = True
+                    env["gmail_alerts"]["delete_result"] = {
+                        "moved": 0, "failed": 0,
+                        "errors": ["User dismissed without deleting."]}
+                    env["gmail_alerts"]["deleted_at"] = \
+                        datetime.now().isoformat(timespec="seconds")
+                    latest.write_text(json.dumps(env, indent=2,
+                                      ensure_ascii=False), encoding="utf-8")
+                    st.rerun()
+            elif alerts.get("deleted"):
+                dr = alerts.get("delete_result") or {}
+                st.caption(f"✅ {dr.get('moved', 0)} alert(s) already moved "
+                           "to Trash.")
             return True
 
         # ── ROW PREVIEW ──────────────────────────────────────────────────
