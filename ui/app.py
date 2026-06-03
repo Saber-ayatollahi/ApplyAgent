@@ -8108,14 +8108,22 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _render_score_a_url()
             _vc_download_row("scored")
 
-    # ═══════════════ ③ PROMOTE view: ⑤ Auto-promote + ⑥ Tracker ═════
+    # ═══════════════ ③ PROMOTE view: ⑤ Promote + ⑥ Tracker ═════════
     if _pipe_view == "Promote":
-        # ── ⑤ AUTO-PROMOTE ────────────────────────────────────────────
+        # ── ⑤ PROMOTE (one-click bulk + per-row cherry-pick) ───────────
+        # Consolidated promote surface. Replaces the old split of a separate
+        # ⑤ Auto-promote card + a 📋 Pick & promote card: both shelled the
+        # SAME engine (auto_promote.py), and with no active suppressions and
+        # nothing scheduling unattended promotion, the standalone auto-promote
+        # card was redundant. Now one card offers both paths:
+        #   • ⚡ Promote all N qualifying → auto_promote.py --commit (bulk)
+        #   • 📋 Examine & select        → per-row table, --only-urls commit
+        # Reuses _render_scored_card / the "scored" download verbatim; the
+        # ② Score and ③ Promote views are mutually-exclusive branches, so no
+        # widget-key collision and selection state carries over between them.
         with st.container(border=True):
-            # Headline shows the post-suppression promotable count (rows above
-            # threshold, deduped against the tracker, minus active mutes) — the
-            # same figure the banner computes — NOT raw verdict counts, which
-            # overstate by ignoring tracker-dedup/suppression (doc §282/§314).
+            # Post-suppression promotable count (above threshold, deduped vs
+            # tracker, minus active mutes) — same figure the banner computes.
             # Fall back to actionable_n only if the snapshot couldn't compute.
             if _promotable_n is not None:
                 _promo_headline = (
@@ -8128,43 +8136,62 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     else "nothing promotable yet"
                 )
             st.markdown(
-                f"#### 📤 ⑤ Auto-promote · "
+                f"#### 📤 ⑤ Promote · "
                 f"{_stage_chip(False, _ws_scored_exists, empty=not _ws_scored_exists)} "
                 + _promo_headline
             )
             st.caption(
-                "Promote launch + advanced pipeline config live here. "
-                "Promote reads worklist_scored.json; preview before commit "
-                "in the Advanced expander. (Scrape/Gmail launches moved to "
-                "① Refresh; scoring + score-a-URL to ④ Scoring.)"
+                "Promote scored candidates to the tracker: one-click ⚡ promote "
+                "everything qualifying (fit≥7, deduped, minus any mutes), or "
+                "examine and tick specific rows below. Reads worklist_scored.json."
             )
-            if _vc_inspect_toggle("promote", "Promote launch / advanced config",
-                                  default=True):
-                _render_run_card()
-            _vc_download_row("promote")
+
+            # ⚡ One-click bulk — promote ALL qualifying (the old ⑤ Auto-promote
+            # behavior). auto_promote.py --commit applies the fit≥7 threshold,
+            # tracker-dedup, and suppressions itself, so the committed set
+            # matches the headline count. ≥25 needs an explicit confirm so one
+            # click can't bulk-write dozens of rows.
+            _pa_n = _promotable_n if _promotable_n is not None else (actionable_n or 0)
+            if _pa_n:
+                _pa_confirm = True
+                if _pa_n >= 25:
+                    _pa_confirm = st.checkbox(
+                        f"⚠️ Confirm: promote all {_pa_n} qualifying roles "
+                        "(large batch)", key="promote_all_confirm")
+                if st.button(
+                        f"⚡ Promote all {_pa_n} qualifying (fit≥7) → tracker",
+                        type="primary",
+                        disabled=any_work_active or not _pa_confirm,
+                        key="promote_all_qualifying",
+                        help="Bulk-commit every above-threshold role not already "
+                             "in the tracker (auto_promote.py --commit). For "
+                             "specific rows only, use the table below."):
+                    _prec = scan_runner.start_run("promote", [
+                        sys.executable,
+                        str(ROOT / "automation" / "auto_promote.py"),
+                        "--commit",
+                    ])
+                    st.session_state["_last_launch"] = {
+                        "run_id": _prec.run_id, "label": "Promote all qualifying"}
+                    st.toast(f"Promoting {_pa_n} qualifying role(s)…", icon="📤")
+                    st.rerun()
+
+            # Banner-driven preview→commit: when the next-action banner's
+            # promote CTA has run a fresh dry-run, surface its "✅ Apply N to
+            # tracker" commit button here. Contextual — stays quiet unless a
+            # recent dry-run report exists. (The one-click button above is the
+            # no-preview direct path; this is the preview-then-commit path.)
             _vc_promote_apply_panel(any_work_active)
 
-        # ── 📋 PICK & PROMOTE (manual cherry-pick) ─────────────────────
-        # The per-row alternative to ⑤ Auto-promote's all-at-once commit:
-        # examine the scored candidates, tick specific rows, send just those
-        # to the tracker — plus the scored xlsx/JSON download (with sector),
-        # all on the Promote page. Reuses _render_scored_card / the "scored"
-        # download row verbatim: the ② Score and ③ Promote views are
-        # mutually-exclusive `if` branches, so only one set of these widgets
-        # mounts per run — no duplicate-key collision — and the selection
-        # state (scoring_selected_urls) carries over between the two views.
-        with st.container(border=True):
-            st.markdown("#### 📋 Pick & promote specific candidates")
-            st.caption(
-                "Examine the scored candidates, tick the ones you want, and "
-                "send just those to the tracker — the per-row alternative to "
-                "⑤ Auto-promote's all-at-once commit. Same table as the "
-                "② Score view; filters + selection carry over between views. "
-                "Download the full scored list (xlsx incl. sector) below."
-            )
+            # Downloads: scored candidate list (xlsx incl. sector) + promote
+            # report (what the last commit added).
             _vc_download_row("scored")
+            _vc_download_row("promote")
+
+            # 📋 Per-row examine + cherry-pick — the full scored table with
+            # filters, checkboxes, and "Send N selected to tracker".
             if _vc_inspect_toggle("promote_pick",
-                                  "📋 Examine & select candidates",
+                                  "📋 Examine & select specific candidates",
                                   default=True):
                 _render_scored_card()
 

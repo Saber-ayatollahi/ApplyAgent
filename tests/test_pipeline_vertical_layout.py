@@ -8,7 +8,7 @@ the sidebar sub-radio —
 
   * ① Refresh  = ① Inputs + ② Worklist
   * ② Score    = ③ Triage + ④ Scoring
-  * ③ Promote  = ⑤ Auto-promote + ⑥ Tracker
+  * ③ Promote  = ⑤ Promote + ⑥ Tracker
 
 and pins the at-risk features the critics flagged as silent-drop candidates:
 the audit-pack footer, run-history footer (now on Promote), the launch card
@@ -67,7 +67,7 @@ def test_each_view_shows_its_two_stage_headers():
     expected = {
         "Refresh": ("① Inputs", "② Worklist"),
         "Score":   ("③ Triage", "④ Scoring"),
-        "Promote": ("⑤ Auto-promote", "⑥ Tracker"),
+        "Promote": ("⑤ Promote", "⑥ Tracker"),
     }
     for view, markers in expected.items():
         body = _all_markdown(_run(view))
@@ -93,17 +93,18 @@ def test_promote_rehomes_audit_pack_and_history():
     assert "run history" in exp_labels, "run-history footer missing on Promote"
 
 
-def test_launch_card_present_on_promote_when_opened():
-    """v3.2 strict split: the ⑤ run card on Promote now offers ONLY the
-    📋 Promote launch (scrape/Gmail moved to ① Refresh, scoring to ④ Scoring).
-    Open the ⑤ inspect toggle and assert the Promote launch button is reachable
-    and no scrape/score launch leaked onto Promote."""
-    at = _run("Promote", _vc_inspect_promote=True)
+def test_promote_card_present_no_scrape_score_leak():
+    """The consolidated ⑤ Promote card hosts the promote actions (one-click
+    ⚡ Promote all qualifying + the per-row select table) — the standalone
+    Auto-promote card was folded in. Assert the ⑤ Promote card renders and
+    that no scrape/score launch leaked onto Promote (those belong on
+    ① Refresh / ④ Scoring)."""
+    at = _run("Promote")
     exc = [str(getattr(e, "value", e)) for e in at.exception]
-    assert not exc, f"opening launch card raised: {exc[:2]}"
+    assert not exc, f"Promote view raised: {exc[:2]}"
+    assert "⑤ Promote" in _all_markdown(at), "⑤ Promote card header missing"
     labels = " ".join(b.label for b in at.button).lower()
-    assert "promote" in labels, "promote launch button missing on Promote"
-    # The relocated launches must NOT appear on Promote anymore.
+    # The relocated launches must NOT appear on Promote.
     assert "scrape" not in labels, \
         "scrape launch leaked onto Promote (belongs on ① Refresh)"
     assert "score worklist" not in labels, \
@@ -241,9 +242,10 @@ def test_banner_absent_on_refresh_and_score():
 
 
 def test_promote_apply_panel_appears_for_fresh_dry_run(tmp_path, monkeypatch):
-    """Preview→commit: when a fresh dry-run promote_report exists, the ⑤
-    Auto-promote card (on the Promote view) shows an '✅ Apply N to tracker'
-    commit button. When the latest report is a commit, the panel stays quiet."""
+    """Preview→commit: when a fresh dry-run promote_report exists (e.g. from
+    the next-action banner's promote CTA), the consolidated ⑤ Promote card
+    surfaces a '✅ Apply N to tracker' commit button. When the latest report
+    is a commit, the panel stays quiet."""
     import json as _json
     import app as _app  # the module under test (ui/app.py)
 
@@ -364,7 +366,7 @@ def test_banner_cta_click_switches_subpage_end_to_end():
     right view with the target card visible. The handler→pending-view half is
     covered separately by test_route_banner_cta_opens_correct_toggles_and_subpage."""
     targets = {
-        "Promote": "⑤ Auto-promote",
+        "Promote": "⑤ Promote",
         "Score":   "④ Scoring",
         "Refresh": "① Inputs",
     }
