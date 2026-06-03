@@ -8144,6 +8144,30 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _vc_download_row("promote")
             _vc_promote_apply_panel(any_work_active)
 
+        # ── 📋 PICK & PROMOTE (manual cherry-pick) ─────────────────────
+        # The per-row alternative to ⑤ Auto-promote's all-at-once commit:
+        # examine the scored candidates, tick specific rows, send just those
+        # to the tracker — plus the scored xlsx/JSON download (with sector),
+        # all on the Promote page. Reuses _render_scored_card / the "scored"
+        # download row verbatim: the ② Score and ③ Promote views are
+        # mutually-exclusive `if` branches, so only one set of these widgets
+        # mounts per run — no duplicate-key collision — and the selection
+        # state (scoring_selected_urls) carries over between the two views.
+        with st.container(border=True):
+            st.markdown("#### 📋 Pick & promote specific candidates")
+            st.caption(
+                "Examine the scored candidates, tick the ones you want, and "
+                "send just those to the tracker — the per-row alternative to "
+                "⑤ Auto-promote's all-at-once commit. Same table as the "
+                "② Score view; filters + selection carry over between views. "
+                "Download the full scored list (xlsx incl. sector) below."
+            )
+            _vc_download_row("scored")
+            if _vc_inspect_toggle("promote_pick",
+                                  "📋 Examine & select candidates",
+                                  default=True):
+                _render_scored_card()
+
         # ── ⑥ TRACKER ─────────────────────────────────────────────────
         with st.container(border=True):
             _arch = sum(1 for j in jobs if j.get("archived"))

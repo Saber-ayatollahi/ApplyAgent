@@ -113,17 +113,22 @@ def test_launch_card_present_on_promote_when_opened():
 
 
 def test_full_scrape_relocated_to_refresh_inputs():
-    """v3.2 strict split: 🌐 Full scrape moved from the Promote run card to the
-    ① Inputs card on the Refresh view. Assert it renders on Refresh and NOT on
-    Promote."""
+    """① Inputs (Refresh view) owns scraping; Promote never does. The primary
+    🛰 Refresh scrape now DEFAULTS to the full target list (159) — full
+    coverage is the default action — with ⚡ Quick core scrape (66) as the
+    secondary fast option. Both live on Refresh, neither on Promote."""
     refresh_labels = " ".join(b.label for b in _run("Refresh").button).lower()
-    assert "full scrape" in refresh_labels, \
-        "🌐 Full scrape missing on Refresh (① Inputs)"
+    # Primary full-coverage refresh + the quick-core option both on ① Inputs.
+    assert "refresh scrape" in refresh_labels, \
+        "primary 🛰 Refresh scrape (full) missing on Refresh (① Inputs)"
+    assert "quick core scrape" in refresh_labels, \
+        "⚡ Quick core scrape (secondary) missing on Refresh (① Inputs)"
+    # No scrape launch leaks onto Promote (belongs on ① Refresh).
     promote_labels = " ".join(
         b.label for b in _run("Promote", _vc_inspect_promote=True).button
     ).lower()
-    assert "full scrape" not in promote_labels, \
-        "🌐 Full scrape still leaks onto Promote"
+    assert "scrape" not in promote_labels, \
+        "a scrape launch leaked onto Promote (belongs on ① Refresh)"
 
 
 def test_score_worklist_relocated_to_score_scoring():
