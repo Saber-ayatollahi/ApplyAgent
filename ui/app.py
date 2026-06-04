@@ -9061,6 +9061,59 @@ elif page == "📋 Jobs Kanban":
                                 )
                                 st.rerun()
 
+                # ❌ Won't apply (Reject) — the "I've decided NOT to apply"
+                # action, alternative to ✅ Mark Applied. Sets status=Rejected
+                # (terminal → drops out of apply/review/follow-up queues, moves
+                # to the ❌ Rejected column) + rejection_date + a categorized
+                # reason. Reversible via the Status dropdown above. Distinct
+                # from 🚫 Archive, which only hides without recording a verdict.
+                _kb_reject_reasons = [
+                    "Not a fit", "Location", "Comp too low", "Seniority mismatch",
+                    "Already applied elsewhere", "Company", "Other",
+                ]
+                st.markdown("**Not interested?**")
+                _rj1, _rj2 = st.columns([2, 1])
+                with _rj1:
+                    _kb_reject_reason = st.selectbox(
+                        "Rejection reason", _kb_reject_reasons,
+                        key=f"_kb_reject_reason_{sel_id}",
+                        label_visibility="collapsed",
+                    )
+                with _rj2:
+                    _kb_do_reject = st.button(
+                        "❌ Won't apply",
+                        width='stretch',
+                        key=f"_kb_reject_{sel_id}",
+                        disabled=(job.get("status") == "Rejected"),
+                        help="Mark Rejected with this reason. Drops it from "
+                             "your apply / Review Queue / follow-up queues and "
+                             "moves it to the ❌ Rejected column. Reversible "
+                             "via the Status dropdown above.",
+                    )
+                if job.get("status") == "Rejected":
+                    st.caption(
+                        f"❌ Rejected"
+                        + (f" — {job.get('rejection_reason')}"
+                           if job.get("rejection_reason") else "")
+                        + (f" ({job.get('rejection_date')})"
+                           if job.get("rejection_date") else "")
+                    )
+                if _kb_do_reject:
+                    from safe_json import mutate_json as _mj_rej  # noqa: WPS433
+                    from automation import tracker_ops as _tops_rej  # noqa: WPS433
+                    try:
+                        _mj_rej(
+                            TRACKER,
+                            lambda t: _tops_rej.reject(
+                                t, sel_id, _kb_reject_reason),
+                            default={"jobs": [], "meta": {}},
+                        )
+                        load_tracker.clear()
+                        st.toast(f"❌ Rejected — {_kb_reject_reason}", icon="❌")
+                    except Exception as _exc:  # noqa: BLE001
+                        st.error(f"Reject failed: {_exc}")
+                    st.rerun()
+
     # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
     # 📄 View tailor was clicked anywhere on this page.
     render_tailor_drawer(jobs, tr, TRACKER)

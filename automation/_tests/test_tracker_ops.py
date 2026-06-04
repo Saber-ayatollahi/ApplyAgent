@@ -94,6 +94,65 @@ def test_archive_unknown_id_raises_keyerror():
         tracker_ops.archive(t, "does-not-exist")
 
 
+# ---------------------------------------------------------------------------
+# reject ("won't apply")
+# ---------------------------------------------------------------------------
+
+def test_reject_sets_terminal_status_reason_and_date():
+    t = _tracker()
+    out = tracker_ops.reject(t, "a-1", "Location", on_date="2026-06-04")
+    assert out is t
+    j = tracker_ops.find_job(t, "a-1")
+    assert j["status"] == "Rejected"
+    assert j["rejection_reason"] == "Location"
+    assert j["rejection_date"] == "2026-06-04"
+    assert j["status_changed_by"] == "manual_reject"
+    assert j["status_changed_on"] == "2026-06-04"
+
+
+def test_reject_makes_job_inactive():
+    """Rejected is terminal, so is_active() must flip to False (drops the row
+    out of apply / review / follow-up queues)."""
+    t = _tracker(jobs=[_job("a-1", status="Found")])
+    assert tracker_ops.is_active(tracker_ops.find_job(t, "a-1")) is True
+    tracker_ops.reject(t, "a-1", "Not a fit", on_date="2026-06-04")
+    assert tracker_ops.is_active(tracker_ops.find_job(t, "a-1")) is False
+
+
+def test_reject_does_not_archive():
+    """Unlike archive(), reject keeps the row visible (archived stays False)
+    so it shows in the Kanban Rejected column and is reversible."""
+    t = _tracker(jobs=[_job("a-1")])
+    tracker_ops.reject(t, "a-1", "Comp too low", on_date="2026-06-04")
+    j = tracker_ops.find_job(t, "a-1")
+    assert j.get("archived", False) is False
+    assert "archived_at" not in j
+
+
+def test_reject_is_reversible_via_set_status():
+    t = _tracker(jobs=[_job("a-1")])
+    tracker_ops.reject(t, "a-1", "Other", on_date="2026-06-04")
+    assert tracker_ops.find_job(t, "a-1")["status"] == "Rejected"
+    tracker_ops.set_status(t, "a-1", "Found")  # changed my mind
+    j = tracker_ops.find_job(t, "a-1")
+    assert j["status"] == "Found"
+    assert tracker_ops.is_active(j) is True
+
+
+def test_reject_unknown_id_raises_keyerror():
+    t = _tracker()
+    with pytest.raises(KeyError):
+        tracker_ops.reject(t, "nope", "Other")
+
+
+def test_reject_default_date_is_iso_today():
+    t = _tracker(jobs=[_job("a-1")])
+    tracker_ops.reject(t, "a-1", "Other")  # no on_date → today
+    j = tracker_ops.find_job(t, "a-1")
+    # YYYY-MM-DD shape (date, not a Z-timestamp like archived_at)
+    assert len(j["rejection_date"]) == 10 and j["rejection_date"].count("-") == 2
+
+
 def test_archive_preserves_existing_fields():
     t = _tracker(jobs=[_job(
         "a-1",

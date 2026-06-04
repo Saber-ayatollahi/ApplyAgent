@@ -83,3 +83,29 @@ def set_archive_reason(t: dict, job_id: str, reason: str) -> dict:
         raise ValueError(f"job {job_id!r} is not archived")
     job["archive_reason"] = reason
     return t
+
+
+def reject(t: dict, job_id: str, reason: str = "manual",
+           *, on_date: str | None = None) -> dict:
+    """Mark a job Rejected ("won't apply") with a categorized reason.
+
+    "Rejected" is a TERMINAL status, so this drops the row out of the apply
+    queue, Review Queue, follow-ups and Today's brief, and moves it to the
+    Kanban ❌ Rejected column. Distinct from archive(): the row stays VISIBLE
+    and reversible (flip status via set_status / the inspector dropdown) —
+    archive() hides without recording a decision.
+
+    Stamps rejection_date + rejection_reason (the fields the analytics
+    'Closed' / 'Responses' metrics read) and the status_changed_* audit pair.
+    `on_date` (YYYY-MM-DD) defaults to today (UTC); pass it in tests for
+    determinism."""
+    job = find_job(t, job_id)
+    if job is None:
+        raise KeyError(job_id)
+    stamp = on_date or datetime.now(timezone.utc).date().isoformat()
+    job["status"] = "Rejected"
+    job["rejection_reason"] = reason
+    job["rejection_date"] = stamp
+    job["status_changed_by"] = "manual_reject"
+    job["status_changed_on"] = stamp
+    return t
