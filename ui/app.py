@@ -9099,20 +9099,38 @@ elif page == "📋 Jobs Kanban":
                            if job.get("rejection_date") else "")
                     )
                 if _kb_do_reject:
+                    # Inline the mutation (mirrors ✅ Mark Applied) instead of
+                    # calling tracker_ops.reject: a long-running Streamlit
+                    # process can hold a stale tracker_ops import from before
+                    # reject() existed, and reloading submodules mid-session is
+                    # unreliable — that AttributeError, combined with an
+                    # unconditional st.rerun() below, silently wiped the error
+                    # and looked like "nothing happened". Same fields
+                    # tracker_ops.reject writes; rerun ONLY on success so a
+                    # genuine failure stays on screen.
                     from safe_json import mutate_json as _mj_rej  # noqa: WPS433
-                    from automation import tracker_ops as _tops_rej  # noqa: WPS433
+                    _rej_stamp = date.today().isoformat()
+
+                    def _mut_reject(t):
+                        for j in t.get("jobs", []):
+                            if j["id"] == sel_id:
+                                j["status"] = "Rejected"
+                                j["rejection_reason"] = _kb_reject_reason
+                                j["rejection_date"] = _rej_stamp
+                                j["status_changed_by"] = "manual_reject"
+                                j["status_changed_on"] = _rej_stamp
+                                break
+                        return t
+
                     try:
-                        _mj_rej(
-                            TRACKER,
-                            lambda t: _tops_rej.reject(
-                                t, sel_id, _kb_reject_reason),
-                            default={"jobs": [], "meta": {}},
-                        )
-                        load_tracker.clear()
-                        st.toast(f"❌ Rejected — {_kb_reject_reason}", icon="❌")
+                        _mj_rej(TRACKER, _mut_reject,
+                                default={"jobs": [], "meta": {}})
                     except Exception as _exc:  # noqa: BLE001
                         st.error(f"Reject failed: {_exc}")
-                    st.rerun()
+                    else:
+                        load_tracker.clear()
+                        st.toast(f"❌ Rejected — {_kb_reject_reason}", icon="❌")
+                        st.rerun()
 
     # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
     # 📄 View tailor was clicked anywhere on this page.
