@@ -8622,15 +8622,40 @@ elif page == "📋 Jobs Kanban":
         "date_found": st.column_config.TextColumn("Found", width="small"),
         "date_applied": st.column_config.TextColumn("Applied", width="small"),
     }
+    # Carry "id" (hidden via column_order) so a row click maps back to the
+    # job. The table is now the SELECTOR for the Inspect/edit panel below —
+    # click a row → its details / fit / JD-link / actions render there
+    # (replaces the old "pick from a dropdown" step).
+    _df_cols = cols + (["id"] if "id" in view.columns and "id" not in cols else [])
     _sorted_view = (
-        view[cols].sort_values(["tier", "fit_score_numeric"], ascending=[True, False])
-        if "fit_score_numeric" in cols else view[cols]
-    )
-    st.dataframe(
+        view[_df_cols].sort_values(["tier", "fit_score_numeric"],
+                                   ascending=[True, False])
+        if "fit_score_numeric" in cols else view[_df_cols]
+    ).reset_index(drop=True)
+    _kb_table_event = st.dataframe(
         _sorted_view,
         hide_index=True, width='stretch', height=540,
         column_config=_col_config,
+        column_order=cols,                 # hides the carried "id"
+        on_select="rerun",
+        selection_mode="single-row",
+        key="kanban_table_select",
     )
+    # Row click → inspector selection. Persist the selected ID (not the
+    # position) and only update on a GENUINE position change, so a
+    # button-driven rerun that reshuffles/filters the table can't silently
+    # hijack the inspector to a neighbouring row.
+    _kb_sel_rows = (
+        _kb_table_event.selection.rows
+        if getattr(_kb_table_event, "selection", None) else []
+    )
+    if _kb_sel_rows:
+        _kb_pos = _kb_sel_rows[0]
+        if (0 <= _kb_pos < len(_sorted_view)
+                and _kb_pos != st.session_state.get("_kb_last_sel_pos")):
+            st.session_state["_kb_sel_id"] = str(
+                _sorted_view.iloc[_kb_pos]["id"])
+            st.session_state["_kb_last_sel_pos"] = _kb_pos
 
     # ── Bulk clear (hand-pick) ───────────────────────────────────────────
     # "Clear old roles, commit to new ones": tick the rows you're done with
@@ -8715,17 +8740,20 @@ elif page == "📋 Jobs Kanban":
     st.markdown("---")
     st.subheader("Inspect / edit")
     if len(view):
-        # Human-readable labels for the role selector
-        _id_list = view["id"].tolist()
-        _label_map = {}
-        for _rid in _id_list:
-            _rj = next((j for j in jobs if j["id"] == _rid), {})
-            _label_map[_rid] = f"{_rj.get('company', '?')} — {_rj.get('title', '?')}"
-        sel_id = st.selectbox(
-            "Role", _id_list,
-            format_func=lambda x: _label_map.get(x, x),
-        )
-        job = next((j for j in jobs if j["id"] == sel_id), None)
+        # Selection now comes from CLICKING a row in the table above (see the
+        # _kb_sel_id derivation right after st.dataframe) — the table is the
+        # selector, no dropdown. Reads the stable id from session_state, so it
+        # survives button-reruns and filter changes. Reads the job from the
+        # FULL `jobs` list (not the filtered `view`), so a row you just acted
+        # on (e.g. rejected out of a Status filter) still shows its result.
+        sel_id = st.session_state.get("_kb_sel_id")
+        job = next((j for j in jobs if j["id"] == sel_id), None) if sel_id else None
+        if job is None:
+            st.info(
+                "👆 Click any row in the table above to see its fit score, "
+                "JD link, and actions (✨ Tailor · ✅ Mark Applied · "
+                "❌ Won't apply · 🚫 Archive) here."
+            )
         if job:
             c1, c2 = st.columns(2)
             with c1:
