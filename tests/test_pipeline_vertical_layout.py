@@ -93,6 +93,31 @@ def test_promote_rehomes_audit_pack_and_history():
     assert "run history" in exp_labels, "run-history footer missing on Promote"
 
 
+def test_tracker_nav_button_does_not_crash_on_click():
+    """Regression: the ⑥ Tracker card's '→ Jobs Kanban' (and siblings) must
+    NOT write the widget key _applyagent_nav directly — Streamlit raises
+    StreamlitAPIException once the sidebar radio with that key is
+    instantiated. They stash _pending_main_nav (applied pre-radio) instead.
+    Clicking the button must not raise."""
+    at = _run("Promote")
+    btn = [b for b in at.button if b.key == "_vc_go_kanban"]
+    assert btn, "→ Jobs Kanban button missing on Promote ⑥ Tracker"
+    after = btn[0].click().run()
+    # CORE regression: clicking must not raise StreamlitAPIException (the
+    # direct _applyagent_nav write did). AppTest's session_state proxy has
+    # no .get(), so use `in` + subscript.
+    exc = [str(getattr(e, "value", e)) for e in after.exception]
+    assert not exc, f"clicking → Jobs Kanban raised: {exc[:2]}"
+    _ss = after.session_state
+    _nav = _ss["_applyagent_nav"] if "_applyagent_nav" in _ss else None
+    _pending = _ss["_pending_main_nav"] if "_pending_main_nav" in _ss else None
+    # The indirection either already applied (nav→Roles) or is stashed for
+    # the next run (pending→Roles); both prove no direct widget write.
+    assert _nav == "📋 Roles" or _pending == "📋 Roles", \
+        f"expected nav→Roles via pending indirection, got " \
+        f"nav={_nav!r} pending={_pending!r}"
+
+
 def test_promote_card_present_no_scrape_score_leak():
     """The consolidated ⑤ Promote card hosts the promote actions (one-click
     ⚡ Promote all qualifying + the per-row select table) — the standalone

@@ -3623,6 +3623,19 @@ if _pending_view in ("Refresh", "Score", "Promote"):
     st.session_state["_applyagent_nav"] = "🎯 Pipeline"
     st.session_state["_nav_sub_🎯 Pipeline"] = _pending_view
 
+# Same deferred-jump pattern, but for the MAIN nav GROUP. A button rendered
+# AFTER the sidebar radio (the ⑥ Tracker card's "→ Jobs Kanban", the
+# dashboard's Next-Best-Action jumps, "→ Open Scan History", etc.) cannot
+# write _applyagent_nav directly — Streamlit raises StreamlitAPIException
+# once the radio with that key is instantiated. Those handlers stash the
+# target group in the non-widget key `_pending_main_nav`; we transfer it to
+# the radio key HERE, before the radio instantiates, then it's cleared by
+# the pop. (Companion sub-page writes go to _nav_sub_<group>, which is safe
+# from the handler because that group's sub-radio isn't on screen yet.)
+_pending_main_nav = st.session_state.pop("_pending_main_nav", None)
+if _pending_main_nav in _NAV_GROUPS:
+    st.session_state["_applyagent_nav"] = _pending_main_nav
+
 _nav_pick = st.sidebar.radio(
     "Navigate",
     list(_NAV_GROUPS.keys()),
@@ -3999,18 +4012,18 @@ if page == "🏠 Dashboard":
                 elif _nba_kind == "followup" and _nba.get("job"):
                     if st.button("📨 Open Follow-ups", key="nba_followup_btn",
                                   width='stretch', type="primary"):
-                        st.session_state["_applyagent_nav"] = "🏠 Today"
+                        st.session_state["_pending_main_nav"] = "🏠 Today"
                         st.session_state["_nav_sub_🏠 Today"] = "Follow-ups"
                         st.rerun()
                 elif _nba_kind == "recruiter":
                     if st.button("🤝 Open Network", key="nba_recruiter_btn",
                                   width='stretch', type="primary"):
-                        st.session_state["_applyagent_nav"] = "🤝 Network"
+                        st.session_state["_pending_main_nav"] = "🤝 Network"
                         st.rerun()
                 elif _nba_kind == "outcome":
                     if st.button("✅ Open Replies", key="nba_outcome_btn",
                                   width='stretch', type="primary"):
-                        st.session_state["_applyagent_nav"] = "🏠 Today"
+                        st.session_state["_pending_main_nav"] = "🏠 Today"
                         st.session_state["_nav_sub_🏠 Today"] = "Replies"
                         st.rerun()
             # Explainability line — score breakdown in one glance
@@ -8313,15 +8326,15 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             )
             _tc1, _tc2, _tc3 = st.columns(3)
             if _tc1.button("→ Jobs Kanban", width="stretch", key="_vc_go_kanban"):
-                st.session_state["_applyagent_nav"] = "📋 Roles"
+                st.session_state["_pending_main_nav"] = "📋 Roles"
                 st.session_state["_nav_sub_📋 Roles"] = "Tracker"
                 st.rerun()
             if _tc2.button("→ Review Queue", width="stretch", key="_vc_go_review"):
-                st.session_state["_applyagent_nav"] = "🏠 Today"
+                st.session_state["_pending_main_nav"] = "🏠 Today"
                 st.session_state["_nav_sub_🏠 Today"] = "Review"
                 st.rerun()
             if _tc3.button("→ Today's brief", width="stretch", key="_vc_go_today"):
-                st.session_state["_applyagent_nav"] = "🏠 Today"
+                st.session_state["_pending_main_nav"] = "🏠 Today"
                 st.session_state["_nav_sub_🏠 Today"] = "Dashboard"
                 st.rerun()
             # Tracker downloads (doc §178): raw JSON + per-status xlsx.
@@ -8336,7 +8349,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                          expanded=False):
             if st.button("→ Open Scan History page", key="_vc_go_scan_history",
                          help="Full scan/run history with per-scan drill-in."):
-                st.session_state["_applyagent_nav"] = "📋 Roles"
+                st.session_state["_pending_main_nav"] = "📋 Roles"
                 st.session_state["_nav_sub_📋 Roles"] = "Scans"
                 st.rerun()
             _render_history_card()
