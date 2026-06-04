@@ -8599,15 +8599,29 @@ elif page == "📋 Jobs Kanban":
             return ""
         view = view.assign(follow_up=view["followup_schedule"].apply(_fu_badge))
 
-    # Column ordering: actionable info first, low-value fields trimmed.
-    # Dropped: id (visible in inspector), fit_score text (redundant with numeric).
-    cols = [c for c in ["draft", "follow_up", "warm",
-                        "company", "title", "status", "urgency",
-                        "tier", "fit_score_numeric", "primary_variant",
-                        "gta_area", "sector",
-                        "date_found", "date_applied", "src", "freshness", "url"]
+    # Compact-by-default columns — clicking a row opens the full inspector,
+    # so the table only needs to be SCANNABLE. Lead with the essentials;
+    # the mostly-empty badge columns (Draft/Follow-up/Warm) and low-value
+    # context (Variant/Area/sector/Src/Age/Applied) move behind a toggle so
+    # they don't shove company/title off the left edge.
+    _show_all_cols = st.checkbox(
+        "Show all columns", value=False, key="kanban_show_all_cols",
+        help="Off (compact): company · title · status · T · Fit · Urg · "
+             "Found · Link. On: also Follow-up · Warm · Draft · Variant · "
+             "Area · sector · Applied · Src · Age.",
+    )
+    _compact_cols = ["company", "title", "status", "tier",
+                     "fit_score_numeric", "urgency", "date_found", "url"]
+    _full_cols = ["company", "title", "status", "tier", "fit_score_numeric",
+                  "urgency", "follow_up", "warm", "draft", "sector",
+                  "gta_area", "primary_variant", "date_found", "date_applied",
+                  "src", "freshness", "url"]
+    cols = [c for c in (_full_cols if _show_all_cols else _compact_cols)
             if c in view.columns]
     _col_config = {
+        "company": st.column_config.TextColumn("Company", width="medium"),
+        "title": st.column_config.TextColumn("Title", width="large"),
+        "status": st.column_config.TextColumn("Status", width="small"),
         "url": st.column_config.LinkColumn("Link", width="small"),
         "fit_score_numeric": st.column_config.NumberColumn("Fit", width="small"),
         "tier": st.column_config.NumberColumn("T", width="small"),
