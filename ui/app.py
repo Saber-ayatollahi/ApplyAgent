@@ -8923,34 +8923,25 @@ elif page == "📋 Jobs Kanban":
                         st.success("Saved.")
                         st.rerun()
 
-                _kb_qa1, _kb_qa2 = st.columns(2)
-                if _kb_qa1.button(f"✅ Mark Applied today (id={sel_id})"):
-                    from safe_json import mutate_json as _mj  # noqa: WPS433
-
-                    def _mut_applied(t):
-                        for j in t.get("jobs", []):
-                            if j["id"] == sel_id:
-                                j["status"] = "Applied"
-                                seed_followup(j, applied_on=date.today())
-                                break
-                        return t
-
-                    _mj(TRACKER, _mut_applied, default={"jobs": [], "meta": {}})
-                    load_tracker.clear()
-                    st.success("Marked Applied; first follow-up in 3 days.")
-                    st.rerun()
-                # Phase 3D — Archive / Restore button (toggles based on
-                # current state). Routes through tracker_ops.archive +
-                # mutate_json so the write serializes against auto_promote.
+                # "Mark Applied" already lives in the action strip at the top
+                # of this inspector (Open posting · Tailor · ✅ Applied) — no
+                # duplicate button here. The bottom groups the "stop pursuing"
+                # actions under one header instead of scattering them, and
+                # drops the internal (id=…) that was leaking into labels.
+                st.markdown("**Not pursuing this role?**")
+                # Phase 3D — Archive / Restore (toggles on current state).
+                # Routes through tracker_ops.archive + mutate_json so the
+                # write serializes against auto_promote.
                 _sel_job = next((j for j in tr["jobs"]
                                  if j.get("id") == sel_id), None)
                 _is_archived = bool((_sel_job or {}).get("archived", False))
                 if not _is_archived:
-                    if _kb_qa2.button(f"🚫 Archive (id={sel_id})",
-                                       help="Hide from Review Queue + "
-                                            "Today's brief + Kanban active "
-                                            "view. URL still blocks "
-                                            "re-promotion."):
+                    if st.button("🚫 Archive", width='stretch',
+                                 key=f"_kb_archive_{sel_id}",
+                                 help="Hide from Review Queue + "
+                                      "Today's brief + Kanban active "
+                                      "view. URL still blocks "
+                                      "re-promotion."):
                         from safe_json import mutate_json as _mj_kb  # noqa: WPS433
                         from automation import tracker_ops as _tops_kb  # noqa: WPS433
                         try:
@@ -9003,12 +8994,14 @@ elif page == "📋 Jobs Kanban":
                             _kb_live_mute = None
 
                     _kb_btn_label = (
-                        f"↩ Restore (still muted ⚠) (id={sel_id})"
+                        "↩ Restore (still muted ⚠)"
                         if _kb_live_mute
-                        else f"↩ Restore (id={sel_id})"
+                        else "↩ Restore"
                     )
-                    if _kb_qa2.button(
+                    if st.button(
                         _kb_btn_label,
+                        width='stretch',
+                        key=f"_kb_restore_{sel_id}",
                         help="Bring this row back into the "
                              "active Kanban + Review Queue.",
                     ):
@@ -9113,7 +9106,8 @@ elif page == "📋 Jobs Kanban":
                     "Not a fit", "Location", "Comp too low", "Seniority mismatch",
                     "Already applied elsewhere", "Company", "Other",
                 ]
-                st.markdown("**Not interested?**")
+                # (Sits under the "Not pursuing this role?" header above,
+                # next to 🚫 Archive — the two "stop pursuing" actions grouped.)
                 _rj1, _rj2 = st.columns([2, 1])
                 with _rj1:
                     _kb_reject_reason = st.selectbox(
