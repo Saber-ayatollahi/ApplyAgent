@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -117,7 +116,11 @@ def _build_user_prompt(company: str, role: str, jd: str) -> str:
         f"exactly these top-level keys:\n"
         f'  "resume_content": <the resume_content.json object matching the '
         f'schema above>,\n'
-        f'  "cover_letter": <the cover letter as a markdown string>,\n'
+        f'  "cover_letter": <the LETTER BODY ONLY — salutation '
+        f'("Dear Hiring Team,"), 3-4 paragraphs (~300-350 words), and the '
+        f'sign-off ("Sincerely,\\nSaber Ayatollahi, CFA"). NO contact header '
+        f'or subject line (the renderer adds a branded header) and NO '
+        f'honest-gaps note (that goes in "notes")>,\n'
         f'  "interview_brief": <markdown string: the 5 most likely technical '
         f'questions for THIS role with 2-3 sentence model answers drawn from '
         f'the Master Repo STAR stories; then 3 sharp questions Saber should '
@@ -157,27 +160,45 @@ def _revise_for_keywords(rc: dict, missing: list[str], system: str) -> dict:
     return revised
 
 
-_MISSING_RE = re.compile(r"ATS keywords MISSING \(\d+/\d+\): (.+)$", re.MULTILINE)
-
-
-def _render_and_check(content_path: Path, no_pdf: bool):
-    """Run resume_render; return (returncode, folder|None, missing_keywords,
-    combined_log)."""
-    cmd = [sys.executable, str(HERE / "resume_render.py"),
-           "--content", str(content_path)]
-    if no_pdf:
-        cmd.append("--no-pdf")
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    log = proc.stdout + proc.stderr
-    folder = None
-    mf = re.search(r"^folder\s+(.+)$", proc.stdout, re.MULTILINE)
-    if mf:
-        folder = Path(mf.group(1).strip())
-    missing: list[str] = []
-    mk = _MISSING_RE.search(log)
-    if mk:
-        missing = [k.strip() for k in mk.group(1).split(",") if k.strip()]
-    return proc.returncode, folder, missing, log
+def _verify_pass(payload: dict, jd: str, company: str, role: str,
+                 system: str) -> dict:
+    """Adversarial validity/critique pass: audit the draft resume + cover
+    against the Master Repo (in the system prompt) and FIX anything
+    untraceable or inflated. Returns a revised payload (resume_content +
+    cover_letter corrected, plus a validity_report). The interview_brief is
+    carried over untouched to save tokens."""
+    rc = payload.get("resume_content")
+    cover = payload.get("cover_letter", "")
+    user = (
+        "You are an ADVERSARIAL reviewer. The Master Repo (system message) is "
+        "the CEILING on claims; the JD is the target, never a source of "
+        "experience.\n\nDraft to audit:\n```json\n"
+        f"{json.dumps({'resume_content': rc, 'cover_letter': cover}, ensure_ascii=False, indent=2)}"
+        f"\n```\n\nTarget: {role} @ {company}.\nJD:\n```\n{jd[:6000]}\n```\n\n"
+        "Audit EVERY summary sentence, core_skill, and bullet. Flag AND FIX:\n"
+        "1. JD-imported duties presented as Saber's experience → rewrite to "
+        "what the repo supports, or delete.\n"
+        "2. Inflated verbs (Built/Developed/Led/Designed where the repo only "
+        "supports Reviewed/Validated/Analyzed) → downgrade to the truthful "
+        "verb.\n"
+        "3. Skills/tools in core_skills not grounded in the repo → remove.\n"
+        "4. Named regulations/frameworks (CCAR, FRTB, Basel) claimed as a "
+        "capability without repo support → hedge to '-aligned / applied "
+        "knowledge of' or remove.\n"
+        "5. Cover-letter claims not supported by the resume/repo → align.\n\n"
+        "Keep all the strong, TRUE material and the 2-page budget. Return ONE "
+        "```json fenced block with keys: resume_content (corrected), "
+        "cover_letter (corrected, body only), validity_report (markdown: what "
+        "you changed + any residual honest gaps to own in interview)."
+    )
+    raw = jd_tailor.call_claude(system, user, max_tokens=16000)
+    revised = _extract_json(raw)
+    revised = revised if "resume_content" in revised else {"resume_content": revised}
+    # carry over what the verifier doesn't regenerate
+    revised.setdefault("interview_brief", payload.get("interview_brief", ""))
+    revised.setdefault("notes", payload.get("notes", ""))
+    revised.setdefault("cover_letter", cover)
+    return revised
 
 
 def _extract_json(text: str) -> dict:
@@ -212,7 +233,12 @@ def main() -> int:
     ap.add_argument("--role")
     ap.add_argument("--jd-url")
     ap.add_argument("--jd-file")
-    ap.add_argument("--no-pdf", action="store_true")
+    ap.add_argument("--no-pdf", action="store_true",
+                    help="skip PDF (just .docx). Default renders PDFs via "
+                         "libreoffice or MS Word.")
+    ap.add_argument("--no-verify", action="store_true",
+                    help="skip the adversarial validity/critique pass "
+                         "(faster + cheaper, but no traceability check).")
     ap.add_argument("--model", help="override the Claude model")
     args = ap.parse_args()
 
@@ -243,52 +269,77 @@ def main() -> int:
         print(f"  raw output saved to {dump}", file=sys.stderr)
         return 2
 
-    # Persist the structured content (input to the renderer).
-    RESUME_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    content_path = RESUME_DATA_DIR / f"{_slug(company)}_{_slug(role)[:50]}.json"
-    content_path.write_text(json.dumps(rc, indent=2, ensure_ascii=False),
-                            encoding="utf-8")
-    print(f"[resume_agent] wrote {content_path.name}", file=sys.stderr)
+    # ── Validity / critique pass — adversarially audit the draft resume +
+    # cover against the Master Repo and fix JD-imported inflation, untruthful
+    # verbs, ungrounded skills BEFORE rendering. Skippable with --no-verify.
+    if not args.no_verify:
+        try:
+            payload = _verify_pass(payload, jd, company, role, system)
+            rc = payload["resume_content"]
+            _validate_content(rc)
+            print("[resume_agent] validity pass applied.", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"[resume_agent] validity pass skipped ({e}); using "
+                  "first draft.", file=sys.stderr)
 
-    # Render + ATS keyword self-check, with ONE revision pass if the model
-    # listed keywords it didn't actually cover (the gap seen on the first
-    # Scotiabank run — incorporate truthfully or drop, then re-render).
-    code, folder, missing, log = _render_and_check(content_path, args.no_pdf)
-    sys.stderr.write(log)
-    if code != 0:
-        print("[resume_agent] resume_render failed", file=sys.stderr)
+    # ── Render the resume in-process (resume .docx + .pdf via libreoffice or
+    # the MS-Word/docx2pdf fallback) with an ATS-keyword retry. ──
+    import resume_render as _RR  # noqa: WPS433
+    make_pdf = not args.no_pdf
+    apps_base = str(ROOT / "applications")
+
+    def _render(content):
+        _f, _dx, _pdf = _RR.bundle(content, apps_base, make_pdf=make_pdf)
+        _kws, _miss = _RR.keyword_report(content)
+        return _f, _miss
+
+    try:
+        folder, missing = _render(rc)
+    except Exception as e:  # noqa: BLE001
+        print(f"[resume_agent] render failed: {e}", file=sys.stderr)
         return 3
     if missing:
         print(f"[resume_agent] {len(missing)} ATS keyword(s) missing "
               f"({', '.join(missing)}); revising once…", file=sys.stderr)
         try:
             rc = _revise_for_keywords(rc, missing, system)
-            content_path.write_text(
-                json.dumps(rc, indent=2, ensure_ascii=False), encoding="utf-8")
-            code, folder, missing, log = _render_and_check(
-                content_path, args.no_pdf)
-            sys.stderr.write(log)
+            folder, missing = _render(rc)
         except Exception as e:  # noqa: BLE001
             print(f"[resume_agent] keyword revision failed ({e}); keeping "
                   "the first draft.", file=sys.stderr)
     if missing:
-        print(f"[resume_agent] note: still missing {', '.join(missing)} "
-              "(left as-is — review before submitting).", file=sys.stderr)
+        print(f"[resume_agent] note: still missing {', '.join(missing)}.",
+              file=sys.stderr)
+
+    # Persist the final structured content (input to the renderer).
+    RESUME_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    content_path = RESUME_DATA_DIR / f"{_slug(company)}_{_slug(role)[:50]}.json"
+    content_path.write_text(json.dumps(rc, indent=2, ensure_ascii=False),
+                            encoding="utf-8")
 
     if folder is None or not folder.exists():
         apps = sorted((ROOT / "applications").glob("*/"),
                       key=lambda p: p.stat().st_mtime, reverse=True)
         folder = apps[0] if apps else None
 
-    # Drop the cover letter + interview brief into the same folder — one
-    # deliverable bundle (resume .docx + cover + brief), replacing the
-    # separate jd_tailor markdown outputs.
+    # ── Cover letter (branded .docx + .pdf, matching the resume) + interview
+    # brief + validity report — one deliverable bundle. ──
     if folder is not None and folder.exists():
         base = f"{_slug(company)}_{_slug(role)[:50]}"
         cover = payload.get("cover_letter") or ""
         notes = payload.get("notes") or ""
         brief = payload.get("interview_brief") or ""
+        report = payload.get("validity_report") or ""
         if cover:
+            try:
+                _cdocx = folder / f"{base}_cover.docx"
+                _RR.render_cover(rc.get("contact") or {},
+                                 rc.get("target") or {}, cover, str(_cdocx))
+                if make_pdf:
+                    _RR.to_pdf(_cdocx, folder)
+            except Exception as e:  # noqa: BLE001
+                print(f"[resume_agent] cover render failed ({e})",
+                      file=sys.stderr)
             (folder / f"{base}_cover.md").write_text(
                 cover + (f"\n\n---\n\n**Before submitting:** {notes}\n"
                          if notes else ""),
@@ -296,6 +347,9 @@ def main() -> int:
         if brief:
             (folder / f"{base}_interview_brief.md").write_text(
                 brief, encoding="utf-8")
+        if report:
+            (folder / f"{base}_validity_report.md").write_text(
+                report, encoding="utf-8")
         print(f"[resume_agent] DONE -> {folder}", file=sys.stderr)
         # machine-readable last line for the UI to parse
         print(f"RESUME_AGENT_FOLDER={folder}")

@@ -295,6 +295,56 @@ def render(content, out_path):
     doc.save(out_path)
     return out_path
 
+
+def _clean_cover_body(text):
+    """Strip markdown noise from the LLM cover text into clean letter
+    paragraphs: drop headings, horizontal rules, bold markers, leading
+    bullets, and any contact-header or honest-gaps block (the .docx supplies
+    the branded header; gaps live in notes, not the letter)."""
+    lines = []
+    for ln in (text or "").splitlines():
+        st = ln.strip()
+        if st.startswith("#") or st in ("---", "***", "___"):
+            continue
+        if (re.match(r"^\*{0,2}Saber Ayatollahi", st)
+                or st.lower().startswith("subject:")
+                or "saber.ayatollahi@gmail.com" in st
+                or "linkedin.com/in/sayatollahi" in st):
+            continue
+        if st.startswith("*") and st.endswith("*") and "gap" in st.lower():
+            continue
+        s = re.sub(r"\*\*(.+?)\*\*", r"\1", ln.rstrip())  # bold
+        s = re.sub(r"^\s*[-*]\s+", "", s)                  # leading bullets
+        lines.append(s)
+    return "\n".join(lines).strip()
+
+
+def render_cover(contact, target, body, out_path):
+    """Render a branded cover-letter .docx — same header + typography as the
+    resume, then a dated letter body. `body` is the letter text (salutation →
+    paragraphs → signature); markdown is stripped to clean paragraphs. Pairs
+    with to_pdf() for a matching PDF."""
+    doc = Document()
+    for sec in doc.sections:
+        sec.left_margin = Inches(MARGIN_LR); sec.right_margin = Inches(MARGIN_LR)
+        sec.top_margin = Inches(MARGIN_TOP); sec.bottom_margin = Inches(MARGIN_BOT)
+    normal = doc.styles['Normal']
+    normal.font.name = FONT
+    normal.font.size = Pt(SZ_BULLET)
+
+    _build_header(doc, contact or {})
+    doc.add_paragraph(date.today().strftime("%B %d, %Y"))
+    company = (target or {}).get("company")
+    role = (target or {}).get("role")
+    if company:
+        doc.add_paragraph(f"Re: {role} — {company}" if role else f"Re: {company}")
+    for para in _clean_cover_body(body).split("\n\n"):
+        para = para.strip()
+        if para:
+            doc.add_paragraph(para)
+    doc.save(out_path)
+    return out_path
+
 # ---------------------------------------------------------------------------
 # Output bundling — folder per job, both .docx and .pdf
 # ---------------------------------------------------------------------------
@@ -317,6 +367,23 @@ def _slug(text):
 # otherwise block the whole render forever; we'd rather skip the PDF.
 PDF_CONVERT_TIMEOUT = 120
 
+def _to_pdf_via_word(docx_path, out_dir):
+    """Fallback PDF path for machines with MS Word but no LibreOffice
+    (e.g. Windows). Uses docx2pdf, which drives Word via COM. Slower
+    (~10s, opens Word) and Windows/Word-only; returns Path or None."""
+    try:
+        from docx2pdf import convert  # type: ignore
+    except Exception:
+        return None
+    dest = Path(out_dir) / (Path(docx_path).stem + ".pdf")
+    try:
+        convert(str(docx_path), str(dest))
+        return dest if dest.exists() else None
+    except Exception as e:  # noqa: BLE001
+        print(f"  WARNING: Word/docx2pdf PDF conversion failed: {e}")
+        return None
+
+
 def to_pdf(docx_path, out_dir):
     """Convert .docx -> .pdf via libreoffice/soffice in a private temp dir so
     LibreOffice lock/temp droppings never land in the deliverable folder; only
@@ -327,10 +394,17 @@ def to_pdf(docx_path, out_dir):
     so an interrupted run never leaves a half-written or silently-stale
     canonical PDF. If the canonical path is genuinely locked (open in a viewer
     on the host) we fall back to a '-new.pdf' copy and warn LOUDLY that the
-    canonical file is now stale."""
+    canonical file is now stale.
+
+    When LibreOffice isn't on PATH, falls back to MS Word (docx2pdf) before
+    giving up — so a Word-equipped Windows box still gets PDFs."""
     soffice = shutil.which("libreoffice") or shutil.which("soffice")
     if not soffice:
-        print("  WARNING: PDF skipped (libreoffice/soffice not found on PATH).")
+        pdf = _to_pdf_via_word(docx_path, out_dir)
+        if pdf:
+            return pdf
+        print("  WARNING: PDF skipped (no libreoffice/soffice on PATH, and "
+              "Word/docx2pdf unavailable).")
         return None
     import os
     import tempfile

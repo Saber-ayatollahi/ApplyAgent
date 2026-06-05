@@ -2036,7 +2036,7 @@ def render_tailor_action_row(job: dict, key_prefix: str,
                 # the polished applications/<job>/ .docx + cover + brief).
                 _cmd = [sys.executable,
                         str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id, "--no-pdf"]
+                        "--job-id", job_id]
                 _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
                 st.session_state["_active_tailor_job_id"] = job_id
                 st.session_state["_active_tailor_run_id"] = _rec.run_id
@@ -2145,9 +2145,15 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
 
         # Drawer content: the polished deliverable (resume .docx + cover +
         # interview brief) for this role — downloads, previews, apply actions.
-        _docx = next(iter(folder.glob("*.docx")), None)
+        _r_docx = next((p for p in folder.glob("*.docx")
+                        if not p.name.endswith("_cover.docx")), None)
+        _r_pdf = next((p for p in folder.glob("*.pdf")
+                       if not p.name.endswith("_cover.pdf")), None)
+        _c_docx = next(iter(folder.glob("*_cover.docx")), None)
+        _c_pdf = next(iter(folder.glob("*_cover.pdf")), None)
         _cover = next(iter(folder.glob("*_cover.md")), None)
         _brief = next(iter(folder.glob("*_interview_brief.md")), None)
+        _valid = next(iter(folder.glob("*_validity_report.md")), None)
         st.caption(
             f"📂 `applications/{folder.name}/` · "
             f"{datetime.fromtimestamp(folder.stat().st_mtime).strftime('%b %d %H:%M')}"
@@ -2195,30 +2201,36 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                                "current deliverable for this role)."):
                 _cmd = [sys.executable,
                         str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id, "--no-pdf"]
+                        "--job-id", job_id]
                 _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
                 st.session_state["_active_tailor_run_id"] = _rec.run_id
                 st.toast("📄 Re-generating…", icon="🚀")
                 st.rerun()
 
-        _dl1, _dl2, _dl3 = st.columns(3)
-        if _docx:
-            with _dl1, open(_docx, "rb") as _f:
-                st.download_button("⬇ Resume (.docx)", _f.read(),
-                                   file_name=_docx.name, width='stretch',
-                                   key=f"drawer_dl_docx_{_kk}")
-        if _cover:
-            with _dl2:
-                st.download_button("⬇ Cover letter",
-                                   _cover.read_text(encoding="utf-8"),
-                                   file_name=_cover.name, width='stretch',
-                                   key=f"drawer_dl_cover_{_kk}")
-        if _brief:
-            with _dl3:
-                st.download_button("⬇ Interview brief",
-                                   _brief.read_text(encoding="utf-8"),
-                                   file_name=_brief.name, width='stretch',
-                                   key=f"drawer_dl_brief_{_kk}")
+        _dq1, _dq2, _dq3, _dq4 = st.columns(4)
+        if _r_docx:
+            with _dq1, open(_r_docx, "rb") as _f:
+                st.download_button("⬇ Resume .docx", _f.read(),
+                                   file_name=_r_docx.name, width='stretch',
+                                   key=f"drawer_dl_rdocx_{_kk}")
+        if _r_pdf:
+            with _dq2, open(_r_pdf, "rb") as _f:
+                st.download_button("⬇ Resume .pdf", _f.read(),
+                                   file_name=_r_pdf.name, width='stretch',
+                                   key=f"drawer_dl_rpdf_{_kk}")
+        if _c_docx:
+            with _dq3, open(_c_docx, "rb") as _f:
+                st.download_button("⬇ Cover .docx", _f.read(),
+                                   file_name=_c_docx.name, width='stretch',
+                                   key=f"drawer_dl_cdocx_{_kk}")
+        if _c_pdf:
+            with _dq4, open(_c_pdf, "rb") as _f:
+                st.download_button("⬇ Cover .pdf", _f.read(),
+                                   file_name=_c_pdf.name, width='stretch',
+                                   key=f"drawer_dl_cpdf_{_kk}")
+        if not (_r_pdf or _c_pdf):
+            st.caption("ℹ️ PDFs not generated (needs MS Word or libreoffice). "
+                       ".docx is the editable master — export PDF from Word.")
 
         if _cover:
             with st.expander("✉️ Cover letter preview", expanded=False):
@@ -2226,6 +2238,10 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
         if _brief:
             with st.expander("🎤 Interview brief", expanded=False):
                 st.markdown(_brief.read_text(encoding="utf-8"))
+        if _valid:
+            with st.expander("✅ Validity report — what was checked & changed",
+                             expanded=False):
+                st.markdown(_valid.read_text(encoding="utf-8"))
 
 
 def run_inline_agent(slot, label, *, on_finish=None,
@@ -4836,7 +4852,7 @@ if page == "🏠 Dashboard":
                               width='content'):
                     cmd = [sys.executable,
                            str(ROOT / "automation" / "resume_agent.py"),
-                           "--job-id", td_pick, "--no-pdf"]
+                           "--job-id", td_pick]
                     rec = scan_runner.start_run(f"resume_{td_pick}", cmd)
                     st.success(f"Tailor started (`{rec.run_id}`). "
                                "Draft will land in outputs/ in ~60s.")
@@ -11559,7 +11575,7 @@ elif page == "📬 Review Queue":
                 if _ap_tailor and _rq_job_id and api_key.is_key_valid():
                     _tailor_cmd = [sys.executable,
                                    str(ROOT / "automation" / "resume_agent.py"),
-                                   "--job-id", _rq_job_id, "--no-pdf"]
+                                   "--job-id", _rq_job_id]
                     scan_runner.start_run(f"resume_{_rq_job_id}", _tailor_cmd)
                     st.toast(f"📄 Resume generation launched for {_rq_job_id}",
                              icon="🚀")
