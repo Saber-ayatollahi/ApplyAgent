@@ -3643,10 +3643,10 @@ _NAV_GROUPS = {
         ("Refresh",     "🎯 Pipeline · Refresh"),   # ① Inputs + ② Worklist
         ("Score",       "🎯 Pipeline · Score"),     # ③ Triage + ④ Scoring
         ("Promote",     "🎯 Pipeline · Promote"),   # ⑤ Auto-promote + ⑥ Tracker
+        ("History",     "📜 Scan History"),         # run-log of every scan/score/run
     ],
     "📋 Roles": [
         ("Tracker",     "📋 Jobs Kanban"),
-        ("Scans",       "📜 Scan History"),
     ],
     "🤝 Network": [
         ("",            "🤝 Recruiter CRM"),
@@ -3703,7 +3703,7 @@ if _nav_state in _LEGACY_PAGE_TO_GROUP:
 # work because the destination group's sub-radio hasn't rendered yet; this
 # covers the within-Pipeline case the banner needs.)
 _pending_view = st.session_state.pop("_pipe_pending_view", None)
-if _pending_view in ("Refresh", "Score", "Promote"):
+if _pending_view in ("Refresh", "Score", "Promote", "History"):
     st.session_state["_applyagent_nav"] = "🎯 Pipeline"
     st.session_state["_nav_sub_🎯 Pipeline"] = _pending_view
 
@@ -8434,8 +8434,10 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                          expanded=False):
             if st.button("→ Open Scan History page", key="_vc_go_scan_history",
                          help="Full scan/run history with per-scan drill-in."):
-                st.session_state["_pending_main_nav"] = "📋 Roles"
-                st.session_state["_nav_sub_📋 Roles"] = "Scans"
+                # Scan History now lives INSIDE 🎯 Pipeline, so this is a
+                # within-group jump: stash the sub-view in _pipe_pending_view
+                # (transferred to the sub-radio key before it instantiates).
+                st.session_state["_pipe_pending_view"] = "History"
                 st.rerun()
             _render_history_card()
 

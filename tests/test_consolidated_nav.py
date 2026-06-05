@@ -35,8 +35,10 @@ NAV_CASES = [
     ("🎯 Pipeline", "Refresh",   "🎯 Pipeline · Refresh"),
     ("🎯 Pipeline", "Score",     "🎯 Pipeline · Score"),
     ("🎯 Pipeline", "Promote",   "🎯 Pipeline · Promote"),
-    ("📋 Roles", "Tracker",      "📋 Jobs Kanban"),
-    ("📋 Roles", "Scans",        "📜 Scan History"),
+    ("🎯 Pipeline", "History",   "📜 Scan History"),
+    # 📋 Roles is now a single-child group (Kanban); sub-radio is skipped and
+    # it resolves directly, so the sub-label is None.
+    ("📋 Roles", None,           "📋 Jobs Kanban"),
     ("🤝 Network", None,         "🤝 Recruiter CRM"),
     ("⚙️ System", "Admin",       "⚙️ Admin"),
     ("⚙️ System", "Analytics",   "📊 Analytics"),
