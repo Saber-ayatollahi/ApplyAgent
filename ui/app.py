@@ -8686,6 +8686,15 @@ elif page == "📋 Jobs Kanban":
             return ""
         view = view.assign(follow_up=view["followup_schedule"].apply(_fu_badge))
 
+    # Posting date column — when the role went live (distinct from Found =
+    # when WE first saw it). Coerce to a clean ISO day so None/NaN and any
+    # time component never leak into the table cell.
+    if "posted_date" in view.columns:
+        view["posted_date"] = (
+            view["posted_date"].fillna("").astype(str).str.slice(0, 10)
+            .replace({"None": "", "nan": "", "NaT": ""})
+        )
+
     # Compact-by-default columns — clicking a row opens the full inspector,
     # so the table only needs to be SCANNABLE. Lead with the essentials;
     # the mostly-empty badge columns (Draft/Follow-up/Warm) and low-value
@@ -8694,15 +8703,16 @@ elif page == "📋 Jobs Kanban":
     _show_all_cols = st.checkbox(
         "Show all columns", value=False, key="kanban_show_all_cols",
         help="Off (compact): company · title · status · T · Fit · Urg · "
-             "Found · Link. On: also Follow-up · Warm · Draft · Variant · "
-             "Area · sector · Applied · Src · Age.",
+             "Posted · Found · Link. On: also Follow-up · Warm · Draft · "
+             "Variant · Area · sector · Applied · Src · Age.",
     )
     _compact_cols = ["company", "title", "status", "tier",
-                     "fit_score_numeric", "urgency", "date_found", "url"]
+                     "fit_score_numeric", "urgency", "posted_date",
+                     "date_found", "url"]
     _full_cols = ["company", "title", "status", "tier", "fit_score_numeric",
                   "urgency", "follow_up", "warm", "draft", "sector",
-                  "gta_area", "primary_variant", "date_found", "date_applied",
-                  "src", "freshness", "url"]
+                  "gta_area", "primary_variant", "posted_date", "date_found",
+                  "date_applied", "src", "freshness", "url"]
     cols = [c for c in (_full_cols if _show_all_cols else _compact_cols)
             if c in view.columns]
     _col_config = {
@@ -8720,6 +8730,11 @@ elif page == "📋 Jobs Kanban":
         "src": st.column_config.TextColumn("Src", width="small"),
         "freshness": st.column_config.TextColumn("Age", width="small"),
         "gta_area": st.column_config.TextColumn("Area", width="small"),
+        "posted_date": st.column_config.TextColumn(
+            "Posted", width="small",
+            help="When the role went live on the board (vs Found = when we "
+                 "first saw it). Workday 30+ day roles are dated from the "
+                 "precise CXS startDate where reachable."),
         "date_found": st.column_config.TextColumn("Found", width="small"),
         "date_applied": st.column_config.TextColumn("Applied", width="small"),
     }
