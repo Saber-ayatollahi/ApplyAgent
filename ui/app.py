@@ -1973,6 +1973,13 @@ def _find_tailor_docs(job: dict) -> list:
     )
 
 
+def _resume_tier() -> str:
+    """The session-wide cost/quality tier for resume_agent (set via the
+    selector in the Kanban inspector). Default 'balanced' = Opus draft +
+    Sonnet validity check (~$0.60), vs 'max' Opus-everything (~$1.30)."""
+    return st.session_state.get("_resume_tier", "balanced")
+
+
 def _find_application_folder(job: dict):
     """Find applications/<date>_<company>_<role>/ for this job — the polished
     resume_agent / resume_render deliverable. Matches resume_render's folder
@@ -2036,7 +2043,7 @@ def render_tailor_action_row(job: dict, key_prefix: str,
                 # the polished applications/<job>/ .docx + cover + brief).
                 _cmd = [sys.executable,
                         str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id]
+                        "--job-id", job_id, "--tier", _resume_tier()]
                 _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
                 st.session_state["_active_tailor_job_id"] = job_id
                 st.session_state["_active_tailor_run_id"] = _rec.run_id
@@ -2201,7 +2208,7 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                                "current deliverable for this role)."):
                 _cmd = [sys.executable,
                         str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id]
+                        "--job-id", job_id, "--tier", _resume_tier()]
                 _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
                 st.session_state["_active_tailor_run_id"] = _rec.run_id
                 st.toast("📄 Re-generating…", icon="🚀")
@@ -4852,7 +4859,7 @@ if page == "🏠 Dashboard":
                               width='content'):
                     cmd = [sys.executable,
                            str(ROOT / "automation" / "resume_agent.py"),
-                           "--job-id", td_pick]
+                           "--job-id", td_pick, "--tier", _resume_tier()]
                     rec = scan_runner.start_run(f"resume_{td_pick}", cmd)
                     st.success(f"Tailor started (`{rec.run_id}`). "
                                "Draft will land in outputs/ in ~60s.")
@@ -8887,6 +8894,24 @@ elif page == "📋 Jobs Kanban":
                     job, key_prefix="kanban_inspect", tracker_data=tr,
                     tracker_path=TRACKER,
                 )
+                # Cost/quality tier for ALL resume generation (session-wide).
+                _tier_labels = {
+                    "balanced": "⚖️ Balanced · Opus draft + Sonnet check (~$0.60)",
+                    "max":      "💎 Max · Opus everything (~$1.30)",
+                    "cheap":    "💰 Cheap · Sonnet (~$0.25)",
+                    "draft":    "⚡ Draft · Sonnet, no validity check (~$0.10)",
+                }
+                _cur = st.session_state.get("_resume_tier", "balanced")
+                st.session_state["_resume_tier"] = st.selectbox(
+                    "Resume cost/quality", list(_tier_labels),
+                    index=(list(_tier_labels).index(_cur)
+                           if _cur in _tier_labels else 0),
+                    format_func=lambda k: _tier_labels[k],
+                    key="_resume_tier_select",
+                    help="Per-resume API cost when you hit ✨ Tailor resume. "
+                         "Balanced keeps the Opus-quality draft but runs the "
+                         "validity check on cheaper Sonnet. Draft skips the "
+                         "validity check entirely.")
 
                 _nxt = job.get("next_action") or ""
                 if _nxt:
@@ -11575,7 +11600,8 @@ elif page == "📬 Review Queue":
                 if _ap_tailor and _rq_job_id and api_key.is_key_valid():
                     _tailor_cmd = [sys.executable,
                                    str(ROOT / "automation" / "resume_agent.py"),
-                                   "--job-id", _rq_job_id]
+                                   "--job-id", _rq_job_id, "--tier",
+                                   _resume_tier()]
                     scan_runner.start_run(f"resume_{_rq_job_id}", _tailor_cmd)
                     st.toast(f"📄 Resume generation launched for {_rq_job_id}",
                              icon="🚀")

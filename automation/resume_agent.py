@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from datetime import datetime, timezone
@@ -38,6 +39,34 @@ import resume_render  # type: ignore  # noqa: E402
 
 RESUME_DATA_DIR = HERE / "resume_data"
 INSTRUCTIONS = ROOT / "docs" / "resume_agent_instructions.md"
+
+# ── Cost tiers ──────────────────────────────────────────────────────────
+# A resume generate is up to 3 Claude calls: draft → validity → keyword-fix.
+# The DRAFT benefits from the strongest model; the validity/keyword passes
+# are review/edit tasks a cheaper model handles well. Tier picks the model
+# per call (and whether to verify). Rough cost per resume (PDFs are free):
+#   max       Opus  / Opus   / verify ON   ~ $1.30  (best)
+#   balanced  Opus  / Sonnet / verify ON   ~ $0.60  (default — Opus draft,
+#                                                     cheap check)
+#   cheap     Sonnet/ Sonnet / verify ON   ~ $0.25
+#   draft     Sonnet/  —     / verify OFF  ~ $0.10  (fastest, no check)
+_MODELS = {"opus": "claude-opus-4-7", "sonnet": "claude-sonnet-4-6",
+           "haiku": "claude-haiku-4-5"}
+_FALLBACK = {"opus": "claude-sonnet-4-6", "sonnet": "claude-haiku-4-5",
+             "haiku": "claude-haiku-4-5"}
+TIERS = {
+    "max":      {"draft": "opus",   "verify": "opus",   "do_verify": True},
+    "balanced": {"draft": "opus",   "verify": "sonnet", "do_verify": True},
+    "cheap":    {"draft": "sonnet", "verify": "sonnet", "do_verify": True},
+    "draft":    {"draft": "sonnet", "verify": "sonnet", "do_verify": False},
+}
+DEFAULT_TIER = os.environ.get("RESUME_AGENT_TIER", "balanced")
+
+
+def _use_model(key: str) -> None:
+    """Point jd_tailor.call_claude at a model tier (with a cheaper fallback)."""
+    jd_tailor.MODEL = _MODELS.get(key, key)
+    jd_tailor.FALLBACK_MODEL = _FALLBACK.get(key, jd_tailor.MODEL)
 
 
 def _slug(s: str) -> str:
@@ -239,14 +268,22 @@ def main() -> int:
     ap.add_argument("--no-verify", action="store_true",
                     help="skip the adversarial validity/critique pass "
                          "(faster + cheaper, but no traceability check).")
-    ap.add_argument("--model", help="override the Claude model")
+    ap.add_argument("--tier", choices=list(TIERS), default=DEFAULT_TIER,
+                    help="cost/quality tier (default: balanced). max=Opus all "
+                         "(~$1.30); balanced=Opus draft + Sonnet check "
+                         "(~$0.60); cheap=Sonnet all (~$0.25); draft=Sonnet, "
+                         "no verify (~$0.10).")
+    ap.add_argument("--model", help="override the DRAFT model explicitly")
     args = ap.parse_args()
 
     if not (args.job_id or (args.company and args.role)):
         ap.error("pass --job-id, or both --company and --role")
 
-    if args.model:
-        jd_tailor.MODEL = args.model
+    tier = TIERS.get(args.tier, TIERS["balanced"])
+    do_verify = tier["do_verify"] and not args.no_verify
+    print(f"[resume_agent] tier={args.tier} "
+          f"(draft={tier['draft']}, verify={tier['verify'] if do_verify else 'off'})",
+          file=sys.stderr)
 
     jd_tailor.preflight_or_exit()  # API key + anthropic present
     company, role, jd, _entry = _resolve_job(args)
@@ -256,6 +293,8 @@ def main() -> int:
     system = jd_tailor.build_system_prompt()
     user = _build_user_prompt(company, role, jd)
 
+    # Draft on the tier's draft model (or an explicit --model override).
+    _use_model(args.model or tier["draft"])
     raw = jd_tailor.call_claude(system, user, max_tokens=16000)
     try:
         payload = _extract_json(raw)
@@ -271,8 +310,10 @@ def main() -> int:
 
     # ── Validity / critique pass — adversarially audit the draft resume +
     # cover against the Master Repo and fix JD-imported inflation, untruthful
-    # verbs, ungrounded skills BEFORE rendering. Skippable with --no-verify.
-    if not args.no_verify:
+    # verbs, ungrounded skills BEFORE rendering. Runs on the tier's (cheaper)
+    # verify model; skippable per tier or with --no-verify.
+    if do_verify:
+        _use_model(tier["verify"])
         try:
             payload = _verify_pass(payload, jd, company, role, system)
             rc = payload["resume_content"]
@@ -301,6 +342,7 @@ def main() -> int:
     if missing:
         print(f"[resume_agent] {len(missing)} ATS keyword(s) missing "
               f"({', '.join(missing)}); revising once…", file=sys.stderr)
+        _use_model(tier["verify"])  # cheap edit task
         try:
             rc = _revise_for_keywords(rc, missing, system)
             folder, missing = _render(rc)
