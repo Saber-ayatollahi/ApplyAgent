@@ -687,13 +687,20 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                         path = p.get("externalPath", "") or ""
                         if path in seen_paths:
                             continue
+                        # externalPath is "/job/<loc>/<title>_<reqid>" relative
+                        # to the SITE. The clickable external URL needs the site
+                        # (board) segment in front: https://<host>/<board>/job/…
+                        # Without it, Workday 404s and the browser bounces to
+                        # community.workday.com/invalid-url (verified: bare
+                        # /job/ → 404, /<board>/job/ → 200).
+                        _wd_link = f"https://{host}/{board}{path}"
                         if not _keep_geo(loc, title=title,
-                                         link=f"https://{host}{path}",
+                                         link=_wd_link,
                                          source=f"workday:{tenant_key}"):
                             continue
                         jobs.append({
                             "title": title,
-                            "link": f"https://{host}{path}",
+                            "link": _wd_link,
                             "location": p.get("locationsText", ""),
                             "posted_date": _normalize_workday_posted(
                                 p.get("postedOn", "")),
