@@ -1950,10 +1950,16 @@ def _find_tailor_docs(job: dict) -> list:
     then outputs/ root for legacy files written before the May 2026 split.
     """
     jid = job.get("id", "")
-    co  = (job.get("company") or "").replace(" ", "_")
-    ttl = (job.get("title") or "").replace(" ", "_").replace("/", "_")
+    # Mirror jd_tailor.py's filename slug EXACTLY (safe_company / safe_role =
+    # re.sub(r"[^a-zA-Z0-9]+", "_", …)). The old patterns only replaced spaces
+    # and kept punctuation that jd_tailor strips — so a role like "Senior
+    # Director, Total Portfolio Risk" → file "…_Senior_Director_Total_…" never
+    # matched (comma kept in the pattern, dropped in the file) and the drawer
+    # wrongly reported "No tailor doc found yet" despite the draft existing.
+    _safe_co = re.sub(r"[^a-zA-Z0-9]+", "_", job.get("company") or "").strip("_")
+    _safe_role = re.sub(r"[^a-zA-Z0-9]+", "_", job.get("title") or "")[:60].strip("_")
     pat1 = f"*_{jid.replace('-', '_')}*.md"
-    pat2 = f"{co}_{ttl[:30]}*.md"
+    pat2 = f"{_safe_co}_{_safe_role}*.md"
     skip = {"scan_", "delta_", "brief_", "promote_", "SCAN_", "scorer_", "weekly_"}
     found: list = []
     for _root in (OUT_DIR / "tailored", OUT_DIR):
