@@ -2584,6 +2584,68 @@ def freshness_badge(posted_date: str | None, found_at: str | None) -> str:
     return " · ".join(parts) if parts else "—"
 
 
+# ── Recency-weighted priority ────────────────────────────────────────────
+# A job's *fit* is intrinsic (how well it matches the profile) and is scored
+# once. Its *priority* — should I act on this now — also depends on how fresh
+# the posting is and how strategic the company is. Recency MUST be evaluated
+# at render time (age changes daily), so we never bake it into the stored
+# fit_score; priority is derived on the fly from posted_date here.
+#
+# A senior risk/ALM posting that has sat on a board since December is almost
+# certainly filled or an evergreen pipeline req — a strong fit but a poor use
+# of effort. Multiplicative decay buries it, while still letting a genuinely
+# great-but-aging role outrank a fresh mediocre one.
+_RECENCY_BUCKETS = [   # (max age in days, weight)
+    (3, 1.00),         # 🔥 this week — hot
+    (7, 0.95),
+    (14, 0.85),
+    (30, 0.70),        # aging but typically still open
+    (60, 0.45),        # stale — competition high / filling
+    (90, 0.25),        # likely filled or evergreen
+]
+_RECENCY_OLD = 0.10        # > 90 days — almost certainly dead
+_RECENCY_UNKNOWN = 0.60    # no posted_date — mild penalty: neither reward nor bury
+_TIER_WEIGHT = {1: 1.00, 2: 0.88, 3: 0.76, 4: 0.64}
+
+
+def recency_weight(posted_date: str | None, today: date | None = None) -> float:
+    """0.10–1.0 freshness multiplier from a posting's age. Unknown → 0.60."""
+    today = today or date.today()
+    d = None
+    if posted_date:
+        try:
+            d = datetime.fromisoformat(str(posted_date).replace("Z", "")).date()
+        except Exception:
+            try:
+                d = datetime.strptime(str(posted_date)[:10], "%Y-%m-%d").date()
+            except Exception:
+                d = None
+    if d is None:
+        return _RECENCY_UNKNOWN
+    age = max(0, (today - d).days)
+    for thresh, w in _RECENCY_BUCKETS:
+        if age <= thresh:
+            return w
+    return _RECENCY_OLD
+
+
+def priority_score(fit_numeric, posted_date, tier,
+                   today: date | None = None) -> float:
+    """Actionability score 0–10 = fit × recency × tier. Drives the Kanban sort
+    so fresh, strong-fit, strategic roles surface above stale ones — WITHOUT
+    mutating the intrinsic Fit number."""
+    try:
+        fit = float(fit_numeric or 0)
+    except Exception:
+        fit = 0.0
+    try:
+        t = int(tier)
+    except Exception:
+        t = 4
+    return round(fit * recency_weight(posted_date, today)
+                 * _TIER_WEIGHT.get(t, 0.64), 1)
+
+
 def load_morning_brief() -> dict | None:
     """Read the most recent brief_YYYYMMDD.json. Returns None if missing."""
     files = sorted(OUT_DIR.glob("brief_*.json"),
@@ -8695,17 +8757,37 @@ elif page == "📋 Jobs Kanban":
             .replace({"None": "", "nan": "", "NaT": ""})
         )
 
+    # Recency-weighted Priority = fit × freshness × tier (see priority_score).
+    # This is the default ranking signal so months-old postings sink below
+    # fresh ones. Computed here at render time — never persisted.
+    if "fit_score_numeric" in view.columns:
+        _pd_col = (view["posted_date"] if "posted_date" in view.columns
+                   else [""] * len(view))
+        _tier_col = view["tier"] if "tier" in view.columns else [4] * len(view)
+        view = view.assign(priority=[
+            priority_score(f, p, t)
+            for f, p, t in zip(view["fit_score_numeric"], _pd_col, _tier_col)
+        ])
+
     # Compact-by-default columns — clicking a row opens the full inspector,
     # so the table only needs to be SCANNABLE. Lead with the essentials;
     # the mostly-empty badge columns (Draft/Follow-up/Warm) and low-value
     # context (Variant/Area/sector/Src/Age/Applied) move behind a toggle so
     # they don't shove company/title off the left edge.
-    _show_all_cols = st.checkbox(
-        "Show all columns", value=False, key="kanban_show_all_cols",
-        help="Off (compact): company · title · status · T · Fit · Urg · "
-             "Posted · Found · Link. On: also Follow-up · Warm · Draft · "
-             "Variant · Area · sector · Applied · Src · Age.",
-    )
+    _opt_c1, _opt_c2 = st.columns(2)
+    with _opt_c1:
+        _show_all_cols = st.checkbox(
+            "Show all columns", value=False, key="kanban_show_all_cols",
+            help="Off (compact): company · title · status · Priority · T · "
+                 "Fit · Urg · Posted · Found · Link. On: also Follow-up · "
+                 "Warm · Draft · Variant · Area · sector · Applied · Src · Age.",
+        )
+    with _opt_c2:
+        _rank_recency = st.checkbox(
+            "⏱ Rank by recency", value=True, key="kanban_rank_recency",
+            help="On: sort by Priority = Fit downweighted as the posting ages "
+                 "(months-old roles sink, fresh ones rise) and slightly by "
+                 "tier. Off: sort by tier then raw Fit (old behaviour).")
     _compact_cols = ["company", "title", "status", "tier",
                      "fit_score_numeric", "urgency", "posted_date",
                      "date_found", "url"]
@@ -8715,8 +8797,16 @@ elif page == "📋 Jobs Kanban":
                   "date_applied", "src", "freshness", "url"]
     cols = [c for c in (_full_cols if _show_all_cols else _compact_cols)
             if c in view.columns]
+    # Surface the Priority rank right after Status when recency ranking is on.
+    if _rank_recency and "priority" in view.columns and "priority" not in cols:
+        _ins = cols.index("status") + 1 if "status" in cols else 0
+        cols.insert(_ins, "priority")
     _col_config = {
         "company": st.column_config.TextColumn("Company", width="medium"),
+        "priority": st.column_config.NumberColumn(
+            "Priority", width="small", format="%.1f",
+            help="Actionability rank = Fit × freshness × tier. A strong fit "
+                 "posted months ago scores low — it's likely already filled."),
         "title": st.column_config.TextColumn("Title", width="large"),
         "status": st.column_config.TextColumn("Status", width="small"),
         "url": st.column_config.LinkColumn("Link", width="small"),
@@ -8742,11 +8832,21 @@ elif page == "📋 Jobs Kanban":
     # job. The table is now the SELECTOR for the Inspect/edit panel below —
     # click a row → its details / fit / JD-link / actions render there
     # (replaces the old "pick from a dropdown" step).
-    _df_cols = cols + (["id"] if "id" in view.columns and "id" not in cols else [])
+    # Ranking: recency-weighted Priority (default) demotes stale postings;
+    # toggle off restores the legacy tier → raw-Fit order.
+    if _rank_recency and "priority" in view.columns:
+        _sort_keys, _sort_asc = ["priority", "tier", "fit_score_numeric"], [False, True, False]
+    else:
+        _sort_keys, _sort_asc = ["tier", "fit_score_numeric"], [True, False]
+    _sort_keys = [k for k in _sort_keys if k in view.columns]
+    _sort_asc = _sort_asc[:len(_sort_keys)]
+    # Carry id + any sort key that isn't a displayed column (column_order=cols
+    # keeps them hidden) so the sort and row→id click-mapping both still work.
+    _df_cols = cols + [c for c in (["id"] + _sort_keys)
+                       if c in view.columns and c not in cols]
     _sorted_view = (
-        view[_df_cols].sort_values(["tier", "fit_score_numeric"],
-                                   ascending=[True, False])
-        if "fit_score_numeric" in cols else view[_df_cols]
+        view[_df_cols].sort_values(_sort_keys, ascending=_sort_asc)
+        if _sort_keys else view[_df_cols]
     ).reset_index(drop=True)
     _kb_table_event = st.dataframe(
         _sorted_view,
