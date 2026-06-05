@@ -70,6 +70,26 @@ def test_vocab_gap_recoveries():
         assert r["stage1_pass"] is True, ti
 
 
+@pytest.mark.parametrize("title", [
+    "Sr. Analyst, CCR Capital",                      # CCR acronym
+    "Director, CCR Oversight",
+    "Director, Cash Management",                      # treasury phrasing
+    "Senior Manager, Cash Management",
+    "Analyst - TDS Credit Analytics",                # credit analytics
+    "Analyst, Total Fund Management",                # pension quant
+    "Principal, Overlay Management",                 # derivatives overlay
+    "Analyst or Associate Financial Resource Management",  # capital/RWA
+    "Dir. princ., Trésorerie",                       # French treasury
+    "Vice-président, Trésorerie et stratégie",
+    "Consultant en tarification senior",             # French actuarial pricing
+    "Gestionnaire, Gestion du risque d'entreprise",  # French ERM
+])
+def test_llm_audit_recoveries(title):
+    """Roles an adversarial LLM audit of all 1,270 drops flagged as wrongly
+    dropped — title-only vocab blind spots (acronyms, French, phrasings)."""
+    assert rule_triage(title, row={"title": title})["stage1_pass"] is True, title
+
+
 def test_no_neg_term_self_breaks():
     # Every bare-word neg term must still fire on its own exact word — the
     # boundary fix must not stop a term from matching itself.

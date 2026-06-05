@@ -575,7 +575,7 @@ STRONG_POS = [  # +3 each — unambiguous lane hits
     "stochastic", "monte carlo",
     "e-23", "b-12", "basel",
     "regulatory capital", "economic capital", "capital adequacy",
-    "counterparty credit", "cva", "xva",
+    "counterparty credit", "ccr", "cva", "xva",
     "risk officer", "chief risk", "head of risk",
     "risk director", "risk vp",
     "derivatives pricing", "derivatives valuation",
@@ -622,11 +622,18 @@ MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage
     # Treasury funding desks (corp/wholesale/term funding) — title-only triage
     # otherwise missed "Senior Analyst, Global Corporate Funding" etc.
     "corporate funding", "wholesale funding", "treasury funding",
+    # Phrasings an LLM-audit of triage drops surfaced as wrongly-dropped fits:
+    "cash management", "credit analytics", "financial resource management",
+    "total fund management", "overlay management", "portfolio overlay",
     # Strategy-flavored roles with a finance/risk noun attached are worth the LLM look
     "risk transformation", "finance transformation", "risk framework",
-    # French equivalents for QC postings
+    # French equivalents for QC postings (vocab was English-only — the audit
+    # found a dozen French-Canadian treasury/risk/pricing roles hard-dropped).
     "validation des modèles", "gestion de l'actif", "gestion des risques",
-    "risque de crédit", "risque de marché", "analytique", "modélisation",
+    "gestion du risque", "risque de crédit", "risque de marché",
+    "analytique", "modélisation",
+    "trésorerie", "tresorerie", "financement bancaire",
+    "solutions de financement", "tarification", "surveillance des risques",
 ]
 
 WEAK_POS = [  # +1 each — noisy tokens, require combos
