@@ -90,6 +90,39 @@ def test_llm_audit_recoveries(title):
     assert rule_triage(title, row={"title": title})["stage1_pass"] is True, title
 
 
+# ── Funnel-widening safety net (senior risk roles at target companies) ───
+def _trow(title, source="scrape"):
+    return {"title": title, "source": source}
+
+
+def test_safety_net_recovers_bare_risk_role_at_target():
+    # "Analyst, Risk" has a risk token but no level/second-hit — it would drop
+    # under the strict rules; at a scraped TARGET the safety net lets it through.
+    r = rule_triage("Analyst, Risk", row=_trow("Analyst, Risk"))
+    assert r["stage1_pass"] is True
+    assert any("safety_net" in x for x in r["rule_reasons"])
+
+
+def test_safety_net_only_at_target_not_gmail_firehose():
+    r = rule_triage("Analyst, Risk", row=_trow("Analyst, Risk", source="gmail"))
+    assert r["stage1_pass"] is False
+
+
+def test_safety_net_ignores_noisy_solo_tokens():
+    # Noisy weak tokens (advisory/planning/analytics) must NOT trigger it.
+    for ti in ("Programmer Analyst Advisory", "Total Wealth Planning Associate",
+               "Data Analytics Investigator"):
+        assert rule_triage(ti, row=_trow(ti))["stage1_pass"] is False, ti
+
+
+def test_safety_net_excludes_offlane_risk_subtypes():
+    # Cyber/security/vendor/AML risk are risk-function but off-lane — excluded.
+    for ti in ("Cyber Security Risk Analyst",
+               "Third Party Risk and Vendor Management Officer",
+               "Cybersecurity Risk & Controls Associate"):
+        assert rule_triage(ti, row=_trow(ti))["stage1_pass"] is False, ti
+
+
 def test_no_neg_term_self_breaks():
     # Every bare-word neg term must still fire on its own exact word — the
     # boundary fix must not stop a term from matching itself.

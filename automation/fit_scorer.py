@@ -730,6 +730,33 @@ def _snapshot_has_entries(snap: dict | None) -> bool:
     return bool(snap.get("sectors")) or bool(snap.get("companies"))
 
 
+# Solo weak tokens precise enough to justify the target-company safety net.
+# The full WEAK_POS list includes noisy tokens (advisory/planning/analytics/
+# investment/portfolio/strategy/finance) that, on their own, flood the funnel
+# with IT/wealth/ops/IB roles. The safety net fires only on these high-signal
+# risk/quant words, which are almost always the risk function in a bank/pension.
+_SAFETY_NET_TOKENS = {"risk", "liquidity", "quant"}
+# ...but NOT these risk SUBTYPES — they're risk-function roles in a different
+# domain (cyber/security/vendor/AML/fraud), not the quantitative financial-risk
+# lane, so the safety net should leave them dropped rather than burn LLM budget
+# on a guaranteed score=skip.
+_SAFETY_NET_EXCLUDE = ("cyber", "security", "vendor", "third party",
+                       "third-party", " aml", "fraud", "physical")
+
+
+def _is_target_company(row: dict | None) -> bool:
+    """True when the role was scraped from a TARGET company's own board.
+
+    We deliberately scrape only companies on the targets list, so a scrape
+    origin == a target we care about (worklist source 'scrape' or 'both').
+    Gmail-alert rows (source 'gmail') come from the broad LinkedIn firehose —
+    any company — so they keep the stricter title rules rather than benefiting
+    from the senior-at-target safety net."""
+    if not row:
+        return False
+    return (row.get("source") or "").strip().lower() in ("scrape", "both")
+
+
 def rule_triage(title: str,
                 row: dict | None = None,
                 suppression_snapshot: dict | None = None,
@@ -824,6 +851,18 @@ def rule_triage(title: str,
         pass_reason = "weak+level"
     elif len(weak) >= 2:
         pass_reason = "multi_weak"
+    # Safety net (funnel-widening): at a TARGET company a single HIGH-SIGNAL
+    # risk/quant token is enough to escape a hard drop. We deliberately scrape
+    # these companies, and an LLM score (~$0.001) is far cheaper than missing a
+    # fit the title vocabulary cannot enumerate — bank acronyms, French-Canadian
+    # phrasings, novel titles (an LLM audit of every drop found ~33 such roles).
+    # Restricted to _SAFETY_NET_TOKENS, NOT every weak hit: the noisy weak tokens
+    # (advisory/planning/analytics/investment/portfolio) would flood the funnel
+    # with IT/wealth/ops roles. Non-fits still get scored=skip; Gmail-firehose
+    # rows keep the stricter rules.
+    elif ((set(weak) & _SAFETY_NET_TOKENS) and _is_target_company(row)
+          and not any(x in t for x in _SAFETY_NET_EXCLUDE)):
+        pass_reason = "safety_net:target"
 
     if not pass_reason:
         return {"stage1_pass": False, "rough_tier": 5, "score": score,
