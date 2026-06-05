@@ -585,7 +585,7 @@ STRONG_POS = [  # +3 each — unambiguous lane hits
     "rates structuring", "rates desk", "linear rates", "exotic rates",
     "swaps trader", "swap desk", "g10 rates",
     # Structured / capital markets
-    "securitization", "structured credit", "structured finance",
+    "securitization", "securitized", "structured credit", "structured finance",
     "credit structuring", "debt structuring", "rates structuring",
     "collateralized", "clo ", "abs trader",
     # OSFI-adjacent emerging
@@ -608,7 +608,7 @@ MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage
     "risk governance", "risk management",
     "model governance", "ai governance", "model risk governance",
     "reserving", "pricing actuary",
-    "forecasting model", "forecasting models",
+    "forecasting model", "forecasting models", "loss forecast",
     "derivatives", "securitization", "structured credit",
     "hedge accounting", "hedging",
     "osfi", "lcr", "nsfr", "lar",
@@ -619,6 +619,9 @@ MEDIUM_POS = [  # +2 each — domain-adjacent signals; a single hit passes stage
     "balance sheet strategy", "treasury strategy", "capital strategy",
     "liquidity strategy", "risk strategy",
     "capital planning", "liquidity planning", "stress planning",
+    # Treasury funding desks (corp/wholesale/term funding) — title-only triage
+    # otherwise missed "Senior Analyst, Global Corporate Funding" etc.
+    "corporate funding", "wholesale funding", "treasury funding",
     # Strategy-flavored roles with a finance/risk noun attached are worth the LLM look
     "risk transformation", "finance transformation", "risk framework",
     # French equivalents for QC postings

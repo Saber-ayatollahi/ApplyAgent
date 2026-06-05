@@ -60,6 +60,16 @@ def test_real_interns_still_dropped():
         assert any(rr.startswith("neg:") for rr in r["rule_reasons"]), ti
 
 
+def test_vocab_gap_recoveries():
+    """False-negatives surfaced by the full drop audit — title-only vocab
+    gaps for genuine risk/treasury/credit roles. Each must now pass stage-1."""
+    for ti in ("Central Funding & Securitized Products Quants",          # securitized
+               "Manager, Loss Forecasting",                              # loss forecast
+               "Senior Analyst, Global Corporate Funding"):              # corporate funding
+        r = rule_triage(ti, row={"title": ti})
+        assert r["stage1_pass"] is True, ti
+
+
 def test_no_neg_term_self_breaks():
     # Every bare-word neg term must still fire on its own exact word — the
     # boundary fix must not stop a term from matching itself.
