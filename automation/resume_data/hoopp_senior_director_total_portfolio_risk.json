@@ -1,0 +1,128 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "HOOPP",
+    "role": "Senior Director, Total Portfolio Risk",
+    "jd_keywords": [
+      "Total Portfolio Risk",
+      "VaR",
+      "CVaR",
+      "portfolio optimization",
+      "risk decomposition",
+      "LDI",
+      "asset-liability",
+      "ALM",
+      "funding ratio",
+      "surplus",
+      "stochastic",
+      "Monte Carlo",
+      "scenario",
+      "duration",
+      "hedging"
+    ]
+  },
+  "summary": "Total Portfolio Risk and investment-risk professional with ~7 years across institutional ALM, total-portfolio analytics, and pension asset-liability modelling. Hands-on VaR/CVaR asset-only and surplus portfolio optimization, risk decomposition, LDI, and stochastic scenario analysis on Ortec's GLASS platform for Canadian pension funds, paired with delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5-25bn per engagement) at Moody's Analytics. CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Total-Portfolio & Investment Risk - VaR / CVaR / Expected Shortfall",
+    "Asset-Only & Surplus Portfolio Optimization",
+    "Risk Decomposition, Contribution-to-Risk & Risk Budgeting",
+    "ALM, LDI & Pension Asset-Liability Modelling",
+    "Funding-Ratio, Surplus & Duration-Gap Analytics",
+    "Stochastic Scenario Generation & Monte Carlo Simulation",
+    "Multi-Asset Stress, Reverse-Stress & Scenario Analysis",
+    "Model Governance & Independent Sign-off",
+    "Ortec GLASS, Python, SQL & MATLAB"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics - Asset Management & Buy-Side Solutions",
+      "roles": [
+        {
+          "title": "Assistant Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Sign-off, Valuation & Risk Oversight",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5-25bn per engagement; $50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions before production release.",
+                "Independently review and validate derivatives pricing and sensitivity outputs across rates, FX, and inflation, ensuring sensitivities and scenario impacts reconcile at portfolio-level risk aggregates."
+              ]
+            },
+            {
+              "heading": "Scenario, Stress & Liquidity Analytics",
+              "bullets": [
+                "Led the design and ongoing development of an enterprise multi-asset cash-flow projection and scenario engine (base, stress, reverse-stress), delivering forward-looking liquidity and surplus visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity-gap analytics (T+1 through multi-year) supporting funding-ratio, refinancing, and asset-allocation decisions.",
+                "Translated interest-rate exposure, scenario impacts, and balance-sheet sensitivities into investment-committee-ready narratives for senior stakeholders and clients' Heads of Risk."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist - ALM & Risk Analytics",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consultants migrating to the PFaroe ALM and portfolio-analytics platform, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, coordinating actuarial, finance, risk, and IT functions on adoption, governance documentation, and regulatory-readiness milestones."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": "Pension ALM, LDI & Total-Portfolio Risk Advisory",
+              "bullets": [
+                "Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR on Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Led onboarding and the ALM study for a three-plan university pension merger into a new jointly-sponsored plan, developing and validating the model capturing all Funding Policy dynamics and evaluating duration, currency, inflation, and leverage-overlay strategies.",
+                "Modelled pension-fund actuarial liabilities alongside all major investment-product types and economic variables, and built stochastic economic scenario generators (Monte Carlo) to assess interest-rate and funding-ratio volatility under base-case and stressed environments.",
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors, analyzing funding ratio, surplus, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Conducted liability-driven investment (LDI) analysis, weighing trade-offs between return objectives, duration alignment, and liquidity for pension-fund clients.",
+                "Performed cash-flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk, and advised on Strategic and Tactical Asset Allocation (SAA/TAA) trade-offs via stress testing and sensitivity analysis.",
+                "Presented ALM study findings and allocation recommendations to investment committees at Canadian pension-fund clients on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}
