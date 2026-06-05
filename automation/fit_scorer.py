@@ -540,6 +540,22 @@ NEG_TITLE_TERMS = [
 ]
 
 
+def _neg_hit(term: str, title_lower: str) -> bool:
+    """Does a negative term fire on this (lower-cased) title?
+
+    Bare single words are matched on LETTER boundaries so they can't fire
+    inside a larger word — the classic bug being "intern" matching "internal"
+    / "international" and hard-failing legit senior roles ("Senior Manager,
+    Enterprise Risk - Internal Audit", "...International Banking Treasury").
+    Crafted multi-word / punctuation patterns ("sre ", "dba,", ".net
+    developer", "senior software engineer") keep plain substring matching —
+    they're already specific enough to be boundary-safe, and wrapping their
+    trailing space/punctuation in a letter-lookahead would break them."""
+    if term.isalpha():
+        return re.search(r"(?<![a-z])" + term + r"(?![a-z])", title_lower) is not None
+    return term in title_lower
+
+
 # Weighted positive signals. score ≥ 3 passes stage 1.
 # Matched longest-first; each distinct phrase contributes its weight once.
 STRONG_POS = [  # +3 each — unambiguous lane hits
@@ -719,9 +735,10 @@ def rule_triage(title: str,
     of dropping the row.
     """
     t = (title or "").lower()
-    # Hard-fail on negative term
+    # Hard-fail on negative term (word-boundary-aware: see _neg_hit — stops
+    # "intern" from killing "Internal"/"International" senior roles).
     for n in NEG_TITLE_TERMS:
-        if n in t:
+        if _neg_hit(n, t):
             return {"stage1_pass": False, "rough_tier": 5, "score": 0,
                     "rule_reasons": [f"neg:{n}"], "hits_breakdown": {}}
 
