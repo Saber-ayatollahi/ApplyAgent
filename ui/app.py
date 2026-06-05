@@ -1214,7 +1214,8 @@ def _vc_inspect_toggle(stage: str, label: str, default: bool = False) -> bool:
 # `_vc_inspect_<stage>` toggle names; values are the `_nav_sub_🎯 Pipeline` keys.
 _TOGGLE_TO_SUBPAGE = {
     "worklist": "Refresh",   # ② Worklist inspect → ① Refresh view
-    "triage":   "Score",     # ③ Triage / suppressions → ② Score view
+    "worklist_suppressions": "Refresh",  # 🔇 mutes filter the pool at source → ① Refresh
+    "triage":   "Score",     # ③ Triage drop-preview → ② Score view
     "scoring":  "Score",     # ④ Scoring verdicts → ② Score view
     "promote":  "Promote",   # ⑤ Auto-promote → ③ Promote view
 }
@@ -1237,7 +1238,7 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
                          auto-launched — scoring costs API spend, so the user
                          clicks the cost-labelled button themselves.
       • review_verdicts → ② Score (verdicts live in the ④ scored card).
-      • review_suppressions → ② Score (③ Triage suppression admin).
+      • review_suppressions → ① Refresh (② Worklist suppression admin).
       • refresh / setup / retry_* → ① Refresh, where the always-visible 🛰
                          scrape / 📬 Gmail launch buttons live on the ① Inputs
                          card. (No inspect toggle — those buttons aren't gated.)
@@ -1288,8 +1289,8 @@ def _route_banner_cta(action: str | None, active_runs: list | None = None) -> No
         open_toggle = "scoring"
         toast = "Opened ④ Scoring — inspect verdicts to hand-pick roles."
     elif action in ("review_suppressions",):
-        open_toggle = "triage"
-        toast = "Opened ③ Triage — manage suppressions in the admin panel."
+        open_toggle = "worklist_suppressions"
+        toast = "Opened ① Refresh — manage suppressions on the ② Worklist card."
     elif action == "refresh":
         target_view = "Refresh"
         toast = "Opened ① Refresh — launch 🛰 scrape / 📬 Gmail to refresh inputs."
@@ -7230,9 +7231,9 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
 
     # ================== CARD/TAB: Scored (+ triage sub-tabs) ===============
     def _render_scored_card():
-        # Suppression admin lives on the ② Score view's ③ Triage card
-        # (doc §280/§368/§446), which calls _render_suppressions_admin itself —
-        # so the scored card no longer renders it (avoids a double-mount).
+        # Suppression admin lives on the ① Refresh view's ② Worklist card
+        # (mutes filter the pool at source), which calls
+        # _render_suppressions_admin itself — the scored card never renders it.
 
         scored_files = sorted(OUT_DIR.glob("*_scored.json"),
                               key=lambda p: p.stat().st_mtime, reverse=True)
@@ -7983,6 +7984,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                 if _rebuilt:
                     st.caption(f"🕒 Worklist rebuilt {_rebuilt}")
                 _render_worklist_card()
+            # Suppression (mute) admin lives HERE on the scrape side: a mute
+            # hides a company/role from the pool *before* triage or scoring
+            # ever sees it, so it belongs with the inputs/worklist — not on the
+            # ③ Triage or ④ Scoring cards (moved off the Score view).
+            if _vc_inspect_toggle("worklist_suppressions",
+                                  "🔇 Manage suppressions (mutes)"):
+                _render_suppressions_admin()
             _vc_download_row("worklist")
 
     # ═══════════════ ② SCORE view: ③ Triage + ④ Scoring ═════════════
@@ -8092,10 +8100,9 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 column_config={
                                     "url": st.column_config.LinkColumn("open")})
 
-            # Suppression admin lives here (doc §280) — gated behind a toggle
-            # so the page doesn't re-read the registry every rerun.
-            if _vc_inspect_toggle("triage", "Manage suppressions (mutes)"):
-                _render_suppressions_admin()
+            # Suppression (mute) admin moved to the ① Refresh ② Worklist card:
+            # mutes filter the pool at the SOURCE, so they belong with the
+            # inputs/worklist, not on Triage (or Score).
             _vc_download_row("triage")
 
         # ── ④ SCORING ─────────────────────────────────────────────────
@@ -8364,7 +8371,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _render_scorer_status(scorer_running=scorer_running)
             # Scored card hosts the suppression admin + triage sub-tabs +
             # manual-selection promote. Heavy body is button-gated.
-            if _vc_inspect_toggle("scoring", "Inspect verdicts + manage suppressions",
+            if _vc_inspect_toggle("scoring", "Inspect verdicts",
                                   default=True):
                 _render_scored_card()
             # 🔗 Score-a-single-URL — manual side-channel scorer, persistent

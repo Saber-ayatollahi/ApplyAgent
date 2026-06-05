@@ -357,7 +357,9 @@ def test_route_banner_cta_opens_correct_toggles_and_subpage(monkeypatch):
         "promote":             ("_vc_inspect_promote",  "Promote"),
         "score":               ("_vc_inspect_scoring",  "Score"),
         "review_verdicts":     ("_vc_inspect_scoring",  "Score"),
-        "review_suppressions": ("_vc_inspect_triage",   "Score"),
+        # Suppression admin moved off Triage → ① Refresh ② Worklist card
+        # (mutes filter the pool at source).
+        "review_suppressions": ("_vc_inspect_worklist_suppressions", "Refresh"),
         "quarantine":          ("_vc_inspect_worklist", "Refresh"),
     }
     for action, (flag, sub) in cases.items():
