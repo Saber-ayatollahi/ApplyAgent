@@ -289,14 +289,20 @@ def quarantine_legacy() -> dict:
 # Rebuild — the only function that writes worklist.json
 # ---------------------------------------------------------------------------
 def _previous_scored_urls() -> set[str]:
-    """URLs that were in the LAST worklist_scored.json. Used to mark
-    rows as is_new_since_last_score so a re-score can skip them (or
-    so the brief can highlight 'N new since last scoring run')."""
+    """URLs the scorer PROCESSED last run — used to mark is_new_since_last_score
+    (so a re-score can skip them, and the brief can highlight 'N genuinely new').
+
+    Must union BOTH `results` (stage-1 survivors that reached the LLM) AND
+    `triage_drops` (stage-1 rule-drops). Earlier this read `results` only, so
+    every triaged-out URL was perpetually re-flagged "new" — 70% of the pool —
+    making the stat meaningless and leaving a latent re-score risk if a future
+    cache-key bump ever orphaned those rows' fits."""
     if not WORKLIST_SCORED.exists():
         return set()
     try:
         data = json.loads(WORKLIST_SCORED.read_text(encoding="utf-8"))
-        return {norm_url(r) for r in data.get("results", []) if norm_url(r)}
+        rows = (data.get("results") or []) + (data.get("triage_drops") or [])
+        return {norm_url(r) for r in rows if norm_url(r)}
     except Exception:
         return set()
 
@@ -373,7 +379,24 @@ def rebuild(quarantine: bool = True) -> dict:
     geo_rows: list[dict] = []          # outside the Toronto/Canada-remote gate
     no_url_dropped: list[dict] = []    # no canonical URL (was a silent drop)
 
+    # Canonicalize Workday URLs as rows enter the pool. Stale scan files (and any
+    # pre-fix scrape) store the non-canonical /job/... path missing the board
+    # segment — it 404s to community.workday.com/invalid-url AND won't dedup
+    # against the repaired /<board>/job/... form. Repairing HERE (before norm_url)
+    # fixes the link everywhere downstream (score → promote → tracker) and
+    # collapses the broken/fixed twins. Map built once per rebuild, not per row.
+    try:
+        import repair_workday_urls  # type: ignore
+    except ImportError:
+        from . import repair_workday_urls  # type: ignore
+    try:
+        _wd_tmap = repair_workday_urls.build_tenant_board_map()
+    except Exception:
+        _wd_tmap = {}
+
     def _add(row: dict, src: str):
+        if _wd_tmap:
+            repair_workday_urls.repair_obj(row, _wd_tmap)
         u = norm_url(row)
         if not u:
             # No canonical URL → previously dropped with NO trace. Retain it as
