@@ -691,6 +691,34 @@ def workday_precise_date(link: str, *, timeout: int = 12) -> Optional[str]:
     return None
 
 
+def workday_jd_html(link: str, *, timeout: int = 18) -> Optional[str]:
+    """Raw job-description HTML from Workday's CXS detail endpoint.
+
+    Workday job pages are JS-SPA shells, so an HTML scrape of the public URL
+    returns an empty body and the scorer falls back to title-only (blind). The
+    CXS payload that already gives us startDate also carries the full
+    ``jobPostingInfo.jobDescription`` HTML. Returns that HTML (caller strips +
+    cleans it) or None if unreachable / not a Workday URL / unlisted (403)."""
+    parsed = _workday_cxs_url(link)
+    if not parsed:
+        return None
+    durl, host, board_path = parsed
+    try:
+        r = requests.get(
+            durl,
+            headers={**HEADERS, "Accept": "application/json",
+                     "Referer": f"https://{host}/{board_path}"},
+            timeout=timeout,
+        )
+        if r.status_code != 200:
+            return None
+        jpi = (r.json() or {}).get("jobPostingInfo", {}) or {}
+        html = jpi.get("jobDescription") or ""
+        return html or None
+    except Exception:
+        return None
+
+
 WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
 
 

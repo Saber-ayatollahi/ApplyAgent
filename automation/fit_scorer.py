@@ -1090,6 +1090,32 @@ def _extract_sections(cleaned: str, max_chars: int) -> str:
     return cleaned[:max_chars]
 
 
+def _fetch_jd_via_api(url: str) -> str:
+    """Fallback JD fetch via an ATS JSON API, for JS-SPA pages whose HTML scrape
+    returns an empty shell (so the scorer would otherwise score title-only).
+
+    Currently covers Workday — the CXS payload carries the full
+    ``jobPostingInfo.jobDescription`` HTML. Returns cleaned text, or '' if the
+    URL isn't a supported ATS or the API is unreachable/unlisted. Extend with
+    Greenhouse/Lever the same way (dispatch on the URL host)."""
+    try:
+        if "myworkdayjobs.com" in (url or ""):
+            try:
+                import jd_scraper  # type: ignore
+            except ImportError:
+                from . import jd_scraper  # type: ignore
+            html = jd_scraper.workday_jd_html(url)
+            if html:
+                soup = BeautifulSoup(html, "html.parser")
+                for tag in soup(["script", "style", "button", "form"]):
+                    tag.decompose()
+                return _clean_jd(soup.get_text("\n"))
+    except Exception as e:  # noqa: BLE001
+        if _log_error is not None:
+            _log_error("fetch_jd_api", e, module="fit_scorer", extra={"url": url})
+    return ""
+
+
 def fetch_jd(url: str, max_chars: int = 8000) -> str:
     """Fetch, strip HTML, clean boilerplate, prefer responsibilities section.
 
@@ -1155,9 +1181,18 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
         # Don't cache suspiciously-empty results — the page is either JS-shell
         # (needs headless browser) or blocked. Caching would poison future runs.
         if len(cleaned) < 300:
-            print(f"  [fetch_jd] short ({len(cleaned)} chars) for {url} "
-                  f"— likely JS-SPA; not caching", file=sys.stderr)
-            return cleaned  # return what we have but don't persist
+            # JS-SPA shell — the public HTML is an empty React/Workday mount.
+            # For a known ATS (Workday) the JSON API carries the real JD; try it
+            # before falling back to blind title-only scoring.
+            api_text = _fetch_jd_via_api(url)
+            if api_text and len(api_text) >= 300:
+                print(f"  [fetch_jd] recovered {len(api_text)} chars via ATS API "
+                      f"for {url}", file=sys.stderr)
+                cleaned = api_text          # fall through → cache + return
+            else:
+                print(f"  [fetch_jd] short ({len(cleaned)} chars) for {url} "
+                      f"— likely JS-SPA; not caching", file=sys.stderr)
+                return cleaned  # return what we have but don't persist
         # Legacy cache cleanup
         if legacy_cache.exists():
             try:
