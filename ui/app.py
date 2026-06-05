@@ -1973,6 +1973,29 @@ def _find_tailor_docs(job: dict) -> list:
     )
 
 
+def _find_application_folder(job: dict):
+    """Find applications/<date>_<company>_<role>/ for this job — the polished
+    resume_agent / resume_render deliverable. Matches resume_render's folder
+    slug exactly: drop apostrophes, then re.sub(r'[^A-Za-z0-9]+','-').strip."""
+    base = ROOT / "applications"
+    if not base.exists():
+        return None
+
+    def _slug(s: str) -> str:
+        s = (s or "").replace("'", "").replace("’", "")
+        return re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-")
+
+    co, role = _slug(job.get("company")), _slug(job.get("title"))
+    if not co or not role:
+        return None
+    target = f"{co}_{role}".lower()
+    for d in sorted(base.glob("*/"), key=lambda p: p.stat().st_mtime,
+                    reverse=True):
+        if d.is_dir() and d.name.lower().endswith(target):
+            return d
+    return None
+
+
 def render_tailor_action_row(job: dict, key_prefix: str,
                               tracker_data: dict, tracker_path):
     """Render the 3-button action strip for a job: Tailor · Open · Apply.
@@ -8810,6 +8833,60 @@ elif page == "📋 Jobs Kanban":
                     job, key_prefix="kanban_inspect", tracker_data=tr,
                     tracker_path=TRACKER,
                 )
+
+                # 📄 Agentic resume — spawns resume_agent.py: Claude tailors a
+                # Master-Repo-grounded resume + cover for this JD, then renders
+                # a branded .docx into applications/<date>_<co>_<role>/. Heavier
+                # and PAID (Opus) vs the quick markdown ✨ Tailor above, so it's
+                # a deliberate single button. Surfaces the deliverable + a
+                # download once the run lands.
+                _ra_folder = _find_application_folder(job)
+                _ra_key_ok = api_key.is_key_valid()
+                _ra_label = ("📄 Re-generate polished resume" if _ra_folder
+                             else "📄 Generate polished resume (agentic)")
+                _ra_help = ("Runs the agentic pipeline — Claude tailors a "
+                            "Master-Repo-grounded resume + cover for this JD, "
+                            "then renders a branded .docx into applications/. "
+                            "~1–2 min, uses your Anthropic API key (Opus).")
+                if not _ra_key_ok:
+                    _ra_help += " 🔑 Set an API key in the sidebar first."
+                if st.button(_ra_label, key=f"_kb_resume_agent_{sel_id}",
+                             width='stretch',
+                             disabled=any_work_active or not _ra_key_ok,
+                             help=_ra_help):
+                    _ra_rec = scan_runner.start_run(
+                        f"resume_{sel_id}",
+                        [sys.executable,
+                         str(ROOT / "automation" / "resume_agent.py"),
+                         "--job-id", sel_id, "--no-pdf"])
+                    st.session_state["_last_launch"] = {
+                        "run_id": _ra_rec.run_id,
+                        "label": f"Resume — {job.get('company', '')}"}
+                    st.toast("📄 Generating polished resume… (~1–2 min)",
+                             icon="📄")
+                    st.rerun()
+                if _ra_folder:
+                    _ra_docx = list(_ra_folder.glob("*.docx"))
+                    _ra_cover = list(_ra_folder.glob("*_cover.md"))
+                    st.caption(
+                        f"📂 `applications/{_ra_folder.name}/` "
+                        f"({'docx' if _ra_docx else 'no docx'}"
+                        f"{' + cover' if _ra_cover else ''})")
+                    _rdl1, _rdl2 = st.columns(2)
+                    if _ra_docx:
+                        with _rdl1, open(_ra_docx[0], "rb") as _rf:
+                            st.download_button(
+                                "⬇ Resume (.docx)", _rf.read(),
+                                file_name=_ra_docx[0].name,
+                                key=f"_dl_resume_{sel_id}", width='stretch')
+                    if _ra_cover:
+                        with _rdl2:
+                            st.download_button(
+                                "⬇ Cover letter (.md)",
+                                _ra_cover[0].read_text(encoding="utf-8"),
+                                file_name=_ra_cover[0].name,
+                                key=f"_dl_cover_{sel_id}", width='stretch')
+
                 _nxt = job.get("next_action") or ""
                 if _nxt:
                     st.info(f"**Next:** {_nxt}", icon="🎯")
