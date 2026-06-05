@@ -633,6 +633,64 @@ def _normalize_workday_posted(raw: str, today: Optional[date] = None) -> str:
     return ""
 
 
+_WD_URL_RE = re.compile(
+    r"^https?://([^/]+\.myworkdayjobs\.com)/(.+?)(/job/.+)$", re.IGNORECASE
+)
+
+
+def _workday_cxs_url(link: str):
+    """Derive the CXS job-detail endpoint from a public myworkdayjobs URL.
+    Returns (detail_url, host, board_path) or None. Pure / no network.
+
+    Public:  https://cppib.wd10.myworkdayjobs.com/cppinvestments/job/Toronto/X_JR1
+    Detail:  https://cppib.wd10.myworkdayjobs.com/wday/cxs/cppib/cppinvestments/job/Toronto/X_JR1
+    A locale prefix (.../en-US/cppinvestments/job/...) is tolerated — the board
+    is the path segment immediately before /job/."""
+    if not link:
+        return None
+    m = _WD_URL_RE.match(link.strip())
+    if not m:
+        return None
+    host, pre, path = m.group(1), m.group(2), m.group(3)
+    board = pre.rstrip("/").split("/")[-1]   # site segment immediately before /job/
+    tenant = host.split(".")[0]
+    return f"https://{host}/wday/cxs/{tenant}/{board}{path}", host, f"{board}{path}"
+
+
+def workday_precise_date(link: str, *, timeout: int = 12) -> Optional[str]:
+    """Best-effort PRECISE posting date for a Workday job, from the CXS
+    job-detail endpoint's ``jobPostingInfo.startDate``.
+
+    Workday's *list* API only exposes a relative ``postedOn`` string, and
+    "Posted 30+ Days Ago" floors to exactly 30 days — so a role that is
+    really 45 days old looks like 30. The per-job detail endpoint carries
+    the true ISO ``startDate``.
+
+    Returns 'YYYY-MM-DD' or None. Unlisted / direct-link postings return 403
+    here even when their public page is live — callers must fall back to the
+    relative date in that case."""
+    parsed = _workday_cxs_url(link)
+    if not parsed:
+        return None
+    durl, host, board_path = parsed
+    try:
+        r = requests.get(
+            durl,
+            headers={**HEADERS, "Accept": "application/json",
+                     "Referer": f"https://{host}/{board_path}"},
+            timeout=timeout,
+        )
+        if r.status_code != 200:
+            return None
+        jpi = (r.json() or {}).get("jobPostingInfo", {}) or {}
+        sd = str(jpi.get("startDate") or "")
+        if re.match(r"^\d{4}-\d{2}-\d{2}", sd):
+            return sd[:10]
+    except Exception:
+        return None
+    return None
+
+
 WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
 
 
@@ -698,12 +756,22 @@ def fetch_workday_jobs(workday_spec) -> list[dict]:
                                          link=_wd_link,
                                          source=f"workday:{tenant_key}"):
                             continue
+                        # Date: the list API's relative postedOn is exact for
+                        # <30d ("Posted 6 Days Ago") but floors "30+ Days Ago"
+                        # to 30. For that imprecise case (or a missing string),
+                        # fetch the precise startDate from the detail endpoint;
+                        # otherwise trust the cheap relative value (no extra GET).
+                        _raw_posted = p.get("postedOn", "") or ""
+                        _rel = _normalize_workday_posted(_raw_posted)
+                        if (not _rel) or ("30+" in _raw_posted):
+                            _posted = workday_precise_date(_wd_link) or _rel
+                        else:
+                            _posted = _rel
                         jobs.append({
                             "title": title,
                             "link": _wd_link,
                             "location": p.get("locationsText", ""),
-                            "posted_date": _normalize_workday_posted(
-                                p.get("postedOn", "")),
+                            "posted_date": _posted,
                             "keyword_hit": kw,
                             "source": f"workday:{tenant_key}",
                         })

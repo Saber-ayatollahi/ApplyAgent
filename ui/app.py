@@ -8882,6 +8882,12 @@ elif page == "📋 Jobs Kanban":
                     f"{job.get('sector')} · {job.get('status','?')} · "
                     f"fit {job.get('fit_score')} · 📄 {variant_str}"
                 )
+                # Posting age — how long the role has been live (posted_date),
+                # alongside when we found it. Falls back to found-only when the
+                # board never exposed a posting date.
+                _fb = freshness_badge(job.get("posted_date"), job.get("date_found"))
+                if _fb and _fb != "—":
+                    st.caption(f"🗓 {_fb}")
                 # Inline tailor + apply action strip — same widget that
                 # lives in Today's queue. 3 buttons: Open posting · Tailor
                 # · Mark applied. Tailor spawns jd_tailor in background;
@@ -8928,6 +8934,9 @@ elif page == "📋 Jobs Kanban":
                 _date_app = parse_date(job.get("date_applied"))
                 _date_found = parse_date(job.get("date_found"))
                 _timeline_events = []
+                _date_posted = parse_date(job.get("posted_date"))
+                if _date_posted:
+                    _timeline_events.append((_date_posted, "📅", "Posted"))
                 if _date_found:
                     _timeline_events.append((_date_found, "🔍", "Found"))
                 if _date_app:

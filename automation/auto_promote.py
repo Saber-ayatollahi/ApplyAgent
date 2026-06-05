@@ -187,6 +187,11 @@ def make_entry(r: dict) -> dict:
         # archived explicitly so tracker_ops.is_active() doesn't have to fall
         # back to the missing-key default.
         "archived": False,
+        # The posting's own age (when the role went live), distinct from
+        # date_found (when WE first saw it). Carried from the worklist/scan row
+        # — without this the tracker shows no posting date at all and the
+        # freshness badge has nothing to render. Normalized to ISO upstream.
+        "posted_date": (str(r.get("posted_date"))[:10] if r.get("posted_date") else None),
         "date_found": date.today().isoformat(),
         "date_jd_verified": date.today().isoformat() if r.get("_jd_len", 0) > 200 else None,
         "date_applied": None,
