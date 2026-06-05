@@ -1,0 +1,140 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC",
+    "role": "Manager, Balance Sheet and Liquidity Risk Model Validation",
+    "experience_label": "PROFESSIONAL EXPERIENCE",
+    "jd_keywords": [
+      "model validation",
+      "balance sheet",
+      "liquidity risk",
+      "interest rate risk",
+      "IRRBB",
+      "ALM",
+      "sensitivity analysis",
+      "benchmark",
+      "Python",
+      "SQL",
+      "Excel",
+      "model methodology",
+      "assumptions",
+      "model performance",
+      "CFA"
+    ]
+  },
+  "summary": "Balance-sheet and liquidity risk professional with ~7 years across ALM, IRRBB analytics, and model validation and governance. At Moody's Analytics, holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios ($5-25bn per engagement) — independently reviewing model methodology, curve construction, spread calibration, and assumption defensibility prior to release, and benchmarking outputs against economic intuition and alternative calibrations. Prior insurance-accounting transformation at EY and stochastic ALM/LDI studies for pension funds at Ortec Finance. CFA charter, dual MSc (Financial Modelling; Chemical Engineering).",
+  "core_skills": [
+    "ALM & IRRBB Analytics",
+    "Model Validation & Independent Review",
+    "Liquidity Gap & Cash Flow Projection",
+    "Curve Construction & Spread Calibration",
+    "Sensitivity & Scenario Analysis",
+    "Stochastic Modelling & Monte Carlo",
+    "Model Governance & Documentation",
+    "Python, SQL, Excel",
+    "CFA Charterholder"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Model Validation & Independent Review",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional client portfolios ranging $5-25bn per engagement (cumulatively $50bn+) — independently review model methodology, curve construction, spread calibration, assumptions, and cross-asset interactions prior to production release.",
+                "Operate within a formal model-governance framework: challenge methodology choices, validate economic defensibility of assumptions, benchmark model performance against alternative calibrations and economic intuition, and document findings to standards consistent with SR 11-7 and OSFI E-23 expectations.",
+                "Escalate outputs lacking mathematical or economic defensibility; serve as escalation point for client-critical analytical issues, interfacing with clients' Heads of Risk and investment stakeholders.",
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM processes."
+              ]
+            },
+            {
+              "heading": "Balance Sheet, IRRBB & Liquidity Analytics",
+              "bullets": [
+                "Oversee interest rate risk and duration analysis under parallel and non-parallel rate shocks — including sensitivity analysis at portfolio-level ALM aggregates — aligned with IRRBB standards analogous to OSFI B-12 and Basel Committee frameworks.",
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset-allocation analysis.",
+                "Embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory liquidity expectations.",
+                "Validated derivatives pricing outputs (rates, FX, inflation) and cross-checked sensitivity consistency at portfolio-level ALM aggregates."
+              ]
+            },
+            {
+              "heading": "Analytics Engineering",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging and validation controls — supporting model-governance audit readiness.",
+                "Prepared analytical summaries for senior stakeholders covering interest-rate exposure, scenario impacts, assumption sensitivity, and balance-sheet implications."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform — advised on asset, liability, and ALM configurations and validated model outputs post-deployment.",
+                "Served as technical liaison between client investment teams and product owners; scoped requirements into development requests and contributed to successful migration of all assigned accounts from the legacy Calypso platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Advised actuarial, IT, finance, and program-management functions on adoption of IFRS 17/9 standards; contributed to governance documentation and regulatory readiness processes."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Built and interpreted stochastic economic scenario generators assessing interest rate risk and funding volatility under base-case and stressed environments.",
+                "Conducted liability-driven investment (LDI) analysis and cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for institutional clients.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform; conducted risk decomposition and contribution-to-risk attribution.",
+                "Led onboarding and the ALM study for a three-plan university pension merger (UPP) — developed and validated the model capturing Funding Policy dynamics, duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}
