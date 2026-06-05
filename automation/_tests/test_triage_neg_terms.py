@@ -16,7 +16,9 @@ AUTO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AUTO))
 
 import pytest  # noqa: E402
-from fit_scorer import _neg_hit, rule_triage, NEG_TITLE_TERMS  # noqa: E402
+from fit_scorer import (  # noqa: E402
+    _neg_hit, _is_target_company, rule_triage, NEG_TITLE_TERMS,
+)
 
 
 # ── _neg_hit boundary behaviour ──────────────────────────────────────────
@@ -113,6 +115,19 @@ def test_safety_net_ignores_noisy_solo_tokens():
     for ti in ("Programmer Analyst Advisory", "Total Wealth Planning Associate",
                "Data Analytics Investigator"):
         assert rule_triage(ti, row=_trow(ti))["stage1_pass"] is False, ti
+
+
+@pytest.mark.parametrize("source,expected", [
+    ("scrape", True), ("both", True),           # normalized worklist rows
+    ("workday:bmo", True),                       # raw scan rows (pre-worklist)
+    ("successfactors:careers.scotiabank.com", True),
+    ("gmail", False), ("gmail_linkedin_alert", False),   # firehose
+    ("linkedin", False), ("linkedin_co", False),
+    ("", False),
+])
+def test_is_target_company_source_detection(source, expected):
+    assert _is_target_company({"source": source}) is expected
+    assert _is_target_company(None) is False
 
 
 def test_safety_net_excludes_offlane_risk_subtypes():

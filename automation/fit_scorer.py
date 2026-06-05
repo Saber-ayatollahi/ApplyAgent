@@ -747,14 +747,19 @@ _SAFETY_NET_EXCLUDE = ("cyber", "security", "vendor", "third party",
 def _is_target_company(row: dict | None) -> bool:
     """True when the role was scraped from a TARGET company's own board.
 
-    We deliberately scrape only companies on the targets list, so a scrape
-    origin == a target we care about (worklist source 'scrape' or 'both').
-    Gmail-alert rows (source 'gmail') come from the broad LinkedIn firehose —
-    any company — so they keep the stricter title rules rather than benefiting
-    from the senior-at-target safety net."""
+    We deliberately scrape only companies on the targets list, so a direct-ATS
+    scrape origin == a target we care about. FIREHOSE sources are excluded —
+    Gmail alerts and broad LinkedIn scrapes ('gmail*', 'linkedin*') aren't a
+    specific target's board, so those rows keep the stricter title rules.
+
+    Works on BOTH normalized worklist rows (source 'scrape'/'both') and raw
+    scan rows (source 'workday:bmo', 'successfactors:...'), so the safety net
+    behaves the same in the scorer and in morning_brief/other pre-worklist
+    callers — 'scrape'/'both' and any ATS source pass; 'gmail'/'linkedin' don't."""
     if not row:
         return False
-    return (row.get("source") or "").strip().lower() in ("scrape", "both")
+    src = (row.get("source") or "").strip().lower()
+    return bool(src) and not src.startswith(("gmail", "linkedin"))
 
 
 def rule_triage(title: str,

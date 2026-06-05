@@ -45,10 +45,13 @@ def _score_delta_inline(delta_jobs: list[dict], concurrency: int = 4,
     sys.path.insert(0, str(ROOT / "automation"))
     import fit_scorer as fs
 
-    # Stage 1 — rule triage
+    # Stage 1 — rule triage. Pass the full row so the brief matches the
+    # scorer's view: the target-company safety net (senior risk roles) and
+    # active suppressions both apply here too, instead of the brief silently
+    # diverging from what the pipeline actually surfaces/mutes.
     triaged = []
     for r in delta_jobs:
-        tri = fs.rule_triage(r.get("title", ""))
+        tri = fs.rule_triage(r.get("title", ""), row=r)
         r["_triage"] = tri
         if tri["stage1_pass"]:
             triaged.append(r)
