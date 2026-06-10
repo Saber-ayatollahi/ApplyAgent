@@ -8696,11 +8696,15 @@ elif page == "📋 Jobs Kanban":
         return freshness_badge(None, entry.get("found_at"))
 
     if "company" in view.columns and "title" in view.columns:
+        # DataFrame.apply(axis=1) on an EMPTY frame returns an empty DataFrame
+        # (pandas can't infer the row-wise output shape), and assigning that to
+        # one column raises ValueError — hit whenever the filters/search match
+        # 0 rows. Assign a scalar in that case so the column still exists.
         view = view.assign(
-            draft=view.apply(
+            draft=(view.apply(
                 lambda row: "📄 ready" if bool(_find_tailor_docs(row)) else "",
                 axis=1,
-            )
+            ) if len(view) else "")
         )
     if "url" in view.columns:
         view = view.assign(freshness=view["url"].apply(_freshness))
