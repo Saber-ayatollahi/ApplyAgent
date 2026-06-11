@@ -2004,25 +2004,65 @@ def _find_application_folder(job: dict):
     return None
 
 
+def _tailor_runs() -> dict:
+    """Session registry of every tailor the user has touched: job_id → run_id
+    (run_id is None for view-only opens of an existing deliverable).
+
+    Replaces the old single `_active_tailor_job_id` slot, which could only
+    track the LATEST click — launching a second generation made the first
+    one's progress/result vanish from the UI even though its process kept
+    running. With the registry, N generations run simultaneously and the
+    drawer renders one banner per job (⏳ progress → ✅ downloads)."""
+    reg = st.session_state.setdefault("_tailor_runs", {})
+    # One-time migration of the legacy single-slot keys (older sessions /
+    # any code path that still writes them).
+    _legacy_job = st.session_state.pop("_active_tailor_job_id", None)
+    if _legacy_job and _legacy_job not in reg:
+        reg[_legacy_job] = st.session_state.get("_active_tailor_run_id")
+    st.session_state.pop("_active_tailor_run_id", None)
+    return reg
+
+
+def _tailor_run_state(run_id) -> dict | None:
+    """Refreshed scan_runner record for a tailor run, or None if unknown.
+    (refresh_state also flips 'running' → finished/failed when the PID died.)"""
+    if not run_id:
+        return None
+    _p = scan_runner.RUNS_DIR / f"{run_id}.json"
+    if not _p.exists():
+        return None
+    try:
+        return scan_runner.refresh_state(_p)
+    except Exception:
+        return None
+
+
 def render_tailor_action_row(job: dict, key_prefix: str,
                               tracker_data: dict, tracker_path):
     """Render the 3-button action strip for a job: Tailor · Open · Apply.
 
     Behaviour:
       - 🔗 Open posting: link button to job["url"].
-      - ✨ Tailor: spawns jd_tailor.py in background. Stores (job_id, run_id)
-        in session_state so subsequent rerenders can detect completion and
-        surface the drawer below the row.
+      - ✨ Tailor: spawns resume_agent.py in background and registers the run
+        in _tailor_runs() so the drawer tracks it; while one is in flight the
+        button is a disabled "⏳ Generating…" chip (no twin spawns).
       - ✅ Mark applied: stamps date_applied=today, status=Applied, and
         writes the tracker. Closes the loop without leaving the page.
 
     The drawer (in-page tailor preview + copy buttons) is rendered by
     render_tailor_drawer() — which the caller invokes once per page after
-    the action rows so multiple Tailor clicks queue up correctly.
+    the action rows; it shows one card per registered job, so several
+    Tailor runs can progress and finish independently.
     """
     job_id = job.get("id", "")
     url = job.get("url", "")
     has_draft = bool(_find_application_folder(job))  # polished deliverable?
+    # Multi-run aware: is a generation ALREADY in flight for this job? If so
+    # the button becomes a disabled progress chip — clicking "✨ Tailor" twice
+    # used to spawn a twin process (double API spend + racy writes into the
+    # same applications/ folder).
+    _live = _tailor_run_state(_tailor_runs().get(job_id))
+    _running = bool(_live and _live.get("state") == "running")
 
     btn_url, btn_tailor, btn_apply = st.columns(3)
     with btn_url:
@@ -2032,28 +2072,34 @@ def render_tailor_action_row(job: dict, key_prefix: str,
             st.button("🔗 (no URL)", disabled=True, width='stretch',
                        key=f"{key_prefix}_nourl_{job_id}")
     with btn_tailor:
-        _tailor_label = "📄 View resume" if has_draft else "✨ Tailor resume"
-        if st.button(_tailor_label, width='stretch',
-                      key=f"{key_prefix}_tailor_{job_id}",
-                      help="Generate the tailored resume + cover letter + "
-                           "interview brief for this role — the agentic "
-                           "pipeline (resume_agent.py, ~1–2 min, ~$0.40 on "
-                           "Opus). The polished .docx appears below."):
-            if not has_draft:
-                # The ONE resume path: spawn the agentic generator (produces
-                # the polished applications/<job>/ .docx + cover + brief).
-                _cmd = [sys.executable,
-                        str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id, "--tier", _resume_tier()]
-                _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
-                st.session_state["_active_tailor_job_id"] = job_id
-                st.session_state["_active_tailor_run_id"] = _rec.run_id
-                st.toast(f"📄 Generating resume for {job.get('company', '')}…",
-                         icon="🚀")
-            else:
-                # Deliverable exists — surface it in the drawer.
-                st.session_state["_active_tailor_job_id"] = job_id
-            st.rerun()
+        if _running:
+            st.button("⏳ Generating…", disabled=True, width='stretch',
+                       key=f"{key_prefix}_tailor_{job_id}",
+                       help="Resume generation is already running for this "
+                            "role (~1–2 min) — progress + downloads appear "
+                            "in the drawer below.")
+        else:
+            _tailor_label = "📄 View resume" if has_draft else "✨ Tailor resume"
+            if st.button(_tailor_label, width='stretch',
+                          key=f"{key_prefix}_tailor_{job_id}",
+                          help="Generate the tailored resume + cover letter + "
+                               "interview brief for this role — the agentic "
+                               "pipeline (resume_agent.py, ~1–2 min, ~$0.40 on "
+                               "Opus). The polished .docx appears below."):
+                if not has_draft:
+                    # The ONE resume path: spawn the agentic generator (produces
+                    # the polished applications/<job>/ .docx + cover + brief).
+                    _cmd = [sys.executable,
+                            str(ROOT / "automation" / "resume_agent.py"),
+                            "--job-id", job_id, "--tier", _resume_tier()]
+                    _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
+                    _tailor_runs()[job_id] = _rec.run_id
+                    st.toast(f"📄 Generating resume for {job.get('company', '')}…",
+                             icon="🚀")
+                else:
+                    # Deliverable exists — surface it in the drawer.
+                    _tailor_runs().setdefault(job_id, None)
+                st.rerun()
     with btn_apply:
         _applied = bool(job.get("date_applied"))
         if st.button("✅ Applied" if not _applied else "✅ (already)",
@@ -2084,172 +2130,183 @@ def render_tailor_action_row(job: dict, key_prefix: str,
 
 
 def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
-    """If session_state has an active tailor target, render the drawer
-    below the page's action rows. Reads the tailor run state via
-    scan_runner; once finished AND a tailor doc exists, swaps from
-    'in progress' to 'preview + copy' mode.
+    """Render ONE CARD PER registered tailor job (see _tailor_runs):
 
-    Closes when user clicks 'Done' / 'Mark applied' / dismisses.
+      ⏳ running — live status + log tail; the page auto-polls (~2.5s)
+      ✅ ready   — success banner + downloads (resume/cover .docx/.pdf),
+                   previews (cover/brief/validity), Mark applied, Re-generate
+      ❌ failed  — error + log tail
+
+    Several generations can be in flight simultaneously; each card progresses
+    and finishes independently. A finished card stays (downloads on hand)
+    until dismissed via ✕ Close or Mark applied.
     """
-    job_id = st.session_state.get("_active_tailor_job_id")
-    if not job_id:
+    reg = _tailor_runs()
+    if not reg:
         return
-    job = next((j for j in jobs_list if j.get("id") == job_id), None)
-    if not job:
-        # Job was removed from tracker — clear the drawer
-        st.session_state.pop("_active_tailor_job_id", None)
-        st.session_state.pop("_active_tailor_run_id", None)
-        return
+    _any_running = False
+    for job_id, run_id in list(reg.items()):
+        job = next((j for j in jobs_list if j.get("id") == job_id), None)
+        if not job:
+            # Job no longer in the tracker — drop its card.
+            reg.pop(job_id, None)
+            continue
 
-    folder = _find_application_folder(job)
-    run_id = st.session_state.get("_active_tailor_run_id")
+        folder = _find_application_folder(job)
+        rec = _tailor_run_state(run_id)
+        state = (rec or {}).get("state")
+        # Job-id-scoped key suffix — several cards render in the same run,
+        # so every widget key must be unique per job.
+        _kk = job_id.replace("-", "_") if job_id else "unknown"
 
-    # Job-id-scoped key suffix so the drawer can be re-entered for a
-    # different role without Streamlit complaining about duplicate keys
-    # (which would crash if two drawers ever rendered in the same run).
-    _kk = job_id.replace("-", "_") if job_id else "unknown"
-    with st.container(border=True):
-        _hc1, _hc2 = st.columns([5, 1])
-        _hc1.markdown(f"### ✨ Tailor — {job.get('company', '?')} · "
-                       f"{(job.get('title') or '?')[:80]}")
-        with _hc2:
-            if st.button("✕ Close", width='stretch',
-                          key=f"tailor_drawer_close_{_kk}",
-                          help="Close the drawer. Tailor output stays "
-                               "on disk for next time."):
-                st.session_state.pop("_active_tailor_job_id", None)
-                st.session_state.pop("_active_tailor_run_id", None)
-                st.rerun()
-
-        # Status check: if run_id is known and run is still running, show
-        # the live log tail. Otherwise look for the doc on disk.
-        if run_id and not folder:
-            _status_path = scan_runner.RUNS_DIR / f"{run_id}.json"
-            if _status_path.exists():
-                _rec = scan_runner.refresh_state(_status_path)
-                if _rec.get("state") == "running":
-                    st.info("⏳ Resume generation is still running "
-                            "(~1–2 min) — drawer auto-refreshes when ready.",
-                            icon="🤖")
-                    _log = scan_runner.tail_log(_rec.get("log_path", ""), 4000)
-                    if _log:
-                        st.code(_log[-2000:], language="text")
-                    return
-                if _rec.get("state") == "failed":
-                    st.error("❌ Tailor run failed. See log:")
-                    _log = scan_runner.tail_log(_rec.get("log_path", ""), 4000)
-                    if _log:
-                        st.code(_log[-2000:], language="text")
-                    return
-
-        if not folder:
-            st.warning(
-                "No resume generated yet. If a run just started, give it "
-                "~1–2 min and the drawer refreshes. Otherwise hit "
-                "✨ Tailor resume on the row to generate one.",
-                icon="⏳",
-            )
-            return
-
-        # Drawer content: the polished deliverable (resume .docx + cover +
-        # interview brief) for this role — downloads, previews, apply actions.
-        _r_docx = next((p for p in folder.glob("*.docx")
-                        if not p.name.endswith("_cover.docx")), None)
-        _r_pdf = next((p for p in folder.glob("*.pdf")
-                       if not p.name.endswith("_cover.pdf")), None)
-        _c_docx = next(iter(folder.glob("*_cover.docx")), None)
-        _c_pdf = next(iter(folder.glob("*_cover.pdf")), None)
-        _cover = next(iter(folder.glob("*_cover.md")), None)
-        _brief = next(iter(folder.glob("*_interview_brief.md")), None)
-        _valid = next(iter(folder.glob("*_validity_report.md")), None)
-        st.caption(
-            f"📂 `applications/{folder.name}/` · "
-            f"{datetime.fromtimestamp(folder.stat().st_mtime).strftime('%b %d %H:%M')}"
-        )
-
-        _da, _db, _dc = st.columns([2, 2, 1])
-        with _da:
-            _url = job.get("url", "")
-            if _url:
-                st.link_button("🔗 Open application URL", _url,
-                                width='stretch', type="primary")
-        with _db:
-            if not job.get("date_applied"):
-                if st.button("✅ Mark applied",
-                              width='stretch', type="primary",
-                              key=f"drawer_apply_btn_{_kk}"):
-                    # Lost-update fix: re-read + mutate under the shared lock
-                    # rather than writing the stale cached `tracker_data`.
-                    from safe_json import mutate_json as _mj  # noqa: WPS433
-
-                    def _apply_one(t):
-                        for _tj in t.get("jobs", []):
-                            if _tj.get("id") == job_id:
-                                _tj["status"] = "Applied"
-                                seed_followup(_tj, applied_on=date.today())
-                                break
-                        return t
-
-                    _mj(tracker_path, _apply_one,
-                        default={"jobs": [], "meta": {}})
-                    load_tracker.clear()
-                    st.session_state.pop("_active_tailor_job_id", None)
-                    st.session_state.pop("_active_tailor_run_id", None)
-                    st.toast(f"✅ {job.get('company', '?')} marked applied",
-                              icon="🎯")
+        with st.container(border=True):
+            _hc1, _hc2 = st.columns([5, 1])
+            _hc1.markdown(f"### ✨ Tailor — {job.get('company', '?')} · "
+                           f"{(job.get('title') or '?')[:80]}")
+            with _hc2:
+                if state == "running":
+                    st.caption("⏳ running…")
+                elif st.button("✕ Close", width='stretch',
+                                key=f"tailor_drawer_close_{_kk}",
+                                help="Dismiss this card. Tailor output stays "
+                                     "on disk for next time."):
+                    reg.pop(job_id, None)
                     st.rerun()
-            else:
-                st.caption(
-                    f"Already applied {job.get('date_applied')}"
+
+            if state == "running":
+                _any_running = True
+                st.info("⏳ Resume generation is running (~1–2 min) — this "
+                        "card flips to downloads when ready.", icon="🤖")
+                _log = scan_runner.tail_log((rec or {}).get("log_path", ""), 4000)
+                if _log:
+                    with st.expander("Live log", expanded=False):
+                        st.code(_log[-2000:], language="text")
+                continue
+            if state == "failed" and not folder:
+                st.error("❌ Tailor run failed. See log:")
+                _log = scan_runner.tail_log((rec or {}).get("log_path", ""), 4000)
+                if _log:
+                    st.code(_log[-2000:], language="text")
+                continue
+            if not folder:
+                st.warning(
+                    "No resume generated yet. If a run just started, give it "
+                    "~1–2 min — the card updates by itself. Otherwise hit "
+                    "✨ Tailor resume on the row to generate one.",
+                    icon="⏳",
                 )
-        with _dc:
-            if st.button("📄 Re-generate", width='stretch',
-                          key=f"drawer_regen_{_kk}",
-                          help="Re-run the agentic generator (overwrites the "
-                               "current deliverable for this role)."):
-                _cmd = [sys.executable,
-                        str(ROOT / "automation" / "resume_agent.py"),
-                        "--job-id", job_id, "--tier", _resume_tier()]
-                _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
-                st.session_state["_active_tailor_run_id"] = _rec.run_id
-                st.toast("📄 Re-generating…", icon="🚀")
-                st.rerun()
+                continue
 
-        _dq1, _dq2, _dq3, _dq4 = st.columns(4)
-        if _r_docx:
-            with _dq1, open(_r_docx, "rb") as _f:
-                st.download_button("⬇ Resume .docx", _f.read(),
-                                   file_name=_r_docx.name, width='stretch',
-                                   key=f"drawer_dl_rdocx_{_kk}")
-        if _r_pdf:
-            with _dq2, open(_r_pdf, "rb") as _f:
-                st.download_button("⬇ Resume .pdf", _f.read(),
-                                   file_name=_r_pdf.name, width='stretch',
-                                   key=f"drawer_dl_rpdf_{_kk}")
-        if _c_docx:
-            with _dq3, open(_c_docx, "rb") as _f:
-                st.download_button("⬇ Cover .docx", _f.read(),
-                                   file_name=_c_docx.name, width='stretch',
-                                   key=f"drawer_dl_cdocx_{_kk}")
-        if _c_pdf:
-            with _dq4, open(_c_pdf, "rb") as _f:
-                st.download_button("⬇ Cover .pdf", _f.read(),
-                                   file_name=_c_pdf.name, width='stretch',
-                                   key=f"drawer_dl_cpdf_{_kk}")
-        if not (_r_pdf or _c_pdf):
-            st.caption("ℹ️ PDFs not generated (needs MS Word or libreoffice). "
-                       ".docx is the editable master — export PDF from Word.")
+            # ── Ready: the polished deliverable (resume .docx + cover +
+            # interview brief) — banner, downloads, previews, apply actions.
+            st.success(f"✅ Resume ready — {job.get('company', '?')}. "
+                       "Downloads below.", icon="📄")
+            _r_docx = next((p for p in folder.glob("*.docx")
+                            if not p.name.endswith("_cover.docx")), None)
+            _r_pdf = next((p for p in folder.glob("*.pdf")
+                           if not p.name.endswith("_cover.pdf")), None)
+            _c_docx = next(iter(folder.glob("*_cover.docx")), None)
+            _c_pdf = next(iter(folder.glob("*_cover.pdf")), None)
+            _cover = next(iter(folder.glob("*_cover.md")), None)
+            _brief = next(iter(folder.glob("*_interview_brief.md")), None)
+            _valid = next(iter(folder.glob("*_validity_report.md")), None)
+            st.caption(
+                f"📂 `applications/{folder.name}/` · "
+                f"{datetime.fromtimestamp(folder.stat().st_mtime).strftime('%b %d %H:%M')}"
+            )
 
-        if _cover:
-            with st.expander("✉️ Cover letter preview", expanded=False):
-                st.markdown(_cover.read_text(encoding="utf-8"))
-        if _brief:
-            with st.expander("🎤 Interview brief", expanded=False):
-                st.markdown(_brief.read_text(encoding="utf-8"))
-        if _valid:
-            with st.expander("✅ Validity report — what was checked & changed",
-                             expanded=False):
-                st.markdown(_valid.read_text(encoding="utf-8"))
+            _da, _db, _dc = st.columns([2, 2, 1])
+            with _da:
+                _url = job.get("url", "")
+                if _url:
+                    st.link_button("🔗 Open application URL", _url,
+                                    width='stretch', type="primary")
+            with _db:
+                if not job.get("date_applied"):
+                    if st.button("✅ Mark applied",
+                                  width='stretch', type="primary",
+                                  key=f"drawer_apply_btn_{_kk}"):
+                        # Lost-update fix: re-read + mutate under the shared
+                        # lock rather than writing the stale cached dict.
+                        from safe_json import mutate_json as _mj  # noqa: WPS433
+
+                        def _apply_one(t, _jid=job_id):
+                            for _tj in t.get("jobs", []):
+                                if _tj.get("id") == _jid:
+                                    _tj["status"] = "Applied"
+                                    seed_followup(_tj, applied_on=date.today())
+                                    break
+                            return t
+
+                        _mj(tracker_path, _apply_one,
+                            default={"jobs": [], "meta": {}})
+                        load_tracker.clear()
+                        reg.pop(job_id, None)
+                        st.toast(f"✅ {job.get('company', '?')} marked applied",
+                                  icon="🎯")
+                        st.rerun()
+                else:
+                    st.caption(
+                        f"Already applied {job.get('date_applied')}"
+                    )
+            with _dc:
+                if st.button("📄 Re-generate", width='stretch',
+                              key=f"drawer_regen_{_kk}",
+                              help="Re-run the agentic generator (overwrites "
+                                   "the current deliverable for this role)."):
+                    _cmd = [sys.executable,
+                            str(ROOT / "automation" / "resume_agent.py"),
+                            "--job-id", job_id, "--tier", _resume_tier()]
+                    _rec = scan_runner.start_run(f"resume_{job_id}", _cmd)
+                    reg[job_id] = _rec.run_id
+                    st.toast("📄 Re-generating…", icon="🚀")
+                    st.rerun()
+
+            _dq1, _dq2, _dq3, _dq4 = st.columns(4)
+            if _r_docx:
+                with _dq1, open(_r_docx, "rb") as _f:
+                    st.download_button("⬇ Resume .docx", _f.read(),
+                                       file_name=_r_docx.name, width='stretch',
+                                       key=f"drawer_dl_rdocx_{_kk}")
+            if _r_pdf:
+                with _dq2, open(_r_pdf, "rb") as _f:
+                    st.download_button("⬇ Resume .pdf", _f.read(),
+                                       file_name=_r_pdf.name, width='stretch',
+                                       key=f"drawer_dl_rpdf_{_kk}")
+            if _c_docx:
+                with _dq3, open(_c_docx, "rb") as _f:
+                    st.download_button("⬇ Cover .docx", _f.read(),
+                                       file_name=_c_docx.name, width='stretch',
+                                       key=f"drawer_dl_cdocx_{_kk}")
+            if _c_pdf:
+                with _dq4, open(_c_pdf, "rb") as _f:
+                    st.download_button("⬇ Cover .pdf", _f.read(),
+                                       file_name=_c_pdf.name, width='stretch',
+                                       key=f"drawer_dl_cpdf_{_kk}")
+            if not (_r_pdf or _c_pdf):
+                st.caption("ℹ️ PDFs not generated (needs MS Word or "
+                           "libreoffice). .docx is the editable master — "
+                           "export PDF from Word.")
+
+            if _cover:
+                with st.expander("✉️ Cover letter preview", expanded=False):
+                    st.markdown(_cover.read_text(encoding="utf-8"))
+            if _brief:
+                with st.expander("🎤 Interview brief", expanded=False):
+                    st.markdown(_brief.read_text(encoding="utf-8"))
+            if _valid:
+                with st.expander("✅ Validity report — what was checked & "
+                                 "changed", expanded=False):
+                    st.markdown(_valid.read_text(encoding="utf-8"))
+
+    # While any generation is live, poll so finished cards flip to downloads
+    # without user interaction (same pattern as run_inline_agent — the
+    # page-wide autorefresh can't be relied on here).
+    if _any_running:
+        if _HAVE_AUTOREFRESH:
+            st_autorefresh(interval=2500, key="_tailor_drawer_poll")
+        else:
+            st.caption("🔄 Reload the page to refresh generation progress.")
 
 
 def run_inline_agent(slot, label, *, on_finish=None,
@@ -4924,8 +4981,11 @@ if page == "🏠 Dashboard":
                            str(ROOT / "automation" / "resume_agent.py"),
                            "--job-id", td_pick, "--tier", _resume_tier()]
                     rec = scan_runner.start_run(f"resume_{td_pick}", cmd)
+                    # Register so the tailor drawer (this page hosts it)
+                    # tracks progress and surfaces the downloads banner.
+                    st.session_state.setdefault("_tailor_runs", {})[td_pick] = rec.run_id
                     st.success(f"Tailor started (`{rec.run_id}`). "
-                               "Draft will land in outputs/ in ~60s.")
+                               "Progress + downloads appear in the drawer below.")
 
         # Warm-intro opportunities
         if tier1_warm_intro:
@@ -11739,7 +11799,11 @@ elif page == "📬 Review Queue":
                                    str(ROOT / "automation" / "resume_agent.py"),
                                    "--job-id", _rq_job_id, "--tier",
                                    _resume_tier()]
-                    scan_runner.start_run(f"resume_{_rq_job_id}", _tailor_cmd)
+                    _t_rec = scan_runner.start_run(f"resume_{_rq_job_id}",
+                                                   _tailor_cmd)
+                    # Register so the Kanban/Dashboard tailor drawer shows
+                    # this run's progress + downloads banner too.
+                    st.session_state.setdefault("_tailor_runs", {})[_rq_job_id] = _t_rec.run_id
                     st.toast(f"📄 Resume generation launched for {_rq_job_id}",
                              icon="🚀")
                 del st.session_state["_rq_apply_open"]
