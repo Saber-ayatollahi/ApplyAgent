@@ -138,7 +138,9 @@ decide the overlay:
 Conform to the schema (`python automation/resume_render.py --schema`; example
 via `--example`). Rules:
 - **summary**: one paragraph, **60–85 words**, evidence-backed, opens on the
-  angle from Step 2.
+  angle from Step 2 — and the first sentence must contain the **exact posting
+  title verbatim** (rule B; a generic label like "finance professional" fails
+  this and measurably hurts interview rates).
 - **core_skills**: a **multiple of 3** (the grid is 3 columns; 9 is standard).
   Collectively they must cover the JD's must-have keywords.
 - **experience**: employer → roles → sections. A section `heading` of `null`

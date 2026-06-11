@@ -150,7 +150,16 @@ def _build_user_prompt(company: str, role: str, jd: str) -> str:
         f"scratch in this JD's language (echo its Key Accountabilities "
         f"groupings); never default to generic platform/banking headings "
         f"('… Engine', '… Platform Delivery') the JD doesn't ask for.\n"
-        f"- summary: 60-85 words, opens with the target title + years.\n"
+        f"- summary: 60-85 words; the FIRST sentence must contain the EXACT "
+        f"posting title verbatim — \"{role}\" — plus the ~7-years qualifier "
+        f"(exact-title resumes get ~10x more interviews; a generic label "
+        f"like 'finance professional' fails this rule).\n"
+        f"- KEYWORD HONESTY (hard rule): a JD keyword that lacks Master-Repo "
+        f"support must NOT appear as a skill or claim — leave it out and let "
+        f"the cover letter own the gap. NEVER claim tools (e.g. Bloomberg), "
+        f"products/process domains (collateral ops, trade lifecycle, middle "
+        f"office, break resolution), or regulations the repo doesn't "
+        f"evidence. A truthful 75% keyword match beats a fabricated 95%.\n"
         f"- Keep it to a 2-page budget (~65-85 rendered lines). Be selective.\n"
         f"- `target.jd_keywords`: 12-15 ATS tokens that ACTUALLY appear in the "
         f"resume text you write (the renderer self-checks coverage).\n"
@@ -187,12 +196,17 @@ def _revise_for_keywords(rc: dict, missing: list[str], system: str) -> dict:
         f"The renderer's ATS self-check found these target keywords listed in "
         f"target.jd_keywords but ABSENT from the resume text: "
         f"{', '.join(missing)}.\n\n"
-        "For EACH missing keyword: (a) if it is TRUTHFUL per the Master Repo, "
-        "weave it naturally into an existing summary/skill/bullet (do not add "
-        "a new claim, do not inflate); else (b) remove it from "
-        "target.jd_keywords. Keep everything else identical and within the "
-        "2-page budget. Return ONLY the corrected resume_content.json inside a "
-        "single ```json fenced block."
+        "For EACH missing keyword: (a) ONLY if the Master Repo (system "
+        "message) EXPLICITLY supports it, weave it naturally into an existing "
+        "summary/skill/bullet (no new claims, no inflation); else (b) remove "
+        "it from target.jd_keywords. BE STRICT — when in doubt, DROP the "
+        "keyword: a truthful 75% match beats a fabricated 95%. Never "
+        "introduce tools, products, process domains, or regulations the repo "
+        "doesn't evidence (this step has previously fabricated 'recovery "
+        "planning' and 'collateral' skills — do not repeat that). Keep "
+        "everything else identical and within the 2-page budget. Return ONLY "
+        "the corrected resume_content.json inside a single ```json fenced "
+        "block."
     )
     raw = jd_tailor.call_claude(system, user, max_tokens=12000)
     m = re.search(r"```json\s*(\{.*?\})\s*```", raw, re.DOTALL) \
@@ -238,7 +252,18 @@ def _verify_pass(payload: dict, jd: str, company: str, role: str,
         "asks for (e.g. IRRBB/OSFI B-12/Basel on a pension-investment JD) → "
         "reframe into the JD's own vocabulary or demote out of the prime "
         "slot. Section headings must echo THIS JD's accountability themes, "
-        "not generic platform/banking groupings.\n\n"
+        "not generic platform/banking groupings.\n"
+        "7. JD-KEYWORD IMPORTS (noun-level): cross-check EVERY core_skill "
+        "noun and every tool/system/product/process-domain mentioned in the "
+        "resume (e.g. Bloomberg, collateral, trade lifecycle, middle office, "
+        "break resolution, recovery planning, PnL cadence) against the "
+        "Master Repo. Present in the JD but NOT evidenced in the repo → "
+        "REMOVE it or hedge to honest adjacency ('analogous to', 'exposure "
+        "to'). This is the most common inflation vector: the JD's vocabulary "
+        "quietly becoming the candidate's claimed experience.\n"
+        "8. EXACT TITLE: the summary's first sentence must contain the exact "
+        "posting title verbatim; if missing, add it without inflating "
+        "anything else.\n\n"
         "Keep all the strong, TRUE material and the 2-page budget. Return ONE "
         "```json fenced block with keys: resume_content (corrected), "
         "cover_letter (corrected, body only), validity_report (markdown: what "
@@ -284,7 +309,18 @@ def _extract_json(text: str) -> dict:
         blob = m2.group(1) if m2 else None
     if blob is None:
         raise ValueError("no JSON object found in model output")
-    return json.loads(blob)
+    try:
+        return json.loads(blob)
+    except json.JSONDecodeError:
+        # Salvage pass: parse the FIRST complete object and ignore whatever
+        # trails it. Covers the model echoing stray text/a second block after
+        # the close ("Extra data: … char 14289" — observed on a live draft).
+        # raw_decode still raises if the object itself is malformed, which
+        # the caller's API retry then handles.
+        obj, _ = json.JSONDecoder().raw_decode(blob[blob.index("{"):])
+        if isinstance(obj, dict):
+            return obj
+        raise
 
 
 _REQUIRED = ("contact", "summary", "core_skills", "experience", "education")
@@ -339,19 +375,38 @@ def main() -> int:
     user = _build_user_prompt(company, role, jd)
 
     # Draft on the tier's draft model (or an explicit --model override).
+    # Two attempts: like the verify pass, a long draft occasionally comes back
+    # as malformed JSON (unescaped quote, stray text after the close). One
+    # focused retry with the parse error fed back recovers it; without this a
+    # ~$0.55 draft call was thrown away on a parse hiccup (observed live).
     _use_model(args.model or tier["draft"])
     raw = jd_tailor.call_claude(system, user, max_tokens=16000)
-    try:
-        payload = _extract_json(raw)
-        rc = payload["resume_content"]
-        _validate_content(rc)
-    except Exception as e:  # noqa: BLE001
-        print(f"[resume_agent] model output unusable: {e}", file=sys.stderr)
-        dump = HERE / "outputs" / f"resume_agent_raw_{_slug(company)}.txt"
-        dump.parent.mkdir(parents=True, exist_ok=True)
-        dump.write_text(raw, encoding="utf-8")
-        print(f"  raw output saved to {dump}", file=sys.stderr)
-        return 2
+    payload = None
+    for _attempt in (1, 2):
+        try:
+            payload = _extract_json(raw)
+            rc = payload["resume_content"]
+            _validate_content(rc)
+            break
+        except Exception as e:  # noqa: BLE001
+            if _attempt == 1:
+                print(f"[resume_agent] draft output unusable ({e}); "
+                      "retrying once…", file=sys.stderr)
+                raw = jd_tailor.call_claude(
+                    system,
+                    user + f"\n\nIMPORTANT: your previous response FAILED "
+                           f"JSON parsing ({e}). Re-emit the complete "
+                           f"response as ONE strictly valid ```json block — "
+                           f"escape all double quotes inside string values, "
+                           f"and output NOTHING after the closing fence.",
+                    max_tokens=16000)
+                continue
+            print(f"[resume_agent] model output unusable: {e}", file=sys.stderr)
+            dump = HERE / "outputs" / f"resume_agent_raw_{_slug(company)}.txt"
+            dump.parent.mkdir(parents=True, exist_ok=True)
+            dump.write_text(raw, encoding="utf-8")
+            print(f"  raw output saved to {dump}", file=sys.stderr)
+            return 2
 
     # ── Validity / critique pass — adversarially audit the draft resume +
     # cover against the Master Repo and fix JD-imported inflation, untruthful
