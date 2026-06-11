@@ -56,6 +56,30 @@ the cover letter own the pivot.** A truthful 75% keyword match beats a fabricate
 
 ---
 
+## 🎯 THE RELEVANCE RULE (the mirror of traceability)
+
+**Traceability caps what you may CLAIM; the JD controls what you EMPHASIZE.**
+The Master Repo is a superset of any one job — most of it must stay unused on
+every resume. The second-biggest failure mode after inflation is **exporting
+repo content the JD never asked for** (e.g., leading a pension-investment
+resume with IRRBB/OSFI B-12 because the repo's strongest lane is bank ALM).
+
+- Derive the JD's **3–5 core themes** (Step 1) and give them the prime real
+  estate: the summary's first sentence, every section heading, and CORE SKILLS.
+- A lane keyword that does **not appear in the JD** (and is not a near-synonym
+  of a JD must-have) must NOT appear in the summary, any section heading, or
+  CORE SKILLS. At most ONE supporting mention deep in a bullet, and only where
+  the underlying fact is the evidence — reworded into the JD's vocabulary.
+- Same facts, the target's language: for a **pension plan** JD, interest-rate
+  work is "duration / hedging / funded-status sensitivity", not "IRRBB /
+  banking book"; for a **bank treasury** JD it is the reverse.
+
+| JD (real example) | Wrong emphasis | Right emphasis |
+|---|---|---|
+| TD "Treasury Manager – Pension ALM & Strategy": pension ×14, investment ×20, LDI, actuaries, governance committees; **IRRBB ×0** | Bullet leads with "aligned with IRRBB standards analogous to OSFI B-12 and Basel"; headings "Cash Flow, Liquidity & Stress Testing Engine", "Model Governance & Platform Delivery" | Lead with pension ALM / LDI / funded status / manager oversight; headings like "Pension ALM & Portfolio Analytics", "Cash-Flow Projection & Stress Testing", "Governance, Oversight & Reporting" |
+
+---
+
 ## Sources of truth (read these, in order)
 
 1. `docs/Saber_Ayatollahi_Master_Repository.md` — the factual spine. **Every
@@ -118,8 +142,15 @@ via `--example`). Rules:
 - **core_skills**: a **multiple of 3** (the grid is 3 columns; 9 is standard).
   Collectively they must cover the JD's must-have keywords.
 - **experience**: employer → roles → sections. A section `heading` of `null`
-  means plain bullets with no sub-header (used for EY/Ortec). Use sub-headers to
-  theme a dense role (Moody's) around the JD's priorities.
+  means plain bullets with no sub-header (used for EY/Ortec).
+- **Section headings are PER-JOB presentation, not fixed facts.** Re-derive the
+  Moody's sub-headers for every application from the JD's own vocabulary —
+  ideally echoing the JD's "Key Accountabilities" groupings — then place each
+  repo bullet under the theme it serves (reframe the bullet's wording to the
+  target domain; same underlying fact). Never carry headings over from a
+  previous resume by default: "…Stress Testing Engine" / "…Platform Delivery"
+  read as platform-engineering and miss roles that want strategy, governance,
+  or oversight.
 - **education**: unchanged unless the JD calls for a specific credential to lead.
 - **target.jd_keywords**: the Step-1 hard keywords, so the renderer can verify
   coverage. Use the literal token the ATS scans for (e.g., `"statistics"`, not
@@ -184,8 +215,12 @@ Notes:
    years/figures; Moody's two-role split intact.
 4. Eyeball the rendered PDF: no role-title wrapping, headings correct, summary
    60–85 words.
+5. **Relevance audit:** list the JD's 3–5 core themes; the summary's first
+   sentence, every section heading, and every CORE SKILL must map to one. Any
+   prominent term the JD never asks for (e.g. IRRBB on a pension-investment
+   JD) → reframe into the JD's vocabulary or demote/cut.
 
-Only after all four pass is the resume final.
+Only after all five pass is the resume final.
 
 ---
 

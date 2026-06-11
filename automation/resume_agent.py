@@ -109,7 +109,12 @@ def _resolve_job(args) -> tuple[str, str, str, dict | None]:
 def _build_user_prompt(company: str, role: str, jd: str) -> str:
     rules = ""
     try:
-        rules = INSTRUCTIONS.read_text(encoding="utf-8")[:9000]
+        # Embed the WHOLE instruction doc. A previous [:9000] cap silently cut
+        # it mid-Step-8, so the evidence-based rules (keyword mirroring, the
+        # summary formula, relevance checks) never reached the model. The doc
+        # is ~17k chars ≈ 4k tokens — cheap next to the Master Repo system
+        # message; the generous ceiling only guards against runaway growth.
+        rules = INSTRUCTIONS.read_text(encoding="utf-8")[:24000]
     except Exception:
         rules = "(resume_agent_instructions.md unavailable)"
     schema = resume_render.SCHEMA
@@ -133,6 +138,18 @@ def _build_user_prompt(company: str, role: str, jd: str) -> str:
         f"Portfolio Risk → lead VaR/CVaR + risk decomposition + LDI; banking "
         f"book → IRRBB/ALM). Hero the most-relevant employer by BULLET WEIGHT, "
         f"never by breaking reverse-chronological order.\n"
+        f"- EMPHASIS FOLLOWS THE JD (relevance rule): first derive THIS JD's "
+        f"3-5 core themes; the summary's opening sentence, every section "
+        f"heading, and core_skills must map onto them. A lane keyword the JD "
+        f"never mentions (e.g. IRRBB on a pension-investment JD) must NOT "
+        f"appear in the summary, any heading, or core_skills — at most one "
+        f"supporting mention deep in a bullet, reframed in the JD's own "
+        f"vocabulary (pension JD: 'duration / funded-status sensitivity', "
+        f"not 'IRRBB / banking book').\n"
+        f"- SECTION HEADINGS ARE PER-JOB: write the Moody's sub-headers from "
+        f"scratch in this JD's language (echo its Key Accountabilities "
+        f"groupings); never default to generic platform/banking headings "
+        f"('… Engine', '… Platform Delivery') the JD doesn't ask for.\n"
         f"- summary: 60-85 words, opens with the target title + years.\n"
         f"- Keep it to a 2-page budget (~65-85 rendered lines). Be selective.\n"
         f"- `target.jd_keywords`: 12-15 ATS tokens that ACTUALLY appear in the "
@@ -214,7 +231,14 @@ def _verify_pass(payload: dict, jd: str, company: str, role: str,
         "4. Named regulations/frameworks (CCAR, FRTB, Basel) claimed as a "
         "capability without repo support → hedge to '-aligned / applied "
         "knowledge of' or remove.\n"
-        "5. Cover-letter claims not supported by the resume/repo → align.\n\n"
+        "5. Cover-letter claims not supported by the resume/repo → align.\n"
+        "6. RELEVANCE (the mirror check): list this JD's 3-5 core themes, "
+        "then audit the PRIME SLOTS — the summary's opening sentence, every "
+        "section heading, and core_skills. Any term there that the JD never "
+        "asks for (e.g. IRRBB/OSFI B-12/Basel on a pension-investment JD) → "
+        "reframe into the JD's own vocabulary or demote out of the prime "
+        "slot. Section headings must echo THIS JD's accountability themes, "
+        "not generic platform/banking groupings.\n\n"
         "Keep all the strong, TRUE material and the 2-page budget. Return ONE "
         "```json fenced block with keys: resume_content (corrected), "
         "cover_letter (corrected, body only), validity_report (markdown: what "
