@@ -242,10 +242,31 @@ def _verify_pass(payload: dict, jd: str, company: str, role: str,
         "Keep all the strong, TRUE material and the 2-page budget. Return ONE "
         "```json fenced block with keys: resume_content (corrected), "
         "cover_letter (corrected, body only), validity_report (markdown: what "
-        "you changed + any residual honest gaps to own in interview)."
+        "you changed + any residual honest gaps to own in interview). "
+        "STRICT JSON: escape every double quote inside string values — in the "
+        "validity_report prose, prefer single quotes around cited phrases."
     )
     raw = jd_tailor.call_claude(system, user, max_tokens=16000)
-    revised = _extract_json(raw)
+    try:
+        revised = _extract_json(raw)
+    except (json.JSONDecodeError, ValueError) as e:
+        # The verifier's output is occasionally malformed JSON — typically an
+        # unescaped double quote inside the validity_report markdown. One
+        # focused retry with the parse error fed back recovers it; without
+        # this the whole validity pass silently degraded to "use first draft"
+        # (observed twice in one day at ~char 11k each time).
+        print(f"  [verify] output failed JSON parse ({e}); retrying once…",
+              file=sys.stderr)
+        retry_user = (
+            user
+            + f"\n\nIMPORTANT: your previous response FAILED JSON parsing "
+              f"({e}). Re-emit the complete response as ONE strictly valid "
+              f"```json block — escape all double quotes inside string "
+              f"values (use single quotes for cited phrases in "
+              f"validity_report)."
+        )
+        raw = jd_tailor.call_claude(system, retry_user, max_tokens=16000)
+        revised = _extract_json(raw)
     revised = revised if "resume_content" in revised else {"resume_content": revised}
     # carry over what the verifier doesn't regenerate
     revised.setdefault("interview_brief", payload.get("interview_brief", ""))
