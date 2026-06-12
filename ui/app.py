@@ -2214,6 +2214,23 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                 f"📂 `applications/{folder.name}/` · "
                 f"{datetime.fromtimestamp(folder.stat().st_mtime).strftime('%b %d %H:%M')}"
             )
+            # ATS keyword score — written by resume_agent._write_back. Tells
+            # you the match quality BEFORE you submit (missing = JD keywords
+            # the resume honestly couldn't claim; own them in the interview).
+            _ats_f = next(iter(folder.glob("*_ats_report.json")), None)
+            if _ats_f:
+                try:
+                    _ats = json.loads(_ats_f.read_text(encoding="utf-8"))
+                    _miss = _ats.get("missing") or []
+                    st.caption(
+                        f"🎯 ATS keywords: {_ats.get('matched', '?')}/"
+                        f"{_ats.get('total', '?')} matched"
+                        + (f" · missing: {', '.join(map(str, _miss[:4]))}"
+                           + (" …" if len(_miss) > 4 else "")
+                           if _miss else " — full coverage")
+                    )
+                except Exception:
+                    pass
 
             _da, _db, _dc = st.columns([2, 2, 1])
             with _da:

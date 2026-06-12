@@ -323,6 +323,63 @@ def _extract_json(text: str) -> dict:
         raise
 
 
+def _write_back(job_id, folder, base: str, rc: dict) -> None:
+    """Close the loop after a successful generation:
+
+    1. Drop `<base>_ats_report.json` into the applications folder (matched/
+       missing target keywords) so the UI can show the ATS score without
+       recomputing.
+    2. Link the deliverable into the tracker row: resume_file /
+       cover_letter_file (repo-relative paths), tailored_at, and the ATS
+       stats. Without this the tracker's resume_file stayed empty forever and
+       the app could only find documents by folder-name slug matching.
+
+    Best-effort: a failure here must never fail the generation."""
+    import resume_render as _RR  # noqa: WPS433
+    try:
+        kws, missing = _RR.keyword_report(rc)
+    except Exception:
+        kws, missing = [], []
+    ats = {"total": len(kws), "matched": len(kws) - len(missing),
+           "missing": missing, "keywords": kws}
+    try:
+        (folder / f"{base}_ats_report.json").write_text(
+            json.dumps(ats, indent=2, ensure_ascii=False), encoding="utf-8")
+    except Exception as e:  # noqa: BLE001
+        print(f"[resume_agent] ats report write failed ({e})", file=sys.stderr)
+    if not job_id:
+        return
+    try:
+        from datetime import datetime as _dt  # noqa: WPS433
+        from safe_json import mutate_json  # noqa: WPS433
+        rdocx = next((p for p in folder.glob("*.docx")
+                      if not p.name.endswith("_cover.docx")), None)
+        cdocx = next(iter(folder.glob("*_cover.docx")), None)
+
+        def _mut(t):
+            for j in (t.get("jobs") or []):
+                if j.get("id") == job_id:
+                    if rdocx:
+                        j["resume_file"] = str(
+                            rdocx.relative_to(ROOT)).replace("\\", "/")
+                    if cdocx:
+                        j["cover_letter_file"] = str(
+                            cdocx.relative_to(ROOT)).replace("\\", "/")
+                    j["tailored_at"] = _dt.now().isoformat(timespec="seconds")
+                    j["ats_matched"] = ats["matched"]
+                    j["ats_total"] = ats["total"]
+                    j["ats_missing"] = missing
+                    break
+            return t
+
+        mutate_json(jd_tailor.TRACKER, _mut, default={"jobs": [], "meta": {}})
+        print(f"[resume_agent] tracker linked (resume_file + ATS "
+              f"{ats['matched']}/{ats['total']})", file=sys.stderr)
+    except Exception as e:  # noqa: BLE001
+        print(f"[resume_agent] tracker write-back failed ({e})",
+              file=sys.stderr)
+
+
 _REQUIRED = ("contact", "summary", "core_skills", "experience", "education")
 
 
@@ -492,6 +549,7 @@ def main() -> int:
         if report:
             (folder / f"{base}_validity_report.md").write_text(
                 report, encoding="utf-8")
+        _write_back(args.job_id, folder, base, rc)
         print(f"[resume_agent] DONE -> {folder}", file=sys.stderr)
         # machine-readable last line for the UI to parse
         print(f"RESUME_AGENT_FOLDER={folder}")

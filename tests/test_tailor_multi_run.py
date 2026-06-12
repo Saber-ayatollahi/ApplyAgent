@@ -94,6 +94,36 @@ def test_two_ready_plus_one_running_render_independent_cards(fake_running_run):
     assert gen_chip, "in-flight job's Tailor button must be a disabled chip"
 
 
+def test_ready_card_shows_ats_score_when_report_exists():
+    """resume_agent._write_back drops <base>_ats_report.json into the folder;
+    the ready card must surface it as a '🎯 ATS keywords: N/M' caption."""
+    ready = _jobs_with_folders(1)
+    assert ready, "test data: need 1 tracker job with an app folder"
+    # find that job's folder and plant a temp ATS report in it
+    tracker = json.loads((ROOT / "data" / "job_tracker_data.json")
+                         .read_text(encoding="utf-8"))
+    job = next(j for j in tracker["jobs"] if j["id"] == ready[0])
+    tgt = f"{_slug(job.get('company'))}_{_slug(job.get('title'))}"
+    folder = next(d for d in (ROOT / "applications").glob("*/")
+                  if d.name.lower().endswith(tgt))
+    ats_path = folder / "zz_test_ats_report.json"
+    ats_path.write_text(json.dumps(
+        {"total": 15, "matched": 13, "missing": ["alpha", "beta"]}),
+        encoding="utf-8")
+    try:
+        at = AppTest.from_file(str(APP), default_timeout=140)
+        at.session_state["_applyagent_nav"] = "📋 Roles"
+        at.session_state["_tailor_runs"] = {ready[0]: None}
+        at.run()
+        exc = [str(getattr(e, "value", e)) for e in at.exception]
+        assert not exc
+        ats_caps = [c.value for c in at.caption
+                    if "ATS keywords" in (c.value or "")]
+        assert ats_caps and "13/15" in ats_caps[0] and "alpha" in ats_caps[0]
+    finally:
+        ats_path.unlink(missing_ok=True)
+
+
 def test_legacy_single_slot_migrates_into_registry():
     ready = _jobs_with_folders(1)
     assert ready, "test data: need 1 tracker job with an app folder"
