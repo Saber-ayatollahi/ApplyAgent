@@ -2238,6 +2238,24 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
                 if _url:
                     st.link_button("🔗 Open application URL", _url,
                                     width='stretch', type="primary")
+                    # Pre-submit liveness guard: postings die in weeks; don't
+                    # spend an application morning on a dead link. On-demand
+                    # ping (never automatic — network per rerun would lag).
+                    if st.button("🔍 Verify posting is live", width='stretch',
+                                  key=f"drawer_live_btn_{_kk}"):
+                        with st.spinner("Pinging the posting…"):
+                            st.session_state[f"_live_chk_{_kk}"] = \
+                                _posting_liveness(_url)
+                    _lv = st.session_state.get(f"_live_chk_{_kk}")
+                    if _lv:
+                        _verdict, _detail = _lv
+                        if _verdict == "live":
+                            st.caption(f"✅ LIVE — {_detail}")
+                        elif _verdict == "dead":
+                            st.caption(f"❌ DEAD — {_detail}. Don't submit; "
+                                       "archive or re-verify on the board.")
+                        else:
+                            st.caption(f"⚠️ {_detail}")
             with _db:
                 if not job.get("date_applied"):
                     if st.button("✅ Mark applied",
@@ -2719,6 +2737,44 @@ def priority_score(fit_numeric, posted_date, tier,
         t = 4
     return round(fit * recency_weight(posted_date, today)
                  * _TIER_WEIGHT.get(t, 0.64), 1)
+
+
+# ── Posting liveness (pre-submit guard) ─────────────────────────────────
+def _classify_liveness(status: int, final_url: str, body: str) -> tuple[str, str]:
+    """Pure dead-posting heuristics → ('live'|'dead'|'unknown', detail).
+
+    Mirrors the project's known failure signatures: Workday removals bounce
+    to community.workday.com/invalid-url; LinkedIn keeps the page 200 but
+    shows the closed-job banner; everything else falls back to HTTP status."""
+    if status >= 400:
+        return ("dead", f"HTTP {status}")
+    fu = (final_url or "").lower()
+    if "invalid-url" in fu or "community.workday.com" in fu:
+        return ("dead", "Workday: posting removed")
+    b = body or ""
+    if ("closed-job__flavor--closed" in b
+            or "No longer accepting applications" in b):
+        return ("dead", "LinkedIn: no longer accepting applications")
+    if status == 200 and len(b) < 500:
+        return ("unknown", "page nearly empty (JS shell?) — open it to confirm")
+    return ("live", "posting responds normally")
+
+
+def _posting_liveness(url: str) -> tuple[str, str]:
+    """Network ping + _classify_liveness. Called on demand (button), never
+    per-rerun — a network round-trip on every rerender would lag the page."""
+    if not url:
+        return ("unknown", "no URL on this role")
+    try:
+        import requests as _rq  # noqa: WPS433
+        try:
+            from jd_scraper import HEADERS as _H  # noqa: WPS433
+        except Exception:
+            _H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        r = _rq.get(url, headers=_H, timeout=12, allow_redirects=True)
+        return _classify_liveness(r.status_code, r.url or "", r.text or "")
+    except Exception as e:  # noqa: BLE001
+        return ("unknown", f"request failed: {e}")
 
 
 def load_morning_brief() -> dict | None:
