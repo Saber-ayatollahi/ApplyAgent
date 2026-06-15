@@ -138,6 +138,59 @@ def slugify(s: str, n: int = 40) -> str:
     return s[:n] or "role"
 
 
+def _workday_reqid_key(raw: str) -> str | None:
+    """For a Workday job URL, return a stable host+requisition-id key.
+
+    Workday serves the SAME posting under URLs that differ by the board
+    segment or path casing — e.g.
+        .../job/Toronto-ON-CAN/Director--Model-Validation_R260010757-1
+        .../External/job/Toronto-ON-CAN/Director--Model-Validation_R260010757-1
+    These normalise to *different* worklist.norm_url values, so URL-only
+    dedup misses and the role gets promoted twice (the 2026-06 duplicate-row
+    bug: 24 pairs). The requisition id (`R260010757`, `JR102327`, `JR-7887`,
+    `2610965`, …) is the posting's true identity and survives that drift.
+
+    Returns None for non-Workday URLs or when no req id is present (caller
+    falls back to norm_url alone).
+    """
+    low = (raw or "").strip().lower()
+    if "myworkdayjobs.com" not in low:
+        return None
+    try:
+        from urllib.parse import urlsplit
+        p = urlsplit(low)
+    except Exception:
+        return None
+    seg = p.path.rstrip("/").rsplit("/", 1)[-1]
+    if "_" not in seg:
+        return None
+    reqid = seg.rsplit("_", 1)[-1].strip()
+    # Drop a trailing Workday posting-index facet ("-1"/"-2") so two URLs for
+    # the same req that differ only by that index still match — but only when
+    # the remaining core still has a digit, so a real id like "jr-7887" (whose
+    # digits ARE the id) is preserved intact.
+    core = re.sub(r"-\d+$", "", reqid)
+    if re.search(r"\d", core):
+        reqid = core
+    return f"wd::{p.netloc}::{reqid}" if reqid else None
+
+
+def _identity_keys(row: dict, norm_url_fn) -> set[str]:
+    """Set of stable dedup keys for a row. Always includes norm_url; for
+    Workday URLs ALSO includes host+reqid (see _workday_reqid_key). Two rows
+    that share ANY key are the same posting. `norm_url_fn` is injected
+    (worklist.norm_url) to keep this pure and unit-testable."""
+    keys: set[str] = set()
+    nu = norm_url_fn(row)
+    if nu:
+        keys.add(nu)
+    wk = _workday_reqid_key(row.get("link") or row.get("url")
+                            or row.get("job_url") or "")
+    if wk:
+        keys.add(wk)
+    return keys
+
+
 def make_entry(r: dict) -> dict:
     f = r.get("fit") or {}
     verdict = f.get("fit_verdict") or "skip"
@@ -417,9 +470,17 @@ def main() -> int:
     def _classify_against(tr: dict) -> dict:
         """Pure function: classify scored.results vs `tr`.
         Returns dict with new_entries / upgrades / counts / expirations."""
-        existing_by_url = {
-            _wl.norm_url(j): j for j in tr.get("jobs", []) or [] if j.get("url")
-        }
+        # Multi-key dedup index: every existing row contributes its norm_url
+        # AND (for Workday) its host+reqid key. Matching on ANY key means
+        # board-segment / path drift between the existing row and the freshly
+        # scored URL can't slip a duplicate past (the 2026-06 bug). first-write
+        # wins so the index points at the original row for upgrade/skip.
+        existing_keys: dict[str, dict] = {}
+        for j in tr.get("jobs", []) or []:
+            if not j.get("url"):
+                continue
+            for k in _identity_keys(j, _wl.norm_url):
+                existing_keys.setdefault(k, j)
         existing_ids = {j["id"] for j in tr.get("jobs", []) or []}
         new_entries: list[dict] = []
         upgrades: list[tuple[str, dict, int]] = []  # (canonical_url, e, score)
@@ -566,14 +627,19 @@ def main() -> int:
                     + f" | manual_override_suppression={override_suppression_reason}"
                 ).strip(" |")
             e["selection_mode"] = selection_mode
-            # Dedupe via canonical URL — raw j["url"] vs scan link can drift
-            # on Workday session tokens / LinkedIn tracking redirects, and a
-            # canonicalised form (worklist.norm_url) is the only stable key.
-            canon = _wl.norm_url(e)
-            if canon in existing_by_url:
-                existing = existing_by_url[canon]
+            # Dedupe via the row's identity keys — raw j["url"] vs scan link
+            # can drift on Workday board segments / session tokens / LinkedIn
+            # tracking redirects, so norm_url ALONE is not enough; the Workday
+            # host+reqid key catches the path-drift case norm_url misses.
+            e_keys = _identity_keys(e, _wl.norm_url)
+            existing = next((existing_keys[k] for k in e_keys
+                             if k in existing_keys), None)
+            if existing is not None:
                 if int(existing.get("fit_score_numeric", 0)) < score:
-                    upgrades.append((canon, e, score))
+                    # Key the upgrade by the EXISTING row's norm_url so the
+                    # commit mutator (which looks up by norm_url(j)) finds it
+                    # even when the scored URL drifted.
+                    upgrades.append((_wl.norm_url(existing), e, score))
                     updated += 1
                 else:
                     skipped_dupe += 1
@@ -584,6 +650,10 @@ def main() -> int:
                 e["id"] = e["id"] + "-" + str(score)
             new_entries.append(e)
             existing_ids.add(e["id"])
+            # Register this row's identity so a later scored row for the SAME
+            # posting (drifted URL) within this run dedups against it too.
+            for k in e_keys:
+                existing_keys.setdefault(k, e)
             added += 1
         # Expire stale auto- entries not in latest scan. Skip in --only-url
         # / --only-urls mode (single-row or batch-manual promote shouldn't
