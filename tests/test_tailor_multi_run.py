@@ -96,7 +96,16 @@ def test_two_ready_plus_one_running_render_independent_cards(fake_running_run):
 
 def test_ready_card_shows_ats_score_when_report_exists():
     """resume_agent._write_back drops <base>_ats_report.json into the folder;
-    the ready card must surface it as a '🎯 ATS keywords: N/M' caption."""
+    the ready card must surface it as a '🎯 ATS keywords: N/M' caption.
+
+    The drawer reads the FIRST *_ats_report.json the folder globs up
+    (ui/app.py: ``next(iter(folder.glob("*_ats_report.json")))``). A real
+    report left behind by an actual tailor run would otherwise win that race
+    over our planted fixture — glob order is filesystem-dependent, so we can't
+    rely on a name that sorts last. Park every existing report for the duration
+    of the test so OUR fixture is the only match, then restore them in finally.
+    That keeps the assertion deterministic regardless of what's on disk.
+    """
     ready = _jobs_with_folders(1)
     assert ready, "test data: need 1 tracker job with an app folder"
     # find that job's folder and plant a temp ATS report in it
@@ -107,10 +116,16 @@ def test_ready_card_shows_ats_score_when_report_exists():
     folder = next(d for d in (ROOT / "applications").glob("*/")
                   if d.name.lower().endswith(tgt))
     ats_path = folder / "zz_test_ats_report.json"
-    ats_path.write_text(json.dumps(
-        {"total": 15, "matched": 13, "missing": ["alpha", "beta"]}),
-        encoding="utf-8")
+    stash: list[tuple[Path, Path]] = []
     try:
+        # Move real reports aside (.testbak doesn't match any drawer glob).
+        for real in folder.glob("*_ats_report.json"):
+            bak = real.parent / (real.name + ".testbak")
+            real.replace(bak)
+            stash.append((real, bak))
+        ats_path.write_text(json.dumps(
+            {"total": 15, "matched": 13, "missing": ["alpha", "beta"]}),
+            encoding="utf-8")
         at = AppTest.from_file(str(APP), default_timeout=140)
         at.session_state["_applyagent_nav"] = "📋 Roles"
         at.session_state["_tailor_runs"] = {ready[0]: None}
@@ -122,6 +137,9 @@ def test_ready_card_shows_ats_score_when_report_exists():
         assert ats_caps and "13/15" in ats_caps[0] and "alpha" in ats_caps[0]
     finally:
         ats_path.unlink(missing_ok=True)
+        for real, bak in stash:
+            if bak.exists():
+                bak.replace(real)
 
 
 def test_legacy_single_slot_migrates_into_registry():
