@@ -2344,6 +2344,138 @@ def render_tailor_drawer(jobs_list: list, tracker_data: dict, tracker_path):
             st.caption("🔄 Reload the page to refresh generation progress.")
 
 
+def render_adhoc_tailor(tracker_path):
+    """Tailor a resume for an AD-HOC job that isn't in the tracker.
+
+    Paste a job URL (LinkedIn auto-fetches company/title/JD via the public
+    guest API; other hosts fall back to the scorer's JD fetch) or paste the JD
+    directly. On submit it adds a lightweight `Found` row (source
+    manual_adhoc) and spawns resume_agent with --job-id + the real JD as a
+    --jd-file, so the run flows through the SAME multi-run drawer, tracker
+    write-back, ATS score, and liveness check as every other tailor."""
+    import re as _re
+    # Deferred clear: widget-keyed state can't be popped after the widgets
+    # instantiate, so the Generate handler sets a flag and we clear it here,
+    # before the inputs render.
+    if st.session_state.pop("_adhoc_clear", False):
+        for _k in ("_adhoc_url", "_adhoc_company", "_adhoc_role", "_adhoc_jd"):
+            st.session_state.pop(_k, None)
+
+    with st.expander("✨ Tailor a resume for any job (not in your tracker)",
+                     expanded=False):
+        st.caption("Paste a job URL — LinkedIn fills in company/title/JD "
+                   "automatically — or paste the JD text. It's added as a "
+                   "tracked role so the resume lands in the drawer below.")
+        _au = st.text_input("Job URL (optional)", key="_adhoc_url",
+                            placeholder="https://www.linkedin.com/jobs/view/…")
+        if st.button("🔗 Fetch details from URL", key="_adhoc_fetch",
+                     disabled=not (_au or "").strip()):
+            with st.spinner("Fetching from the posting…"):
+                info = None
+                try:
+                    import jd_scraper as _js  # noqa: WPS433
+                    if "linkedin.com" in _au:
+                        info = _js.linkedin_job_guest(_au.strip())
+                except Exception:
+                    info = None
+                if info and (info.get("jd_html") or info.get("title")):
+                    from bs4 import BeautifulSoup as _BS  # noqa: WPS433
+                    _h = info.get("jd_html") or ""
+                    st.session_state["_adhoc_company"] = info.get("company") or ""
+                    st.session_state["_adhoc_role"] = info.get("title") or ""
+                    st.session_state["_adhoc_jd"] = (
+                        _BS(_h, "html.parser").get_text("\n").strip() if _h else "")
+                    st.toast(f"Fetched {info.get('company')} — "
+                             f"{(info.get('title') or '')[:40]}", icon="✅")
+                else:
+                    try:
+                        import fit_scorer as _fs  # noqa: WPS433
+                        _jd = _fs.fetch_jd(_au.strip())
+                    except Exception:
+                        _jd = ""
+                    if _jd and len(_jd) > 200:
+                        st.session_state["_adhoc_jd"] = _jd
+                        st.toast("Fetched JD — add company/role.", icon="✅")
+                    else:
+                        st.warning("Couldn't auto-fetch this URL — paste the "
+                                   "JD text below (most reliable).")
+            st.rerun()
+
+        _c1, _c2 = st.columns(2)
+        _co = _c1.text_input("Company", key="_adhoc_company")
+        _role = _c2.text_input("Role / title", key="_adhoc_role")
+        _jd = st.text_area("Job description (paste, or fetched above)",
+                           key="_adhoc_jd", height=150)
+        _ready = bool((_co or "").strip() and (_role or "").strip()
+                      and ((_jd or "").strip() or (_au or "").strip()))
+        if not api_key.is_key_valid():
+            st.caption("⚠️ Set your Anthropic API key in the sidebar to generate.")
+        if st.button("✨ Generate resume", type="primary", key="_adhoc_gen",
+                     disabled=not (_ready and api_key.is_key_valid())):
+            def _slug(s, n=40):
+                return _re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:n]
+            jid = f"adhoc-{_slug(_co, 20)}-{_slug(_role, 34)}"
+            entry = {
+                "id": jid, "company": _co.strip(), "title": _role.strip(),
+                "sector": "", "tier": 4, "level": "", "location": "",
+                "url": _au.strip(), "portal_url": _au.strip(),
+                "archived": False, "date_found": date.today().isoformat(),
+                "posted_date": date.today().isoformat(), "date_applied": None,
+                "date_last_followup": None, "source": "manual_adhoc",
+                "status": "Found", "fit_score": "Manual", "fit_score_numeric": 0,
+                "resume_variants": [], "primary_variant": "", "urgency": "Med",
+                "expected_comp_band_cad": "",
+                "fit_notes": "Ad-hoc job added from the tailor form.",
+                "keywords": [], "resume_file": None, "cover_letter_file": None,
+                "contact": {"recruiter_name": None, "recruiter_email": None,
+                            "hiring_manager_name": None,
+                            "hiring_manager_linkedin": None,
+                            "warm_intro_candidate": None,
+                            "moodys_alumni_at_target": None},
+                "outreach_log": [],
+                "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
+                "rejection_reason": None, "rejection_date": None,
+                "next_action": "Ad-hoc — verify live, tailor, apply.",
+                "notes": "manual_adhoc",
+            }
+            from safe_json import mutate_json as _mj  # noqa: WPS433
+
+            def _add(t):
+                jobs = t.setdefault("jobs", [])
+                ex = next((j for j in jobs if j.get("id") == jid), None)
+                if ex is None:
+                    jobs.append(entry)
+                else:                       # re-submit → refresh the basics
+                    ex.update({"url": entry["url"], "title": entry["title"],
+                               "company": entry["company"]})
+                return t
+
+            _mj(tracker_path, _add, default={"jobs": [], "meta": {}})
+            load_tracker.clear()
+
+            cmd = [sys.executable, str(ROOT / "automation" / "resume_agent.py"),
+                   "--job-id", jid, "--tier", _resume_tier()]
+            _jdtext = (_jd or "").strip()
+            if not _jdtext and _au.strip():
+                try:
+                    import fit_scorer as _fs2  # noqa: WPS433
+                    _jdtext = _fs2.fetch_jd(_au.strip())
+                except Exception:
+                    _jdtext = ""
+            if _jdtext and len(_jdtext) > 150:
+                _jdf = OUT_DIR / "adhoc_jd" / f"{jid}.txt"
+                _jdf.parent.mkdir(parents=True, exist_ok=True)
+                _jdf.write_text(_jdtext, encoding="utf-8")
+                cmd += ["--jd-file", str(_jdf)]
+            elif _au.strip():
+                cmd += ["--jd-url", _au.strip()]
+            _rec = scan_runner.start_run(f"resume_{jid}", cmd)
+            _tailor_runs()[jid] = _rec.run_id
+            st.session_state["_adhoc_clear"] = True
+            st.toast(f"📄 Generating resume for {_co.strip()}…", icon="🚀")
+            st.rerun()
+
+
 def run_inline_agent(slot, label, *, on_finish=None,
                      running_msg="Working… the UI stays responsive."):
     """Launch `cmd` in the BACKGROUND (scan_runner, detached) and render its
@@ -9542,6 +9674,10 @@ elif page == "📋 Jobs Kanban":
                         load_tracker.clear()
                         st.toast(f"❌ Rejected — {_kb_reject_reason}", icon="❌")
                         st.rerun()
+
+    # Ad-hoc tailor: generate a resume for any job not in the tracker. Adds it
+    # as a tracked row so its run surfaces in the same drawer below.
+    render_adhoc_tailor(TRACKER)
 
     # Tailor drawer — shared with Dashboard. Opens whenever ✨ Tailor or
     # 📄 View tailor was clicked anywhere on this page.

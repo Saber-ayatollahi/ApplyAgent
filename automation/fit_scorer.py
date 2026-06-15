@@ -1094,22 +1094,27 @@ def _fetch_jd_via_api(url: str) -> str:
     """Fallback JD fetch via an ATS JSON API, for JS-SPA pages whose HTML scrape
     returns an empty shell (so the scorer would otherwise score title-only).
 
-    Currently covers Workday — the CXS payload carries the full
-    ``jobPostingInfo.jobDescription`` HTML. Returns cleaned text, or '' if the
-    URL isn't a supported ATS or the API is unreachable/unlisted. Extend with
-    Greenhouse/Lever the same way (dispatch on the URL host)."""
+    Covers Workday (CXS jobPostingInfo.jobDescription) and LinkedIn (the public
+    guest jobPosting endpoint — LinkedIn's own pages are an auth-walled SPA).
+    Returns cleaned text, or '' if the URL isn't a supported source or the API
+    is unreachable. Extend with Greenhouse/Lever the same way (dispatch on host)."""
+    u = url or ""
     try:
-        if "myworkdayjobs.com" in (url or ""):
-            try:
-                import jd_scraper  # type: ignore
-            except ImportError:
-                from . import jd_scraper  # type: ignore
-            html = jd_scraper.workday_jd_html(url)
-            if html:
-                soup = BeautifulSoup(html, "html.parser")
-                for tag in soup(["script", "style", "button", "form"]):
-                    tag.decompose()
-                return _clean_jd(soup.get_text("\n"))
+        try:
+            import jd_scraper  # type: ignore
+        except ImportError:
+            from . import jd_scraper  # type: ignore
+        html = ""
+        if "myworkdayjobs.com" in u:
+            html = jd_scraper.workday_jd_html(u) or ""
+        elif "linkedin.com" in u:
+            info = jd_scraper.linkedin_job_guest(u) or {}
+            html = info.get("jd_html") or ""
+        if html:
+            soup = BeautifulSoup(html, "html.parser")
+            for tag in soup(["script", "style", "button", "form"]):
+                tag.decompose()
+            return _clean_jd(soup.get_text("\n"))
     except Exception as e:  # noqa: BLE001
         if _log_error is not None:
             _log_error("fetch_jd_api", e, module="fit_scorer", extra={"url": url})
@@ -1133,6 +1138,15 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
     legacy_cache = JD_CACHE / f"{_url_hash(url)}.txt"
     if cache_path.exists():
         return _extract_sections(cache_path.read_text(encoding="utf-8"), max_chars)
+    # Auth-walled / JS-SPA hosts (LinkedIn, Workday) serve no usable JD in their
+    # public HTML — LinkedIn returns a ~300KB "sign in to continue" page that
+    # the cleaner would happily turn into >300 chars of junk, never tripping the
+    # short-result fallback below. Go straight to their JSON/guest API first.
+    if any(h in (url or "") for h in ("linkedin.com", "myworkdayjobs.com")):
+        _api = _fetch_jd_via_api(url)
+        if _api and len(_api) >= 300:
+            _atomic_write_text(cache_path, _api)
+            return _extract_sections(_api, max_chars)
     # Retrying GET: handles transient 5xx/429 + Retry-After, logs terminal
     # failures to logs/errors.jsonl. Returns None when retries are exhausted.
     try:

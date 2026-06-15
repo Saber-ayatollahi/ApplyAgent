@@ -719,6 +719,60 @@ def workday_jd_html(link: str, *, timeout: int = 18) -> Optional[str]:
         return None
 
 
+_LI_JOBID_RE = [
+    re.compile(r"currentJobId=(\d+)"),
+    re.compile(r"/jobs/view/(?:[^/?#]*-)?(\d+)"),
+    re.compile(r"referenceJobId=(\d+)"),
+    re.compile(r"/jobPosting/(\d+)"),
+]
+
+
+def linkedin_job_id(url: str) -> Optional[str]:
+    """Extract the numeric LinkedIn job id from any LinkedIn URL shape —
+    /jobs/view/<slug>-<id>, ?currentJobId=<id>, collection/similar-jobs links,
+    or the guest jobPosting API path. Pure / no network."""
+    if not url:
+        return None
+    for pat in _LI_JOBID_RE:
+        m = pat.search(url)
+        if m:
+            return m.group(1)
+    return None
+
+
+def linkedin_job_guest(url: str, *, timeout: int = 15) -> Optional[dict]:
+    """Title / company / location / JD-html for a LinkedIn job, via the PUBLIC
+    guest job-posting endpoint (no auth, no JS). LinkedIn's normal job pages
+    are an auth-walled SPA, but `jobs-guest/jobs/api/jobPosting/<id>` returns a
+    clean server-rendered card. Returns a dict (any field may be None) or None
+    if the URL has no job id / the request fails."""
+    jid = linkedin_job_id(url)
+    if not jid:
+        return None
+    api = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{jid}"
+    try:
+        r = requests.get(api, headers=HEADERS, timeout=timeout)
+        if r.status_code != 200:
+            return None
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        def _txt(sel):
+            el = soup.select_one(sel)
+            return el.get_text(strip=True) if el else None
+
+        desc = soup.select_one(".show-more-less-html__markup, .description__text")
+        return {
+            "job_id": jid,
+            "title": _txt(".top-card-layout__title, h2.topcard__title, .topcard__title"),
+            "company": _txt(".topcard__org-name-link, a.topcard__org-name-link, "
+                            ".top-card-layout__second-subline a"),
+            "location": _txt(".topcard__flavor--bullet, .top-card-layout__second-subline .topcard__flavor--bullet"),
+            "jd_html": str(desc) if desc else None,
+        }
+    except Exception:
+        return None
+
+
 WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
 
 

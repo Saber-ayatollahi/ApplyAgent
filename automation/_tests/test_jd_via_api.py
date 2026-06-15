@@ -13,6 +13,7 @@ from pathlib import Path
 AUTO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AUTO))
 
+import pytest               # noqa: E402
 import fit_scorer as F      # noqa: E402
 import jd_scraper as J      # noqa: E402
 
@@ -49,6 +50,37 @@ def test_via_api_returns_empty_when_api_has_nothing(monkeypatch):
     monkeypatch.setattr(J, "workday_jd_html", lambda u, **k: None)
     assert F._fetch_jd_via_api(
         "https://bmo.wd3.myworkdayjobs.com/External/job/Toronto/x_R1") == ""
+
+
+# ── LinkedIn guest job id extraction (pure) ──────────────────────────────
+@pytest.mark.parametrize("url,want", [
+    ("https://www.linkedin.com/jobs/collections/similar-jobs/?currentJobId=4415802327&referenceJobId=44", "4415802327"),
+    ("https://www.linkedin.com/jobs/view/manager-market-risk-at-deloitte-4415802327", "4415802327"),
+    ("https://ca.linkedin.com/jobs/view/4428110825", "4428110825"),
+    ("https://www.linkedin.com/jobs/search/?keywords=alm", None),
+    ("https://boards.greenhouse.io/x/jobs/9", None),
+    ("", None),
+])
+def test_linkedin_job_id(url, want):
+    assert J.linkedin_job_id(url) == want
+
+
+def test_via_api_strips_linkedin_guest_html(monkeypatch):
+    html = ("<div class='show-more-less-html__markup'>You will validate "
+            "IRRBB and market-risk models, EVE/NII and VaR.<script>x</script>"
+            "</div>") * 15
+    monkeypatch.setattr(J, "linkedin_job_guest",
+                        lambda u, **k: {"job_id": "1", "title": "Mgr",
+                                        "company": "Deloitte", "jd_html": html})
+    out = F._fetch_jd_via_api(
+        "https://www.linkedin.com/jobs/view/x-4415802327")
+    assert "IRRBB and market-risk models" in out
+    assert "<script>" not in out and "show-more-less" not in out
+
+
+def test_via_api_ignores_linkedin_search_urls():
+    # No job id → linkedin_job_guest returns None → '' (no network).
+    assert F._fetch_jd_via_api("https://www.linkedin.com/jobs/search/?k=alm") == ""
 
 
 if __name__ == "__main__":
