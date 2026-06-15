@@ -141,13 +141,23 @@ def _target_counts() -> dict:
     failure (e.g. requests/bs4 missing in a thin env) falls back to the
     last-known counts rather than crashing the page."""
     try:
+        import importlib
         sys.path.insert(0, str(ROOT / "automation"))
-        from jd_scraper import TARGETS  # noqa: E402
-        from expansion_companies import EXPANSION_TARGETS  # noqa: E402
+        import jd_scraper, expansion_companies  # noqa: E402
+        # The app process imports these at startup, so Python caches them in
+        # sys.modules — without an explicit reload, a company added to the list
+        # mid-session keeps showing the OLD count (the "label shows 161 after
+        # adding 35" staleness). Both modules are import-time pure (data +
+        # function defs, no network), and reload() updates the existing module
+        # object in place, so live references stay valid.
+        importlib.reload(jd_scraper)
+        importlib.reload(expansion_companies)
+        TARGETS = jd_scraper.TARGETS
+        EXPANSION_TARGETS = expansion_companies.EXPANSION_TARGETS
         core = len(TARGETS)
         expansion = len(EXPANSION_TARGETS)
-        # Union by name — core and expansion are disjoint today, but guard
-        # against future overlap so "full" never overstates coverage.
+        # Union by name — core and expansion can overlap (a vendor listed in
+        # both), so "full" never double-counts.
         names = {t["name"] for t in TARGETS} | {t["name"] for t in EXPANSION_TARGETS}
         return {"core": core, "expansion": expansion, "full": len(names)}
     except Exception:
@@ -4801,25 +4811,13 @@ if page == "🏠 Dashboard":
         _dash_scrape_fresh = _dash_scrape_age_h is not None and _dash_scrape_age_h < 24
         _counts = _target_counts()
         with qa1:
-            _help_core = (f"Scrape the {_counts['core']} core targets (no expansion "
-                          "list). ~15-30 min. Writes scan_<date>.json only; no LLM "
-                          "call until you score. No API key needed.")
-            if st.button(f"🛰 Core scrape ({_counts['core']})", width='stretch',
-                          disabled=bool(pipeline_running or any_work_active) or _dash_scrape_fresh,
-                          help=_help_core, key="dash_qa_core"):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable,
-                    str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "core",
-                    "--skip-score", "--skip-promote",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id, "label": "Core scrape"}
-                st.toast("🛰 Core scrape launched!", icon="🚀")
-                st.rerun()
-            _help_full = (f"Scrape ALL {_counts['full']} targets — the {_counts['core']} "
-                          f"core companies plus the {_counts['expansion']}-company expansion "
-                          "list (mid banks, insurers, hedge funds, fintechs, regulators). "
-                          "~20-40 min. Writes scan_<date>.json only; no LLM call until "
+            # Single scrape action — always the FULL company list. The old
+            # core / ats / linkedin / expansion sub-modes were removed; we only
+            # ever refresh the full list now.
+            _help_full = (f"Scrape all {_counts['full']} target companies — the "
+                          "full list (Big 6, pensions, asset managers, hedge "
+                          "funds, foreign banks, insurers, vendors, …). ~20-40 "
+                          "min. Writes scan_<date>.json only; no LLM call until "
                           "you score. No API key needed.")
             if st.button(f"🌐 Full scrape ({_counts['full']})", width='stretch',
                           disabled=bool(pipeline_running or any_work_active) or _dash_scrape_fresh,
@@ -7291,17 +7289,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
         with st.expander("⚙️ Advanced pipeline configuration", expanded=False):
             cA, cB = st.columns([1, 1])
             with cA:
-                scrape_mode = st.selectbox(
-                    "Scrape strategy",
-                    options=["full", "core", "ats", "linkedin", "expansion"],
-                    format_func=lambda x: {
-                        "full":      f"Full — all {_counts['full']} targets + expansion (20–40 min)",
-                        "core":      f"Core {_counts['core']} targets (15–30 min)",
-                        "ats":       "Direct ATS only — Workday/Greenhouse (3–6 min)",
-                        "linkedin":  "LinkedIn guest search only (15–25 min)",
-                        "expansion": f"Expansion list only — {_counts['expansion']} (5–10 min)",
-                    }[x],
-                )
+                # Scrape always runs the FULL company list — the core / ats /
+                # linkedin / expansion sub-modes were removed (we only refresh
+                # the full list now). Fixed value so run_pipeline still receives
+                # its --scrape-mode arg.
+                scrape_mode = "full"
+                st.caption(f"🌐 Scrape strategy: **Full** — all "
+                           f"{_counts['full']} target companies (fixed).")
                 sector = st.text_input("Limit to sector (optional)", placeholder="Pension Funds")
                 company = st.text_input("Limit to single company (optional)", placeholder="Scotiabank")
             with cB:
@@ -8141,12 +8135,9 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             if _ic1.button(f"🛰 Refresh scrape ({_in_counts['full']})",
                            width="stretch", key="_vc_inputs_refresh_scrape",
                            disabled=(not _in_can_run or _in_scrape_fresh),
-                           help=(f"Re-scrape ALL {_in_counts['full']} targets "
-                                 f"({_in_counts['core']} core + "
-                                 f"{_in_counts['expansion']} expansion). "
-                                 "~20–40 min, no API key. Auto-rebuilds the "
-                                 "worklist. Use ⚡ Quick core scrape below for "
-                                 "the faster core-only pass."
+                           help=(f"Re-scrape all {_in_counts['full']} target "
+                                 "companies (the full list). ~20–40 min, no API "
+                                 "key. Auto-rebuilds the worklist."
                                  + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
                                     if _in_scrape_fresh else ""))):
                 rec = scan_runner.start_run("pipeline", [
@@ -8171,29 +8162,6 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                 st.session_state["_last_launch"] = {"run_id": rec.run_id,
                                                     "label": "Gmail fetch"}
                 st.toast("📬 Gmail fetch launched!", icon="🚀")
-                st.rerun()
-            # ⚡ Quick core scrape — the faster core-only pass (66 targets, no
-            # expansion list). Demoted to the secondary slot: 🛰 Refresh scrape
-            # above now defaults to the FULL list (159) so complete coverage is
-            # the default action; this is the quick option when you just want a
-            # fast core refresh. Reuses the per-source freshness/active-run
-            # guards computed just above.
-            if st.button(f"⚡ Quick core scrape ({_in_counts['core']})",
-                         width="stretch", key="_vc_inputs_core_scrape",
-                         disabled=(not _in_can_run or _in_scrape_fresh),
-                         help=f"Faster core-only scrape — {_in_counts['core']} "
-                              f"core targets, skips the {_in_counts['expansion']}-"
-                              "company expansion list. ~15–30 min, no API key. "
-                              "Use 🛰 Refresh scrape above for full coverage."
-                              + (f" 🟢 Scan {_in_scrape_age:.0f}h old — fresh."
-                                 if _in_scrape_fresh else "")):
-                rec = scan_runner.start_run("pipeline", [
-                    sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
-                    "--scrape-mode", "core", "--skip-score", "--skip-promote",
-                ])
-                st.session_state["_last_launch"] = {"run_id": rec.run_id,
-                                                    "label": "Core scrape"}
-                st.toast("⚡ Core scrape launched!", icon="🚀")
                 st.rerun()
             if _in_scrape_fresh:
                 st.caption(f"🟢 Scan is {_in_scrape_age:.0f}h old — fresh enough")
