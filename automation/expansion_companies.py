@@ -127,4 +127,59 @@ EXPANSION_TARGETS = [
      "greenhouse": "robinhood"},
     {"name": "Point72", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "point72", "workday": None,
      "greenhouse": "point72"},
+
+    # ═════════════════════════════════════════════════════════════════════
+    # Gap-fill 2026-06-15 — verified Toronto-present employers found missing in
+    # a coverage audit (asset managers, hedge funds, foreign banks, CFA-centric
+    # asset owners). A wrong LinkedIn slug just yields no hits (safe to add);
+    # re-check any that return zero after the next full scrape.
+    # ═════════════════════════════════════════════════════════════════════
+
+    # ── Asset managers — insurance general-account / LDI / institutional
+    #    (strongest fit: maps to his Ortec/Moody's pension-ALM + LDI core) ──
+    {"name": "SLC Management", "sector": "Canadian Asset Managers", "linkedin_slug": "slc-management", "workday": None},
+    {"name": "Manulife Investment Management", "sector": "Canadian Asset Managers", "linkedin_slug": "manulife-investment-management", "workday": None},
+    {"name": "CIBC Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "cibc-asset-management", "workday": None},
+    {"name": "Desjardins Global Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "desjardins-global-asset-management", "workday": None},
+    {"name": "Addenda Capital", "sector": "Canadian Asset Managers", "linkedin_slug": "addenda-capital-inc", "workday": None},
+    {"name": "Russell Investments Canada", "sector": "Canadian Asset Managers", "linkedin_slug": "russell-investments", "workday": None},
+    {"name": "Mawer Investment Management", "sector": "Canadian Asset Managers", "linkedin_slug": "mawer-investment-management", "workday": None},
+
+    # ── Hedge funds / liquid alts that hire Toronto-based investment risk ──
+    {"name": "Verition Fund Management", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "verition-fund-management", "workday": None},
+    {"name": "Marret Asset Management", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "marret-asset-management-inc-", "workday": None},
+    {"name": "Hillsdale Investment Management", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "hillsdale-investment-management", "workday": None},
+    {"name": "Anson Funds", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "anson-group-of-funds", "workday": None},
+    {"name": "Balyasny Asset Management", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "balyasny-asset-management", "workday": None},
+    {"name": "Citadel", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "citadel", "workday": None},
+    {"name": "Sprott", "sector": "Hedge Funds / Alt AM", "linkedin_slug": "sprott-inc-", "workday": None},
+
+    # ── Private / alternative credit (credit-risk + FI fit) ──
+    {"name": "Onex (Onex Credit)", "sector": "Private Credit", "linkedin_slug": "onex", "workday": None},
+    {"name": "Canso Investment Counsel", "sector": "Private Credit", "linkedin_slug": "canso-investment-counsel-ltd-", "workday": None},
+    {"name": "Blackstone Credit", "sector": "Private Credit", "linkedin_slug": "blackstone", "workday": None},
+    {"name": "Barings", "sector": "Private Credit", "linkedin_slug": "barings", "workday": None},
+
+    # ── Foreign / US banks with a Toronto markets / treasury / risk footprint ──
+    {"name": "Bank of America", "sector": "US Banks (Toronto)", "linkedin_slug": "bank-of-america", "workday": None},
+    {"name": "MUFG Bank (Canada)", "sector": "US Banks (Toronto)", "linkedin_slug": "mufg", "workday": None},
+    {"name": "UBS", "sector": "US Banks (Toronto)", "linkedin_slug": "ubs", "workday": None},
+    {"name": "Macquarie Group", "sector": "US Banks (Toronto)", "linkedin_slug": "macquarie-group", "workday": None},
+    {"name": "SMBC", "sector": "US Banks (Toronto)", "linkedin_slug": "smbc-group", "workday": None},
+    {"name": "Mizuho", "sector": "US Banks (Toronto)", "linkedin_slug": "mizuho", "workday": None},
+    {"name": "PNC (Canada)", "sector": "US Banks (Toronto)", "linkedin_slug": "pnc", "workday": None},
+    {"name": "Natixis CIB", "sector": "US Banks (Toronto)", "linkedin_slug": "natixis", "workday": None},
+    # Montreal-hubbed risk/model-validation teams (Toronto markets office only) —
+    # lower priority for a no-relocation candidate, but some roles are Toronto/remote.
+    {"name": "Societe Generale", "sector": "US Banks (Toronto)", "linkedin_slug": "societe-generale", "workday": None},
+    {"name": "BNP Paribas", "sector": "US Banks (Toronto)", "linkedin_slug": "bnp-paribas", "workday": None},
+
+    # ── CFA-centric institutional asset OWNERS + OCIO + rating (Toronto) ──
+    {"name": "WSIB", "sector": "Canadian Pension Funds", "linkedin_slug": "wsib", "workday": None},
+    {"name": "University Pension Plan", "sector": "Canadian Pension Funds", "linkedin_slug": "university-pension-plan", "workday": None},
+    {"name": "UTAM", "sector": "Canadian Pension Funds", "linkedin_slug": "university-of-toronto-asset-management-corporation", "workday": None},
+    {"name": "OPG Pension Fund", "sector": "Canadian Pension Funds", "linkedin_slug": "ontario-power-generation", "workday": None},
+    {"name": "Ontario Pension Board", "sector": "Canadian Pension Funds", "linkedin_slug": "ontario-pension-board", "workday": None},
+    {"name": "Trans-Canada Capital", "sector": "Canadian Pension Funds", "linkedin_slug": "transcanadacapital", "workday": None},
+    {"name": "Fitch Ratings", "sector": "Analytics & Risk Vendors", "linkedin_slug": "fitch-ratings", "workday": None},
 ]
