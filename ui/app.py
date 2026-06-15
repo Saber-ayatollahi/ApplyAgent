@@ -2423,7 +2423,7 @@ def render_adhoc_tailor(tracker_path):
                 "posted_date": date.today().isoformat(), "date_applied": None,
                 "date_last_followup": None, "source": "manual_adhoc",
                 "status": "Found", "fit_score": "Manual", "fit_score_numeric": 0,
-                "resume_variants": [], "primary_variant": "", "urgency": "Med",
+                "resume_variants": [], "primary_variant": "", "urgency": "Medium",
                 "expected_comp_band_cad": "",
                 "fit_notes": "Ad-hoc job added from the tailor form.",
                 "keywords": [], "resume_file": None, "cover_letter_file": None,
@@ -9397,8 +9397,14 @@ elif page == "📋 Jobs Kanban":
                     _kb_status = job.get("status")
                     _kb_idx = _kb_enum.index(_kb_status) if _kb_status in _kb_enum else 0
                     new_status = st.selectbox("Status", options=_kb_enum, index=_kb_idx)
-                    new_urgency = st.selectbox("Urgency", ["High", "Medium", "Low"],
-                                                index=["High", "Medium", "Low"].index(job.get("urgency", "Medium")))
+                    # Defensive index (mirrors the status selectbox above): an
+                    # out-of-list urgency value must not crash the whole
+                    # inspector — coerce unknown → "Medium".
+                    _urg_opts = ["High", "Medium", "Low"]
+                    _urg = job.get("urgency") or "Medium"
+                    new_urgency = st.selectbox(
+                        "Urgency", _urg_opts,
+                        index=_urg_opts.index(_urg) if _urg in _urg_opts else 1)
                     new_date_applied = st.date_input("Date applied", parse_date(job.get("date_applied")) or None,
                                                       format="YYYY-MM-DD") if job.get("date_applied") else st.date_input(
                         "Date applied (blank = not applied yet)", value=None, format="YYYY-MM-DD")

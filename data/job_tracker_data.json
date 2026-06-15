@@ -3007,10 +3007,10 @@
       "posted_date": "2026-05-15",
       "date_found": "2026-06-05",
       "date_jd_verified": null,
-      "date_applied": null,
+      "date_applied": "2026-06-14",
       "date_last_followup": null,
       "source": "scrape+gmail+fit_scorer",
-      "status": "Found",
+      "status": "Applied",
       "fit_score": "High",
       "fit_score_numeric": 9,
       "resume_variants": [
@@ -3034,7 +3034,7 @@
       },
       "outreach_log": [],
       "followup_schedule": {
-        "next_due": null,
+        "next_due": "2026-06-17",
         "cadence_days": [
           3,
           10,
@@ -7098,7 +7098,7 @@
       "fit_score_numeric": 0,
       "resume_variants": [],
       "primary_variant": "",
-      "urgency": "Med",
+      "urgency": "Medium",
       "expected_comp_band_cad": "",
       "fit_notes": "Ad-hoc job added from the tailor form.",
       "keywords": [],
