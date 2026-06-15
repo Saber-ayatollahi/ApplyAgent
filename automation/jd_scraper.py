@@ -1354,9 +1354,14 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         the current company, leaving the checkpoint in place. The diagnostics
         dict carries state='paused' so callers know to defer downstream stages.
       - resume=True means: load the checkpoint, prime `found`/`per_company`
-        from it, and skip any company already in the completed set. Target
-        list must match (same companies, same order) — we detect divergence
-        via a SHA1 of company names and refuse to resume mismatched runs.
+        from it, and skip any company already in the completed set. Skipping
+        is keyed on company NAME (not list position), so an edited target list
+        — most commonly NEW companies added by a coverage expansion — is SAFE
+        to resume: added companies get scraped, removed ones are simply never
+        iterated. We log a signature-drift NOTE but no longer refuse; the old
+        hard-stop stranded a perfectly valid checkpoint every time TARGETS
+        grew. (Downstream excludes still filter a now-excluded company's
+        already-captured jobs, so tolerant resume can't resurrect one.)
     """
     # Reset the scan-wide LinkedIn throttle — even if the previous run
     # tripped it, we want to retry this run from clean state.
@@ -1385,22 +1390,30 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
         if ck is None:
             print("[scan] --resume requested but no checkpoint found. "
                   "Starting a fresh scan.", file=sys.stderr)
-        elif ck.get("targets_signature") != sig:
-            print(f"[scan] Checkpoint signature mismatch (expected {sig}, got "
-                  f"{ck.get('targets_signature')}). Target list changed since pause. "
-                  "Delete scan_checkpoint.json to start fresh, or revert target "
-                  "edits and retry.", file=sys.stderr)
-            return [], {"error": "checkpoint_signature_mismatch",
-                         "checkpoint_sig": ck.get("targets_signature"),
-                         "current_sig": sig}
         else:
             completed = set(ck.get("completed", []))
             found = ck.get("found", [])
             per_company = ck.get("per_company", [])
-            print(f"[scan] Resuming from checkpoint: "
-                  f"{len(completed)}/{len(companies)} companies already done, "
-                  f"{len(found)} candidates captured so far.",
-                  file=sys.stderr)
+            ck_sig = ck.get("targets_signature")
+            if ck_sig != sig:
+                # Target list changed since the checkpoint was saved (most often
+                # companies ADDED by a coverage expansion). Resumption skips by
+                # company NAME in the loop below, so this is safe: newly-added
+                # companies get scraped, removed ones are never iterated. Warn
+                # rather than refuse — the old hard-stop bounced the user
+                # straight back to "paused" every time the target list grew.
+                remaining = sum(1 for c in companies
+                                if c.get("name", "") not in completed)
+                print(f"[scan] NOTE: target list changed since the checkpoint "
+                      f"was saved (signature {ck_sig} -> {sig}). Resuming by "
+                      f"company name: {len(completed)} already done, {remaining} "
+                      f"to scrape (incl. any newly-added companies).",
+                      file=sys.stderr)
+            else:
+                print(f"[scan] Resuming from checkpoint: "
+                      f"{len(completed)}/{len(companies)} companies already done, "
+                      f"{len(found)} candidates captured so far.",
+                      file=sys.stderr)
             # Clear any leftover pause flag; the user's --resume is a positive
             # intent to continue, not to immediately pause again.
             try: PAUSE_FLAG_PATH.unlink()
