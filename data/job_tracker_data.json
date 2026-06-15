@@ -2,7 +2,7 @@
   "meta": {
     "version": "2.0",
     "created_at": "2026-05-18T18:16:10",
-    "total_roles": 124,
+    "total_roles": 129,
     "changelog": [
       {
         "date": "2026-05-29",
@@ -27,6 +27,11 @@
         "date": "2026-06-10",
         "event": "auto_promote: +3 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
         "roles": 124
+      },
+      {
+        "date": "2026-06-14",
+        "event": "auto_promote: +5 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 129
       }
     ],
     "status_enum": [
@@ -49,7 +54,7 @@
       "coffees": 3,
       "linkedin_posts": 1
     },
-    "last_scan": "2026-06-10",
+    "last_scan": "2026-06-14",
     "schema_version": 3,
     "last_reset": "2026-05-29",
     "campaign_start": "2026-05-29",
@@ -1141,10 +1146,10 @@
       "archived": false,
       "date_found": "2026-06-04",
       "date_jd_verified": "2026-06-04",
-      "date_applied": null,
+      "date_applied": "2026-06-14",
       "date_last_followup": null,
       "source": "gmail_linkedin_alert+fit_scorer",
-      "status": "Found",
+      "status": "Applied",
       "fit_score": "High",
       "fit_score_numeric": 9,
       "resume_variants": [
@@ -1169,7 +1174,7 @@
       },
       "outreach_log": [],
       "followup_schedule": {
-        "next_due": null,
+        "next_due": "2026-06-17",
         "cadence_days": [
           3,
           10,
@@ -6803,6 +6808,327 @@
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
       "notes": "auto-promoted 2026-06-10 | verdict=tailor_and_apply | skill_gaps=['CCAR / US bank regulatory capital stress-testing submissions (no direct hands-on; context is Canadian institutional ALM and EY IFRS transformation, not US bank capital frameworks)', \"TypeScript / Node.js / React (no production delivery; Saber's web stack is hobby-level only)\"]"
+    },
+    {
+      "id": "auto-manulife-manager-quantitative-models-de",
+      "company": "Manulife",
+      "sector": "",
+      "tier": 1,
+      "title": "Manager, Quantitative Models Development",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4407034039",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-06-14",
+      "date_found": "2026-06-14",
+      "date_jd_verified": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "ALM",
+        "VAL",
+        "QUANT"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit. Manager-level quantitative models developer at a top insurer with deep ALM/derivative-valuation expertise, model-governance authority, and Python/SQL delivery track record. C++ gap is manageable; Saber's production model-ownership and cross-functional delivery directly match Manulife's requirements. | Top reasons: Expert-level ALM and derivative-valuation modelling with 7 years hands-on production experience across institutional portfolios; direct match to 'valuation models and risk analytics' and 'analytics platform evolution'.; Delegated sign-off authority on institutional models at Moody's + independent model review/challenge and performance validation; proven track record owning production-model reliability, troubleshooting, and continuous-improvement cycles.; Advanced Python, SQL, Excel/VBA, and MATLAB proficiency demonstrated across Moody's (cash-flow projection engine, stochastic scenario generators) and Ortec (portfolio optimization, risk decomposition); C++ gap is real but backfillable in onboarding.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=['C++ (production delivery) — Saber has Java/C++ awareness but no shipping experience; backfillable through onboarding if role provides mentorship or training path.']"
+    },
+    {
+      "id": "auto-scotiabank-senior-manager-model-risk-gove",
+      "company": "Scotiabank",
+      "sector": "",
+      "tier": 1,
+      "title": "Senior Manager, Model Risk Governance",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4426652966",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-06-14",
+      "date_found": "2026-06-14",
+      "date_jd_verified": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "VAL",
+        "VEN"
+      ],
+      "primary_variant": "VAL",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Perfect fit: Senior Manager role demands model-governance framework design, enterprise MRM documentation, inventory-platform oversight, and advanced-tools automation. Saber has delegated sign-off, independent-review authority, governance process design, and Python/SQL/Excel depth from Moody's. Apply this week. | Top reasons: Delegated sign-off authority on institutional models at Moody's + 4 years of independent model review, challenge, and governance documentation — direct fit for 'Lead the design, review, and continuous enhancement of the Bank's enterprise-wide Model Risk Management documentation'; Expert Python, SQL, Excel, and VBA proficiency (7 years) + hands-on model inventory platform experience (Calypso → PFaroe migration, SAS MRM analog) — meets 'Leverage advanced tools (e.g., Power BI, SQL, Python, VBA) to drive innovation in reporting, monitoring, and governance'; Formal model-governance framework operations (Moody's): assumption validation, escalation processes, auditability standards, and stakeholder communication to MVA/Audit-equivalent teams — proven fit for 'Act as a trusted advisor to internal stakeholders including MVA, BGRO, Audit, and Finance'",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=[]"
+    },
+    {
+      "id": "auto-bmo-senior-associate-vice-presiden",
+      "company": "BMO",
+      "sector": "",
+      "tier": 1,
+      "title": "Senior Associate/Vice President-Liquidity, Optimization & Balance Sheet Management",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4416238862",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-06-11",
+      "date_found": "2026-06-14",
+      "date_jd_verified": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "ALM",
+        "QUANT",
+        "VAL"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Perfect match: BMO Capital Markets Treasury seeks liquidity/balance-sheet analyst with stress-testing and cash-flow expertise. Saber has delegated sign-off on institutional liquidity models, built a production cash-flow engine, and holds advanced Python/SQL/governance foundation. Apply immediately. | Top reasons: Delegated sign-off authority on multi-asset institutional portfolio liquidity and cash-flow analytics at Moody's; built enterprise liquidity-gap and cash-flow projection engine (T+1 to multi-year horizons) — exact core capability for Capital Markets Treasury.; Expert stress-testing and scenario-analysis foundation: parallel/non-parallel shock modelling, reverse-stress frameworks, multi-period balance-sheet risk assessment across institutional ALM mandates (Moody's + Ortec).; Advanced Python, SQL, Excel, and data-pipeline fluency; hands-on model development, validation tooling, and reporting-infrastructure delivery under governance standards — directly matches 'build, maintain, enhance forecasting frameworks' and 'partner with Technology on analytical models.'",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=[]"
+    },
+    {
+      "id": "auto-hoopp-healthcare-of--manager-market-risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "sector": "",
+      "tier": 1,
+      "title": "Manager, Market Risk",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4428110825",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-06-14",
+      "date_found": "2026-06-14",
+      "date_jd_verified": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 8,
+      "resume_variants": [
+        "QUANT",
+        "ALM",
+        "VAL"
+      ],
+      "primary_variant": "QUANT",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit. HOOPP is a Maple-8 pension (Saber's top target sector). ALM/stress-testing/risk-attribution depth from Ortec + Moody's aligns directly with JD. CCR gap is minor for institutional portfolio risk role. Apply immediately. | Top reasons: 7 years hands-on ALM, stress-testing, and multi-asset portfolio risk analytics at Moody's and Ortec — directly matches core JD mandate (monitor exposures, stress/scenario analysis, risk attribution).; Demonstrated VaR/CVaR portfolio optimization, risk decomposition, and hedging analysis across institutional mandates (Ortec GLASS); proven ability to translate quantitative insights into actionable risk perspectives for investment teams.; Fluent in Python, SQL, and agentic-AI workflows (Claude Code, Cursor) — exactly the automation and AI-enabled tooling the JD emphasizes for analytics enhancement and efficiency gains.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=['Counterparty Credit Risk (CCR / xVA) — no hands-on trading-desk capital machinery; not a blocker for a portfolio/institutional risk role, but JD may probe this in derivatives/strategy deep-dives.']"
+    },
+    {
+      "id": "auto-scotiabank-senior-manager-model-validatio",
+      "company": "Scotiabank",
+      "sector": "",
+      "tier": 1,
+      "title": "Senior Manager, Model Validation",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4426138974",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-06-13",
+      "date_found": "2026-06-14",
+      "date_jd_verified": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 8,
+      "resume_variants": [
+        "VAL",
+        "QUANT"
+      ],
+      "primary_variant": "VAL",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong model-validation fit: 4+ years delegated sign-off authority, independent review/challenge, Python/SQL/R proficiency, and validation-report ownership at Moody's. Credit-risk domain is new; SAS gap minimal. Apply immediately and emphasize governance rigor and programming adaptability. | Top reasons: Delegated sign-off authority on institutional model outputs (Moody's); 4+ years independent model review, challenge, and assumption validation under formal governance framework — direct match to 'assist Director and/or independently validate' mandate.; Advanced Python, SQL, and R proficiency with hands-on experience migrating spreadsheet models to production code under model-governance audit (Moody's) — meets 'hands-on programming skills, statistical and database modeling tools' requirement.; Demonstrated expertise in model methodology review, sensitivity testing, alternative-benchmarking analysis, and validation-report drafting across multi-asset institutional portfolios (Moody's); mentored junior colleagues on model validation workflows.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=['No hands-on SAS experience (JD lists SAS as preferred; Saber has Python/SQL/R equivalence and adaptive programming track record).', \"Retail/small-business credit-risk scoring and AIRB model validation not in evidence (JD preference); Saber's background is institutional ALM, enterprise platform, and multi-asset risk — skill is transferable but domain-specific onboarding required.\"]"
+    },
+    {
+      "id": "adhoc-deloitte-manager-senior-manager-quantitativ",
+      "company": "Deloitte",
+      "title": "Manager/Senior Manager, Quantitative Market Risk Models - Financial Engineering and Modeling",
+      "sector": "",
+      "tier": 4,
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://www.linkedin.com/jobs/collections/similar-jobs/?currentJobId=4415802327&originToLandingJobPostings=4415802327&referenceJobId=4428110825",
+      "portal_url": "https://www.linkedin.com/jobs/collections/similar-jobs/?currentJobId=4415802327&originToLandingJobPostings=4415802327&referenceJobId=4428110825",
+      "archived": false,
+      "date_found": "2026-06-14",
+      "posted_date": "2026-06-14",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "manual_adhoc",
+      "status": "Found",
+      "fit_score": "Manual",
+      "fit_score_numeric": 0,
+      "resume_variants": [],
+      "primary_variant": "",
+      "urgency": "Med",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Ad-hoc job added from the tailor form.",
+      "keywords": [],
+      "resume_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models/Saber_Ayatollahi_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models.docx",
+      "cover_letter_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models/deloitte_manager_senior_manager_quantitative_market_risk_mo_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Ad-hoc — verify live, tailor, apply.",
+      "notes": "manual_adhoc",
+      "tailored_at": "2026-06-14T22:16:17",
+      "ats_matched": 13,
+      "ats_total": 13,
+      "ats_missing": []
     }
   ]
 }
