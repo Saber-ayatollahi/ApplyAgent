@@ -2187,10 +2187,10 @@
       "archived": false,
       "date_found": "2026-06-04",
       "date_jd_verified": "2026-06-04",
-      "date_applied": null,
+      "date_applied": "2026-06-15",
       "date_last_followup": null,
       "source": "scraper+fit_scorer",
-      "status": "Found",
+      "status": "Applied",
       "fit_score": "High",
       "fit_score_numeric": 8,
       "resume_variants": [
@@ -2214,7 +2214,7 @@
       },
       "outreach_log": [],
       "followup_schedule": {
-        "next_due": null,
+        "next_due": "2026-06-18",
         "cadence_days": [
           3,
           10,
@@ -2627,10 +2627,10 @@
       "posted_date": "2026-05-27",
       "date_found": "2026-06-05",
       "date_jd_verified": null,
-      "date_applied": null,
+      "date_applied": "2026-06-15",
       "date_last_followup": null,
       "source": "scraper+fit_scorer",
-      "status": "Found",
+      "status": "Applied",
       "fit_score": "High",
       "fit_score_numeric": 9,
       "resume_variants": [
@@ -2654,7 +2654,7 @@
       },
       "outreach_log": [],
       "followup_schedule": {
-        "next_due": null,
+        "next_due": "2026-06-18",
         "cadence_days": [
           3,
           10,
@@ -4781,7 +4781,7 @@
       "date_applied": null,
       "date_last_followup": null,
       "source": "scrape+gmail+fit_scorer",
-      "status": "Watch",
+      "status": "Rejected",
       "fit_score": "Medium",
       "fit_score_numeric": 7,
       "resume_variants": [
@@ -4813,10 +4813,12 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
+      "rejection_reason": "Other",
+      "rejection_date": "2026-06-15",
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-06-05 | verdict=tailor_and_apply | skill_gaps=['No evidence of Product Management discipline (roadmap prioritization, metrics/KPIs, go-to-market strategy, stakeholder influence at product-leadership level) — this is a PM-functional gap, not a risk-analytics or platform-delivery gap.', \"No custodian-specific risk-services platform experience (State Street does custody + risk + servicing; Moody's is valuation/analytics software-as-a-service). Saber can learn the domain, but will need onboarding on State Street's product architecture and client base.\"]"
+      "notes": "auto-promoted 2026-06-05 | verdict=tailor_and_apply | skill_gaps=['No evidence of Product Management discipline (roadmap prioritization, metrics/KPIs, go-to-market strategy, stakeholder influence at product-leadership level) — this is a PM-functional gap, not a risk-analytics or platform-delivery gap.', \"No custodian-specific risk-services platform experience (State Street does custody + risk + servicing; Moody's is valuation/analytics software-as-a-service). Saber can learn the domain, but will need onboarding on State Street's product architecture and client base.\"]",
+      "status_changed_by": "manual_reject",
+      "status_changed_on": "2026-06-15"
     },
     {
       "id": "auto-manulife-director-transformation",

@@ -8302,5 +8302,3877 @@
   "https://boards.greenhouse.io/point72/jobs/7045936002?gh_jid=7045936002": {
     "found_at": "2026-05-25",
     "first_source": "greenhouse:point72"
+  },
+  "https://jobs.scotiabank.com/Tangerine/job/North-York-Bilingual-Mortgage-Account-Manager-%28ENFR%29-Tangerine-ON-M2H0A1/598420117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Scarborough-Senior-Financial-Analyst-ON-M1L4S2/599650917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Data-Product-ON-M5H-1H1/599631817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Director%2C-Global-Banking-&amp;-Markets-%28GBM%29-Client-Chaperone-Toronto%2C-ON-ON-M5H0B4/601286317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Associate%2C-Non-Bank-Financial-Institutions%2C-Treasury-Management-Officer-%2812-Month-Contract%29%2C-GTB-ON-M5H-0B4/599730117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Solutions-Architect-Personalization-ON-M5A3X5/602129017/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Derivative-Hedge-Qualifications-ON-M5H-1H1/602113417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Scarborough-Software-Development-Manager-%28AS400%29-ON-M1H3G2/602117417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Director-&amp;-Head%2C-Identity-&amp;-Access-Management-ON-M1K5L1/602130517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Programmer-Analyst-Advisory-ON-M5H-1H1/602130917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Technical-Specialist-Advisory-ON-M5H-1H1/602117317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/London-%28ON%29-National-Consultant%2C-Partnerships%2C-Scotia-iTRADE-Ontario-Region-ON-M5H1H1/602127917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Business-Support%2C-Global-Transaction-Banking-Toronto-or-Scarborough-ON-M1L4S2/603046717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Scarborough-Campus-Community-Lead-%2812-months-Contract%29-ON-M1L4S2/603052817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Value-Enablement-Lead-ON-M5H-1H1/600435817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Payments-Incident-Response-&amp;-Resiliency-%28Bilingual-Spanish%29-ON-M1L4S2/603009417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Vice-President%2C-Global-Real-Estate-Strategy-&amp;-Planning-ON-M5H1A1/603009317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/Tangerine/job/Toronto-Director%2C-Community-Ecosystem-&amp;-Partnerships-Tangerine-ON-M5C2W1/603017817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Data-&amp;-Analytics-Strategy-ON-M5H-1H1/601341617/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Associate-Director%2C-Liquidity-Regulatory-Reporting-ON-M5H-0B4/602095217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Liquidity-Risk-ON-M5H-0B4/600441017/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Balance-Sheet-Market-Risk-Toronto%2C-ON-ON-M5H-0B4/600323317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Bilingual-%28Spanish%29-Senior-Product-Owner-12-month-contract-GTB-Toronto-ON-M5H-0B4/602919517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Analyst-Trade-Finance-Operations-ON-M4T1Z3/602920417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Assistant-Manager%2C-Trade-Finance-Operations-Global-Transactions-Banking-Operations-ON-M4T1Z3/602923217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Corporate-Client-Transition-Manager-ON-L4W0B4/602924017/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Capital-Markets-Operations-%28GWO%29-ON-M5H1J9/602940117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Strategy-&amp;-Planning-Global-Transactions-Banking-ON-M5H-0B4/602883317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Technical-BQA-Core-Banking-Technology-ON-M1L4S2/602876817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager-ON-M5C2R9/602761817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Statutory-Reporting-ON-M5H-3Y2/603039917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Product-Manager%2C-Authentication-ON-M5A3X5/603053717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Audit-Manager%2C-Global-Wealth-&amp;-Insurance-Audit-ON-M5H1H1/603065717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Data-Scientist-ON-M5H1B6/603013517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Delivery-Lead-Core-Payments-ON-M1L4S2/602101217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Market-Risk-Analytics-ON-M5H-0B4/602061217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-RESL-Finance-ON-M5C2W1/602980717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/London-%28UK%29-Associate-Director%2C-Quant-ENG-EC2M-3NS/602928317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Business-Transformation-ON-M5C2W1/602921717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Analyst%2C-Retail-and-Wealth-Foreign-Exchange-and-Precious-Metals%2C-Global-Banking-&amp;-Markets-Toronto-ON-M5H1H1/602917717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Equity-Research-Associate%2C-Transportation-and-Industrials-Toronto-ON-M5H-1H1/602720817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Compensation-&amp;-Benefits-Finance-%282-Year-Term%29-ON-M5H1H1/602660917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Global-DC-Plans-M&amp;A-ON-M5H1H1/602725317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-DFI-Insider-Threat-Enhanced-Monitoring%2C-Governance-and-Initiatives-ON-M5H1H1/601255817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Scarborough-Senior-Manager-Development%2C-Customer-Information-Systems-ON-M1L4S2/603060117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Scarborough-Delivery-Lead-ON-M1L4S2/603044917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Manager%2C-SDA-Analytics-ON-M5H1B6/603066217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Technology-Resilience-Governance-ON-M5H-1H1/603017717/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/Tangerine/job/Toronto-Digital-Product-Designer%2C-Wealth-Mobile-Tangerine-ON/603002517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Solutions-Architect-ON-M5C2W1/600348917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Pricing-Real-Estate-Secured-Lending-%28RESL%29-ON-M5H-1H1/602095317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.scotiabank.com"
+  },
+  "https://ca.linkedin.com/jobs/view/director-thought-leadership-at-scotiabank-4422049467": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-at-scotiabank-4414052826": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-strategic-initiatives-transformation-at-scotiabank-4419061890": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-analytics-investigator-at-scotiabank-4407959489": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-systems-analyst-at-scotiabank-4389846573": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-and-head-portfolio-management-at-scotiabank-4409989277": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-enterprise-strategy-global-banking-markets-gbm-at-scotiabank-4410854552": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-enterprise-strategy-at-scotiabank-4412953805": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-business-system-analyst-at-scotiabank-4412789592": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-business-risk-management-non-financial-risk-assessments-and-records-management-toronto-at-scotiabank-4419334001": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/managing-director-or-director-sector-strategy-and-business-development-toronto-on-at-scotiabank-4416322610": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-enablement-financial-reporting-analytics-at-scotiabank-4385927831": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/software-developer-at-scotiabank-4407947646": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/portfolio-administrator-at-scotiabank-4422004822": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-credit-documentation-canadian-commercial-banking-toronto-at-scotiabank-4417119381": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-business-risk-management-first-line-supervision-toronto-at-scotiabank-4418854201": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-associate-bathurst-carrville-11-25-hours-week-at-scotiabank-4423271033": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/wealth-management-consultant-wealth-management-partnerships-toronto-region-at-scotiabank-4414178233": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-associate-oak-ridges-22-5-hours-week-at-scotiabank-4423258842": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-associate-oakville-main-branch-11-25-hours-week-at-scotiabank-4422081706": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-associate-oakville-main-branch-30-hours-week-at-scotiabank-4422072764": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/service-officer-lending-services-tahoe-at-scotiabank-4418514164": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bcmu-specialist-at-scotiabank-4422894012": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-associate-bovaird-mountainash-branch-15-hours-week-at-scotiabank-4418877574": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/global-onboarding-experience-consultant-global-hr-at-scotiabank-4414780982": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-12-month-contract-at-scotiabank-4418217126": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-first-line-supervision-support-cib-global-banking-and-markets-toronto-at-scotiabank-4419379519": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-system-analyst-at-scotiabank-4407931170": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-science-senior-manager-at-scotiabank-4414741722": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-data-acquisition-integration-18-month-contract-at-scotiabank-4416321618": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-data-scientist-generative-ai-ml-agentic-systems-at-scotiabank-4394717544": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sam-specialist-discovery-process-technology-enablement-at-scotiabank-4407310074": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-portfolio-oversight-and-risk-appetite-at-scotiabank-4418220108": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-product-owner-enterprise-metrics-reporting-at-scotiabank-4401117605": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-platform-risk-and-operations-analyst-at-scotiabank-4373015585": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-solutions-architect-at-scotiabank-4415942956": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-alm-18-month-contract-at-scotiabank-4416572126": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-capital-markets-stress-testing-at-scotiabank-4418887250": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-fraud-analytics-at-scotiabank-4416323501": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/scientist-data-global-artificial-intelligence-ml-at-scotiabank-4414740768": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-technical-business-analyst-servicenow-powerapps-at-scotiabank-4368073567": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-global-ap-p-dhq-at-scotiabank-4408945641": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-gwm-business-risk-management-at-scotiabank-4407060112": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-it-regulatory-compliance-at-scotiabank-4418202453": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-market-risk-model-development-contract-at-scotiabank-4414053762": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-sam-remediation-operations-at-scotiabank-4416715890": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-senior-manager-retail-operations-english-spanish-at-scotiabank-4415950835": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-egrc-issues-management-at-scotiabank-4417512992": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-global-testing-centre-of-excellence-insights-global-compliance-at-scotiabank-4418259372": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-global-compliance-quality-assurance-at-scotiabank-4418251926": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-issues-management-at-scotiabank-4389845655": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-portfolio-governance-enterprise-delivery-office-at-scotiabank-4376936674": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-liquidity-strategy-at-scotiabank-4414488070": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-at-scotiabank-4419324351": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-product-services-group-and-investment-funds-toronto-at-scotiabank-4418881424": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-technology-risk-data-enablement-at-scotiabank-4377948603": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-investment-risk-at-scotiabank-4419312818": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-investment-strategy-toronto-at-scotiabank-4417505214": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/assistant-manager-middle-office-gwo-at-scotiabank-4410422282": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-client-experience-insights-private-banking-at-scotiabank-4418205230": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-aml-business-risk-management-contract-at-scotiabank-4407950612": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/iia-investment-associate-global-wealth-management-spanish-and-english-at-scotiabank-4406593438": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/compliance-officer-gbm-t-compliance-canada-program-at-scotiabank-4415918088": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-global-finance-reporting-at-scotiabank-4405066754": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-expenses-at-scotiabank-4415958563": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-expense-management-at-scotiabank-4418888197": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-finance-accounting-at-scotiabank-4395491507": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-finance-credit-cards-at-scotiabank-4416322611": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/technical-analyst-equities-at-scotiabank-4419074254": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/daily-account-supervision-officer-scotia-itrade-toronto-on-at-scotiabank-4419370584": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/technical-product-manager-capital-markets-technology-sales-and-trading-at-scotiabank-4388571745": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/assistant-manager-regulatory-trade-reporting-gwo-at-scotiabank-4415950834": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-tax-operations-gwo-at-scotiabank-4383962379": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-portfolio-optimization-at-scotiabank-4418222092": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-onboarding-at-scotiabank-4419309939": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-onboarding-at-scotiabank-4419324354": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-scotiabank-asset-finance-toronto-at-scotiabank-4423415448": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-corporate-banking-credit-analytics-group-cag-toronto-at-scotiabank-global-banking-and-markets-4419325246": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-resl-portfolio-management-analytics-at-scotiabank-4409978525": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-portfolio-analytics-insights-at-scotiabank-4414739725": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-grm-wealth-management-canada-at-rbc-4419599966": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-irrbb-measurement-at-rbc-4419191922": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-balance-sheet-advisory-at-rbc-4421273646": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-global-risk-analytics-at-rbc-4420415626": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-grm-wealth-management-canada-at-rbc-4419594946": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-balance-sheet-and-liquidity-risk-model-validation-at-rbc-4419814041": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/portfolio-manager-external-managers-%E2%80%93-alternatives-at-rbc-insurance-4420997636": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-external-managers-%E2%80%93-alternatives-at-rbc-insurance-4421273623": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/life-claims-analyst-at-rbc-insurance-4419934208": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-group-solutions-specialist-at-rbc-insurance-4418991005": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/central-funding-securitized-products-quants-at-rbc-4420473829": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-central-funding-securitized-products-quants-at-rbc-4422335089": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-enterprise-model-risk-management-at-rbc-4406496898": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-credit-modeling-methodology-at-rbc-4418984747": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-applied-ai-scientist-team-lead-digital-and-global-investments-at-rbc-4418974881": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-data-scientist-fraud-applied-ai-innovation-at-rbc-4421268637": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-consumer-portfolio-monitoring-analytics-at-rbc-4416656585": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-scientist-at-rbc-4412407626": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-regulatory-initiatives-market-risk-at-rbc-4420485468": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-consumer-portfolio-monitoring-analytics-at-rbc-4416664596": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-program-delivery-at-rbc-4418905512": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/2026-fall-%E2%80%93-grm-developer-ai-innovation-for-risk-management-4-months-at-rbc-4422326741": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-ai-partnerships-at-rbc-4418908462": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-data-privacy-risk-wm-data-management-office-dmo-at-rbc-4418064313": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-atom-engineering-at-rbc-4418906485": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-canadian-tax-operations-at-rbc-4411840517": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-security-architect-at-rbc-4419593995": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-iam-systems-engineer-authorization-global-security-at-rbc-4421278391": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/xva-desk-associate-at-rbc-4418981886": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-canadian-banking-product-control-at-rbc-4417707902": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-chief-compliance-officer-rbc-global-asset-management-inc-at-rbc-4419486047": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-global-investment-banking-mining-metals-at-rbc-4413263962": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-corporate-treasury-performance-management-at-rbc-4417730065": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-counterparty-credit-risk-analysis-and-measurement-at-rbc-4420996672": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-reporting-dashboard-analytics-at-rbc-4417783339": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-invoicing-application-analyst-at-rbc-4418988016": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-control-analyst-insurance-finance-at-rbc-4420486408": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-equity-derivatives-technology-business-analyst-project-manager-at-rbc-4417720489": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/counsel-public-company-group-at-rbc-4418650124": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-t-o-finance-at-rbc-4422338034": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-financial-and-regulatory-reporting-at-rbc-4422331212": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-performance-management-analyst-at-rbc-4419112211": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-business-reporting-and-analysis-at-rbc-4417719485": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-gam-strategy-at-rbc-4420494019": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-analyst-at-rbc-4415320789": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/equity-derivative-operations-analyst-at-rbc-4419923920": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-statutory-transfer-pricing-at-rbc-4414242127": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-analyst-sme-at-rbc-4404972410": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-portfolio-management-at-rbc-4421279179": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-employee-relations-analytics-and-insights-at-rbc-4418653110": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-wm-iccm-at-rbc-4421329302": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-asset-securitization-admin-at-rbc-4413274929": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-data-analytics-performance-management-at-rbc-4421274617": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Modelling---Forecasting-Senior-Analyst--Quants-_R_1490636": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Sr-Business-Systems-Analyst---Treasury-Technology_R_1490056": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Data-Scientist-II--Branch-Analytics--B3617-_R_1483115": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Solutions-Design-IT-Specialist_R_1490208": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Manager--Privacy-Program-Governance---Operations--4906-_R_1490965": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Solutions-Design-IT-Specialist---OFSAA-Transaction-Monitoring--AML-Platforms-_R_1471245": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Manager--Financial-Crime-Risk-Business-Oversight_R_1478804-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Business-Analysis-Specialist_R_1491011": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Group-Risk-Specialist--ATH-4995-_R_1488182": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Credit-Risk-Specialist--ATH-5013-_R_1491108": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Group-Risk--Capital-Oversight--4456-_R_1489394": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Reporting---Insight-Manager--SBB-Credit--ATH-5017-_R_1491202-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Technology-Lead--Oracle-Customer-Risk-Rating-_R_1488881-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Manager--AML-Financial-Crime-Risk-Investigation--4963-_R_1491091": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Manager--TD-Wealth-Risk-Marketplace--RMP-1B--Practitioner--TD-Wealth-Governance---Control_R_1491684": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/AML-Financial-Crime-Risk-Investigator-II--4878-_R_1489972": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Technical-Product-Owner_R_1440757": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Treasury-Analyst_R_1489932-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Treasury-Manager---Wholesale-Liquidity-Implementation_R_1490916": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Arhitect---GTB-Data-and-Platforms_R_1491678": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Full-Stack-Engineer--Backend-_R_1491643": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Engineer-I---DevOps_R_1470511": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/TD-Centre---East---222-Bay-Street-Toronto-Ontario/TDS-Operations-Analyst-III_R_1491368": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Audit-Group-Manager--Financial-Risk-Management--1037-_R_1491061": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Vice-President---Director---Lead-of-Fixed-Income-Product-Management_R_1490385": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Java-Engineer--TD-Securities_R_1489761": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Product-Owner-I---Deposit-Products---Services_R_1478522-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Solutions-Design-IT-Specialist---Regulatory-Reporting_R_1490499": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Regional-Vice-President--Wholesaler----TD-Asset-Management_R_1491285": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Business-Intelligence-Analyst_R_1491216": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Sr-Business-Systems-Analyst_R_1488670": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Credit-Analyst--TD-Automotive-Finance--TDAF-_R_1491249": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Associate--Corporate-Banking_R_1492555-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Vice-President--Non-Competitive---Business-Data-Architect_R_1491217": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Product-Manager_R_1482987": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:td"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Analyst-Front-End-Late-Stage_R260009618": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Quantitative-Analysis-and-Strategy_R260015780": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Integrated-Risk-Insights--Risk-Appetite---Portfolio-Management_R260015152": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Everyday-Banking-Lifecycle--Contract-_R260015820": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager---Portfolio---Sales-Enablement_R260015758": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager---Mortgage-Renewal-Lifecycle_R260015755-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager---New-to-Investment-Lifecycle_R260015757-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager---Mortgage-Renewal-Lifecycle_R260015762": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Associate-Director---Physical-Metals-Settlements---Confirmations--North-America-_R260007809-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Fraud-Prevention---Performance_R260012430": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Enterprise-Architect---AI-and-Data_R250025412": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/ML-AI-Research-Engineer_R260015725": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Solution-Architect----Digital---Banking-_R260010900": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Solution-Architect----Banking-_R260006674": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Global-Retail-Design_R260015902": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Associate-General-Counsel---Investment-Banking_R260015905": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Sales-Coordinator_R260016209": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Analyst--Global-Corporate-Funding_R260015495": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Campaign-Execution-Manager_R260015419-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Software-Developer_R260015424": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Analyst--Special-Account-Management-Unit--SAMU-_R260016206": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Principal-Data-Scientist_R260004758": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Unsecured-Lending-Portfolio-Management_R260016546": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Investment-Analyst--Emerging-Markets---China-Equities_R260016104": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Audit-Manager--Quantitative_R260004690": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Anti-Money-Laundering--Customer-Risk-Scoring-12-Month-Secondment-_R260013413": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Associate--Metals---Mining--Investment-Banking_R260008799": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Director--Collections---Fraud-Oversight_R260006567": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Sr-Analyst--Regulatory-Reporting_R260015811": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Sr-Audit-Manager--Commercial_R260012177-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Analyst-Customer-Loyalty_R260014023": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--AI-Product-Enablement_R260015812": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Wealth-Leads---Campaigns_R260016286": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Campaign-Strategy---Optimization_R260015756-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Director--Wealth-Data-Governance_R260015977": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Lending-Policy-Strategy_R260016077": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Campaign-Measurement_R260013873": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Sales-Compensation---Analytics_R260015125": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:bmo"
+  },
+  "https://ca.linkedin.com/jobs/view/strategic-learning-program-manager-at-bmo-4421243171": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-finance-at-bmo-4418992620": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-forecasting-and-value-analytics-at-bmo-4417397251": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-risk-reporting-and-relationship-management-at-bmo-4418418717": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/commercial-transformation-consultant-at-bmo-4409505312": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/branch-supervision-specialist-at-bmo-4419101501": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-payments-process-at-bmo-4409494675": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-research-and-data-at-bmo-4416966495": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-counterparty-credit-risk-reporting-at-bmo-4414938405": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-specialist-at-bmo-4419896411": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-data-science-ai-at-bmo-4418003951": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-lending-portfolio-management-%E2%80%93-acquisition-strategies-at-bmo-4395215606": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/head-north-american-provisioning-risk-analytics-at-bmo-4414282267": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-grc-advisor-data-ai-governance-at-bmo-4410249162": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/itam-cmdb-senior-analyst-at-bmo-4420619442": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/vice-president-institutional-sales-service-at-bmo-4421234527": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/process-specialist-global-trade-ops-at-bmo-4419443298": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-metals-mining-investment-banking-at-bmo-capital-markets-4419104507": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-global-i-cb-cm-supervision-at-bmo-capital-markets-4410297598": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-relationship-manager-managed-technology-services-at-bmo-4418980060": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-relationship-manager-commercial-banking-corporate-finance-group-at-bmo-4413457510": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-futures-clearing-at-bmo-4421842952": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-campaign-strategy-and-optimization-at-bmo-4421295678": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-unsecured-lending-portfolio-management-at-bmo-4386957984": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-client-onboarding-at-bmo-capital-markets-4416963554": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Director--Treasury-Retail-Behavioural-Models_2608703": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Executive-Director---Director--Global-Asset-Management_2611709": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Associate--Resource-Optimization---Analytics--Global-Markets-_2611142": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Consultant--Technology-Controls_2608382": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Associate--Regulatory-Complaints_2610973": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Associate--National-Accounts_2610939": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Associate--Mid-Market-Investment-Banking_2611076": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Non-Trading-Market-Risk--12-Month-Secondment-Contract-_2609197": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Trading-Market-Risk-Manager---Fixed-Income_2611149": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Consultant--Data-Developer_2610635": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Consultant--Product-Owner_2611189": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Consultant--Information-Security---Open-Banking_2611482-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Analyst--Data-and-Analytics_2611486": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Consultant--Business-Systems-Analysis_2608115": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Business-Consultant--Client-Services---12-month-term_2608177": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Consultant--Procurement_2609121": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Analyst--Treasury-Regulatory-Compliance-Management_2604401": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Director--Funding-and-Liquidity-Risk-Management_2610965": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Director--Financial-Crisis-Management_2611490": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Associate--Commercial-Cash-Management_2611228": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Global-Head-of-Securities-Finance---Collateral-Management_2611145": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Risk-Analyst--Market-Risk-Reporting---Analytics_2610812-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Analyst--Product-Engineering--Global-Markets_2611823": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Private-Investment-Counsellor_2608812": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Capital-Markets-Accounting_2611198-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Commercial-Credit-Risk-Manager_2611509": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Analyst--Structured-Notes-Distribution--Wealth-Solutions-Group---Global-Markets_2611333": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Director--Billing-and-Product-Support--Transaction-Banking_2610937": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Climate-Strategy-Consultant_2611583": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Analyst-Associate--Institutional-Client-Experience_2606384": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Analyst--Data---Reporting_2611534": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Consolidation_2610428": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Financial-Analyst--Capital-Markets-Accounting_2611302": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Domestic-Tax-Planning---Compliance_2610438": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Specialist--APAC-Regulatory-Operations_2610730": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Sr-Financial-Analyst--Product-Control_2608893": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Consultant--RDMO-Regulatory-Compliance-Management--RCM-_2610703": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Consultant--Regulatory-Compliance-Management_2611192": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Data-Management-Analyst_2609535-2": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Product-Owner_2606440-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cibc"
+  },
+  "https://ca.linkedin.com/jobs/view/business-analyst-at-cibc-4420979788": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-data-and-ai-analytics-at-cibc-4417165150": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-systems-analyst-at-cibc-4421237950": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-director-borrowing-solutions-and-insurance-finance-at-cibc-4419984363": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-compliance-officer-cpic-compliance-at-cibc-4422142717": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-distribution-strategy-enablement-at-cibc-4419992207": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-finance-business-management-at-cibc-4420635374": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-services-associate-business-banking-at-cibc-4417398808": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-investment-counsellor-at-cibc-4417461225": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-engagement-representative-at-cibc-4419903295": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-application-development-at-cibc-4417339356": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-service-representative-at-cibc-4420986280": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/fund-accountant-fund-accounting-at-cibc-mellon-4421240800": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/derivatives-specialist-derivatives-operations-at-cibc-mellon-4419474055": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-financial-analyst-at-cibc-mellon-4423243009": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-specialist-custody-services-at-cibc-mellon-4421246671": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-fund-accountant-fund-accounting-at-cibc-mellon-4421246673": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-cb-strategic-business-coverage-at-cibc-4414281956": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-service-associate-business-banking-at-cibc-4421638259": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-distribution-intelligence-analytics-at-cibc-4419992205": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-assisted-channels-acquisition-everyday-banking-at-cibc-4422429599": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-credit-and-operational-oversight-at-cibc-4419983353": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/commercial-credit-risk-manager-at-cibc-4420620825": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-business-analyst-at-cibc-4419472045": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-ou-associ%C3%A9-at-national-bank-of-canada-4417663705": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-or-associate-financial-resource-management-at-national-bank-of-canada-4417673390": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-clerk-at-national-bank-of-canada-4417676330": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-financing-solutions-at-national-bank-of-canada-4417677340": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-wealth-associate-at-national-bank-of-canada-4417663701": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/conseiller-senior-conformit%C3%A9-at-national-bank-of-canada-4413359736": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-vice-president-condominium-team-at-national-bank-of-canada-4411712102": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-global-credit-markets-it-at-national-bank-of-canada-4417666679": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-compliance-advisor-at-national-bank-of-canada-4413358728": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/directeur-principal-march%C3%A9s-mondiaux-du-cr%C3%A9dit-ti-at-national-bank-of-canada-4417663703": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/business-development-manager-equipment-finance-at-national-bank-of-canada-4413366031": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/wealth-associate-at-national-bank-of-canada-4411711103": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/directeur-solutions-de-financement-at-national-bank-of-canada-4417668570": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/investment-development-specialist-at-national-bank-of-canada-4411702392": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/associ%C3%A9-principal-en-gestion-de-patrimoine-at-national-bank-of-canada-4417674379": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Senior-Director--Pension-Access-and-Growth_JR102442": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:hoopp"
+  },
+  "https://ca.linkedin.com/jobs/view/government-relations-analyst-at-hoopp-healthcare-of-ontario-pension-plan-4418168807": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Associate----Senior-Analyst--Senior-Associate---Portfolio---Data--Alternative-Investments---Global-Credit_JR-8086": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst--Performance--Reporting---Attribution_JR-8109": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Principal--Overlay-Management_JR-8104": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Associate--Private-Capital_JR-8098": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Performance-Reporting-and-Attribution_JR-8094": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Director--Change-Management_JR-8081": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Derivatives-Operations_JR-7884": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:omers"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-senior-associate-ai-product-investment-platforms-%E2%80%93-private-capital-at-omers-4414313502": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-hr-planning-at-omers-4413360068": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-technology-strategy-and-innovation-at-omers-4406038139": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Director--AI-Centre-of-Enablement_7030": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:otppb"
+  },
+  "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Solution-Architect--SWIFT--Strategy-What-If-Tool-_7037": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:otppb"
+  },
+  "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Data-Scientist_7041-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:otppb"
+  },
+  "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Business-Analyst_6985": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:otppb"
+  },
+  "https://ca.linkedin.com/jobs/view/software-developer-at-ontario-teachers-%E2%80%8B-pension-plan-4421315846": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-employee-disability-accommodation-disability-workplace-health-at-ontario-teachers-%E2%80%8B-pension-plan-4414942782": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-graphic-designer-18-month-contract-at-ontario-teachers-%E2%80%8B-pension-plan-4417407277": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-software-developer-at-ontario-teachers-%E2%80%8B-pension-plan-4414948609": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/solution-architect-at-ontario-teachers-%E2%80%8B-pension-plan-4422141287": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/managing-director-enterprise-architecture-emerging-technology-at-ontario-teachers-%E2%80%8B-pension-plan-4414953500": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-sustainable-investing-at-hoopp-healthcare-of-ontario-pension-plan-4414659044": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-enterprise-operational-risk-management-at-university-pension-plan-ontario-4423412042": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-service-advisor-at-opb-ontario-pension-board-4400002400": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-analyst-calculations-at-hoopp-healthcare-of-ontario-pension-plan-4414642812": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-employer-employee-partner-experience-at-university-pension-plan-ontario-4407048487": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-change-management-lead-at-opb-ontario-pension-board-3832687500": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/technical-analyst-at-financial-services-regulatory-authority-of-ontario-fsra-4418863396": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-finance-operations-at-university-pension-plan-ontario-4423299239": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-actuary-at-university-pension-plan-ontario-4423407107": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/compensation-advisor-at-hoopp-healthcare-of-ontario-pension-plan-4414640828": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-total-rewards-at-ontario-energy-board-4417177914": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-consultant-alternative-investments-at-hoopp-healthcare-of-ontario-pension-plan-4416912585": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/managing-director-private-markets-at-ontario-power-generation-4422869166": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Analyst--Risk--12-Month-Contract-_JR00526": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Lead-Engineer--TFM--Risk---Total-Fund-Management-Technology_JR00197": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Associate--Beta-Allocation_JR00489": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Manager--Subsidiary-Reporting_JR00513": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Analyst--Total-Fund-Management--12-Month-Contract-_JR00525": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Manager--Performance--10-month-contract-_JR00522": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Principal--Sustainability---Portfolio-Value-Creation_JR00511": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Analyst--Operational-Controls---Systems--12-month-contract-_JR00486": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:cppib"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-cash-collateral-settlements-operations-12-month-contract-at-cpp-investments-investissements-rpc-4415222243": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-technology-operations-business-management-strategy-operating-office-at-cpp-investments-investissements-rpc-4411542413": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-private-equity-business-management-at-cpp-investments-investissements-rpc-4413622620": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-equities-hardware-semiconductors-at-cpp-investments-investissements-rpc-4414868754": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-credit-investment-operations-at-cpp-investments-investissements-rpc-4413634790": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://optrust.wd3.myworkdayjobs.com/job/Toronto-ON/Manager--Pension-Data-and-Employer-Services_R1233": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:optrust"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-investment-finance-at-optrust-4413840128": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-payroll-manager-at-optrust-4422002791": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://caatpension.wd10.myworkdayjobs.com/job/Toronto-ON/Senior-Enterprise-Operations-Solutions-Specialist_JR100148": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:caatpension"
+  },
+  "https://caatpension.wd10.myworkdayjobs.com/job/Toronto-ON/Lead--HR-Process---Documentation_JR100145": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:caatpension"
+  },
+  "https://caatpension.wd10.myworkdayjobs.com/job/Toronto-ON/Manager--Investment-Operations--Private-Markets-_JR100151": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:caatpension"
+  },
+  "https://ca.linkedin.com/jobs/view/pension-analyst-member-services-at-caat-pension-plan-4419364247": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-hr-process-documentation-18-month-contract-at-caat-pension-plan-4416323204": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-data-governance-specialist-at-caat-pension-plan-4419363257": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/vice-president-enterprise-it-and-data-transformation-at-investment-management-corporation-of-ontario-imco-4422048930": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://brookfield.wd5.myworkdayjobs.com/job/Toronto-Ontario/Sr-Financial-Analyst_R2050496": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:brookfield"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-financial-analyst-valuations-and-fp-a-at-brookfield-4422407358": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-finance-1-year-contract-at-brookfield-properties-4418511020": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-investment-finance-at-rbc-4420477665": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-%E2%80%93-pension-investments-at-rbc-4421270599": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-owner-%E2%80%93-wealth-management-solutions-at-rbc-dominion-securities-4420992728": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/operations-specialist-strategic-initiatives-at-bmo-4420238447": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-compliance-manager-advisory-mutual-fund-dealer-at-bmo-4387484175": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-high-risk-portfolio-management-team-at-bmo-4388540803": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-quantitative-researcher-alpha-research-team-at-bmo-4416970492": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/ml-ai-research-engineer-at-bmo-4422428163": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/intermediate-accountant-at-ci-financial-4417835299": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/district-vice-president-sales-at-ci-financial-4418007664": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-product-strategy-and-research-at-mackenzie-investments-4419948709": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-portfolio-analyst-at-mackenzie-investments-4420663760": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/communication-specialist-at-mackenzie-investments-4419952231": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/investment-analyst-at-fidelity-canada-4417992279": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/market-research-analyst-at-fidelity-canada-4361492563": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-affairs-coordinator-at-fidelity-canada-4408452024": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/project-manager-at-fidelity-canada-4351296062": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-actions-and-income-processing-specialist-sr-at-fidelity-canada-4408899125": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-systems-analyst-fcc-at-fidelity-canada-4409227822": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-service-enhancement-at-fidelity-canada-4398877110": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-regional-sales-at-fidelity-canada-4358868555": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-editor-copy-and-content-at-fidelity-canada-4374861217": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-wealth-associate-at-fidelity-canada-4416867242": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/security-representative-at-fidelity-canada-4403247682": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-development-manager-at-fidelity-canada-4412035252": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-it-auditor-assurance-advisory-at-fidelity-canada-4344945023": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-solutions-manager-sr-fcc-at-fidelity-canada-4402800516": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/new-accounts-administrator-at-fidelity-canada-4416862321": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/registered-products-administrator-at-fidelity-canada-4416841306": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/administrateur-des-nouveaux-comptes-et-des-transferts-de-comptes-bilingue-new-accounts-and-account-transfer-administrator-bilingual-at-fidelity-canada-4416832454": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/registered-products-administrator-bilingual-rrsp-resp-at-fidelity-canada-4417243479": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-product-operations-analyst-at-fidelity-canada-4399063004": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-vice-president-investment-strategist-at-connor-clark-lunn-private-capital-ltd-cc-l-4418199281": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-vice-president-client-experience-at-connor-clark-lunn-private-capital-ltd-cc-l-4406619034": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/settlements-and-process-analyst-at-guardian-capital-group-4417979564": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-account-associate-team-lead-at-guardian-partners-4417982124": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://cib-bic.ca/en/jobs/?gh_jid=5022805008": {
+    "found_at": "2026-06-02",
+    "first_source": "greenhouse:canadainfrastructurebank"
+  },
+  "https://cib-bic.ca/en/jobs/?gh_jid=5226270008": {
+    "found_at": "2026-06-02",
+    "first_source": "greenhouse:canadainfrastructurebank"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-portfolio-construction-and-risk-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4422035918": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-analyst-portfolio-construction-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4422048546": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/managing-director-strategic-projects-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4422049516": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-asset-management-bilingual-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4422056476": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-investments-indigenous-and-northern-infrastructure-bilingual-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4419085761": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/head-of-advisor-technology-americas-at-vanguard-4419489309": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-ai-ml-scientist-at-vanguard-4419484414": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-ai-ml-scientist-at-vanguard-4419500260": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/investment-systems-application-engineer-iv-at-vanguard-4419595028": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-bilingual-business-development-manager-at-vanguard-4419486347": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/head-of-americas-architecture-and-cto-at-vanguard-canada-4419499281": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/corp-compliance-generic-us-jpmc-at-jpmorganchase-4419805956": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-planning-management-engineering-vendor-program-office-vice-president-toronto-dallas-at-goldman-sachs-4418268983": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ms.wd5.myworkdayjobs.com/job/Valuation-Risk-Controller_JR002948": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:ms"
+  },
+  "https://jobs.citi.com/job/mississauga/senior-model-onboarding-specialist-vp/287/94706247152": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://jobs.citi.com/job/mississauga/ai-design-engineer-avp/287/95139793728": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://jobs.citi.com/job/mississauga/vp-regulatory-control-modelling-development-lead/287/94977577504": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://jobs.citi.com/job/mississauga/senior-c-developer/287/94037373648": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://jobs.citi.com/job/toronto/capital-and-risk-weighted-assets-project-delivery-program-execution-and-transformation-vice-preside/287/95640365744": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://jobs.citi.com/job/toronto/program-management-senior-lead-c14-toronto/287/95718886736": {
+    "found_at": "2026-06-02",
+    "first_source": "phenom:citi"
+  },
+  "https://ca.linkedin.com/jobs/view/managers-control-self-assessment-mca-sr-analyst-assistant-vice-president-at-citi-4419038033": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/managers-control-self-assessment-mca-sr-lead-analyst-senior-vice-president-at-citi-4419019701": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/program-management-senior-lead-c14-toronto-at-citi-4422053759": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/applications-development-intermediate-programmer-analyst-officer-at-citi-4423201579": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/capital-risk-weighted-assets-project-delivery-program-execution-and-transformation-vice-president-at-citi-4419025484": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-experience-associate-at-citi-4408928611": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/program-management-lead-analyst-vice-president-at-citi-4415685475": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/it-business-lead-analyst-at-citi-4418204504": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/infrastructure-senior-tech-analyst-at-citi-4406629337": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/applications-support-senior-analyst-assistant-vice-president-at-citi-4415721348": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/commis-au-service-%C3%A0-la-client%C3%A8le-at-hsbc-4418167081": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://statestreet.wd1.myworkdayjobs.com/job/Toronto-Ontario/Product-Development-Manager-Risk-Analytics---Managing-Director_R-789710-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:statestreet"
+  },
+  "https://statestreet.wd1.myworkdayjobs.com/job/Toronto-Ontario/Alpha-Global-Testing--AVP_R-779493": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:statestreet"
+  },
+  "https://statestreet.wd1.myworkdayjobs.com/job/Toronto-Ontario/Managing-Director--Transfer-Agency---Private-Markets--Managing-Director_R-784799-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:statestreet"
+  },
+  "https://ca.linkedin.com/jobs/view/alternative-investment-services-%E2%80%93-investor-services-associate-2-at-state-street-4411667254": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-services-investor-services-contract-18-months-at-state-street-4419905488": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ntrs.wd1.myworkdayjobs.com/job/Toronto-Canada/Client-Executive_R155153": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:ntrs"
+  },
+  "https://spgi.wd5.myworkdayjobs.com/job/Toronto-CAN/Associate-Director--Sales---Relationship-Management_327225-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:spgi"
+  },
+  "https://ssctech.wd1.myworkdayjobs.com/job/Ontario-Toronto/Senior-Business-Analyst_R43916-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:ssctech"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-investor-services-at-ss-c-technologies-4365254728": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-manager-investor-services-at-ss-c-technologies-4358945468": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/head-of-pmo-professional-services-at-numerix-4419464143": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Data-Analyst--L-C-Strategy-and-Operations--Data-Analytics-and-Technology-Focus_JR26021008-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:manulife"
+  },
+  "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Data-Architect_JR25111229-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:manulife"
+  },
+  "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Data---AI-Solution-Architect_JR26051154": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:manulife"
+  },
+  "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Director--Change-Management_JR26051893-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:manulife"
+  },
+  "https://ca.linkedin.com/jobs/view/market-data-analyst-at-manulife-4419163294": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/co-chief-investment-strategist-at-manulife-4422097062": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-intelligence-senior-analyst-at-manulife-4418216346": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-analyst-l-c-strategy-and-operations-data-analytics-and-technology-focus-at-manulife-4419345411": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/campus-recruiter-at-manulife-4423270549": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-canada-operations-at-manulife-4418846970": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/private-lending-officer-at-manulife-4418507715": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-it-systems-and-operations-at-manulife-4415089621": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-manager-ca-segment-measurement-insights-lead-at-manulife-4418577723": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-securities-law-clerk-at-manulife-4419357021": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/commercial-mortgage-account-manager-gta-sw-ontario-at-manulife-4418219256": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/compliance-manager-at-manulife-4423278452": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-data-governance-at-manulife-4416305061": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/regional-director-client-relations-at-manulife-4423290340": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://sunlife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Retirement-Consultant_JR00124437-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:sunlife"
+  },
+  "https://sunlife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Director--Security-Advisory-Services_JR00124377-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:sunlife"
+  },
+  "https://sunlife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Manager--Global-Client-Experience-and-Insights_JR00124378-1": {
+    "found_at": "2026-06-02",
+    "first_source": "workday:sunlife"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-at-sun-life-4419339917": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/strategy-specialist-at-sun-life-4418842102": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/penetration-testing-analyst-at-sun-life-4418824645": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-advisor-recruitment-at-sun-life-4418866618": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/vice-president-insurance-distribution-at-sun-life-4419300271": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-red-team-operator-at-sun-life-4412142923": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-senior-digital-business-consultant-at-sun-life-4418292435": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-senior-disability-claims-consultant-at-sun-life-4416332793": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mainframe-dba-at-sun-life-4380488036": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/insurance-review-manager-at-sun-life-4419303180": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-pricing-analyst-sl-health-pricing-at-sun-life-4418856940": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-technical-recruiter-sr-talent-acquisition-consultant-at-sun-life-4423282935": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/software-delivery-analyst-ai-enabled-transformation-at-sun-life-4419095368": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/resolution-case-manager-at-sun-life-4417882921": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Manager%2C-Risk-&amp;-Resilience-ON/1385989233/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Manager%2C-Data-Governance-Operations-ON/1399973533/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Data-Governance-Strategy-Enablement-&amp;-Change-Management-Specialist-ON/1399974433/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Data-Governance-Specialist-ON/1399975633/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Lead%2C-Cybersecurity-Incident-Response-ON/1399434633/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Manager%2C-Corporate-Financial-Reporting-ICOFR-ON/1398932333/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Director%2C-Technology-Delivery%2C-QE-ON/1398445033/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Mississauga-Ontario-Advisor-Service-Representative-ON-L4W-0E4/1398391333/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-National-Securities-Specialist-ON/1397495633/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Senior-Analyst%2C-Strategy-ON/1376141633/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-AI-Builder%2C-Strategy-&amp;-Transformation-ON/1398447133/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Associate-Manager%2C-Technology-Finance-ON/1397947133/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28Digital%29-ON/1397835133/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Senior-Software-Developer-%28Appian%29-ON/1397462833/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Toronto-Associate-Manager%2C-Digital-Analytics-12-Month-Contract-ON/1400016233/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Mississauga-Ontario-Senior-Advisor-Associate-ON-L4W-0E4/1398400333/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://jobs.canadalife.com/job/Markham-Ontario-Advisor-Support-Associate-ON-L3R-3T7/1397048233/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:jobs.canadalife.com"
+  },
+  "https://ca.linkedin.com/jobs/view/underwriting-associate-6-month-term-at-canada-life-4422089060": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-business-analyst-at-canada-life-4418203518": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/governance-controls-advisor-at-canada-life-4419334229": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-it-business-systems-analyst-at-canada-life-4418512316": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-business-operations-specialist-compensation-at-canada-life-4418554048": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-operations-transformation-pmo-at-manulife-4420015625": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-business-advisor-finance-transformation-systems-at-intact-4422027923": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-analyst-risk-control-at-intact-4423291774": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-ai-strategy-governance-at-intact-4422084076": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/accounting-specialist-operations-cpa-at-intact-4419361001": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/procurement-advisor-at-intact-4422038178": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-business-analyst-opl-at-intact-4408938248": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-scientist-ii-at-intact-4417893814": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-owner-commercial-line-at-intact-4411737448": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/scientifique-de-donn%C3%A9e-ii-at-intact-4417895853": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-principal-e-des-donn%C3%A9es-%E2%80%93-pr%C3%A9vention-des-sinistres-at-intact-4423280962": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/underwriter-ii-specialty-lines-cross-border-at-intact-4422037233": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/policy-service-administrator-at-ia-financial-group-industrial-alliance-4419932353": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-e-en-tarification-senior-at-ia-financial-group-industrial-alliance-4413731151": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Payroll-Delivery-Manager-Operate-ON-M5C-3G7/1387840100/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Project-Delivery%2C-Senior-Consultant-Operate-ON-M5C-3G7/1387859400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager%2C-Oracle-Field-Service-ON-M5C-3G7/1336660000/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Red-Team-Operator%2C-Deloitte-Global-Technology-ON-M5C-3G7/1350490000/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Solution-Architect%2C-Deloitte-Global-Technology-ON-M5C-3G7/1387968000/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Dayforce-Project-Delivery-Senior-Manager-ON-M5C-3G7/1362502400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager%2C-Transformation-Strategy-&amp;-Governance%2C-Global-Deloitte-Optimization-ON-M5C-3G7/1370966500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-ConsultantSenior-Consultant-AI-Vulnerability-Management-team-ON-M5C-3G7/1395665500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Executive-PMO-%28SC%29-%281-year-Fixed-Term%29%2C-Deloitte-Global-Consulting-Services-ON-M5C-3G7/1362018300/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Intela-Functional-Manager-Deloitte-Global-Tax-&amp;-Legal-ON-M5C-3G7/1325750800/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager%2C-AML-Analytics-Financial-Engineering-&amp;-Modeling-ON-M5C-3G7/1387472100/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager-Financial-Services-Monitor-Deloitte-ON-M5C-3G7/1370003700/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Service-Optimization-Manager%2C-Global-Deloitte-Technology-ON-M5C-3G7/1370017400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager-Energy%2C-Resources-and-Industrials-Monitor-Deloitte-ON-M5C-3G7/1369935200/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Contact-Domain-Steward-ON-M5C-3G7/1387580400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Gestionnaire-d&apos;un-domaine-de-coordonn%C3%A9es%2C-centre-d&apos;excellence-Donn%C3%A9es-et-perspectives-ON-M5C-3G7/1387580500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-HCM-Technical-Reporting-Operate-ON-M5C-3G7/1387844500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-HR-Transformation-Functional-Consultant-Operate-ON-M5C-3G7/1387842400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Talent-HCM-Functional-Delivery-Operate-ON-M5C-3G7/1387841100/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Technical-Application-Administrator-Lead-Operate-ON-M5C-3G7/1387760400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Directeur-ou-directrice%2C-Services-gouvernementaux-et-publics-Cha%C3%AEne-d&apos;approvisionnement-et-op%C3%A9rati-ON-M5C-3G7/1342101100/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager%2C-Supply-Chain-Network-Operation%2C-Sourcing-&amp;-Procurement-Government-&amp;-Public-Services-ON-M5C-3G7/1342101000/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Specialist%2C-Executive-Search-COE-%2812-Month-Contract%29-ON-M5C-3G7/1345674600/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Financial-Analyst-ON-M5C-3G7/1395569400/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-30-conseiller-principal-%28CF-&amp;-Consultation%29-premier-auditeur-%28Audit%29-analyste-principal-%28Fiscalit%C3%A9-ON-M5C-3G7/1395714300/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Consultant-or-Senior-Consultant-%28AEPAJO-Developer%29-ON-M5C-3G7/1317053500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager-Oracle-NetSuite-Implementation-Consulting-ON-M5C-3G7/1370634800/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Directeur-%C3%89nergie%2C-Ressources-et-Produits-Industriels-%28Monitor-Deloitte%29-ON-M5C-3G7/1369935300/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Specialist%2C-Ethics-ON-M5C-3G7/1386965000/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Manager%2C-Life-&amp;-Health-Insurance-Monitor-Deloitte-ON-M5C-3G7/1369746900/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Ascend-PMO-Senior-Consultant-%282-year-Secondment%29%2C-Global-Consulting-Services-ON-M5C-3G7/1386994900/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Conseiller-principal-ou-conseill%C3%A8re-principale%2C-%C3%89thique-ON-M5C-3G7/1395293200/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-AnalystConsultant%2C-AIML-Models-Financial-Engineering-&amp;-Modeling-ON-M5C-3G7/1395266600/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Consultant-Property-&amp;-Casualty-Insurance-Monitor-Deloitte-ON-M5C-3G7/1369251700/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Directeur-ou-directrice%2C-Science-des-donn%C3%A9es-ON-M5C-3G7/1378247500/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Consultant-Strategy-ON-M5C-3G7/1385461100/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-Senior-Consultant%2C-M&amp;A-Corporate-Finance-ON-M5C-3G7/1394177800/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://careers.deloitte.ca/job/Toronto%2C-ON-SAP-SuccessFactors-Employee-Central-Configuration-Consultant%2C-Global-Deloitte-Technology-ON-M5C-3G7/1394398300/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.deloitte.ca"
+  },
+  "https://ca.linkedin.com/jobs/view/project-specialist-at-deloitte-4420483983": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/35-conseiller-at-deloitte-4415271939": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-organization-work-transformation-strategic-technology-change-at-deloitte-4399298996": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/change-strategy-culture-consultant-operate-at-deloitte-4412938904": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/reporting-and-analytics-manager-global-finance-services-at-deloitte-4412407926": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-enterprise-value-creation-working-capital-at-deloitte-4393561335": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-financial-planning-and-management-deloitte-global-finance-at-deloitte-4417000473": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-anti-money-laundering-at-deloitte-4407866117": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-life-health-insurance-monitor-deloitte-at-deloitte-4395365158": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/workday-payroll-consultant-at-deloitte-4410518717": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-science-manager-at-deloitte-4393549790": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-people-insights-deloitte-global-people-at-deloitte-4413707461": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-specialist-talent-advisory-at-deloitte-4418991189": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-ai-ml-models-financial-engineering-modeling-at-deloitte-4395361233": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-senior-consultant-third-party-risk-management-at-deloitte-4417382193": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-global-independence-deloitte-global-risk-brand-at-deloitte-4408085650": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-risk-and-contract-management-at-deloitte-4408018399": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-independence-consultations-deloitte-risk-brand-at-deloitte-4410050766": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-data-scientist-power-systems-analyst-at-deloitte-4416938678": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-grc-technology-delivery-at-deloitte-4395366129": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-data-risk-assessment-services-deloitte-global-12-month-fixed-term-contract-at-deloitte-4393553737": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-business-integration-services-at-deloitte-4405848637": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-financial-services-industry-risk-regulatory-at-deloitte-4395346794": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-risk-management-at-deloitte-4414900816": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/oracle-finance-manager-at-deloitte-4410038821": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/oracle-financials-lead-record-to-report-at-deloitte-4410048772": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-clean-economy-at-deloitte-4393562426": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/oracle-fusion-financials-consultant-operate-at-deloitte-4411836942": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-finance-transformation-consumer-at-deloitte-4418404391": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/dayforce-wfm-analyst-r8dius-at-deloitte-4405852474": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-senior-consultant-or-lead-oracle-hr-at-deloitte-4393564266": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-compliance-data-and-technology-at-deloitte-4395344924": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://careers.ey.com/ey/job/Toronto-Banking-Technology-Manager-ON-M5H-0B3/1291530301/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.ey.com"
+  },
+  "https://careers.ey.com/ey/job/Toronto-Senior-Manager-Treasury-and-Commodities-Financial-Accounting-and-Advisory-Services-Assurance-ON-M5H-0B3/1399476933/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.ey.com"
+  },
+  "https://careers.ey.com/ey/job/Toronto-Senior-Manager-Actuarial-P-&amp;-C-ON-M5H-0B3/1397894733/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.ey.com"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-sap-mm-public-cloud-at-kpmg-canada-4422342186": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-sap-mm-public-cloud-at-kpmg-canada-4422345169": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-sap-procurement-public-cloud-at-kpmg-canada-4422333419": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-sap-procurement-public-cloud-at-kpmg-canada-4422333418": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-sap-sd-public-cloud-at-kpmg-canada-4422327951": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-sap-sd-public-cloud-at-kpmg-canada-4422334323": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-risk-independence-at-kpmg-canada-4391734426": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-enterprise-performance-management-at-kpmg-canada-4402672170": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-business-enablement-services-finance-at-kpmg-canada-4419949453": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-root-cause-analysis-at-kpmg-canada-4371872466": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-transfer-pricing-at-kpmg-canada-4403570536": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-operations-m-a-strategy-at-kpmg-canada-4419577264": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/consultant-accounting-advisory-services-at-kpmg-canada-4404933675": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-third-party-risk-at-kpmg-canada-4384350869": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-tax-law-m-a-at-kpmg-canada-4422334321": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-strategy-operations-business-enablement-at-kpmg-canada-4419939710": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-technology-risk-services-at-kpmg-canada-4341844626": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-audit-quality-controls-risk-management-at-kpmg-canada-4413209816": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/directeur-rice-principal-e-analyse-des-causes-at-kpmg-canada-4371886028": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-enterprise-data-analytics-at-kpmg-canada-4406114512": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-data-analytics-automation-ai-strategy-at-kpmg-canada-4402658359": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-consultant-data-analytics-automation-ai-modernization-at-kpmg-canada-4403159441": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-audit-quality-risk-management-14-month-contract-at-kpmg-canada-4358118998": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-audit-enterprise-at-kpmg-canada-4387465924": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/tax-manager-corporate-tax-real-estate-at-kpmg-canada-4406111659": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-data-automation-solutions-hub-at-kpmg-canada-4418460477": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-corporate-finance-at-kpmg-canada-4403576534": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/key-account-specialist-financial-services-at-kpmg-canada-4408707098": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-economist-at-kpmg-canada-4409559186": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-workday-finance-at-kpmg-canada-4309304414": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-technology-risk-services-it-assurance-at-kpmg-canada-4305539266": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-sap-audit-at-kpmg-canada-4305523967": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/cybersecurity-risk-controls-associate-at-pwc-canada-4422460497": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/risk-modelling-services-actuarial-p-c-senior-manager-at-pwc-canada-4374789097": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/valuations-senior-associate-at-pwc-canada-4420992658": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/real-estate-valuations-senior-associate-at-pwc-canada-4420650305": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/pricing-strategy-and-commerciality-senior-manager-at-pwc-canada-4421265620": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-consulting-financial-services-insurance-at-pwc-canada-4389292462": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/transformation-risk-and-advisory-senior-manager-jira-lead-at-pwc-canada-4422466507": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/quality-portfolio-lead-risk-regulatory-senior-manager-global-at-pwc-canada-4411276782": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/risk-modelling-services-actuarial-p-c-manager-at-pwc-canada-4376820477": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-services-corporate-tax-manager-at-pwc-canada-4422159668": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/quality-portfolio-lead-human-capital-technologies-saas-senior-manager-global-at-pwc-canada-4411200976": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/compensation-consultant-associate-at-mercer-4419893948": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/trade-operations-analyst-at-mercer-4422444484": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/operational-due-diligence-associate-manager-at-wtw-4422166338": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/defined-benefit-pension-administration-senior-associate-at-aon-4418552890": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/actuarial-ai-regional-lead-at-aon-4421313168": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/defined-benefit-pension-administration-consultant-at-aon-4418567517": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/oliver-wyman-class-of-2027-actuarial-and-strategy-consultant%E2%80%93-integrated-consulting-group-toronto-at-oliver-wyman-4422444473": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-credit-card-acquisition-at-fairstone-bank-4418859202": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/deposit-administrator-at-fairstone-bank-4423267825": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/team-lead-shared-services-at-fairstone-bank-4423264991": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-engagement-and-revenue-generation-at-fairstone-bank-4418854320": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/l%E2%80%99analyste-principal-e-financement-commercial-sp%C3%A9cialis%C3%A9-fr-at-fairstone-bank-4414738409": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/gestionnaire-principal-e-approvisionnement-strat%C3%A9gique-poste-%C3%A0-dur%C3%A9e-d%C3%A9termin%C3%A9e-fr-at-fairstone-bank-4414733751": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-principal-gestion-du-rendement-fr-at-fairstone-bank-4402189329": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/gestionnaire-principal-e-recouvrement-des-montants-en-souffrance-fr-at-fairstone-bank-4414752347": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/client-services-officer-at-haventree-bank-4404859456": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-fraud-risk-management-at-haventree-bank-4422454566": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-development-manager-at-haventree-bank-4405812602": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/information-security-analyst-at-haventree-bank-4415908906": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-mortgage-operations-specialist-at-haventree-bank-4414673864": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-client-services-officer-at-haventree-bank-4416708239": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-business-development-real-estate-at-laurentian-bank-4408696181": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-data-product-owner-digital-wealth-tangerine-at-tangerine-4418839955": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-product-enablement-analytics-support-tangerine-at-tangerine-4418514162": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-emerging-payments-strategy-tangerine-at-tangerine-4415109720": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/digital-product-owner-wealth-mobile-tangerine-at-tangerine-4422882860": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-digital-product-owner-digital-product-experience-tangerine-at-tangerine-4418504309": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-take-to-market-tangerine-at-tangerine-4418258388": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-solutions-manager-tangerine-at-tangerine-4401109821": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-account-manager-at-tangerine-4414181156": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-take-to-market-tangerine-at-tangerine-4418259371": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/specialist-investments-contract-tangerine-at-tangerine-4419332007": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/director-community-ecosystem-partnerships-tangerine-at-tangerine-4423265795": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/digital-product-designer-wealth-mobile-tangerine-at-tangerine-4422890829": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-at-rogers-communications-4407385518": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-analyst-corporate-finance-at-canadian-tire-corporation-4420650227": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-at-canadian-tire-corporation-4420658077": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/vp-product-digital-banking-strategy-at-canadian-tire-corporation-4420205187": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/financial-analyst-store-design-renewal-at-canadian-tire-corporation-4421265593": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/retail-store-supervisor-at-canadian-tire-corporation-4419896595": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bank-recruiter-12-month-contract-at-canadian-tire-corporation-4417355659": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-mixed-methods-consumer-research-at-canadian-tire-corporation-4418045780": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-decision-scientist-at-canadian-tire-corporation-4422161538": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-risk-analyst-operational-resilience-at-canadian-tire-corporation-4375452025": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/omnichannel-campaign-lead-at-canadian-tire-corporation-4406694527": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/workplace-data-space-specialist-at-canadian-tire-corporation-4418441648": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-fixture-support-at-canadian-tire-corporation-4421874553": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-copywriter-editor-at-canadian-tire-corporation-4419117073": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-data-scientist-advanced-analytics-and-modelling-2-year-contract-at-canadian-tire-corporation-4402642726": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/decision-support-programmer-analyst-18-month-contract-at-canadian-tire-corporation-4417768906": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/account-manager-triangle-media-services-at-canadian-tire-corporation-4398568547": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/program-manager-data-and-ai-security-at-canadian-tire-corporation-4393244317": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/account-director-triangle-retail-media-at-canadian-tire-corporation-4416938012": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/maintenance-supervisor-at-canadian-tire-corporation-4419911954": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/credit-risk-strategist-at-canadian-tire-corporation-4409460288": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-product-owner-common-capabilities-at-manulife-4418244131": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-development-associate-at-manulife-wealth-asset-management-4422068078": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/corporate-travel-operations-manager-at-manulife-4418216345": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-treasury-risk-management-at-rfa-bank-of-canada-4423240915": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-financial-planning-analysis-at-rfa-bank-of-canada-4423264400": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-data-architecture-ai-at-rfa-bank-of-canada-4422897059": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/chief-anti-money-laundering-officer-at-rfa-bank-of-canada-4422897092": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/privacy-compliance-manager-at-ivari-canada-4417677564": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/compliance-testing-manager-at-ivari-canada-4416806892": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/document-services-associate-6-month-contract-at-foresters-financial-4411505886": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-analyst-at-empire-life-4407950102": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/it-vendor-financial-coordinator-at-empire-life-4422888441": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-analyst-at-aviva-canada-4414492875": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bookkeeper-at-aviva-canada-4418213377": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/underwriting-specialist-renewable-energy-and-mining-at-aviva-canada-4419092099": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/underwriting-specialist-marine-at-aviva-canada-4418850794": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/intermediate-underwriter-at-aviva-canada-4423957218": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/actuarial-analyst-at-aviva-canada-4422011869": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-leader-of-vendor-management-at-aviva-canada-4418865284": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/avp-data-science-at-aviva-canada-4404797481": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-underwriter-ovation-at-aviva-canada-4416323927": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lifestyle-adjuster-%E2%80%93-auto-claims-at-aviva-canada-4419340425": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/front-line-leader-auto-claims-appraisal-at-aviva-canada-4422031441": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/actuarial-team-lead-reserving-at-aviva-canada-4414488946": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/parts-lead-aviva-autocare-centre-at-aviva-canada-4370473347": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-analyst-atlantic-auto-street-pricing-at-aviva-canada-4422010894": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-structured-and-private-debt-at-aviva-canada-4419336427": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-analyst-reserving-at-aviva-canada-4414703792": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/intermediate-senior-accident-benefits-advisor-at-aviva-canada-4368023507": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-intermediate-account-analyst-at-aviva-canada-4414495862": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/avp-enterprise-capital-strategy-treasury-at-co-operators-4416956838": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/vice-pr%C3%A9sident-e-associ%C3%A9-e-tr%C3%A9sorerie-et-strat%C3%A9gie-des-capitaux-at-co-operators-assurance-et-services-financiers-4415957779": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/actuarial-insights-consultant-at-co-operators-4420461092": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-pricing-product-support-wealth-management-at-co-operators-4419974310": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-insights-analyst-at-co-operators-4420449340": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/avp-fp-a-enablement-at-co-operators-4416964790": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/l%E2%80%99architecte-de-donn%C3%A9es-at-co-operators-assurance-et-services-financiers-4419323370": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/data-architect-at-co-operators-4420628183": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-sales-specialist-at-co-operators-4417326417": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/hr-partner-temporary-12-months-at-co-operators-4418991673": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sales-liaison-clerk-at-co-operators-4419508942": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-underwriter-life-living-benefits-at-co-operators-4418962316": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-of-digital-platforms-operations-at-co-operators-4420456219": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-4423958812": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/claims-support-clerk-at-co-operators-4418022607": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-systems-development-consultant-at-co-operators-4404380267": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/directeur-principal-ou-directrice-principale-at-co-operators-assurance-et-services-financiers-4418857088": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/agile-team-lead-at-co-operators-4406661653": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/new-business-service-representative-at-co-operators-4419963891": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-products-representative-at-co-operators-4422420989": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/claims-support-representative-bodily-injury-at-co-operators-4419104581": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sales-support-administrator-at-co-operators-4421231849": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-systems-developer-at-co-operators-4419891635": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/appraiser-ii-property-building-temporary-full-time-12-months-bilingual-eng-french-at-co-operators-4416949978": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-systems-developer-%E2%80%93-sr-salesforce-developer-at-co-operators-4408060201": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-of-digital-platforms-delivery-at-co-operators-4420456216": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-analyst-actuarial-consultant-personal-pricing-insights-at-wawanesa-insurance-4409490782": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/technical-architect-at-munich-re-4422381643": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-accountant-at-munich-re-4413028776": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/contract-underwriting-analyst-at-munich-re-4420478797": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/claims-examiner-6-month-contract-at-munich-re-4421211934": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/actuarial-associate-biometric-research-at-munich-re-4407128706": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-actuarial-associate-global-actuarial-consulting-group-at-munich-re-4392078409": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-r-d-actuary-at-swiss-re-4419349446": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-commercial-origination-at-mcap-4419099447": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-payroll-advisor-at-mcap-4423256046": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-fr-en-loan-restructure-specialist-at-mcap-4418508161": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-analyst-reconciliation-at-first-national-financial-lp-4418883298": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-analyst-commercial-asset-management-at-first-national-financial-lp-4410874984": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-mortgage-underwriter-third-party-residential-underwriting-%E2%80%93-bmbe-at-first-national-financial-lp-4422085080": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-mortgage-underwriter-third-party-residential-underwriting-at-first-national-financial-lp-4418297830": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-underwriter-third-party-residential-underwriting-at-first-national-financial-lp-4418292997": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-underwriter-third-party-residential-underwriting-%E2%80%93-tdms-on-and-atlantic-at-first-national-financial-lp-4418529682": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-funder-third-party-residential-underwriting-%E2%80%93-bmbe-at-first-national-financial-lp-4422084408": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mortgage-specialist-%E2%80%93-renewals-at-first-national-financial-lp-4385600405": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-commercial-learning-at-element-fleet-management-4419901337": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/applied-ai-specialist-%E2%80%93-data-systems-at-element-fleet-management-4391159230": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/specialist-electric-vehicle-advisory-fixed-term-at-element-fleet-management-4385562622": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/applied-ai-specialist-%E2%80%93-ai-solutions-at-element-fleet-management-4391161249": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/benefits-analyst-project-coordinator-12-month-contract-at-element-fleet-management-4416442212": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/learning-specialist-12-months-fixed-term-at-element-fleet-management-4404515083": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-english-and-french-dealer-services-analyst-at-ford-credit-4419530933": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/specialist-hr-business-partner-at-ford-motor-company-4419545646": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-demand-planning-at-hyundai-mobis-mobis-parts-canada-4390647713": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-head-of-collections-recovery-at-hyundai-capital-canada-4422879864": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/customer-experience-analyst-at-toyota-credit-canada-inc-4420445603": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/conseiller-%C3%A8re-conformit%C3%A9-r%C3%A9glementaire-mondiale-at-fiera-capital-4407091363": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/finance-manager-consolidation-at-fiera-capital-4418967989": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/strategy-enablement-manager-wealth-at-advisor-solutions-by-purpose-4421799394": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-compliance-manager-12-month-contract-at-advisor-solutions-by-purpose-4422046496": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/director-tax-at-purpose-unlimited-4422057414": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/director-fund-operations-at-sagard-4422058262": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-mortgages-at-kingsett-capital-4419225541": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/supervisor-financial-reporting-at-cibc-mellon-4416982270": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/team-leader-fund-accounting-at-cibc-mellon-4416984253": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/supervisor-fund-accounting-at-cibc-mellon-4416973439": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-regulatory-data-monitoring-development-delivery-at-rbc-4414677954": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/private-client-associate-at-rbc-4419944021": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/client-solutions-specialist-at-rbc-dominion-securities-4419802712": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/banking-advisor-at-rbc-4420201631": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-business-portfolio-and-delivery-management-at-rbc-4422325768": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/investor-relations-administrator-hedge-funds-at-the-citco-group-limited-4417274194": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/supervisor-fund-accounting-real-assets-at-the-citco-group-limited-4417947253": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-owner-at-the-citco-group-limited-4408120630": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-fund-accounting-real-assets-at-the-citco-group-limited-4409613253": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-vdi-administrator-at-the-citco-group-limited-4363174483": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/assistant-vice-president-%E2%80%93-reporting-platform-transformation-at-the-citco-group-limited-4420923217": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/assistant-manager-middle-office-at-apex-group-ltd-4416857002": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-private-equity-at-apex-group-ltd-4416836933": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-fund-accountant-private-equity-at-apex-group-ltd-4408451022": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-nexus-investor-delivery-private-equity-at-mufg-investor-services-4423902936": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/report-solution-analyst-specialist-at-mufg-investor-services-4423961471": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-regulatory-reporting-at-mufg-investor-services-4423920343": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-fund-accounting-private-equity-at-mufg-investor-services-4423906929": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/junior-associate-director-regulatory-reporting-at-mufg-investor-services-4423929163": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-portfolio-management-group-diversified-industrials-and-metals-mining-at-mufg-4414754193": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-associate-director-controls-business-operations-controls-at-mufg-investor-services-4422423522": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/associate-director-business-data-office-client-data-team-onboarding-team-at-mufg-investor-services-4423959274": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-quantitative-model-validation-model-vetting-at-tmx-group-4418823820": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-process-architect-at-tmx-group-4417886096": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-systems-engineer-at-finastra-4420957986": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bps-operations-processing-associate-i-at-fis-4413092536": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/mainframe-z-os-mq-sysprog-at-broadridge-4346741640": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sr-analyst-platform-operations-at-nasdaq-4422149300": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/assc-dir-actuarial-client-supt-at-moody-s-corporation-4419481346": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-treasury-product-control-fulltime-at-ifg-international-financial-group-4418598768": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-or-Toronto-Senior-Supervisor%2C-Cyber-Risk-Supervision-ON/603052017/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-ou-Toronto-Superviseure-expertesuperviseur-expert%2C-Surveillance-des-cyberrisques-ON/603052117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-or-Toronto-Principal-Analysts%2C-Data-Security-&amp;-Technical-Standards%2C-Consumer-Driven-Banking-ON/603052217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-or-Toronto-Senior-Supervisor%2C-Risk-Supervision-ON/603051917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-or-Toronto-Senior-Supervisor%2C-Enforcement-ON/602965317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-Director%2C-Workforce-Strategy-and-Capability-ON/602806017/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-ou-Toronto-Superviseure-expertesuperviseur-expert%2C-Surveillance-des-risques-ON/603051817/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-ou-Toronto-Analyste-princ_-en-s%C3%A9curit%C3%A9-des-donn%C3%A9es-et-normes-techniques%2C-Services-bancaires-ax%C3%A9s-consommateurs-ON/603052317/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-Directricedirecteur-adjoint-Architecture-op%C3%A9rationnelle-relative-aux-march%C3%A9s-financiers-ON/603000517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-Assistant-Director-Financial-Markets-Business-Architecture-ON/603000617/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-ou-Toronto-Superviseure-expertesuperviseur-expert%2C-Application-de-la-loi-ON/602965417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-Business-Analyst%2C-HR-Systems-Support-ON/602913417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-Analyste-des-op%C3%A9rations%2C-soutien-des-syst%C3%A8mes-RH-ON/602913517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-Analyste-d&apos;entreprise-March%C3%A9s-financiers-et-op%C3%A9rations-bancaires-ON/602926417/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-Business-Analyst-Financial-Markets-&amp;-Banking-ON/602926517/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-Avocat-conseilavocate-conseil%2C-Services-bancaires-ax%C3%A9s-sur-les-consommateurs-et-tech-financi%C3%A8res-ON/602921117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-Sp%C3%A9cialiste-de-l&apos;IA%2C-Analytique-des-donn%C3%A9es-RH-%28solutions-Copilot-pour-les-RH%29-ON/602928117/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28Downtown%29-AI-Specialist%2C-People-Analytics-%28HR-Copilot-Solutions%29-ON/602928217/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://careers.bankofcanada.ca/job/Ottawa-%28centre-ville%29-directricedirecteur%2C-Comp%C3%A9tences-du-personnel-et-strat%C3%A9gie-RH-ON/602805917/": {
+    "found_at": "2026-06-02",
+    "first_source": "successfactors:careers.bankofcanada.ca"
+  },
+  "https://ca.linkedin.com/jobs/view/%C3%A9tudiante-ou-%C3%A9tudiant-at-national-bank-of-canada-4413346985": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-transaction-readiness-gestionnaire-r%C3%A8glements-par-transactions-2026-815-at-canada-deposit-insurance-corporation-cdic-soci%C3%A9t%C3%A9-d-assurance-d%C3%A9p%C3%B4ts-du-canada-sadc-4404517299": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/pension-officer-at-financial-services-regulatory-authority-of-ontario-fsra-4419072934": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/records-analyst-at-ontario-securities-commission-4418509396": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/institutional-credit-risk-analyst-at-canada-mortgage-and-housing-corporation-cmhc-soci%C3%A9t%C3%A9-canadienne-d-hypoth%C3%A8ques-et-de-logement-schl-4411283204": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-du-risque-de-cr%C3%A9dit-institutionnel-at-canada-mortgage-and-housing-corporation-cmhc-soci%C3%A9t%C3%A9-canadienne-d-hypoth%C3%A8ques-et-de-logement-schl-4408899624": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sp%C3%A9cialiste-bilingue-%C3%A9valuations-immobili%C3%A8res-at-canada-mortgage-and-housing-corporation-cmhc-soci%C3%A9t%C3%A9-canadienne-d-hypoth%C3%A8ques-et-de-logement-schl-4399797316": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/gestionnaire-bilingue-souscription-des-immeubles-collectifs-ppca-at-canada-mortgage-and-housing-corporation-cmhc-soci%C3%A9t%C3%A9-canadienne-d-hypoth%C3%A8ques-et-de-logement-schl-4408444695": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-underwriting-at-bdc-4422051552": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-advisor-product-management-and-development-at-bdc-4418519167": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/conseiller-principal-gestion-et-d%C3%A9veloppement-de-produits-at-bdc-4419491430": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/directeur-principal-r%C3%A9daction-de-pr%C3%AAts-at-bdc-4421224106": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/%C3%A9tudiants-d-%C3%A9t%C3%A9-2026-financement-et-d%C3%A9veloppement-des-affaires-ontario-at-bdc-4420422794": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-complaints-inquiries-specialist-at-ciro-ocri-4397510343": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/counsel-registration-at-ciro-ocri-4400635141": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/surveillance-officer-12-months-contract-at-ciro-ocri-4419449170": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-financi%C3%A8re-ou-analyste-financier-at-ciro-ocri-4410257358": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/adjoint-ou-adjointe-%C3%A0-la-mise-en-application-at-ciro-ocri-4415522079": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-director-enforcement-litigation-at-ciro-ocri-4400229205": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-principale-ou-analyste-principal-des-syst%C3%A8mes-de-gestion-12-mois-at-ciro-ocri-4407527756": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyste-principale-ou-analyste-principal-des-syst%C3%A8mes-de-gestion-at-ciro-ocri-4419463523": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sp%C3%A9cialiste-principal-ou-principale-des-plaintes-et-des-demandes-de-renseig-at-ciro-ocri-4396029712": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/inspecteur-principal-de-la-conformit%C3%A9-de-la-conduite-des-affaires-at-ciro-ocri-4395329547": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sp%C3%A9cialiste-principal-ou-principale-de-la-formation-continue-at-ciro-ocri-4414503376": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/agent-ou-agente-de-soutien-%C3%A0-l%E2%80%99inscription-at-ciro-ocri-4395705486": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/scheduler-at-green-infrastructure-partners-4420986817": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/project-manager-at-green-infrastructure-partners-4420994450": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-financial-analyst-at-green-infrastructure-partners-4420988697": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/program-manager-pci-compliance-at-wealthsimple-4422046923": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-software-developer-quality-developer-tooling-at-wealthsimple-4422064105": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/it-cyber-business-analyst-at-questrade-financial-group-4418760791": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/analyst-tax-reporting-at-questrade-financial-group-4412045645": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-it-cyber-governance-risk-control-at-questrade-financial-group-4418773755": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-credit-quality-assurance-questbank-at-questrade-financial-group-4418733605": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/sales-support-specialist-at-questrade-financial-group-4402819590": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-workforce-management-at-questrade-financial-group-4405588592": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-it-cyber-governance-risk-and-control-at-questrade-financial-group-4413614868": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/content-lead-questmedia-at-questrade-financial-group-4412016845": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-accounting-reporting-at-questrade-financial-group-4417665191": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-fp-a-at-questrade-financial-group-4417254708": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/third-party-risk-and-vendor-management-officer-questbank-at-questrade-financial-group-4414358939": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/strategy-lead-at-interac-corp-4422041145": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/project-manager-at-interac-corp-4422032848": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/systems-engineering-senior-specialist-at-interac-corp-4404210169": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/solutions-architect-at-interac-corp-4418276870": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/business-development-lead-konek-merchants-at-interac-corp-4381304014": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/appops-senior-specialist-at-interac-corp-4374659965": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/appops-dba-at-interac-corp-4423960743": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/leader-fraud-portal-domain-t-o-at-interac-corp-4423957737": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-project-manager-at-interac-corp-4422034744": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/solution-architect-at-interac-corp-4418289484": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-business-transformation-manager-at-moneris-4418388726": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/manager-financial-planning-analysis-at-moneris-4413628596": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-business-enablement-at-moneris-4416848010": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-salesforce-software-developer-at-moneris-4415235020": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/principal-salesforce-software-developer-at-moneris-4352239390": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin_co_gtaw"
+  },
+  "https://ca.linkedin.com/jobs/view/head-mortgage-capital-markets-at-neo-financial-4421248473": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-analyst-credit-risk-future-opportunities-at-neo-financial-4420624431": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/service-management-analyst-at-payments-canada-4422033073": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/desktop-support-technician-at-payments-canada-4416195211": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/lead-fraud-services-financial-crime-at-payments-canada-4416335095": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-payment-operations-centre-analyst-level-ii-at-payments-canada-4419334303": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/bilingual-rtr-payment-operations-center-analyst-level-3-at-payments-canada-4408674665": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-support-specialist-at-stripe-4419526161": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-support-specialist-money-management-at-stripe-4418401893": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/design-engineer-presence-at-stripe-4413486624": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/network-solution-specialist-at-stripe-4416964243": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/partner-development-manager-global-networks-at-stripe-4422106926": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/engineering-manager-terminal-at-stripe-4415564110": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/workday-compensation-lead-at-stripe-4413492596": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-designer-terminal-at-stripe-4416618215": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/product-manager-support-experience-at-stripe-4417367952": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-learning-at-affirm-4422073447": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-manager-strategic-finance-revenue-at-affirm-4398177429": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/revenue-operations-lead-at-affirm-4393809222": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-product-manager-card-experience-at-affirm-4371194048": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-partner-growth-manager-at-affirm-4407957143": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/senior-product-manager-financial-platforms-at-affirm-4366557432": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
+  },
+  "https://ca.linkedin.com/jobs/view/director-of-product-management-financial-platforms-at-affirm-4408902710": {
+    "found_at": "2026-06-02",
+    "first_source": "linkedin"
   }
 }
