@@ -9136,6 +9136,18 @@ elif page == "📋 Jobs Kanban":
         view[_df_cols].sort_values(_sort_keys, ascending=_sort_asc)
         if _sort_keys else view[_df_cols]
     ).reset_index(drop=True)
+
+    def _kb_close_inspector() -> None:
+        """Dismiss the Inspect/edit panel and clear the table's row selection.
+        Streamlit persists a dataframe's selection under its widget key across
+        reruns, so popping _kb_sel_id alone isn't enough — the next render
+        re-reads the retained selection and immediately reopens the panel.
+        Bumping the key nonce remounts the table with an empty selection."""
+        st.session_state.pop("_kb_sel_id", None)
+        st.session_state.pop("_kb_last_sel_pos", None)
+        st.session_state["_kb_table_nonce"] = (
+            st.session_state.get("_kb_table_nonce", 0) + 1)
+
     _kb_table_event = st.dataframe(
         _sorted_view,
         hide_index=True, width='stretch', height=540,
@@ -9143,7 +9155,10 @@ elif page == "📋 Jobs Kanban":
         column_order=cols,                 # hides the carried "id"
         on_select="rerun",
         selection_mode="single-row",
-        key="kanban_table_select",
+        # Nonce in the key lets _kb_close_inspector() remount the table with a
+        # cleared selection (Streamlit otherwise retains it across reruns, which
+        # re-opened the panel right after a terminal action).
+        key=f"kanban_table_select_{st.session_state.get('_kb_table_nonce', 0)}",
     )
     # Row click → inspector selection. Persist the selected ID (not the
     # position) and only update on a GENUINE position change, so a
@@ -9259,6 +9274,17 @@ elif page == "📋 Jobs Kanban":
                 "❌ Won't apply · 🚫 Archive) here."
             )
         if job:
+            # ✖ Close — dismiss the panel and clear the row selection. Without
+            # an explicit dismiss the inspector stays pinned open (the table is
+            # the selector — there's no dropdown to blank), and after a terminal
+            # action it lingered on the acted-on row. Right-aligned above body.
+            _kb_hdr_l, _kb_hdr_r = st.columns([6, 1])
+            with _kb_hdr_r:
+                if st.button("✖ Close", key=f"_kb_close_{sel_id}",
+                             width='stretch',
+                             help="Close this panel and clear the row selection."):
+                    _kb_close_inspector()
+                    st.rerun()
             c1, c2 = st.columns(2)
             with c1:
                 # ── Header with tier badge ──────────────────────────────────
@@ -9469,16 +9495,24 @@ elif page == "📋 Jobs Kanban":
                                       "re-promotion."):
                         from safe_json import mutate_json as _mj_kb  # noqa: WPS433
                         from automation import tracker_ops as _tops_kb  # noqa: WPS433
+                        _kb_arch_ok = False
                         try:
                             _mj_kb(TRACKER,
                                     lambda t: _tops_kb.archive(
                                         t, sel_id, "manual_kanban"),
                                     default={"jobs": [], "meta": {}})
                             load_tracker.clear()
-                            st.toast("📁 Archived", icon="🚫")
+                            _kb_arch_ok = True
                         except Exception as _exc:  # noqa: BLE001
                             st.error(f"Archive failed: {_exc}")
-                        st.rerun()
+                        if _kb_arch_ok:
+                            # Terminal action → close the inspector so the user
+                            # returns to the table instead of staring at the row
+                            # they just archived. Rerun only on success so a
+                            # failure keeps its error on screen.
+                            st.toast("📁 Archived", icon="🚫")
+                            _kb_close_inspector()
+                            st.rerun()
                 else:
                     # Phase 5 — context-aware Restore. If this row was
                     # archived as part of a still-active mute, surface
@@ -9691,6 +9725,10 @@ elif page == "📋 Jobs Kanban":
                     else:
                         load_tracker.clear()
                         st.toast(f"❌ Rejected — {_kb_reject_reason}", icon="❌")
+                        # Terminal action → close the inspector and clear the
+                        # selection so the user moves on instead of lingering on
+                        # the rejected row (the "won't close" complaint).
+                        _kb_close_inspector()
                         st.rerun()
 
     # Ad-hoc tailor: generate a resume for any job not in the tracker. Adds it
