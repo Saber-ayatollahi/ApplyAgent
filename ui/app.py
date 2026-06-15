@@ -1983,17 +1983,29 @@ def _resume_tier() -> str:
 
 def _find_application_folder(job: dict):
     """Find applications/<date>_<company>_<role>/ for this job — the polished
-    resume_agent / resume_render deliverable. Matches resume_render's folder
-    slug exactly: drop apostrophes, then re.sub(r'[^A-Za-z0-9]+','-').strip."""
+    resume_agent / resume_render deliverable.
+
+    Prefers the path the generator recorded on the tracker row (resume_file,
+    set by resume_agent._write_back) — robust regardless of how the folder
+    name was slugged/TRUNCATED. Falls back to slug matching (with the same
+    20/40 caps resume_render.bundle uses) for rows tailored before write-back
+    or whose file moved."""
+    # 1) Trust the recorded deliverable path first.
+    rf = job.get("resume_file")
+    if rf:
+        p = (ROOT / rf).parent
+        if p.exists() and p.is_dir():
+            return p
+
     base = ROOT / "applications"
     if not base.exists():
         return None
 
-    def _slug(s: str) -> str:
+    def _slug(s: str, n: int) -> str:
         s = (s or "").replace("'", "").replace("’", "")
-        return re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-")
+        return re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-")[:n].rstrip("-")
 
-    co, role = _slug(job.get("company")), _slug(job.get("title"))
+    co, role = _slug(job.get("company"), 20), _slug(job.get("title"), 40)
     if not co or not role:
         return None
     target = f"{co}_{role}".lower()

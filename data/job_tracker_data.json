@@ -3227,14 +3227,14 @@
       "location": "Toronto",
       "url": "https://cppib.wd10.myworkdayjobs.com/cppinvestments/job/Toronto/Analyst--Total-Fund-Management--12-Month-Contract-_JR00525",
       "portal_url": "https://cppib.wd10.myworkdayjobs.com/cppinvestments/job/Toronto/",
-      "archived": false,
+      "archived": true,
       "posted_date": "2026-06-01",
       "date_found": "2026-06-05",
       "date_jd_verified": null,
       "date_applied": null,
       "date_last_followup": null,
       "source": "scraper+fit_scorer",
-      "status": "Found",
+      "status": "Rejected",
       "fit_score": "High",
       "fit_score_numeric": 9,
       "resume_variants": [
@@ -3265,14 +3265,18 @@
           21
         ]
       },
-      "rejection_reason": null,
-      "rejection_date": null,
+      "rejection_reason": "Not a fit",
+      "rejection_date": "2026-06-14",
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
       "notes": "auto-promoted 2026-06-05 | verdict=apply_now | skill_gaps=[\"TFM governance (CPP-specific) — will require onboarding to CPP's architecture, policy framework, and metrics; however, Saber's institutional portfolio-risk and ALM analytics background translates directly.\"]",
       "tailored_at": "2026-06-11T22:27:30",
       "ats_matched": 9,
       "ats_total": 9,
-      "ats_missing": []
+      "ats_missing": [],
+      "status_changed_by": "manual_reject",
+      "status_changed_on": "2026-06-14",
+      "archived_at": "2026-06-15T02:37:45Z",
+      "archive_reason": "manual_kanban"
     },
     {
       "id": "auto-manulife-analyst-global-asset-liability-9",
@@ -6892,8 +6896,8 @@
       "expected_comp_band_cad": "",
       "fit_notes": "Perfect fit: Senior Manager role demands model-governance framework design, enterprise MRM documentation, inventory-platform oversight, and advanced-tools automation. Saber has delegated sign-off, independent-review authority, governance process design, and Python/SQL/Excel depth from Moody's. Apply this week. | Top reasons: Delegated sign-off authority on institutional models at Moody's + 4 years of independent model review, challenge, and governance documentation — direct fit for 'Lead the design, review, and continuous enhancement of the Bank's enterprise-wide Model Risk Management documentation'; Expert Python, SQL, Excel, and VBA proficiency (7 years) + hands-on model inventory platform experience (Calypso → PFaroe migration, SAS MRM analog) — meets 'Leverage advanced tools (e.g., Power BI, SQL, Python, VBA) to drive innovation in reporting, monitoring, and governance'; Formal model-governance framework operations (Moody's): assumption validation, escalation processes, auditability standards, and stakeholder communication to MVA/Audit-equivalent teams — proven fit for 'Act as a trusted advisor to internal stakeholders including MVA, BGRO, Audit, and Finance'",
       "keywords": [],
-      "resume_file": null,
-      "cover_letter_file": null,
+      "resume_file": "applications/2026-06-14_Scotiabank_Senior-Manager-Model-Risk-Governance/Saber_Ayatollahi_Scotiabank_Senior-Manager-Model-Risk-Governance.docx",
+      "cover_letter_file": "applications/2026-06-14_Scotiabank_Senior-Manager-Model-Risk-Governance/scotiabank_senior_manager_model_risk_governance_cover.docx",
       "contact": {
         "recruiter_name": null,
         "recruiter_email": null,
@@ -6914,7 +6918,13 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Verify JD live; tailor; find warm intro before submit.",
-      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=[]"
+      "notes": "auto-promoted 2026-06-14 | verdict=apply_now | skill_gaps=[]",
+      "tailored_at": "2026-06-14T23:42:18",
+      "ats_matched": 12,
+      "ats_total": 13,
+      "ats_missing": [
+        "internal controls"
+      ]
     },
     {
       "id": "auto-bmo-senior-associate-vice-presiden",
@@ -7102,8 +7112,8 @@
       "expected_comp_band_cad": "",
       "fit_notes": "Ad-hoc job added from the tailor form.",
       "keywords": [],
-      "resume_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models/Saber_Ayatollahi_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models.docx",
-      "cover_letter_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Market-Risk-Models/deloitte_manager_senior_manager_quantitative_market_risk_mo_cover.docx",
+      "resume_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Mark/Saber_Ayatollahi_Deloitte_Manager-Senior-Manager-Quantitative-Mark.docx",
+      "cover_letter_file": "applications/2026-06-14_Deloitte_Manager-Senior-Manager-Quantitative-Mark/deloitte_manager_senior_manager_quantitative_market_risk_mo_cover.docx",
       "contact": {
         "recruiter_name": null,
         "recruiter_email": null,
@@ -7125,7 +7135,7 @@
       "rejection_date": null,
       "next_action": "Ad-hoc — verify live, tailor, apply.",
       "notes": "manual_adhoc",
-      "tailored_at": "2026-06-14T22:16:17",
+      "tailored_at": "2026-06-14T23:41:09",
       "ats_matched": 13,
       "ats_total": 13,
       "ats_missing": []

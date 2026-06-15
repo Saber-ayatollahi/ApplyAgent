@@ -159,6 +159,27 @@ def test_bundle_naming_and_no_pdf():
         assert pdf_path is None
 
 
+def test_bundle_bounds_long_title_for_max_path():
+    """A verbose role title must not blow past Windows MAX_PATH (260) — the PDF
+    converter silently fails there. bundle caps company[:20] + role[:40] for
+    both the folder AND the filename, so the two stay consistent and short."""
+    import tempfile
+    c = _minimal()
+    c["target"] = {"company": "Deloitte",
+                   "role": "Manager/Senior Manager, Quantitative Market Risk "
+                           "Models - Financial Engineering and Modeling"}
+    with tempfile.TemporaryDirectory() as td:
+        folder, docx_path, _pdf = rr.bundle(c, td, make_pdf=False,
+                                            on_date="2026-06-14")
+        # role slug in the folder is capped (no trailing dash from the cut)
+        role_part = folder.name.split("_", 2)[-1]
+        assert len(role_part) <= 40 and not role_part.endswith("-")
+        # folder name and the resume stem use the SAME capped slugs
+        assert docx_path.name == f"Saber_Ayatollahi_{folder.name.split('_', 1)[1]}.docx"
+        # the full resume path stays comfortably under MAX_PATH
+        assert len(str(docx_path.resolve())) < 200
+
+
 # --- to_pdf() graceful no-soffice -------------------------------------------
 def test_to_pdf_returns_none_without_soffice(monkeypatch=None):
     # No pytest dependency on monkeypatch fixture — patch shutil.which directly.

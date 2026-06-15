@@ -473,9 +473,17 @@ def bundle(content, base_dir, make_pdf=True, on_date=None):
     company = tgt.get("company", "Company")
     role = tgt.get("role", "Role")
     d = on_date or date.today().isoformat()
-    folder = Path(base_dir) / f"{d}_{_slug(company)}_{_slug(role)}"
+    # Bound the company/role slugs. Windows MAX_PATH is 260 chars and the PDF
+    # converter (Word COM / libreoffice) silently FAILS past it — a verbose
+    # role title (e.g. "Manager/Senior Manager, Quantitative Market Risk Models
+    # - Financial Engineering and Modeling") pushed the resume .pdf path to 283
+    # chars, so the .docx wrote but the .pdf never did. 20/40 keeps the full
+    # path well under the cap even for a deeper checkout, and the same caps are
+    # used for BOTH folder and filename so the two stay consistent.
+    co_s, role_s = _slug(company)[:20].rstrip("-"), _slug(role)[:40].rstrip("-")
+    folder = Path(base_dir) / f"{d}_{co_s}_{role_s}"
     folder.mkdir(parents=True, exist_ok=True)
-    stem = f"Saber_Ayatollahi_{_slug(company)}_{_slug(role)}"
+    stem = f"Saber_Ayatollahi_{co_s}_{role_s}"
     docx_path = folder / (stem + ".docx")
     render(content, str(docx_path))
     pdf_path = to_pdf(docx_path, folder) if make_pdf else None
