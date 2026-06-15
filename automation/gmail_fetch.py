@@ -117,12 +117,14 @@ def main() -> int:
     try:
         from gmail_reader import (  # type: ignore
             load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
+            ALERT_SENDERS,
         )
         from location_filter import keep_for_toronto_pipeline  # type: ignore
     except ImportError:
         try:
             from .gmail_reader import (  # type: ignore
                 load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
+                ALERT_SENDERS,
             )
             from .location_filter import keep_for_toronto_pipeline  # type: ignore
         except Exception as e:
@@ -142,8 +144,16 @@ def main() -> int:
     print(f"[gmail_fetch] ✓ authenticated as {email_addr} — fetching "
           f"alerts from last {args.days} days...", file=sys.stderr)
 
+    # Scope the harvest to the LinkedIn alert digests only — they're the sole
+    # parseable source (no Indeed/Glassdoor parser exists), so fetching the
+    # full alert+recruiter set just burned the message cap and could push the
+    # oldest alert digests out of the window. A LinkedIn-only query gives the
+    # cap entirely to alerts, with roomier headroom.
+    _li_alert_senders = [s for s in ALERT_SENDERS if "linkedin.com" in s]
     try:
-        messages = fetch_inbox_signals(days=args.days, limit=200, include_body=True)
+        messages = fetch_inbox_signals(days=args.days, limit=400,
+                                       include_body=True,
+                                       senders=_li_alert_senders)
     except Exception as e:
         print(f"[gmail_fetch] ❌ inbox fetch failed: {e}", file=sys.stderr)
         return 2

@@ -214,13 +214,20 @@ def _classify_sender(sender_email: str) -> str:
 
 
 def fetch_inbox_signals(days: int = 14, limit: int = 100,
-                         include_body: bool = False) -> list[InboxMessage]:
+                         include_body: bool = False,
+                         senders: list[str] | None = None) -> list[InboxMessage]:
     """Search recent mail for job alerts + recruiter emails. Read-only.
 
     If `include_body=True`, each InboxMessage carries the full decoded body in
     `.snippet` (truncated only to 200k chars to cap memory). Default keeps the
     legacy 280-char snippet behavior so existing callers don't pay for body
     decode they don't need.
+
+    `senders` scopes the search to a specific from: list (e.g. the LinkedIn
+    alert digests only). Default = ALERT_SENDERS + RECRUITER_DOMAINS. Scoping
+    matters because `limit` caps the COMBINED match set: an inbox heavy with
+    recruiter mail can otherwise push the oldest alert digests out of the
+    window before they're ever parsed (silent coverage loss).
     """
     email_addr, pw = load_credentials()
     if not email_addr or not pw:
@@ -230,7 +237,8 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100,
     try:
         # Build a multi-sender search. IMAP allows OR, but Gmail's IMAP is
         # friendlier to X-GM-RAW queries. Use from: filter.
-        all_senders = ALERT_SENDERS + [f"@{d}" for d in RECRUITER_DOMAINS]
+        all_senders = (senders if senders is not None
+                       else ALERT_SENDERS + [f"@{d}" for d in RECRUITER_DOMAINS])
         from_query = " OR ".join(f"from:{s}" for s in all_senders)
         gm_query = f'({from_query}) newer_than:{days}d'
         uids: list[bytes] = []
@@ -260,6 +268,15 @@ def fetch_inbox_signals(days: int = 14, limit: int = 100,
 
         if not uids:
             return []
+        if len(uids) > limit:
+            # IMAP SEARCH returns oldest-first; [-limit:] keeps the NEWEST, so
+            # anything older than the cap is silently dropped. Warn loudly — a
+            # window that trips this is under-covered and the user should raise
+            # `limit` or narrow `senders`.
+            print(f"[gmail_reader] WARN: {len(uids)} messages matched but "
+                  f"capped at limit={limit}; dropped the oldest "
+                  f"{len(uids) - limit}. Raise limit or narrow senders.",
+                  file=sys.stderr)
         uids = uids[-limit:]  # most recent N
         for uid in reversed(uids):
             try:
