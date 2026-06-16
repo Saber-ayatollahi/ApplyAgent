@@ -325,6 +325,66 @@ def _previous_pool_first_seen() -> dict[str, str]:
         return {}
 
 
+# --- Sector backfill for Gmail-sourced rows --------------------------------
+# Scraped rows carry a sector from their TARGETS/EXPANSION company definition,
+# but Gmail-alert rows arrive with a company name and NO sector — so they used
+# to reach the scorer/promoter blank and default to tier 4 (and show an empty
+# "sector" column in the UI). Backfill from the canonical company->sector
+# registry (brand-alias normalized) so a Gmail row for a KNOWN target (CIBC,
+# Scotiabank, SLC Management, HOOPP, …) inherits the right sector + tier.
+# Unknown companies (KOHO, Mercury, goeasy, …) aren't in the registry and stay
+# blank — we don't guess a sector we can't justify.
+_BRAND_SECTOR_MAP: dict | None = None
+
+
+def _brand_sector_map() -> dict:
+    """canonical_brand(name) -> sector, built once from TARGETS + EXPANSION.
+    Lazy import to avoid a jd_scraper <-> worklist import cycle."""
+    global _BRAND_SECTOR_MAP
+    if _BRAND_SECTOR_MAP is not None:
+        return _BRAND_SECTOR_MAP
+    out: dict[str, str] = {}
+    targets: list = []
+    try:
+        from jd_scraper import TARGETS as _T  # type: ignore
+        targets += list(_T)
+    except Exception:
+        try:
+            from .jd_scraper import TARGETS as _T  # type: ignore
+            targets += list(_T)
+        except Exception:
+            pass
+    try:
+        from expansion_companies import EXPANSION_TARGETS as _E  # type: ignore
+        targets += list(_E)
+    except Exception:
+        try:
+            from .expansion_companies import EXPANSION_TARGETS as _E  # type: ignore
+            targets += list(_E)
+        except Exception:
+            pass
+    for t in targets:
+        name = (t or {}).get("name")
+        sec = (t or {}).get("sector")
+        if name and sec:
+            key = canonical_brand(name)
+            # First write wins; the registries are internally consistent on
+            # sector per brand, so collisions (e.g. a vendor in both lists)
+            # resolve to the same value anyway.
+            if key:
+                out.setdefault(key, sec)
+    _BRAND_SECTOR_MAP = out
+    return out
+
+
+def sector_for_company(company: str) -> str:
+    """Registry sector for a company name (brand-alias normalized), or "" when
+    the company isn't a known target. Used to backfill Gmail rows."""
+    if not company:
+        return ""
+    return _brand_sector_map().get(canonical_brand(company), "")
+
+
 def rebuild(quarantine: bool = True) -> dict:
     """Rebuild worklist.json from current inputs. Returns stats.
 
@@ -461,6 +521,13 @@ def rebuild(quarantine: bool = True) -> dict:
             return
         new_row = dict(row)
         new_row["source"] = src
+        # Backfill sector for rows that arrived without one (Gmail alerts) so
+        # they carry the right tier into scoring/promote instead of defaulting
+        # to tier 4. Known targets only; unknown companies stay blank.
+        if not (new_row.get("sector") or "").strip():
+            _bf_sector = sector_for_company(new_row.get("company", ""))
+            if _bf_sector:
+                new_row["sector"] = _bf_sector
         new_row["first_seen"] = (
             prev_first_seen.get(u)
             or (str(row.get("posted_date") or "")[:10])

@@ -56,6 +56,10 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "scotiabank": "scotia",
     "bank of nova scotia": "scotia",
     "bns": "scotia",
+    "eqb": "eqb",
+    "eq bank": "eqb",
+    "equitable bank": "eqb",
+    "equitable group": "eqb",
     "national bank": "nbc",
     "national bank of canada": "nbc",
     "national bank financial": "nbc",
@@ -100,6 +104,11 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "ontario teachers' pension plan": "otpp",
     "healthcare of ontario pension plan": "hoopp",
     "hoopp": "hoopp",
+    # LinkedIn alerts label HOOPP with the full name in parens, which the
+    # generic fallback would leave uncollapsed ("hoopp healthcare of ontario
+    # pension plan") — pin the combined variant so it canonicalizes + inherits
+    # the pension sector.
+    "hoopp healthcare of ontario pension plan": "hoopp",
     "imco": "imco",
     "investment management corporation of ontario": "imco",
     "psp investments": "psp",

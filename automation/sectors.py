@@ -31,6 +31,7 @@ TIER_OF: dict[str, int] = {
     "Market Infrastructure":       4,
     "Fund Admin/Custody":          4,
     "Mortgage Lenders":            4,
+    "Non-Bank Lenders":            4,
     "Hedge Funds / Alt AM":        4,
     "Private Credit":              4,
 }
