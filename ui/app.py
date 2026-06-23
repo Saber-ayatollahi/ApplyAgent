@@ -2395,7 +2395,13 @@ def render_adhoc_tailor(tracker_path):
             with st.spinner("Fetching from the posting…"):
                 info = None
                 try:
+                    import importlib  # noqa: WPS433
                     import jd_scraper as _js  # noqa: WPS433
+                    # Streamlit reruns the script on edit but does NOT reload
+                    # imported modules, so a long-running app misses newly-added
+                    # fetchers (jobposting_from_ldjson) and silently falls back.
+                    # reload() updates the module in place so they're picked up.
+                    importlib.reload(_js)
                     if "linkedin.com" in _au:
                         info = _js.linkedin_job_guest(_au.strip())
                     else:
@@ -2465,7 +2471,9 @@ def render_adhoc_tailor(tracker_path):
             # Same fetchers as the Fetch button.
             if (not _co_ok or not _role_ok) and _has_url:
                 try:
+                    import importlib  # noqa: WPS433
                     import jd_scraper as _js2  # noqa: WPS433
+                    importlib.reload(_js2)  # see fetch handler note re: reload
                     _u2 = _au.strip()
                     _inf2 = (_js2.linkedin_job_guest(_u2)
                              if "linkedin.com" in _u2
