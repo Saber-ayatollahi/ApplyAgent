@@ -2851,6 +2851,17 @@ def hours_since_posted(posted_date: str | None) -> float | None:
     return max(0.0, delta.total_seconds() / 3600.0)
 
 
+def _is_adhoc_job(job: dict) -> bool:
+    """True for roles added manually via the ad-hoc "Tailor a resume for any
+    job" form. Those entries are stamped source="manual_adhoc" and an id
+    prefixed "adhoc-"; the UI tags them (✍️) so they're distinguishable from
+    scraped / Gmail-sourced leads in the tracker."""
+    if not isinstance(job, dict):
+        return False
+    return (str(job.get("source") or "") == "manual_adhoc"
+            or str(job.get("id") or "").startswith("adhoc-"))
+
+
 def freshness_badge(posted_date: str | None, found_at: str | None) -> str:
     """Return a short badge combining posted/found freshness.
     Emoji indicates 'how hot is this role right now':
@@ -9197,6 +9208,8 @@ elif page == "📋 Jobs Kanban":
         def _src_badge(s):
             if not isinstance(s, str):
                 return ""
+            if s == "manual_adhoc":          # added via the ad-hoc tailor form
+                return "✍️"
             if "scrape+gmail" in s:
                 return "🔁"
             if s.startswith("gmail"):
@@ -9253,6 +9266,19 @@ elif page == "📋 Jobs Kanban":
         view = view.assign(priority=[
             priority_score(f, p, t)
             for f, p, t in zip(view["fit_score_numeric"], _pd_col, _tier_col)
+        ])
+
+    # Tag ad-hoc (manually-added) rows so they stand out from scraped / Gmail
+    # leads — prepend ✍️ to the Company shown in the TABLE only. The inspector
+    # and CRM/warm lookups read the untouched job record, so this is display-
+    # only and can't break company matching/filtering (both run earlier).
+    if "company" in view.columns:
+        _src_col = (view["source"] if "source" in view.columns
+                    else [""] * len(view))
+        _id_col = view["id"] if "id" in view.columns else [""] * len(view)
+        view = view.assign(company=[
+            ("✍️ " + str(c) if _is_adhoc_job({"source": s, "id": i}) else str(c))
+            for c, s, i in zip(view["company"], _src_col, _id_col)
         ])
 
     # Compact-by-default columns — clicking a row opens the full inspector,
@@ -9489,7 +9515,11 @@ elif page == "📋 Jobs Kanban":
                     f"<span style='margin-left:4px;padding:2px 8px;border-radius:10px;"
                     f"background:{_score_color}22;color:{_score_color};"
                     f"font-size:0.78em;font-weight:700'>{_fit_num}/10</span>"
-                    f"</div>",
+                    + ("<span style='margin-left:4px;padding:2px 8px;"
+                       "border-radius:10px;background:#8b5cf622;color:#8b5cf6;"
+                       "font-size:0.78em;font-weight:700'>✍️ Ad-hoc</span>"
+                       if _is_adhoc_job(job) else "")
+                    + "</div>",
                     unsafe_allow_html=True,
                 )
                 variants = job.get("resume_variants") or ([job["primary_variant"]]
