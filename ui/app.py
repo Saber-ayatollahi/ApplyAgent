@@ -2398,6 +2398,12 @@ def render_adhoc_tailor(tracker_path):
                     import jd_scraper as _js  # noqa: WPS433
                     if "linkedin.com" in _au:
                         info = _js.linkedin_job_guest(_au.strip())
+                    else:
+                        # Phenom / SuccessFactors / generic ATS pages (e.g.
+                        # jobs.rbc.com) render the posting via JS — a plain GET
+                        # gets only the SEO shell — but embed it as schema.org
+                        # JobPosting JSON-LD, which fills company/title/JD.
+                        info = _js.jobposting_from_ldjson(_au.strip())
                 except Exception:
                     info = None
                 if info and (info.get("jd_html") or info.get("title")):
@@ -7008,15 +7014,33 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
     # (1·Scrape / 2·Score / 4·Promote) were UI wrappers around CLIs that
     # the Run-chain button already invokes -- collapsed so the user sees
     # one page instead of juggling seven.
-    # Tracker URLs for "already promoted" checks in Scored tab
+    # Tracker URLs for "already promoted" checks in Scored tab. Keys go
+    # through worklist.norm_url so this set agrees with auto_promote.py's
+    # dedup. Raw j["url"] matching used to miss LinkedIn host/slug drift
+    # (ca.linkedin.com slugged URL vs www.linkedin.com bare /jobs/view/<id>),
+    # so already-tracked rows surfaced as promotable, the click went out,
+    # and auto_promote silently dropped them as dupes — the "row stays in
+    # the promote table after I promote it" bug.
+    #
+    # Cache invalidation: load_tracker is @st.cache_data(ttl=15). The promote
+    # subprocess writes the tracker out-of-band ~1s after Send, so for ~14s
+    # the cached pre-promote tracker would still drive _tracker_urls and the
+    # just-promoted row stayed visible in the data_editor — read as "the
+    # promote didn't take". Check the file mtime here and clear the cache
+    # whenever the file has changed since we last looked, so a writer (this
+    # process's promote subprocess, the auto_promote CLI, another tab) is
+    # reflected on the next render instead of after the TTL expires.
     _tracker_urls = set()
     try:
+        _tr_mtime = TRACKER.stat().st_mtime if TRACKER.exists() else 0.0
+        if _tr_mtime > st.session_state.get("_tracker_mtime_seen", 0.0):
+            load_tracker.clear()
+            st.session_state["_tracker_mtime_seen"] = _tr_mtime
         _tr_data = load_tracker()
         for _j in _tr_data.get("jobs") or []:
-            _u = _j.get("url") or _j.get("link") or _j.get("job_url") or ""
-            if _u:
-                _tracker_urls.add(_u)
-                _tracker_urls.add(_u.rstrip("/").lower())
+            _c = worklist.norm_url(_j)
+            if _c:
+                _tracker_urls.add(_c)
     except Exception:
         pass
 
@@ -7571,7 +7595,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             "fit": f.get("fit_score", 0),
                             "verdict": f.get("fit_verdict", ""),
                             "tier": f.get("tier", 4),
-                            "in_tracker": "✅" if _r_url in _tracker_urls else "",
+                            "in_tracker": "✅" if worklist.norm_url(r) in _tracker_urls else "",
                             "company": r.get("company", ""),
                             "title": r.get("title", ""),
                             "sector": r.get("sector", ""),
@@ -8777,6 +8801,73 @@ elif page == "📋 Jobs Kanban":
             icon="⏰",
         )
 
+    # ── View segmenter: Active leads / Applied / Closed ──────────────────
+    # User's mental model: the Tracker = "active jobs I've found." Applied
+    # roles get their own surface so they don't crowd the lead pool, and
+    # closed/archived rows are separated so an aging long-tail doesn't dilute
+    # either active surface. Status groups (Applied: broad, per user choice):
+    #   Active   = Found, Watch, Tailoring
+    #   Applied  = Applied, Recruiter_Screen, Phone_Screen, Take_Home,
+    #              Onsite, Offer
+    #   Closed   = Rejected, Withdrawn, Expired, Hired  OR  archived=True
+    # An archived row lands in Closed regardless of its underlying status,
+    # so the active/applied surfaces never leak archived rows.
+    _ACTIVE_LEAD_STATUSES = {"Found", "Watch", "Tailoring"}
+    _APPLIED_PIPELINE_STATUSES = {"Applied", "Recruiter_Screen",
+                                  "Phone_Screen", "Take_Home", "Onsite",
+                                  "Offer"}
+    _CLOSED_STATUSES = {"Rejected", "Withdrawn", "Expired", "Hired"}
+
+    def _tab_for_job(j: dict) -> str:
+        if j.get("archived", False):
+            return "closed"
+        s = j.get("status", "")
+        if s in _ACTIVE_LEAD_STATUSES:
+            return "active"
+        if s in _APPLIED_PIPELINE_STATUSES:
+            return "applied"
+        if s in _CLOSED_STATUSES:
+            return "closed"
+        # Unknown / pre-migration status → keep visible on the default
+        # surface rather than silently hiding it.
+        return "active"
+
+    _tab_counts = {"active": 0, "applied": 0, "closed": 0}
+    for _jj in jobs:
+        _tab_counts[_tab_for_job(_jj)] += 1
+
+    _tab_labels = {
+        "active":  f"🔍 Active leads · {_tab_counts['active']}",
+        "applied": f"📤 Applied · {_tab_counts['applied']}",
+        "closed":  f"🗂 Closed · {_tab_counts['closed']}",
+    }
+    # When key= is set, st.radio reads session_state[key] as the initial
+    # value — so we DON'T pass index= alongside it (the two arguments fight
+    # each other, and with format_func returning a dynamic label that
+    # includes counts, the persisted value can end up as the formatted
+    # display string instead of the raw option, which then ValueErrors on
+    # the next render because the formatted label isn't in `options`).
+    # Defensive guard: if session_state somehow holds an unknown value
+    # (stale from a polluted prior run), reset it to the default.
+    _VALID_TABS = ("active", "applied", "closed")
+    if st.session_state.get("kanban_tab_view") not in _VALID_TABS:
+        st.session_state["kanban_tab_view"] = "active"
+    _kan_tab = st.radio(
+        "View",
+        options=list(_VALID_TABS),
+        format_func=lambda k: _tab_labels[k],
+        key="kanban_tab_view",
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
+    # Filter the page-scope tracker so every downstream surface
+    # (summary strip, suppressions panel, filter row, table) reads the
+    # current tab only. Module-level `jobs` / `jobs_df` are shadowed for
+    # this rerun; the next rerun reloads fresh via load_tracker().
+    jobs = [j for j in jobs if _tab_for_job(j) == _kan_tab]
+    jobs_df = pd.DataFrame(jobs) if jobs else pd.DataFrame()
+
     # ── Kanban summary strip ──────────────────────────────────────────────────
     _kan_statuses = {}
     _STATUS_ORDER = [
@@ -8811,7 +8902,10 @@ elif page == "📋 Jobs Kanban":
     if _fu_overdue_count:
         st.warning(f"**{_fu_overdue_count} role{'s' if _fu_overdue_count != 1 else ''} with overdue follow-ups** — filter Status = Applied to find them.", icon="🔴")
     _archived_suffix = f" · {_archived_count} archived" if _archived_count else ""
-    st.caption(f"{_active_total} active · {len(jobs)} total tracked"
+    # Tab-scoped: `jobs` is already filtered to the current tab, so this is
+    # "what's in this view" rather than "everything tracked." The full
+    # cross-tab totals live in the segmenter labels above.
+    st.caption(f"{_active_total} in pipeline · {len(jobs)} in this view"
                 f"{_archived_suffix}")
 
     # Phase 5 — Active suppressions read-only mirror. The mute action lives
@@ -8856,10 +8950,83 @@ elif page == "📋 Jobs Kanban":
             f"_(Could not read suppressions: {_kan_supp_exc})_"
         )
 
+    # ── Clear-stale-leads (Active tab only) ───────────────────────────────
+    # Bulk-archive Found/Watch/Tailoring rows older than N days. Uses
+    # tracker_ops.archive_many so it's a single atomic write under the
+    # safe_json lock. Archived rows surface on the Closed tab and remain in
+    # data/job_tracker_data.json (recoverable via the Archived expander).
+    if _kan_tab == "active" and jobs:
+        with st.expander("🧹 Clear stale leads (archive by age)",
+                         expanded=False):
+            st.caption(
+                "Archive Found / Watch / Tailoring rows whose `date_found` "
+                "is older than the threshold below. They stay in the JSON "
+                "(`archived=true`) and move to the **🗂 Closed** tab — "
+                "restore from the Archived expander if needed."
+            )
+            _bca_days = st.slider(
+                "Older than (days since date_found)",
+                min_value=14, max_value=180, value=60, step=7,
+                key="kanban_bulk_archive_days",
+            )
+            _today = date.today()
+            _stale_ids = []
+            for _j in jobs:  # already filtered to the active tab
+                _df = parse_date(_j.get("date_found"))
+                if _df is None:
+                    continue
+                if (_today - _df).days >= _bca_days:
+                    _id = _j.get("id")
+                    if _id:
+                        _stale_ids.append(_id)
+            st.caption(
+                f"**{len(_stale_ids)}** lead(s) older than "
+                f"{_bca_days} day(s) would be archived."
+            )
+            _bca_confirm = st.checkbox(
+                f"Confirm — archive {len(_stale_ids)} stale lead(s)",
+                value=False, key="kanban_bulk_archive_confirm",
+                disabled=not _stale_ids,
+            )
+            if st.button(
+                f"🧹 Archive {len(_stale_ids)} lead(s)",
+                disabled=not _bca_confirm or not _stale_ids,
+                type="primary", key="kanban_bulk_archive_go",
+            ):
+                from safe_json import mutate_json as _mj  # noqa: WPS433
+                from automation import tracker_ops as _tops  # noqa: WPS433
+                try:
+                    _mj(TRACKER,
+                        lambda t: _tops.archive_many(
+                            t, _stale_ids,
+                            f"bulk_age_cleanup_{_bca_days}d"),
+                        default={"jobs": [], "meta": {}})
+                    load_tracker.clear()
+                    st.toast(
+                        f"🧹 Archived {len(_stale_ids)} stale lead(s)",
+                        icon="🗂")
+                    st.session_state["kanban_bulk_archive_confirm"] = False
+                    st.rerun()
+                except Exception as _bca_err:
+                    st.error(f"Archive failed: {_bca_err}")
+
     st.markdown("---")
 
     if jobs_df.empty:
-        st.info("Tracker is empty — promote a scored job from 🎯 Pipeline.")
+        # Tab-aware empty state — generic "tracker is empty" used to fire
+        # even when the user just switched to a tab they have no rows for
+        # (e.g. Applied while still in the lead-collecting phase).
+        _empty_msg = {
+            "active":  "No active leads. Promote a scored job from "
+                       "🎯 Pipeline, or check the Applied / Closed tabs.",
+            "applied": "No applied roles yet. Mark a lead Applied from "
+                       "the Active leads tab inspector or via the "
+                       "Today's brief one-click actions.",
+            "closed":  "Nothing closed or archived yet — this view fills "
+                       "as roles are rejected, expire, or are bulk-archived "
+                       "via 🧹 Clear stale leads on the Active tab.",
+        }.get(_kan_tab, "Nothing in this view.")
+        st.info(_empty_msg)
         st.stop()
 
     # Derive gta_area for every row — prefer explicit location, fall back to
@@ -8901,7 +9068,19 @@ elif page == "📋 Jobs Kanban":
     with f3:
         sel_fit = st.multiselect("Fit", fits, default=[])
     with f4:
-        sel_tier = st.multiselect("Tier", sorted(jobs_df["tier"].dropna().unique()) if "tier" in jobs_df.columns else [])
+        # Filter by resume variant (ALM / VAL / VEN / QUANT / CON) rather
+        # than the abstract numeric Tier. Variant says WHAT KIND of role
+        # this is — directly actionable; Tier is a derived priority rank
+        # that's harder to slice by at a glance.
+        sel_variant = st.multiselect(
+            "Variant",
+            sorted(jobs_df["primary_variant"].dropna().unique())
+            if "primary_variant" in jobs_df.columns else [],
+            help="ALM = Asset-Liability Management; VAL = Model Risk / "
+                 "Validation; VEN = Vendor-Platform / Solutions Eng; "
+                 "QUANT = Investment & Market Risk Analytics; "
+                 "CON = Consulting / Risk Advisory.",
+        )
     with f5:
         sel_area = st.multiselect("GTA area", areas, default=[])
     q = st.text_input("Search (company/title)", "", placeholder="e.g. Scotiabank, ALM...")
@@ -8913,8 +9092,8 @@ elif page == "📋 Jobs Kanban":
         view = view[view["status"].isin(sel_status)]
     if sel_fit:
         view = view[view["fit_score"].isin(sel_fit)]
-    if sel_tier:
-        view = view[view["tier"].isin(sel_tier)]
+    if sel_variant:
+        view = view[view["primary_variant"].isin(sel_variant)]
     if sel_area:
         view = view[view["gta_area"].isin(sel_area)]
     if q:
@@ -8922,7 +9101,8 @@ elif page == "📋 Jobs Kanban":
         view = view[view["company"].str.lower().str.contains(qlo, na=False) |
                     view["title"].str.lower().str.contains(qlo, na=False)]
 
-    _filter_active = any([sel_sector, sel_status, sel_fit, sel_tier, sel_area, q])
+    _filter_active = any([sel_sector, sel_status, sel_fit, sel_variant,
+                          sel_area, q])
     st.caption(f"Showing {len(view)} of {len(jobs_df)} roles" + (" (filtered)" if _filter_active else ""))
 
     # Enrich view with a "draft" indicator based on whether a tailor output
@@ -9034,9 +9214,10 @@ elif page == "📋 Jobs Kanban":
     with _opt_c1:
         _show_all_cols = st.checkbox(
             "Show all columns", value=False, key="kanban_show_all_cols",
-            help="Off (compact): company · title · status · Priority · T · "
-                 "Fit · Urg · Posted · Found · Link. On: also Follow-up · "
-                 "Warm · Draft · Variant · Area · sector · Applied · Src · Age.",
+            help="Off (compact): company · title · status · Priority · "
+                 "Variant · Fit · Urg · Posted · Found · Link. "
+                 "On: also Follow-up · Warm · Draft · Area · sector · "
+                 "Applied · Src · Age.",
         )
     with _opt_c2:
         _rank_recency = st.checkbox(
@@ -9044,13 +9225,18 @@ elif page == "📋 Jobs Kanban":
             help="On: sort by Priority = Fit downweighted as the posting ages "
                  "(months-old roles sink, fresh ones rise) and slightly by "
                  "tier. Off: sort by tier then raw Fit (old behaviour).")
-    _compact_cols = ["company", "title", "status", "tier",
+    # Use primary_variant (ALM/VAL/VEN/QUANT/CON) instead of the numeric
+    # `tier` as the visible role-shape signal. Tier is still in the
+    # underlying frame and still drives the priority sort below — it just
+    # doesn't take up column real estate when "Variant" already says
+    # WHAT KIND of role this is.
+    _compact_cols = ["company", "title", "status", "primary_variant",
                      "fit_score_numeric", "urgency", "posted_date",
                      "date_found", "url"]
-    _full_cols = ["company", "title", "status", "tier", "fit_score_numeric",
-                  "urgency", "follow_up", "warm", "draft", "sector",
-                  "gta_area", "primary_variant", "posted_date", "date_found",
-                  "date_applied", "src", "freshness", "url"]
+    _full_cols = ["company", "title", "status", "primary_variant",
+                  "fit_score_numeric", "urgency", "follow_up", "warm",
+                  "draft", "sector", "gta_area", "posted_date",
+                  "date_found", "date_applied", "src", "freshness", "url"]
     cols = [c for c in (_full_cols if _show_all_cols else _compact_cols)
             if c in view.columns]
     # Surface the Priority rank right after Status when recency ranking is on.
@@ -9067,8 +9253,12 @@ elif page == "📋 Jobs Kanban":
         "status": st.column_config.TextColumn("Status", width="small"),
         "url": st.column_config.LinkColumn("Link", width="small"),
         "fit_score_numeric": st.column_config.NumberColumn("Fit", width="small"),
-        "tier": st.column_config.NumberColumn("T", width="small"),
-        "primary_variant": st.column_config.TextColumn("Variant", width="small"),
+        "primary_variant": st.column_config.TextColumn(
+            "Variant", width="small",
+            help="Resume lane: ALM = Asset-Liability Management; "
+                 "VAL = Model Risk / Validation; VEN = Vendor-Platform / "
+                 "Solutions Eng; QUANT = Investment & Market Risk "
+                 "Analytics; CON = Consulting / Risk Advisory."),
         "urgency": st.column_config.TextColumn("Urg", width="small"),
         "draft": st.column_config.TextColumn("Draft", width="small"),
         "follow_up": st.column_config.TextColumn("Follow-up", width="medium"),
@@ -9122,21 +9312,31 @@ elif page == "📋 Jobs Kanban":
         column_config=_col_config,
         column_order=cols,                 # hides the carried "id"
         on_select="rerun",
-        selection_mode="single-row",
-        # Nonce in the key lets _kb_close_inspector() remount the table with a
-        # cleared selection (Streamlit otherwise retains it across reruns, which
-        # re-opened the panel right after a terminal action).
+        # multi-row: tick several rows at once and archive them in one click
+        # via the bar below. A SINGLE ticked row still drives the inspector
+        # (see _kb_sel_rows handling). Nonce in the key lets the close /
+        # post-archive paths remount the table with a cleared selection.
+        selection_mode="multi-row",
         key=f"kanban_table_select_{st.session_state.get('_kb_table_nonce', 0)}",
     )
-    # Row click → inspector selection. Persist the selected ID (not the
-    # position) and only update on a GENUINE position change, so a
-    # button-driven rerun that reshuffles/filters the table can't silently
-    # hijack the inspector to a neighbouring row.
     _kb_sel_rows = (
         _kb_table_event.selection.rows
         if getattr(_kb_table_event, "selection", None) else []
     )
-    if _kb_sel_rows:
+    # Map ticked table positions → stable job ids. Guard stale positions
+    # (a filter/sort change between renders can shrink the frame).
+    _kb_sel_ids = [
+        str(_sorted_view.iloc[p]["id"])
+        for p in _kb_sel_rows
+        if 0 <= p < len(_sorted_view)
+    ]
+
+    # Inspector opens ONLY on a single-row selection — opening it for one of
+    # N multi-picked rows would be ambiguous. Persist the selected ID (not the
+    # position) and only update on a GENUINE position change, so a
+    # button-driven rerun that reshuffles/filters the table can't silently
+    # hijack the inspector to a neighbouring row.
+    if len(_kb_sel_rows) == 1:
         _kb_pos = _kb_sel_rows[0]
         if (0 <= _kb_pos < len(_sorted_view)
                 and _kb_pos != st.session_state.get("_kb_last_sel_pos")):
@@ -9144,85 +9344,55 @@ elif page == "📋 Jobs Kanban":
                 _sorted_view.iloc[_kb_pos]["id"])
             st.session_state["_kb_last_sel_pos"] = _kb_pos
 
-    # ── Bulk clear (hand-pick) ───────────────────────────────────────────
-    # "Clear old roles, commit to new ones": tick the rows you're done with
-    # and archive them in one atomic write. Archive (not delete) is reversible
-    # and keeps the URL block so a cleared role won't re-promote on the next
-    # scan. Operates on the CURRENTLY FILTERED view, so filter first to narrow
-    # the candidate set (e.g. Status=Found) then pick within it.
-    with st.expander("🧹 Bulk clear roles (archive selected)", expanded=False):
-        if not len(view):
-            st.caption("No roles in the current view to clear.")
-        else:
-            st.caption(
-                f"Tick roles to archive, then confirm. Archiving hides them "
-                f"from the active Kanban / Review Queue / Today, and blocks "
-                f"re-promotion on future scans — but is reversible per-row via "
-                f"Inspect → ↩ Restore. Acting on the {len(view)} role(s) "
-                f"currently shown" + (" (filtered)." if _filter_active else ".")
+    # ── Inline bulk archive ──────────────────────────────────────────────
+    # Tick rows in the table above (multi-select), then archive them all in
+    # one atomic write. Archive (not delete) is reversible and keeps the URL
+    # block so a cleared role won't re-promote on the next scan. A confirm
+    # gate appears for large selections so one stray click can't bury dozens.
+    if _kb_sel_ids:
+        _BULK_CONFIRM_AT = 15
+        _bulk_big = len(_kb_sel_ids) >= _BULK_CONFIRM_AT
+        _bulk_confirmed = True
+        if _bulk_big:
+            _bulk_confirmed = st.checkbox(
+                f"⚠️ Confirm — archive {len(_kb_sel_ids)} roles (large batch)",
+                key="kanban_bulk_archive_confirm",
             )
-            _bulk_rows = [
-                {
-                    "_pick": False,
-                    "id": _bid,
-                    "company": _label_co,
-                    "title": _label_ti,
-                    "status": _label_st,
-                }
-                for _bid, _label_co, _label_ti, _label_st in zip(
-                    view["id"].tolist(),
-                    view["company"].tolist() if "company" in view.columns else [""] * len(view),
-                    view["title"].tolist() if "title" in view.columns else [""] * len(view),
-                    view["status"].tolist() if "status" in view.columns else [""] * len(view),
-                )
-            ]
-            _bulk_df = pd.DataFrame(_bulk_rows)
-            _edited = st.data_editor(
-                _bulk_df,
-                hide_index=True,
+        _ba1, _ba2 = st.columns([1, 3])
+        with _ba1:
+            _bulk_go = st.button(
+                f"🧹 Archive {len(_kb_sel_ids)} selected",
+                type="primary",
                 width='stretch',
-                height=min(420, 80 + 36 * len(_bulk_rows)),
-                column_config={
-                    "_pick": st.column_config.CheckboxColumn("Clear?", width="small"),
-                    "id": st.column_config.TextColumn("ID", width="small", disabled=True),
-                    "company": st.column_config.TextColumn("Company", disabled=True),
-                    "title": st.column_config.TextColumn("Title", disabled=True),
-                    "status": st.column_config.TextColumn("Status", width="small", disabled=True),
-                },
-                key="kanban_bulk_clear_editor",
+                disabled=not _bulk_confirmed,
+                key="kanban_bulk_archive_inline",
             )
-            _picked_ids = _edited.loc[_edited["_pick"] == True, "id"].tolist()  # noqa: E712
-            _bc1, _bc2 = st.columns([1, 3])
-            with _bc1:
-                _bulk_go = st.button(
-                    f"🧹 Archive {len(_picked_ids)} selected",
-                    type="primary",
-                    width='stretch',
-                    disabled=not _picked_ids,
-                    key="kanban_bulk_clear_go",
+        with _ba2:
+            st.caption(
+                f"Archives the {len(_kb_sel_ids)} ticked role(s) — hides them "
+                "from active Kanban / Review Queue / Today and blocks "
+                "re-promotion. Reversible per-row via Inspect → ↩ Restore."
+            )
+        if _bulk_go and _bulk_confirmed:
+            from safe_json import mutate_json as _mj_bulk  # noqa: WPS433
+            from automation import tracker_ops as _tops_bulk  # noqa: WPS433
+            try:
+                _mj_bulk(
+                    TRACKER,
+                    lambda t: _tops_bulk.archive_many(
+                        t, _kb_sel_ids, "manual_bulk_kanban"),
+                    default={"jobs": [], "meta": {}},
                 )
-            with _bc2:
-                if _picked_ids:
-                    st.caption(
-                        "Reversible — restore any row later from Inspect → ↩ Restore."
-                    )
-                else:
-                    st.caption("Tick at least one role to enable.")
-            if _bulk_go and _picked_ids:
-                from safe_json import mutate_json as _mj_bulk  # noqa: WPS433
-                from automation import tracker_ops as _tops_bulk  # noqa: WPS433
-                try:
-                    _mj_bulk(
-                        TRACKER,
-                        lambda t: _tops_bulk.archive_many(
-                            t, _picked_ids, "manual_bulk_kanban"),
-                        default={"jobs": [], "meta": {}},
-                    )
-                    load_tracker.clear()
-                    st.toast(f"🧹 Archived {len(_picked_ids)} role(s)", icon="🚫")
-                except Exception as _bexc:  # noqa: BLE001
-                    st.error(f"Bulk archive failed: {_bexc}")
-                st.rerun()
+                load_tracker.clear()
+                st.toast(f"🧹 Archived {len(_kb_sel_ids)} role(s)", icon="🚫")
+            except Exception as _bexc:  # noqa: BLE001
+                st.error(f"Bulk archive failed: {_bexc}")
+            # Remount the table with a cleared selection so archived rows
+            # don't stay ticked (they drop out of the active view next render).
+            st.session_state.pop("kanban_bulk_archive_confirm", None)
+            st.session_state["_kb_table_nonce"] = (
+                st.session_state.get("_kb_table_nonce", 0) + 1)
+            st.rerun()
 
     st.markdown("---")
     st.subheader("Inspect / edit")

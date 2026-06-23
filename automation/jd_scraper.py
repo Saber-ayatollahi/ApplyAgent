@@ -773,6 +773,83 @@ def linkedin_job_guest(url: str, *, timeout: int = 15) -> Optional[dict]:
         return None
 
 
+def jobposting_from_ldjson(url: str, *, timeout: int = 18) -> Optional[dict]:
+    """Title / company / location / JD-html for a job page that embeds a
+    schema.org JobPosting as JSON-LD. Phenom-hosted career sites
+    (jobs.rbc.com, jobs.scotiabank.com, jobs.td.com, …) and many
+    SuccessFactors / iCIMS boards render the posting via JavaScript — a plain
+    GET returns only the SEO shell ("Find your next job…") — but they embed the
+    full posting as <script type="application/ld+json"> for search engines,
+    which we CAN read without a browser.
+
+    Returns {job_id, title, company, location, jd_html} (same shape as
+    linkedin_job_guest) or None when no JobPosting block is present.
+
+    The JobPosting `description` is HTML stored as an ESCAPED string
+    ("&lt;div&gt;…"), so we unescape it back to real HTML and the caller's
+    get_text() yields clean JD text.
+    """
+    import html as _html
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=timeout)
+        if r.status_code >= 400:
+            return None
+        page = r.text
+    except Exception:
+        return None
+
+    blocks = re.findall(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        page, re.S | re.I)
+
+    def _first_job(obj):
+        """First JobPosting dict anywhere in an ld+json value (handles a bare
+        dict, a list, or an @graph-nested document)."""
+        stack = [obj]
+        while stack:
+            cur = stack.pop()
+            if isinstance(cur, list):
+                stack.extend(cur)
+            elif isinstance(cur, dict):
+                t = cur.get("@type")
+                if t == "JobPosting" or (isinstance(t, list) and "JobPosting" in t):
+                    return cur
+                if "@graph" in cur:
+                    stack.append(cur["@graph"])
+        return None
+
+    for b in blocks:
+        try:
+            data = json.loads(b.strip())
+        except Exception:
+            continue
+        job = _first_job(data)
+        if not job:
+            continue
+        org = job.get("hiringOrganization") or {}
+        company = org.get("name") if isinstance(org, dict) else (org or "")
+        # jobLocation may be a dict or a list of dicts.
+        jl = job.get("jobLocation") or {}
+        if isinstance(jl, list):
+            jl = jl[0] if jl else {}
+        loc = ""
+        if isinstance(jl, dict):
+            addr = jl.get("address") or {}
+            if isinstance(addr, dict):
+                loc = addr.get("addressLocality") or addr.get("addressRegion") or ""
+        ident = job.get("identifier")
+        job_id = (str(ident.get("value") or "") if isinstance(ident, dict)
+                  else str(ident or ""))
+        return {
+            "job_id": job_id or url,
+            "title": (job.get("title") or "").strip(),
+            "company": (company or "").strip(),
+            "location": (loc or "").strip(),
+            "jd_html": _html.unescape(job.get("description") or "") or None,
+        }
+    return None
+
+
 WORKDAY_SUBDOMAINS = ["wd3", "wd5", "wd1", "wd10", "wd102"]
 
 
