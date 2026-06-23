@@ -2434,12 +2434,54 @@ def render_adhoc_tailor(tracker_path):
         _role = _c2.text_input("Role / title", key="_adhoc_role")
         _jd = st.text_area("Job description (paste, or fetched above)",
                            key="_adhoc_jd", height=150)
-        _ready = bool((_co or "").strip() and (_role or "").strip()
-                      and ((_jd or "").strip() or (_au or "").strip()))
-        if not api_key.is_key_valid():
+        _key_ok = api_key.is_key_valid()
+        _co_ok = bool((_co or "").strip())
+        _role_ok = bool((_role or "").strip())
+        _src_ok = bool((_jd or "").strip() or (_au or "").strip())
+        _has_url = bool((_au or "").strip())
+        # Enable when there's a source (JD or URL) AND either the user typed
+        # Company+Role or there's a URL we can auto-derive them from at generate.
+        _ready = _src_ok and ((_co_ok and _role_ok) or _has_url)
+        # A greyed-out button with no reason read as "I pasted the JD but
+        # nothing happened" — spell out exactly what's still required.
+        if not _key_ok:
             st.caption("⚠️ Set your Anthropic API key in the sidebar to generate.")
+        elif not _ready:
+            _need = []
+            if not _src_ok:
+                _need.append("a **job description** (paste it) or a **URL**")
+            if not (_co_ok and _role_ok) and not _has_url:
+                _need.append("**Company** + **Role / title** (or a **URL** to "
+                             "auto-fill them)")
+            st.warning(
+                "✨ Generate is disabled until you add " + " and ".join(_need)
+                + ".  Tip: paste the job **URL** above and click **🔗 Fetch "
+                "details from URL** — it auto-fills Company, Role and the JD."
+            )
         if st.button("✨ Generate resume", type="primary", key="_adhoc_gen",
-                     disabled=not (_ready and api_key.is_key_valid())):
+                     disabled=not (_ready and _key_ok)):
+            # Auto-derive Company/Role from the URL when the user left them
+            # blank (e.g. pasted a URL + JD without clicking 🔗 Fetch first).
+            # Same fetchers as the Fetch button.
+            if (not _co_ok or not _role_ok) and _has_url:
+                try:
+                    import jd_scraper as _js2  # noqa: WPS433
+                    _u2 = _au.strip()
+                    _inf2 = (_js2.linkedin_job_guest(_u2)
+                             if "linkedin.com" in _u2
+                             else _js2.jobposting_from_ldjson(_u2))
+                    if _inf2:
+                        if not _co_ok:
+                            _co = (_inf2.get("company") or "").strip()
+                        if not _role_ok:
+                            _role = (_inf2.get("title") or "").strip()
+                except Exception:
+                    pass
+            if not (_co or "").strip() or not (_role or "").strip():
+                st.error("Couldn't read Company/Role from that URL — type them "
+                         "in the fields above, then click ✨ Generate again.")
+                st.stop()
+
             def _slug(s, n=40):
                 return _re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:n]
             jid = f"adhoc-{_slug(_co, 20)}-{_slug(_role, 34)}"
