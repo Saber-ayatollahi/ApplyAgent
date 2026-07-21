@@ -136,6 +136,23 @@ token.json
 automation/credentials/
 
 # ============================================================================
+# Regenerated pipeline artifacts — big, rewritten by EVERY run
+# ============================================================================
+# These are derived data, not state of record: worklist.rebuild and the fit
+# scorer recreate them from the scans. Versioning them added ~18 MB of churn
+# per run (a 6.7 MB JSON rewritten wholesale diffs as ~170k changed lines),
+# which bloated .git and — since this repo lives inside a synced OneDrive
+# folder — forced a multi-MB re-upload on every pipeline run.
+#
+# They stay on disk and keep working exactly as before; they are simply no
+# longer versioned. The live state of record (data/job_tracker_data.json) is
+# deliberately NOT here — that one stays tracked.
+automation/outputs/worklist.json
+automation/outputs/worklist_scored.json
+automation/outputs/worklist_scored.prev.json
+automation/outputs/url_history.json
+
+# ============================================================================
 # But DO keep a placeholder so outputs/ exists after clone
 # ============================================================================
 !automation/outputs/.gitkeep
