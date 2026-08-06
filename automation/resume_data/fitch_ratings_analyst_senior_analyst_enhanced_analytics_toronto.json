@@ -1,0 +1,132 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Fitch Ratings",
+    "role": "Analyst / Senior Analyst – Enhanced Analytics",
+    "jd_keywords": [
+      "Python",
+      "SQL",
+      "VBA",
+      "Excel",
+      "Oracle",
+      "data analyst",
+      "data-driven",
+      "credit",
+      "finance",
+      "research",
+      "visualizations"
+    ]
+  },
+  "summary": "Data analyst and quantitative finance professional with ~7 years building data-driven analytics for institutional finance. CFA charterholder and dual MSc with hands-on Python, SQL, VBA and Excel application development; integrates large data sets across relational stores (PostgreSQL; Oracle-analogous environments) to surface credit and market insights. Has shipped production analytics pipelines, data-driven research reports and quantitative visualizations for global asset managers, pensions and insurers.",
+  "core_skills": [
+    "Python (pandas, NumPy, SciPy)",
+    "SQL & Relational Databases (PostgreSQL; Oracle-analogous environments)",
+    "VBA & Advanced Excel Application Development",
+    "Analytics Pipeline Development (Python-based ETL and workflow automation)",
+    "Large Data Set Integration & Mining",
+    "Data Visualization (Plotly, matplotlib)",
+    "Credit, Fixed Income & Capital Markets Knowledge",
+    "Quantitative Research & Financial Modelling",
+    "Git / Version Control; CI-CD Pipelines"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director – Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Analytics Pipeline & Data Infrastructure",
+              "bullets": [
+                "Re-engineered manual Excel and spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging, validation and version control.",
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine integrating data from portfolio, instrument and market-data sources, supporting base, stress and reverse-stress scenarios.",
+                "Architected configurable time-bucketed analytics (T+1 through multi-year) connecting portfolio, instrument and market-data sets to surface funding and liquidity insights for institutional clients.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding and documentation – reducing development cycle time by an estimated 30–40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Data-Driven Research & Reporting",
+              "bullets": [
+                "Produced data-driven analytical summaries and presentations for senior client stakeholders covering interest-rate exposure, scenario impacts and balance-sheet sensitivities across multi-asset portfolios.",
+                "Held delegated sign-off authority on valuation, sensitivity and ALM outputs delivered to institutional client portfolios ranging $5–25bn per engagement; independently reviewed curve construction, spread calibration and cross-asset interactions prior to release.",
+                "Validated derivatives pricing outputs (rates, FX, inflation) and cross-checked sensitivity consistency at portfolio-level aggregates feeding downstream research and risk processes."
+              ]
+            },
+            {
+              "heading": "Cross-Functional Collaboration & Product Implementation",
+              "bullets": [
+                "Collaborated with product owners, modelling specialists and client investment teams on implementation of new analytics products and process improvements; translated quantitative findings into decision-ready narratives for Heads of Risk and investment stakeholders.",
+                "Served as primary escalation point for client-critical analytical issues, reconciling methodology questions across technical and business functions."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist – PFaroe Platform",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers and consulting firms migrating to an enterprise analytics platform; scoped client requirements into structured development requests for Product Owners.",
+                "Contributed to the successful migration of all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform, validating model and data outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients, aligning accounting standards with data, system and financial-reporting architecture.",
+                "Coordinated across actuarial, finance, IT and program-management teams on milestone delivery, governance documentation and regulatory-readiness materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators integrating large market and macro data sets to assess interest-rate, inflation and currency risk under base and stressed environments.",
+                "Delivered ALM studies and liability-driven investment (LDI) analyses for Canadian and international pension funds; modelled actuarial liabilities alongside all major investment-product types and economic variables.",
+                "Performed asset-only and asset-liability portfolio optimization based on VaR and CVaR, with risk decomposition and attribution analysis to test the robustness of allocation recommendations.",
+                "Presented data-driven findings – including quantitative scenario reports and sensitivity visualizations – to investment committees and senior stakeholders at pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

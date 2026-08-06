@@ -1,0 +1,108 @@
+{
+  "scan_date": "2026-08-04",
+  "scan_timestamp": "2026-08-04T23:12:46Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 6,
+    "output": 6,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71743"
+    ],
+    "processed_uids": [
+      "71743"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-08-04T19:13:05",
+    "delete_result": {
+      "moved": 1,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Senior Manager, Capital Markets Operations (GWO)",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4419310905",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    },
+    {
+      "title": "Senior Manager",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4419324351",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    },
+    {
+      "title": "Senior Manager, Regulatory and Risk Advisory (Quant)",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4364387083",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    },
+    {
+      "title": "Model Risk Management Lead, Machine Learning",
+      "company": "Affirm",
+      "link": "https://www.linkedin.com/jobs/view/4430058025",
+      "location": "Calgary, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    },
+    {
+      "title": "Model Risk Management Lead, Machine Learning",
+      "company": "Affirm",
+      "link": "https://www.linkedin.com/jobs/view/4430050150",
+      "location": "Edmonton, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    },
+    {
+      "title": "Senior Manager, Credit Risk Strategy Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411761777",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-08-04",
+      "gmail_uid": "71743"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 1,
+    "linkedin_alerts_seen": 1,
+    "digests_with_rows": 1,
+    "digests_without_rows": 0,
+    "rows_parsed": 6,
+    "rows_dropped_location": 0,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 6,
+    "dropped_location_examples": [],
+    "geo_dropped_rows": [],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

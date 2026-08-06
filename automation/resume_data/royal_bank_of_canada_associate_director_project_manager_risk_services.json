@@ -1,0 +1,132 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC Capital Markets",
+    "role": "Associate Director - Project Manager - Risk Services",
+    "jd_keywords": [
+      "change management",
+      "stakeholder",
+      "communication",
+      "PMO",
+      "risk management",
+      "financial services",
+      "execution",
+      "matrix",
+      "business analysis",
+      "presentation",
+      "Capital Markets"
+    ]
+  },
+  "summary": "Candidate for Associate Director - Risk Services with ~7 years coordinating complex risk management initiatives in financial services. At Moody's Analytics, EY, and Ortec Finance has managed concurrent deliverables, coordinated across IT, QA, and BA teams in matrix structures, and translated complex quantitative outputs into executive-level summaries for Heads of Risk and senior PMO stakeholders. Strong written and oral communicator; deadline-driven with demonstrated organizational and time-management discipline across multiple simultaneous priorities. CFA charterholder, dual MSc.",
+  "core_skills": [
+    "Stakeholder Management & Executive Communication",
+    "Organizational Change Management",
+    "Matrix Delivery & Resource Coordination",
+    "Risk Management & Analytics (Capital Markets & Institutional)",
+    "Project Tracking & Status Reporting",
+    "Business Analysis & Requirements Scoping",
+    "Concurrent Initiative Management",
+    "Presentation & PMO Reporting",
+    "Python Analytics & Workflow Modernization"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services (Risk & ALM Lead)",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Execution & Delivery Coordination",
+              "bullets": [
+                "Coordinated developer, QA, and business-analyst workstreams on concurrent risk management and analytics releases for institutional clients, tracking progress against aggressive timelines where engineering resources were shared across modules.",
+                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines, partnering with engineering on acceptance criteria, testing scope, and cutover planning; deployed agentic-AI development workflows (Claude Code, Cursor IDE) that reduced development cycle time an estimated 30-40% on comparable modules.",
+                "Maintained delivery artifacts including work plans, release notes, and issue logs; tracked status across multiple parallel initiatives with interdependent milestones."
+              ]
+            },
+            {
+              "heading": "PMO Reporting & Stakeholder Communication",
+              "bullets": [
+                "Prepared executive-level analytical summaries for senior stakeholders covering interest-rate exposure, scenario impacts, and balance-sheet sensitivities, translating complex quantitative content into committee-ready narratives.",
+                "Served as escalation point for client-critical analytical issues, surfacing risks and dependencies to senior leadership at appropriate decision points and interfacing directly with clients' Heads of Risk.",
+                "Held delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional client portfolios ($5-25bn per engagement; ~$50bn+ cumulative book)."
+              ]
+            },
+            {
+              "heading": "Risk Initiative Delivery",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization and refinancing risk assessment for institutional clients."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist - PFaroe Platform",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform; served as technical liaison between client investment teams and product owners.",
+                "Scoped client requirements into Product Owner backlog items and validated model outputs post-deployment; contributed to successful migration of all assigned accounts from the legacy Calypso platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients within a matrix delivery model spanning actuarial, finance, IT, risk, and program-management functions.",
+                "Coordinated cross-functional milestone delivery, governance documentation, and implementation materials; contributed to change-management readiness support for client leadership.",
+                "Developed IFRS 17 advisory product offerings and go-to-market collateral, requiring strong written communication and stakeholder alignment across practice groups."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM and risk management studies for Canadian and international pension funds and institutional investors under client deadlines; analyzed funding ratios, duration mismatch, and long-term balance-sheet exposures.",
+                "Led onboarding and the ALM study for the University Pension Plan (UPP) merger — on a team of three building and validating the model capturing all Funding Policy dynamics, coordinating workstreams under tight client timelines.",
+                "Presented findings to client investment committees on-site, translating stochastic scenario results into strategic asset allocation recommendations for executive audiences.",
+                "Performed portfolio optimization (VaR/CVaR), risk decomposition, and hedging analysis across interest-rate, inflation, and currency risk using the GLASS platform."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

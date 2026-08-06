@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-mercury-irrbb-manager_20260615_002436",
+  "label": "resume_auto-mercury-irrbb-manager",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-mercury-irrbb-manager",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 11880,
+  "started_at": "2026-06-15T00:24:36",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-mercury-irrbb-manager_20260615_002436.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-mercury-irrbb-manager_20260615_002436.json",
+  "state": "finished",
+  "finished_at": "2026-06-15T00:28:22",
+  "returncode": null
+}

@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I currently operate within a formal model-governance framework at Moody's Analytics, where I hold delegated sign-off authority on valuation, sensitivity, and risk outputs and independently review pricing-model conceptual soundness, accuracy, and implementation before production release. That is precisely the discipline the Quantitative Advisor - Model Risk Management role in Societe Generale's Global Markets R&D group is built around, and I would like to be considered for it.
+
+Across ~7 years I have reviewed and validated derivatives pricing outputs spanning rates, FX, and inflation, cross-checked sensitivity consistency at portfolio-level risk aggregates, and reviewed aggregation logic that converts security-level exposures into portfolio risk metrics. As a member of the model governance committee, my work is documentation-first: methodology review, benchmarking standards, assumption validation, and escalation of outputs that are mathematically defensible but economically unsupported. I work in Python daily and have R and MATLAB depth from earlier quantitative and research roles, and I have re-engineered manual workflows into auditable Python pipelines with embedded validation and logging controls. Before Moody's, I built stochastic scenario generators and ran VaR/CVaR analytics at Ortec Finance, and delivered IFRS 17/IFRS 9 governance and regulatory-readiness work at EY.
+
+What draws me specifically to Societe Generale is the mandate to implement and address quantitative recommendations from audits, RISQ, and regulators across the AMER region, working with global stakeholders to design solutions and controls - the exact bridge between review findings and defensible remediation I have run at Moody's. The SR 11-7 framing maps directly onto how I already work: reviewing conceptual soundness, certifying outputs at appropriate ratings, and ensuring documentation meets internal and regulatory standards.
+
+I am based in Toronto, available for interviews immediately, and can commit to a start approximately four weeks after offer acceptance. My resume is attached and references are available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview, NOT to put on the resume: (1) C++/C# is a JD must-have but not in the repo - Python is the honest strength; frame C++/C# as learning-level only. (2) SIMM / margining-model oversight is JD-specific; repo has derivatives sensitivity validation and risk metrics but no direct SIMM experience - do not claim it, frame as fast-ramp adjacency. (3) French is a stated requirement ('French and English') - Saber is only conversational in French; MUST confirm with Saber whether the role truly requires working French before submitting, as this could be disqualifying. (4) Montreal-based / hybrid role - Saber is Toronto-focused; confirm relocation/remote acceptability before applying. (5) FINRA fingerprint / enhanced background screening required - fine given clean history but flag to Saber. (6) 'Front Office' sell-side CIB context - repo is buy-side/vendor; the review-and-validate framing is transferable but Saber has no direct sell-side trading-desk experience, so keep all pricing-model claims as review/validation, never development.

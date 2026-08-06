@@ -1,0 +1,56 @@
+{
+  "pipeline_id": "20260729_102254",
+  "started_at": "2026-07-29T10:22:54",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": false,
+    "skip_score": true,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 2,
+    "score_dry_run": false,
+    "triage_out": null,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+        "--expansion"
+      ],
+      "started_at": "2026-07-29T10:22:54",
+      "state": "finished",
+      "finished_at": "2026-07-29T12:22:24",
+      "elapsed_sec": 7170.3,
+      "returncode": 0,
+      "last_line": "[scan] worklist rebuilt: 3664 rows (3327 scrape, 233 gmail, 104 both)",
+      "scan_file": "scan_20260729.json",
+      "candidate_count": 3440
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 3664,
+      "scrape_only": 3327,
+      "gmail_only": 233,
+      "both": 104,
+      "new_since_last_score": 870
+    },
+    "score": {
+      "state": "skipped"
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260729_102254_suppressions.json",
+  "finished_at": "2026-07-29T12:22:28"
+}

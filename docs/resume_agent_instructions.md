@@ -92,6 +92,13 @@ resume with IRRBB/OSFI B-12 because the repo's strongest lane is bank ALM).
 If a fact is not in the Master Repo, it does not go on the resume. Do not invent
 employers, dates, metrics, tools, or regulatory experience.
 
+**New-fact protocol (repo-first).** When Saber supplies a true fact the repo
+doesn't yet contain (e.g., VBA working knowledge, model-governance-committee
+membership, PFaroe DB/PM product-line split — all added 2026-07), add it to the
+Master Repo FIRST with a *(confirmed YYYY-MM-DD)* marker, then use it on the
+resume. Never let the resume get ahead of the repo — the repo is the ceiling
+even when the new claim comes from Saber directly.
+
 ---
 
 ## Step 1 — Analyse the JD
@@ -99,6 +106,14 @@ employers, dates, metrics, tools, or regulatory experience.
 Extract and write down:
 - **Title + seniority** and team/function.
 - **Must-haves** vs **nice-to-haves** (verbatim).
+- **Live process intel beats JD text for EMPHASIS.** If a recruiter screen /
+  interview note exists for this role (prep docs, Claude memory, tracker
+  notes), re-derive the weighting from what the interviewers actually probe,
+  not just the posting. Real example (HOOPP JR102444, 2026-07): the JD read
+  validation-heavy, but the recruiter said the HM round tests model
+  DEVELOPMENT + Python + trader-facing framing — so the resume was re-weighted
+  dev-first (tool-building and Python sections promoted, governance moved to
+  the closing bullet). Facts unchanged; order and headings re-derived.
 - **Regulatory / domain frameworks** named (e.g., market risk, CCR, CCAR, FRTB,
   IRRBB, Basel, IFRS).
 - **Hard ATS keywords** — the concrete nouns a parser scans for (languages,
@@ -159,6 +174,14 @@ via `--example`). Rules:
   only `"statistical"`).
 
 Save to `automation/resume_data/<company>_<role-slug>.json`.
+
+**Name products, not categories.** Where the repo evidences a specific vendor
+platform or product line, use the proper noun — "PFaroe DB (risk & ALM) and
+PFaroe PM (portfolio management)", "Calypso", "Ortec GLASS" — instead of
+generic "vendor analytics platform". Product names survive interviewer
+follow-ups and match "experience with a vendor risk system" JD asks far better
+than category labels. Cap repetition: ~3 mentions of any one platform across
+the whole resume; more reads as padding.
 
 ## Step 5 — Keyword discipline (ATS)
 
@@ -222,7 +245,14 @@ Notes:
    prominent term the JD never asks for (e.g. IRRBB on a pension-investment
    JD) → reframe into the JD's vocabulary or demote/cut.
 
-Only after all five pass is the resume final.
+6. **Audit-output consistency:** if a validity/audit report says a claim was
+   removed or downgraded, verify the shipped JSON actually reflects it. (Real
+   failure, 2026-07 OPTrust: the audit said "VBA removed from core_skills
+   entirely" while the shipped resume still listed it — the audit and the
+   deliverable had diverged. The report is only trustworthy if it matches the
+   artifact.)
+
+Only after all six pass is the resume final.
 
 ---
 

@@ -1,0 +1,359 @@
+{
+  "scan_date": "2026-07-17",
+  "scan_timestamp": "2026-07-17T23:43:57Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 29,
+    "output": 29,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71286",
+      "71289",
+      "71292",
+      "71294",
+      "71298"
+    ],
+    "processed_uids": [
+      "71286",
+      "71289",
+      "71292",
+      "71294",
+      "71298"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-17T19:59:05",
+    "delete_result": {
+      "moved": 5,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Senior Manager, Risk and Controls",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4438470562",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71298"
+    },
+    {
+      "title": "Senior Manager, ALM Market Risk",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4433052967",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71298"
+    },
+    {
+      "title": "AVP, Model Risk Governance",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4441263684",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71298"
+    },
+    {
+      "title": "Senior Manager, Collateral Management",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4441276706",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71298"
+    },
+    {
+      "title": "Senior Manager, Audit Quality Controls & Risk Management",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4413224211",
+      "location": "Oakville, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71298"
+    },
+    {
+      "title": "Senior Manager, Risk and Controls",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4438470562",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Senior Manager, ALM Market Risk",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4433052967",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Senior Manager, Recovery and Resolution Planning, Enterprise Recovery and Resolution Office",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4441674268",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Senior Manager, Strategic Initiatives",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4441110042",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Senior Manager, Research & Insights",
+      "company": "Aviva Canada",
+      "link": "https://www.linkedin.com/jobs/view/4424000029",
+      "location": "Markham, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Director, Intraday Liquidity Risk Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4440905176",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71294"
+    },
+    {
+      "title": "Trading Market Risk Manager - Fixed Income",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4441266964",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Senior Director, Total Portfolio Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Director, Funding and Liquidity Management",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4441279441",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Director, High Risk Portfolio Management Team",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4441275221",
+      "location": "Vancouver, BC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Director, High Risk Portfolio Management Team",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4441260691",
+      "location": "Calgary, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Manager Product Control",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4429834445",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71292"
+    },
+    {
+      "title": "Senior Manager, ALM Market Risk",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4433052967",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Senior Manager, Risk and Controls",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4438470562",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Senior Manager, Recovery and Resolution Planning, Enterprise Recovery and Resolution Office",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4441674268",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Senior Manager, Strategic Initiatives",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4441110042",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Senior Manager, Research & Insights",
+      "company": "Aviva Canada",
+      "link": "https://www.linkedin.com/jobs/view/4424000029",
+      "location": "Markham, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Director, Intraday Liquidity Risk Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4440905176",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71289"
+    },
+    {
+      "title": "Senior Director, Total Portfolio Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    },
+    {
+      "title": "Director, Intraday Liquidity Risk Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4440905176",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    },
+    {
+      "title": "Director, Financial Services",
+      "company": "Government of Alberta",
+      "link": "https://www.linkedin.com/jobs/view/4441108072",
+      "location": "Edmonton, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    },
+    {
+      "title": "Director- Operational Risk, Internal Audit & Compliance",
+      "company": "North Horizon Holdings Inc.",
+      "link": "https://www.linkedin.com/jobs/view/4401301257",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    },
+    {
+      "title": "Vice President, Treasury & Capital Markets",
+      "company": "Thorek/Scott and Partners",
+      "link": "https://www.linkedin.com/jobs/view/4440755273",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    },
+    {
+      "title": "VP, Strategy, Pricing & Interchange",
+      "company": "Mastercard",
+      "link": "https://www.linkedin.com/jobs/view/4429888549",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-17",
+      "gmail_uid": "71286"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 5,
+    "linkedin_alerts_seen": 5,
+    "digests_with_rows": 5,
+    "digests_without_rows": 0,
+    "rows_parsed": 30,
+    "rows_dropped_location": 1,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 29,
+    "dropped_location_examples": [
+      "KPMG Canada — Hamilton, ON"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "KPMG Canada",
+        "title": "Senior Manager, Audit Quality Controls & Risk Management",
+        "location": "Hamilton, ON",
+        "posted_date": "2026-07-17",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71298",
+        "link": "https://www.linkedin.com/jobs/view/4413214684",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

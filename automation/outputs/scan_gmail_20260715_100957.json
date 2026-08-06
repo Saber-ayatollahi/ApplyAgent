@@ -1,0 +1,232 @@
+{
+  "scan_date": "2026-07-15",
+  "scan_timestamp": "2026-07-15T14:09:57Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 18,
+    "output": 18,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71209",
+      "71211",
+      "71218"
+    ],
+    "processed_uids": [
+      "71209",
+      "71211",
+      "71218"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-15T10:10:22",
+    "delete_result": {
+      "moved": 3,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Manager, Enterprise Model Risk Management",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4432083902",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Market Risk Manager",
+      "company": "CIBC Mellon",
+      "link": "https://www.linkedin.com/jobs/view/4440580911",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Manager, Structural Market Risk",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4438832354",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Director, Intraday Liquidity Risk Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4440905176",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Senior Group Manager, Finance - Funds Transfer Pricing",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4440805701",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Actuarial Manager, Capital Management",
+      "company": "MasterHill Talent",
+      "link": "https://www.linkedin.com/jobs/view/4439861904",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71218"
+    },
+    {
+      "title": "Senior Manager, Product Development and Delivery",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4440332907",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Senior Manager, Operational Resilience Risk Management Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4439093638",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Senior Manager, Global Common Investment Platform",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4437901765",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Senior Manager Business Risk",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4438579882",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Senior Director, Total Portfolio Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414654470",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71211"
+    },
+    {
+      "title": "Associate Director, Financial Services",
+      "company": "S&P Global",
+      "link": "https://www.linkedin.com/jobs/view/4439109158",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    },
+    {
+      "title": "Associate Director, Nexus, Regulatory Reporting",
+      "company": "MUFG Investor Services",
+      "link": "https://www.linkedin.com/jobs/view/4439875185",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    },
+    {
+      "title": "Associate Director, Liquidity Risk Measurement",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4439072065",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    },
+    {
+      "title": "Associate Director, Liquidity Regulatory Reporting",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4407967258",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    },
+    {
+      "title": "Associate Director",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4438163472",
+      "location": "Toronto, Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71209"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 3,
+    "linkedin_alerts_seen": 3,
+    "digests_with_rows": 3,
+    "digests_without_rows": 0,
+    "rows_parsed": 18,
+    "rows_dropped_location": 0,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 18,
+    "dropped_location_examples": [],
+    "geo_dropped_rows": [],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I currently hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional portfolios at Moody's Analytics — independent review of pricing, investment, and balance-sheet models in the $5–25bn range per engagement. That is the core discipline the Senior Director, Model Validation role at HOOPP is built around, and I would like to be considered for it.
+
+My validation work at Moody's spans the breadth HOOPP is asking for: derivatives pricing across rates, FX, and inflation; multi-asset investment and liquidity models; cash-flow projection and stress-testing engines; and AI/ML-assisted analytical workflows, where I have built agentic development pipelines (Claude Code, Cursor) that reduce code-review cycle time by an estimated 30–40% while keeping human sign-off on every governance-critical step. I evaluate conceptual soundness, methodological rigor, data quality, and implementation accuracy; I escalate outputs that pass internal checks but fail economic defensibility; and I operate within documentation and change-control standards consistent with SR 11-7 and OSFI E-23 model-risk-management expectations. Before Moody's I spent two-and-a-half years at Ortec Finance building and validating stochastic scenario generators, modelling pension actuarial liabilities, and running VaR/CVaR portfolio optimization with risk decomposition and LDI analysis for Canadian pension clients — including the model build for a three-plan university pension merger presented to the investment committee. EY added IFRS 17 and IFRS 9 transformation depth across actuarial, finance, and IT functions at Canadian insurers.
+
+What draws me specifically to HOOPP is the shape of this seat: a senior individual contributor with enterprise-wide oversight, a peer-review model built from internal quants across Investments, Finance, Actuarial, and Risk, and validation coverage that genuinely spans pricing, investment, actuarial, and AI/ML models. That mirrors how I already work — as a constructive challenger who earns the trust of model owners and quantitative experts through analytical rigour rather than title authority. The CFA and dual MSc in Financial Modelling and Chemical Engineering from Western University provide the quantitative foundation to work credibly across that range.
+
+I am Toronto-based, available for interviews immediately, and can commit to a start approximately four weeks after offer acceptance. References are available on request. Thank you for your time.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview, not the resume: (1) No direct in-house pension validation seat — bridged via Moody's client-side validation for pensions + Ortec pension ALM modelling; lead with that if probed. (2) No CCR/xVA or FRTB hands-on; if a private-credit/derivatives-collateral question comes up, frame as applied knowledge via derivatives valuation review. (3) 'Senior Director' is a title step above current Asst. Director — the role is explicitly senior IC with no direct reports, which fits Saber's IC-with-sign-off pattern; do not overclaim people-management. (4) ~7 years vs JD's '10+' — do not adjust; the CFA + dual MSc + sign-off scope is the offset; let recruiter raise it. (5) Confirm work authorization line before submitting.

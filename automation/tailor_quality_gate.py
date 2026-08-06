@@ -99,10 +99,16 @@ GATE_LOG = OUT_DIR / "quality_gate_log.jsonl"
 RUN_BUDGET_USD = 0.05
 
 # Sonnet 4.6 — cheaper than Opus and plenty smart for a paragraph rewrite.
-RESCUE_MODEL = os.environ.get("TAILOR_GATE_MODEL", "claude-sonnet-4-6")
+RESCUE_MODEL = os.environ.get("TAILOR_GATE_MODEL", "claude-sonnet-5")
 
 _MODEL_PRICES = {
-    "claude-opus-4-7":           {"input": 15.0, "output": 75.0},
+    "claude-fable-5":            {"input": 10.0, "output": 50.0},
+    "claude-opus-5":             {"input": 5.0,  "output": 25.0},
+    "claude-opus-4-8":           {"input": 5.0,  "output": 25.0},
+    "claude-sonnet-5":           {"input": 3.0,  "output": 15.0},
+    # 4-7 was carrying Opus-3-era $15/$75 — it bills at $5/$25 like 4-8, so the
+    # ledger overstated every 4-7 call 3x (~$18 of phantom spend lifetime).
+    "claude-opus-4-7":           {"input": 5.0,  "output": 25.0},
     "claude-sonnet-4-6":         {"input": 3.0,  "output": 15.0},
     "claude-haiku-4-5-20251001": {"input": 1.0,  "output": 5.0},
     "claude-haiku-4-5":          {"input": 1.0,  "output": 5.0},

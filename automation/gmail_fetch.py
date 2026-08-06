@@ -119,14 +119,14 @@ def main() -> int:
             load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
             ALERT_SENDERS,
         )
-        from location_filter import keep_for_toronto_pipeline  # type: ignore
+        from location_filter import keep_canada_us_remote  # type: ignore
     except ImportError:
         try:
             from .gmail_reader import (  # type: ignore
                 load_credentials, validate, fetch_inbox_signals, parse_linkedin_alert,
                 ALERT_SENDERS,
             )
-            from .location_filter import keep_for_toronto_pipeline  # type: ignore
+            from .location_filter import keep_canada_us_remote  # type: ignore
         except Exception as e:
             print(f"[gmail_fetch] cannot import gmail_reader: {e}", file=sys.stderr)
             return 1
@@ -206,7 +206,7 @@ def main() -> int:
     geo_dropped_rows: list[dict] = []  # full audit trail (every row, not 5)
     dropped_loc_examples: list[str] = []  # first 5 for stderr summary
     for row in raw_rows:
-        if keep_for_toronto_pipeline(row.get("location") or ""):
+        if keep_canada_us_remote(row.get("location") or ""):
             rows.append(row)
         else:
             geo_dropped_rows.append({

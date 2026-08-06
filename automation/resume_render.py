@@ -163,7 +163,24 @@ def _build_summary(doc, summary):
     _run(p, summary, size=SZ_SUMMARY, font=FONT_LIGHT)
 
 def _build_skills(doc, skills):
-    # one linear paragraph of dot-separated terms (ATS reads it straight through)
+    # Grouped: when every entry is "Category: a, b, c", render one linear
+    # line per group with a BOLD category label and mid-dot items â scannable
+    # and fully ATS-parseable (plain text, single column, no tables). Falls
+    # back to the legacy dot-separated line otherwise.
+    grouped = [s for s in skills if ": " in s]
+    if grouped and len(grouped) == len(skills):
+        for gi, s in enumerate(skills):
+            label, _, rest = s.partition(": ")
+            _last = gi == len(skills) - 1
+            p = _para(doc, after=(2 if _last else 1), line=1.15)
+            _run(p, label + ":  ", size=SZ_SKILL, bold=True)
+            items = [x.strip() for x in rest.split(",") if x.strip()]
+            _lasti = len(items) - 1
+            for i, it in enumerate(items):
+                _run(p, it, size=SZ_SKILL)
+                if i != _lasti:
+                    _run(p, DOT, size=SZ_SKILL, color=RULE)
+        return
     p = _para(doc, after=2, line=1.12)
     last = len(skills) - 1
     for i, s in enumerate(skills):
@@ -176,10 +193,18 @@ def _build_experience(doc, experience):
         pe = _para(doc, before=5, after=0, line=1.0, keep_next=True)
         _run(pe, emp["employer"], size=SZ_EMPLOYER, bold=True, italic=True)
         for role in emp["roles"]:
-            pr = _para(doc, after=2, line=1.0, keep_next=True)
+            # Title and location/date on SEPARATE lines. When they shared one
+            # line ("Senior Consultant, IFRS ... | Toronto, Sep 2021"), ATS
+            # autofill parsers (Workday) split the line at commas/pipes —
+            # truncating the title to "Senior Consultant" and spilling the
+            # rest into the role description (2026-07 EY autofill bug). A
+            # title-only line parses fully; the dates line below follows the
+            # "Location, Mon YYYY – Mon YYYY" shape parsers expect.
+            pr = _para(doc, after=0, line=1.0, keep_next=True)
             _run(pr, role["title"], size=SZ_ROLE, bold=True, italic=True)
             if role.get("location_date"):
-                _run(pr, "  |  " + role["location_date"], size=SZ_ROLE, italic=True)
+                pd = _para(doc, after=2, line=1.0, keep_next=True)
+                _run(pd, role["location_date"], size=SZ_ROLE, italic=True)
             for sec in role.get("sections", []):
                 if sec.get("heading"):
                     ph = _para(doc, before=3, after=1, line=1.0, keep_next=True)
@@ -242,7 +267,7 @@ def estimate_lines(content):
     for emp in content.get("experience", []):
         total += 1
         for role in emp["roles"]:
-            total += 1
+            total += 2  # title line + separate location/date line (2026-07)
             for sec in role.get("sections", []):
                 if sec.get("heading"):
                     total += 1

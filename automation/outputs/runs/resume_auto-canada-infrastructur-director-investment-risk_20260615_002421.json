@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-canada-infrastructur-director-investment-risk_20260615_002421",
+  "label": "resume_auto-canada-infrastructur-director-investment-risk",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-canada-infrastructur-director-investment-risk",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 21832,
+  "started_at": "2026-06-15T00:24:21",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-canada-infrastructur-director-investment-risk_20260615_002421.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-canada-infrastructur-director-investment-risk_20260615_002421.json",
+  "state": "finished",
+  "finished_at": "2026-06-15T00:28:19",
+  "returncode": null
+}

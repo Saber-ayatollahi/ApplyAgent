@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-scotiabank-senior-manager-model-risk-gove_20260614_233743",
+  "label": "resume_auto-scotiabank-senior-manager-model-risk-gove",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-scotiabank-senior-manager-model-risk-gove",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 26896,
+  "started_at": "2026-06-14T23:37:43",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-scotiabank-senior-manager-model-risk-gove_20260614_233743.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-scotiabank-senior-manager-model-risk-gove_20260614_233743.json",
+  "state": "finished",
+  "finished_at": "2026-06-14T23:42:19",
+  "returncode": null
+}

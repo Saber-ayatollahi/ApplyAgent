@@ -10,8 +10,13 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
-from .safe_json import mutate_json, read_json, write_json, _FileLock
-from . import sectors, brand_aliases
+try:  # absolute imports when run as a standalone script (automation/ on sys.path)
+    from safe_json import mutate_json, read_json, write_json, _FileLock
+    import sectors
+    import brand_aliases
+except ImportError:  # relative imports when loaded as automation.suppressions
+    from .safe_json import mutate_json, read_json, write_json, _FileLock
+    from . import sectors, brand_aliases
 
 ROOT = Path(__file__).resolve().parent.parent
 LIVE_PATH = ROOT / "data" / "suppressions.json"
@@ -20,7 +25,8 @@ EVENTS_PATH = ROOT / "data" / "suppressions_events.jsonl"
 HISTORY_PATH = ROOT / "data" / "suppressions_history.json"
 PENDING_ARCHIVES_PATH = ROOT / "data" / "suppressions_pending_archives.jsonl"
 
-_EMPTY_LIVE: dict = {"version": 1, "sectors": [], "companies": []}
+_EMPTY_LIVE: dict = {"version": 1, "sectors": [], "companies": [], "geos": []}
+_SCOPE_KEY = {"sector": "sectors", "company": "companies", "geo": "geos"}
 _EMPTY_HISTORY: dict = {"version": 1, "entries": []}
 
 
@@ -97,7 +103,7 @@ def _make_entry(scope: str, name: str, canonical_key: str,
 def _prune_expired(state: dict, today: date) -> tuple[dict, list[dict]]:
     """Return (live_state_minus_expired, expired_entries)."""
     expired: list[dict] = []
-    for scope_key in ("sectors", "companies"):
+    for scope_key in ("sectors", "companies", "geos"):
         kept: list[dict] = []
         for e in state.get(scope_key, []) or []:
             if _is_expired(e, today):
@@ -158,7 +164,7 @@ def load_recently_expired(window_days: int = 7,
 
     if LIVE_PATH.exists():
         live = read_json(LIVE_PATH, default=dict(_EMPTY_LIVE)) or dict(_EMPTY_LIVE)
-        for scope_key in ("sectors", "companies"):
+        for scope_key in ("sectors", "companies", "geos"):
             for e in live.get(scope_key, []) or []:
                 u = _parse_until(e.get("until"))
                 if u is not None and cutoff <= u <= today:
@@ -176,7 +182,7 @@ def load_all() -> dict:
 def _add(scope: str, name: str, canonical_key: str,
          until: date | None, reason: str) -> None:
     _ensure_live_file()
-    scope_key = "sectors" if scope == "sector" else "companies"
+    scope_key = _SCOPE_KEY.get(scope, "sectors")
     new_entry = _make_entry(scope, name, canonical_key, until, reason)
 
     def _mut(state):
@@ -229,6 +235,16 @@ def add_company(name: str, until: date | None, reason: str) -> None:
     _add("company", name.strip(), canon, until, reason)
 
 
+def add_geo(name: str, until: date | None, reason: str) -> None:
+    """Add or replace a geo-bucket mute (e.g. US on-site (TN)). Matched
+    case-insensitively against the geo tag on each row, so muting a bucket
+    drops every role in it at triage, before any paid scoring."""
+    n = (name or "").strip()
+    if not n:
+        raise ValueError("geo name required")
+    _add("geo", n, n.lower(), until, reason)
+
+
 def _resolve_canonical_key(scope: str, name: str) -> str | None:
     if scope == "sector":
         c = sectors.canonical(name)
@@ -236,13 +252,16 @@ def _resolve_canonical_key(scope: str, name: str) -> str | None:
     if scope == "company":
         c = brand_aliases.canonical_brand(name)
         return c.lower() if c else None
+    if scope == "geo":
+        n = (name or "").strip().lower()
+        return n or None
     return None
 
 
 def lift(scope: str, name: str) -> None:
     """Remove entry, archive to history with lifted_at; no-op if absent (logged)."""
     _ensure_live_file()
-    scope_key = "sectors" if scope == "sector" else "companies"
+    scope_key = _SCOPE_KEY.get(scope, "sectors")
     canon = _resolve_canonical_key(scope, name)
     removed_holder: list[Optional[dict]] = [None]
 
@@ -296,7 +315,7 @@ def lift(scope: str, name: str) -> None:
 def extend(scope: str, name: str, days: int) -> None:
     """Push entry's until field by `days`. Raises if not found."""
     _ensure_live_file()
-    scope_key = "sectors" if scope == "sector" else "companies"
+    scope_key = _SCOPE_KEY.get(scope, "sectors")
     canon = _resolve_canonical_key(scope, name)
     old_holder: list[Optional[dict]] = [None]
     new_holder: list[Optional[dict]] = [None]
@@ -333,7 +352,7 @@ def extend(scope: str, name: str, days: int) -> None:
 def edit_reason(scope: str, name: str, new_reason: str) -> None:
     """Update reason in place. Old reason captured in events log."""
     _ensure_live_file()
-    scope_key = "sectors" if scope == "sector" else "companies"
+    scope_key = _SCOPE_KEY.get(scope, "sectors")
     canon = _resolve_canonical_key(scope, name)
     old_holder: list[Optional[dict]] = [None]
     new_holder: list[Optional[dict]] = [None]
@@ -366,6 +385,18 @@ def edit_reason(scope: str, name: str, new_reason: str) -> None:
         raise ValueError(f"no {scope} suppression for {name!r}")
 
 
+_geo_for_fn = None
+def _geo_for_loc(loc: str) -> str:
+    global _geo_for_fn
+    if _geo_for_fn is None:
+        try:
+            from geo_tagger import geo_for as _gf
+        except ImportError:
+            from .geo_tagger import geo_for as _gf
+        _geo_for_fn = _gf
+    return _geo_for_fn(loc)
+
+
 def is_suppressed(row: dict,
                   snapshot: dict | None = None) -> tuple[bool, str | None]:
     """Return (suppressed, drop_reason). drop_reason is 'suppressed_<scope>_<N>d'.
@@ -375,7 +406,7 @@ def is_suppressed(row: dict,
     company/sector to str so a malformed row (int, list, dict) doesn't
     crash the whole scoring run."""
     state = snapshot if snapshot is not None else load_active()
-    if not state.get("sectors") and not state.get("companies"):
+    if not state.get("sectors") and not state.get("companies") and not state.get("geos"):
         return False, None
     today = date.today()
 
@@ -397,6 +428,20 @@ def is_suppressed(row: dict,
                 if e.get("canonical_key") == sector_key:
                     days = _days_left(e, today)
                     return True, f"suppressed_sector_{days}d"
+
+    geos_state = state.get("geos") or []
+    if geos_state:
+        geo_val = str(row.get("geo") or "").strip()
+        if not geo_val:
+            try:
+                geo_val = _geo_for_loc(str(row.get("location") or ""))
+            except Exception:
+                geo_val = ""
+        if geo_val:
+            gkey = geo_val.lower()
+            for e in geos_state:
+                if e.get("canonical_key") == gkey:
+                    return True, f"suppressed_geo_{_days_left(e, today)}d"
 
     return False, None
 

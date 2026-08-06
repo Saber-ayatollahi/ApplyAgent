@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+For the past four years at Moody's Analytics I have done the core of what the Associate Director, Senior Business Analyst (Capital Markets) role requires: translating complex, ambiguous requirements from institutional business stakeholders into precise data specifications, then working shoulder-to-shoulder with data and engineering teams to build and validate the analytics that measure portfolio value and risk. I hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset portfolios of $5-25bn per engagement, and I have built the data-quality and validation protocols that keep those outputs defensible.
+
+My work maps closely to the client-value and reference-data mandate of this role. I led the design of an enterprise multi-asset cash-flow projection engine, developing functional specifications and requirements with engineering teams, and I re-engineered manual spreadsheet workflows into auditable Python and SQL pipelines with embedded validation. I review the aggregation logic that turns security-level exposures into portfolio-level risk metrics and return calculations, and as a member of Moody's model-governance committee I own documentation and benchmarking standards. Earlier, at EY, I coordinated IFRS 17 and IFRS 9 transformation across actuarial, finance, IT, and risk functions, and at Ortec Finance I presented analytical findings directly to pension investment committees.
+
+What draws me to RBC Capital Markets is the ambition of the client-profitability and resource-efficiency platform build-out, precisely where business-analysis rigour, hands-on SQL, and senior-stakeholder communication converge. I have spent my career sitting between the business that asks the question and the engineers who build the answer, in Agile delivery settings, and translating between them without losing either side. I hold the CFA charter and dual MSc degrees from Western University.
+
+I am based in Toronto, available to interview immediately, and can start approximately four weeks after an offer. My resume is attached and references are available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to flag before submitting: (1) JD asks for 10+ years BA in a financial institution / Capital Markets; Saber has ~7 years and is NOT a sell-side Capital Markets BA — this is the biggest stretch and should be owned in interview, not papered over. (2) No direct CIB/Global Markets product experience (credit exposures, new issuances, trade lifecycle, pricing) — repo does not support it; kept off resume and softened in cover letter. (3) Tableau and AWS/Azure hands-on are JD must/nice-to-haves NOT evidenced in repo — deliberately omitted (only Python/SQL/Excel/Plotly claimed). SQL is intermediate, not 'advanced hands-on' as JD wants — say 'hands-on SQL' honestly and be ready to demo intermediate depth. (4) Agile/Scrum: repo shows cross-functional delivery and PO requirement-scoping but not formal sprint-planning role — claimed at the level the repo supports. (5) 'Business Analyst' is a retired-adjacent framing (Project/Program angle); activated here only because the JD is explicitly a Senior Business Analyst role and the BA competencies genuinely trace to Moody's/EY/Ortec requirements-translation work.

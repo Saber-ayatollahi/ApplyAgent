@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I have spent the bulk of my career inside the pension-investment problem set RBC Global Asset Management's Pension Investments team owns day-to-day. At Ortec Finance I delivered ALM studies, LDI design, and SAA/TAA advice to Canadian and international pension plans — including leading the onboarding ALM study for the University Pension Plan three-plan JSPP merger, evaluating duration, currency, inflation, and leverage overlay strategies. At Moody's Analytics I now hold delegated sign-off on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios in the $5–25bn range per engagement. I would like to be considered for the Senior Manager, Pension Investments role.
+
+The RBC mandate maps directly onto how I already work: supporting asset allocation aligned with pension liabilities, monitoring portfolio risk and performance, and supporting liability hedging and derivative overlays. At Ortec I performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR, ran risk decomposition and attribution across multi-asset portfolios, and analyzed interest-rate, inflation, and FX hedging strategies for institutional clients. At Moody's I led the design of a multi-scenario cash-flow projection engine and oversee duration and stress analytics that feed funded-status and rebalancing decisions. On ESG, my background is in integrating sustainability-related scenario overlays into ALM and asset-allocation frameworks; I do not have standalone ESG-manager-research credentials, but the analytical foundation for responsible-investing measurement is consistent with the work I have done across institutional mandates. My toolkit — advanced Excel, Python analytics pipelines, and SQL — aligns with the role's stated environment.
+
+What draws me specifically to RBC GAM is the chance to work both sides of the plan: DB funded-status stability alongside DC participant capital accumulation, with the fiduciary lens that makes the analytical work matter. The CFA charter, dual MSc, and ~7 years of practitioner pension-ALM and investment-risk experience are the combination this role calls for.
+
+I am based in Toronto, available for interviews immediately, and can start approximately four weeks after offer acceptance. References available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview, not in the resume: (1) No direct hands-on private-markets fund-by-fund underwriting (PE/PC/infra/RE) - JD calls for public AND private; frame as ramp, not blocker; lean on cash-flow pacing analogy. (2) ESG is in the JD's must-haves; Saber has it as 'assessments / monitoring' exposure from advisory work but not a dedicated ESG-integration role - keep the resume line at the honest level it sits at. (3) Power BI is a 'would be considered an asset' nice-to-have; Saber doesn't have it - don't list it; Python + Excel cover the must-have side. (4) Title is 'Senior Manager' (5-7 yrs) - Saber is at the upper end (~7.3 yrs) and currently Assistant Director at Moody's; if asked about the lateral, frame it as access to the asset-owner seat and direct pension-plan mandate ownership.

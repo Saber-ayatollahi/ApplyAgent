@@ -1,0 +1,133 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CPP Investments",
+    "role": "Analyst, Total Fund Management (12-Month Contract)",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "Total Fund Management",
+      "front-office",
+      "PnL",
+      "reconciliation",
+      "trade lifecycle",
+      "liquidity",
+      "Python",
+      "CFA",
+      "operational controls"
+    ]
+  },
+  "summary": "Candidate for the Analyst, Total Fund Management (12-Month Contract) role with ~7 years across institutional investment analytics, cash-flow and liquidity modelling, and output validation for multi-asset portfolios. At Moody's Analytics, validates valuation and sensitivity outputs for pension funds, asset managers, and bank treasuries; investigates and escalates discrepancies; and partners with technology teams on workflow enhancements. Strong Python and SQL; CFA charter; dual MSc; detail-oriented with a controls mindset.",
+  "core_skills": [
+    "Output Validation & Discrepancy Investigation",
+    "Cash Flow & Liquidity Analytics",
+    "Trade Lifecycle Familiarity (Rates, FX, Inflation Derivatives)",
+    "Front-to-Back Workflow Support",
+    "Operational Controls & Issue Escalation",
+    "Requirements Scoping with Technology Teams",
+    "Python & SQL (Large Datasets)",
+    "Stochastic Scenario & Stress Analysis",
+    "CFA Charterholder"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Output Validation & PnL/Sensitivity Reconciliation",
+              "bullets": [
+                "Holds sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional client portfolios ranging $5-25bn per engagement — independently reviews curve construction, spread calibration, and cross-asset interactions, and validates outputs against internal records prior to production release.",
+                "Validates derivatives pricing outputs across rates, FX, and inflation — cross-checks sensitivity consistency at portfolio-level aggregates and flags discrepancies before release.",
+                "Reviews aggregation logic converting security-level exposures into portfolio-level risk metrics, ensuring accuracy of downstream investment and risk reporting."
+              ]
+            },
+            {
+              "heading": "Cash Flow, Liquidity & Reporting",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity visibility across investment horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) supporting funding and asset-allocation decisions.",
+                "Prepares analytical summaries for senior stakeholders covering rate exposure, scenario impacts, and balance-sheet sensitivities."
+              ]
+            },
+            {
+              "heading": "Technology Coordination & Issue Resolution",
+              "bullets": [
+                "Serves as escalation point for client-critical analytical issues — investigates discrepancies, coordinates with downstream technology and operations partners, and drives timely resolution.",
+                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines with embedded logging and validation controls, strengthening operational integrity.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation and anomaly detection — reducing development cycle time an estimated 30-40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist - PFaroe Platform",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds and asset managers migrating to the PFaroe analytics platform — translated investment-team requirements into structured Product Owner requests and tracked delivery.",
+                "Served as technical liaison between front-office users and product/development teams; validated model outputs post-deployment, investigated configuration breaks, and resolved issues with internal technology partners.",
+                "Migrated all assigned client accounts from the legacy Calypso environment to PFaroe PM — coordinated testing and sign-off across stakeholders."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients, aligning regulatory reporting requirements with system implementation workflows.",
+                "Coordinated across actuarial, finance, IT, and PM functions on milestone delivery — built shared requirements documentation and unblocked cross-team dependencies."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration positioning, and long-horizon balance-sheet risk exposures.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate, inflation, and currency risk under base-case and stressed environments.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform — including risk decomposition and attribution.",
+                "Presented ALM findings on-site to investment committees at Canadian pension-fund clients; led onboarding and the ALM study for the University Pension Plan (UPP) three-employer merger."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

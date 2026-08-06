@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+For the past four years at Moody's Analytics I have driven execution of concurrent, complex risk-analytics initiatives — coordinating developers, QA teams, and business analysts; maintaining project tracking artifacts and issue logs; and translating technical status into executive-level summaries for senior PMO stakeholders and Heads of Risk. That delivery structure maps directly onto the Associate Director - Project Manager - Risk Services mandate within RBC Capital Markets Quantitative and Technology Services.
+
+My coordination footprint at Moody's spans the kind of enterprise risk build-outs described in your posting: leading the design and delivery of a multi-asset cash-flow projection and liquidity-gap engine, re-engineering manual workflows into auditable Python pipelines while managing shared engineering resources against aggressive release timelines, and maintaining delivery artifacts across multiple parallel initiatives with interdependent milestones. I hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5-25bn per engagement), which has trained me to surface risks early, escalate cleanly, and keep PMO reporting current and accurate. Before Moody's I delivered IFRS 17 and IFRS 9 transformation programs at EY in a matrix model across actuarial, finance, IT, and risk functions — a direct analogue to the multi-team coordination your Risk Services team requires — and ran ALM advisory engagements at Ortec Finance, including the UPP three-plan merger study, where I coordinated a cross-functional team under tight client deadlines and presented findings directly to investment committees.
+
+What draws me specifically to this role at RBC Capital Markets is that the Risk Services portfolio sits at the intersection of capital-markets risk content, enterprise delivery coordination, and senior-stakeholder communication — the three threads that have run through my entire career. I hold the CFA charter and dual MSc degrees in Financial Modelling and Chemical Engineering from Western University.
+
+I am based in Toronto, available for interviews immediately, and can start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to flag before submitting: (1) No formal PMP / Prince2 / Agile Scrum Master certification - if recruiter screens hard on credential, this is a real gap; mention willingness to pursue. (2) No pure project-management title in career history - positioned as delivery leader within risk-analytics roles, which is honest but recruiters scanning for 'Project Manager' titles may screen on that. (3) Waterfall is listed in core_skills as 'Waterfall & Iterative Delivery' since the JD names it explicitly and Saber's EY/Moody's delivery has run in stage-gated waterfall-style cycles; do not over-claim formal Waterfall methodology training. (4) The 'GAP' tracking system named in the JD is RBC-internal - did not include in skills; JIRA is genuine. (5) Capital Markets exposure is via Moody's institutional clients and Ortec institutional investors, not via a sell-side trading desk - frame as Capital-Markets-adjacent risk content, not direct trading-floor experience, if probed.

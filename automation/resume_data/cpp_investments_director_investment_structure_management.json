@@ -1,0 +1,120 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CPP Investments",
+    "role": "Director, Investment Structure Management",
+    "jd_keywords": [
+      "finance", "project management", "cross-functional", "AI-enabled",
+      "Python", "CFA", "stakeholders", "reporting", "implementation",
+      "operational", "governance", "investment", "analytical", "complex"
+    ]
+  },
+  "summary": "Director, Investment Structure Management candidate with 8 years of combined professional and graduate experience across quantitative finance, cross-functional project delivery, and analytical oversight of institutional investments. Delegated sign-off authority at Moody's Analytics; led complex multi-workstream deliveries end-to-end — an enterprise cash-flow projection engine, a legacy-platform migration for all assigned client accounts, and a three-plan pension merger study — with AI-enabled tools and Python automation in daily production use. CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Cross-Functional Project Management & Delivery",
+    "AI-Enabled Tools & Workflow Automation (LLM agents)",
+    "Investment & Portfolio Analytics",
+    "Analytical Oversight & Independent Review",
+    "Platform Implementation & Migration (PFaroe, Calypso)",
+    "Governance, Documentation & Controls",
+    "Senior-Stakeholder & Committee Reporting",
+    "Python (pandas, NumPy) & SQL",
+    "Financial Modelling & Scenario Analysis"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Cross-Functional Delivery & Project Management",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine end-to-end — scoped requirements, sequenced workstreams across modelling and product teams, and delivered base, stress, and reverse-stress capability across portfolio horizons.",
+                "Prepared analytical summaries and investment-committee-ready reporting for Heads of Risk and senior stakeholders, translating complex quantitative outputs into decision-useful commentary."
+              ]
+            },
+            {
+              "heading": "Analytical Oversight & Governance",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ranging $5–25bn per engagement, cumulatively covering ~$50bn of client assets — identify issues, determine course of action, and drive resolution prior to release.",
+                "Member of the model governance committee — methodology review and challenge, documentation and benchmarking standards, and assessment of performance for client-delivered analytics."
+              ]
+            },
+            {
+              "heading": "AI-Enabled Tools & Automation",
+              "bullets": [
+                "Own implementation of AI-enabled development workflows (Claude Code, Cursor IDE LLM agents) — automated code generation, validation scaffolding, anomaly detection, and documentation; reduced delivery cycle time ~30–40% on comparable modules.",
+                "Re-engineered manual spreadsheet workflows into scalable Python pipelines with embedded logging and validation controls — in production across the team, driving continuous improvement in operational efficiency."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation of the PFaroe DB and PFaroe PM platforms for U.S. and Canadian pension funds, asset managers, and consulting firms.",
+                "Drove the migration of all assigned client accounts from a legacy Calypso environment — coordinated timelines and dependencies across client investment teams and product/development functions, resolved operational and configuration complexities, and validated implementations post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — coordinated actuarial, finance, IT, and risk functions on milestone delivery across complex insurer balance sheets.",
+                "Advised cross-functional stakeholders on governance documentation, controls, and regulatory readiness supporting implementation."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and the ALM study for the University Pension Plan (UPP) three-plan merger — end-to-end project management on a team of three, developing and validating the model evaluating duration, currency, inflation, and leverage overlay strategies across the merging entities.",
+                "Presented quantitative findings to investment committees at Canadian pension-fund clients — Strategic and Tactical Asset Allocation analysis under stress and sensitivity testing.",
+                "Performed asset-liability (surplus) portfolio optimization on VaR/CVaR and built stochastic scenario generators (Monte Carlo) assessing interest-rate, inflation, and currency risk for institutional portfolios."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

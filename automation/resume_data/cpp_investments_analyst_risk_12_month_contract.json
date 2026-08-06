@@ -1,0 +1,133 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CPP Investments",
+    "role": "Analyst, Risk (12-Month Contract)",
+    "jd_keywords": [
+      "Risk",
+      "investment risk",
+      "enterprise risk",
+      "total portfolio",
+      "scenario analysis",
+      "risk oversight",
+      "risk indicators",
+      "public markets",
+      "analytical",
+      "quantitative",
+      "Python",
+      "CFA",
+      "governance"
+    ]
+  },
+  "summary": "Analyst, Risk (12-Month Contract) candidate with ~7 years across independent risk oversight, total-portfolio analytics, and investment risk analysis for multi-asset institutional mandates. Holds delegated sign-off authority on valuation, sensitivity, and risk outputs for portfolios in the $5–25bn range at Moody's Analytics; prior pension-fund ALM, VaR/CVaR optimization, risk decomposition, and stochastic scenario analysis across public market and liability exposures at Ortec Finance. Brings analytical rigour in quantitative risk modelling, enterprise risk governance, and clear written communication. CFA charterholder; dual MSc in Financial Modelling and Chemical Engineering.",
+  "core_skills": [
+    "Total Portfolio Risk & Analytics",
+    "Investment Risk Analysis & Oversight",
+    "Scenario Analysis & Stress Testing",
+    "VaR / CVaR & Risk Decomposition",
+    "Risk Indicators & Exposure Monitoring",
+    "Multi-Asset Portfolio Analytics",
+    "Model Validation & Enterprise Risk Governance",
+    "Python (Advanced), SQL (Intermediate)",
+    "Stakeholder Communication & Written Reporting"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director — Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Independent Risk Oversight & Total Portfolio Analytics",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional client portfolios ranging $5–25bn per engagement; independently review curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics, ensuring total-portfolio measures are defensible across public market and liability-side asset classes.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation; cross-check sensitivity consistency at portfolio-level aggregates feeding downstream risk and capital processes."
+              ]
+            },
+            {
+              "heading": "Scenario Analysis, Risk Indicators & Constructive Challenge",
+              "bullets": [
+                "Oversee interest-rate and duration analysis under parallel and non-parallel shocks; monitor evolving portfolio sensitivities and translate exposures into risk indicators for senior stakeholders.",
+                "Contributed to the design of a multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — providing forward-looking risk visibility across portfolio horizons.",
+                "Escalate outputs lacking mathematical or economic defensibility to product owners and clients' Heads of Risk; embed behavioral assumptions and macro stress overlays in scenario frameworks."
+              ]
+            },
+            {
+              "heading": "Analytical Reporting & Stakeholder Communication",
+              "bullets": [
+                "Prepare clear, analytical written summaries and presentations for senior stakeholders covering exposures, scenario impacts, and balance-sheet sensitivities — translating quantitative outputs into investment-committee-ready narratives.",
+                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines; deployed agentic-AI workflows (Claude Code, Cursor) reducing development cycle time an estimated 30–40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform; translated investment-team requirements into structured development requests.",
+                "Advised clients on asset, liability, and total-portfolio configurations; validated model outputs post-deployment across all assigned accounts in the Calypso-to-PFaroe migration cohort."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant — IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients; contributed to governance documentation and regulatory-readiness processes.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management functions on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant — Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM and total-portfolio risk studies for Canadian and international pension funds — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk across public market and liability exposures.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform; conducted risk decomposition, contribution-to-risk, and near-optimal frontier analysis to test robustness of allocation recommendations.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate, inflation, and currency risk under base-case and stressed environments; conducted LDI and hedging analysis across multiple risk factors.",
+                "Presented risk findings at investment-committee meetings; led onboarding and the inaugural ALM study for a three-plan university pension merger, modelling Funding Policy dynamics, duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

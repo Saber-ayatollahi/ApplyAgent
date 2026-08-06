@@ -1,0 +1,6 @@
+[jd_tailor] API preflight OK — Valid & credits OK — 5 models, billing works
+[cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$4.159 / cap=$5.00
+[jd_tailor] Tailoring for Deloitte Canada / Financial Risk Manager ...
+  [tailor] claude-opus-4-8 cost $0.182 (in=6386, out=5985, cache_read=21950)
+[jd_tailor] Wrote: C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\tailored\Deloitte_Canada_Financial_Risk_Manager_20260715.md
+[gate] OK

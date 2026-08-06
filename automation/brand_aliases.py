@@ -111,6 +111,12 @@ _EXPLICIT_ALIASES: dict[str, str] = {
     "hoopp healthcare of ontario pension plan": "hoopp",
     "imco": "imco",
     "investment management corporation of ontario": "imco",
+    # AIMCo (Alberta) is NOT IMCO (Ontario) — without these aliases, LinkedIn's
+    # fuzzy company matching let AIMCo jobs land in IMCO-stamped scan rows
+    # (2026-07 misattribution: AIMCo PM Fixed Income & RV tracked as IMCO).
+    "aimco": "aimco",
+    "alberta investment management corporation": "aimco",
+    "alberta investment management corporation aimco": "aimco",
     "psp investments": "psp",
     "psp": "psp",
     "caisse de depot": "cdpq",

@@ -1,0 +1,12 @@
+Dear Hiring Team,
+
+I currently perform independent review and challenge of valuation and risk analytics for multi-asset institutional portfolios at Moody's Analytics - a governance discipline that closely parallels the second-line-of-defense mandate CIBC Mellon's Credit and Market Risk team carries. I would like to be considered for the Market Risk Manager role.
+
+Over the past four years at Moody's I have held delegated sign-off authority on valuation, sensitivity, and risk outputs for portfolios ranging $5-25bn per engagement, reviewing and challenging first-line curve construction, spread calibration, and cross-asset interactions before release. My mandate spans fixed-income valuation and risk sensitivities, interest-rate risk under parallel and non-parallel shocks, and liquidity and cash-flow projection under base, stress, and reverse-stress scenarios. As a member of the model governance committee, I contribute to methodology review, documentation standards, and model-performance assessment. Before Moody's I built stochastic scenario generators and performed VaR/CVaR portfolio-risk analytics via Ortec's GLASS platform for Canadian pension funds at Ortec Finance, and delivered IFRS-driven risk transformation at EY. I hold the CFA charter and dual MSc degrees in Financial Modelling and Chemical Engineering from Western University.
+
+What draws me to CIBC Mellon is the second-line mandate itself: reviewing and challenging the risk analytics and strategies of first-line business units across market, interest-rate, and liquidity exposures - with credit risk as a natural adjacent extension of my fixed-income valuation and spread-calibration work - and translating findings into clear recommendations for stakeholders at every level while strengthening the risk frameworks that protect an institution serving Canada's largest asset owners. My habit of holding a release rather than signing off on numbers that pass technical checks but fail economic intuition - then escalating with a remediation path - is exactly the independent-challenge instinct this role requires. I would also welcome mentoring junior members of the team, which I do today at Moody's.
+
+I am based in Toronto, available for interviews immediately, and can start approximately four weeks after offer acceptance. My resume is attached and references are available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA

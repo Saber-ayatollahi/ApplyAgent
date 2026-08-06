@@ -1,0 +1,15 @@
+Dear Hiring Team,
+
+At Moody's Analytics I currently hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ranging $5–25bn per engagement — the measurement, challenge, and oversight discipline that underpins the Director, Investment Risk mandate at Canada Infrastructure Bank. I would like to be considered for this role.
+
+My investment-risk analytics depth is built from two complementary practitioner foundations. At Ortec Finance I ran asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR through the GLASS platform, with hands-on risk decomposition, contribution-to-risk, risk budgeting, and near-optimal frontier robustness analysis for Canadian and international institutional clients. I built and interpreted stochastic economic scenario generators to assess interest-rate, inflation, and currency risk, and delivered LDI and hedging studies — including the University Pension Plan JSPP merger — presenting findings directly to investment committees. At Moody's Analytics I have led the design of a multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, validated derivatives outputs across rates, FX, and inflation, and re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines. I hold the CFA charter and dual MSc degrees in Financial Modelling and Chemical Engineering from Western University.
+
+What draws me specifically to CIB is the opportunity to apply institutional-grade investment-risk measurement — VaR and CVaR analytics, risk decomposition, multi-asset scenario analysis, and Monte Carlo modelling — to a portfolio whose long-duration cash flows, illiquidity profile, and macro sensitivity make those tools especially consequential. My quantitative foundation, scenario-engine experience, and institutional-investor mentality from Ortec and Moody's translate directly; the infrastructure sector is the learning curve I am most motivated to climb. I am based in Toronto, available to interview immediately, and can start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
++1 (416) 856-1276 · saber.ayatollahi@gmail.com · linkedin.com/in/sayatollahi
+
+---
+
+**Before submitting:** Honest gaps to own in interview (NOT on resume): (1) No direct infrastructure-asset / project-finance experience — frame as the learning curve, lean on transferable institutional-risk toolkit. (2) No direct credit-risk underwriting experience — this role may sit alongside or interact with credit risk; if probed, position investment-risk measurement as the contribution and credit-risk as adjacent. (3) No Bloomberg / specific infrastructure data platforms claimed — true. (4) Confirm with Saber: work authorization status and whether CIB's Toronto/Ottawa split is acceptable. (5) Title is 'Director' at CIB — likely IC-plus or small-team-lead level; clarify scope (team size, sign-off authority) early in the recruiter screen so comp expectations align with the §9 Maple-8/equivalent band.

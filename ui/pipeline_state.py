@@ -149,13 +149,49 @@ def _safe_load(path: Path | None) -> dict | None:
         return None
 
 
+def _canon_tracker_key(row_or_url) -> str:
+    """Canonical key for tracker-membership checks. Mirrors
+    `auto_promote._identity_keys` (norm_url branch) so the UI's "already
+    promoted?" flag agrees with the backend's dedup. Without this, LinkedIn
+    URL drift (`ca.linkedin.com/jobs/view/<slug>-<id>` vs
+    `www.linkedin.com/jobs/view/<id>`) let already-tracked rows surface in
+    the promote table as promotable; the resulting click was then silently
+    dropped by auto_promote as a dupe — the "row stays in the promote table
+    after I promote it" bug.
+
+    Accepts a row dict (uses link/url/job_url) or a bare URL string.
+    Falls back to the raw URL if `worklist.norm_url` is unimportable, so a
+    missing automation dir degrades to legacy behavior instead of crashing.
+    """
+    norm_url = None  # type: ignore
+    for _imp in (
+        lambda: __import__("worklist", fromlist=["norm_url"]).norm_url,
+        lambda: __import__("automation.worklist", fromlist=["norm_url"]).norm_url,
+    ):
+        try:
+            norm_url = _imp()
+            break
+        except Exception:
+            continue
+    if norm_url is None:
+        if isinstance(row_or_url, dict):
+            return (row_or_url.get("url") or row_or_url.get("link")
+                    or row_or_url.get("job_url") or "")
+        return row_or_url or ""
+    row = row_or_url if isinstance(row_or_url, dict) else {"link": row_or_url or ""}
+    return norm_url(row) or ""
+
+
 def _tracker_url_set(tracker_path: Path) -> set[str]:
+    """Canonical-URL set for every tracker job. Keys go through
+    `_canon_tracker_key` so membership matches the dedup auto_promote.py
+    actually applies."""
     t = _safe_load(tracker_path) or {}
     out: set[str] = set()
     for j in t.get("jobs", []) or []:
-        u = j.get("url")
-        if isinstance(u, str) and u:
-            out.add(u)
+        c = _canon_tracker_key(j)
+        if c:
+            out.add(c)
     return out
 
 
@@ -930,7 +966,7 @@ def derive_snapshot(
         if score is None or score < min_score:
             continue
         url = r.get("url") or r.get("link")
-        if not url or url in tracker_urls:
+        if not url or _canon_tracker_key(r) in tracker_urls:
             continue
         if _row_suppressed(r, snapshot_state):
             suppressed_promotable_count += 1
@@ -1160,7 +1196,7 @@ def compute_preflight_breakdown(
         if row is None:
             missing += 1
             continue
-        if url in tracker_urls:
+        if _canon_tracker_key(url) in tracker_urls:
             already_tracked += 1
         score = _row_score(row)
         if score is not None and score < min_score:

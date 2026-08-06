@@ -1,0 +1,514 @@
+{
+  "brief_date": "20260715",
+  "generated_at": "2026-07-15T22:59:57",
+  "delta_file": "delta_20260715.json",
+  "total_new": 1088,
+  "triaged": 393,
+  "scored": 393,
+  "actionable": 41,
+  "error_count": 0,
+  "sample_errors": [],
+  "top": [
+    {
+      "title": "Financial Risk Manager",
+      "link": "https://www.linkedin.com/jobs/view/financial-risk-manager-at-deloitte-4420902191",
+      "company_reported": "Deloitte",
+      "location": "Dallas, TX",
+      "keyword_hit": "ALM",
+      "source": "linkedin",
+      "posted_date": "2026-07-11",
+      "company": "Deloitte Canada",
+      "sector": "Big 4 Risk Advisory",
+      "found_at": "2026-07-12",
+      "newly_seen": false,
+      "lane": "Opportunistic",
+      "geo": "\ud83c\uddfa\ud83c\uddf8 US \u2014 on-site (TN)",
+      "_triage": {
+        "stage1_pass": true,
+        "rough_tier": 3,
+        "score": 3,
+        "rule_reasons": [
+          "medium=['financial risk']",
+          "level=['manager']",
+          "pass:medium_hit"
+        ],
+        "hits_breakdown": {
+          "strong": [],
+          "medium": [
+            "financial risk"
+          ],
+          "weak": [],
+          "level": [
+            "manager"
+          ]
+        }
+      },
+      "_jd_len": 5736,
+      "fit": {
+        "fit_score": 9,
+        "fit_verdict": "apply_now",
+        "top_3_reasons": [
+          "Expert ALM, IRRBB, and stress-testing capability \u2014 7 years across institutional ALM analytics, multi-period cash-flow projection engines, EVE/NII sensitivity under parallel and non-parallel shocks, and enterprise stress-testing design (Moody's Analytics). Aligns directly with Liquidity Risk and Market Risk domains the role emphasizes.",
+          "Model validation and governance authority \u2014 delegated sign-off on multi-asset institutional portfolios, independent model review and challenge, assumption validation, and documentation to audit standards (Moody's). Directly supports the 'model validation support' and 'model methodology governance' qualifications the role seeks.",
+          "End-to-end platform delivery and client transformation experience \u2014 led Calypso\u2192PFaroe migration for multi-asset clients at Moody's, translated client requirements into product/dev work, and configured enterprise risk-analytics systems. Matches the 'business transformation, end-to-end implementation, and regulatory remediation' focus Deloitte emphasizes."
+        ],
+        "skill_gaps": [
+          "Counterparty Credit Risk / CCR-xVA and EAD modelling \u2014 JD lists EAD as a preferred Credit Risk domain. Saber's derivatives work is risk-side validation (cash-flow, scenario, hedging analytics), not front-office CCR pricing or CVA capital machinery. Minor gap; frame in cover letter as 'credit-risk measurement and model-validation transferability' if CCR depth is critical to the specific client engagement."
+        ],
+        "tier": 1,
+        "applicable_resume_variants": [
+          "ALM",
+          "VAL",
+          "CON"
+        ],
+        "summary": "Deloitte financial-risk-advisory fit: 7y ALM/IRRBB/stress-testing expert with delegated model sign-off authority and enterprise platform delivery (Moody's Analytics). Dual MSc + CFA; ready for capital-management and regulatory-remediation transformation. Apply now.",
+        "deterministic": {
+          "coverage_pct": 91.7,
+          "skill_ids_matched": [
+            "sk_alm",
+            "sk_client_onboarding",
+            "sk_excel",
+            "sk_funding_ratio",
+            "sk_irrbb",
+            "sk_model_review_challenge",
+            "sk_osfi_lar",
+            "sk_python",
+            "sk_r",
+            "sk_sql",
+            "sk_stress_testing"
+          ],
+          "primary_hit_ids": [
+            "sk_alm",
+            "sk_stress_testing",
+            "sk_irrbb",
+            "sk_model_review_challenge",
+            "sk_funding_ratio",
+            "sk_client_onboarding"
+          ],
+          "gap_phrases": [
+            "EAD"
+          ],
+          "suggested_variants": [
+            {
+              "variant": "ALM",
+              "bullets": 11,
+              "skills": 6,
+              "score": 22.5
+            },
+            {
+              "variant": "VAL",
+              "bullets": 3,
+              "skills": 3,
+              "score": 7.5
+            },
+            {
+              "variant": "VEN",
+              "bullets": 3,
+              "skills": 3,
+              "score": 7.5
+            },
+            {
+              "variant": "QUANT",
+              "bullets": 2,
+              "skills": 4,
+              "score": 7.0
+            },
+            {
+              "variant": "CON",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory (Permanent / Contract)",
+      "link": "https://ca.linkedin.com/jobs/view/consultant-senior-consultant-corporate-treasury-modeling-and-advisory-permanent-contract-at-deloitte-4428303194",
+      "company_reported": "Deloitte",
+      "location": "Toronto, Ontario, Canada",
+      "keyword_hit": "model validation",
+      "source": "linkedin",
+      "posted_date": "2026-07-04",
+      "company": "Deloitte Canada",
+      "sector": "Big 4 Risk Advisory",
+      "found_at": "2026-07-15",
+      "newly_seen": true,
+      "lane": "Opportunistic",
+      "geo": "\ud83c\udf41 Canada \u2014 GTA",
+      "_triage": {
+        "stage1_pass": true,
+        "rough_tier": 3,
+        "score": 7,
+        "rule_reasons": [
+          "medium=['treasury', 'erm']",
+          "weak=['modeling', 'advisory']",
+          "level=['senior consultant']",
+          "pass:medium_hit"
+        ],
+        "hits_breakdown": {
+          "strong": [],
+          "medium": [
+            "treasury",
+            "erm"
+          ],
+          "weak": [
+            "modeling",
+            "advisory"
+          ],
+          "level": [
+            "senior consultant"
+          ]
+        }
+      },
+      "_jd_len": 6898,
+      "fit": {
+        "fit_score": 9,
+        "fit_verdict": "apply_now",
+        "top_3_reasons": [
+          "7 years hands-on ALM modelling, stress testing, and balance-sheet analytics \u2014 directly matches Structural Interest Rate Risk, Liquidity Stress Testing, Capital Adequacy, and Fund Transfer Pricing mandate.",
+          "Delegated sign-off authority on institutional ALM/treasury models at Moody's Analytics; independent model review, challenge, and validation expertise across multi-asset institutional mandates.",
+          "Advanced Python + Excel + R proficiency; built enterprise cash-flow projection engines and scenario-validation tooling within model-governance frameworks \u2014 rare depth for a Consultant/Senior Consultant hire."
+        ],
+        "skill_gaps": [],
+        "tier": 1,
+        "applicable_resume_variants": [
+          "ALM",
+          "VAL",
+          "QUANT"
+        ],
+        "summary": "Perfect-fit ALM/Treasury consulting role. Saber's 7 years of balance-sheet modelling, stress testing, delegated sign-off authority, and Python-automation depth match Deloitte's mandate precisely. Apply now.",
+        "deterministic": {
+          "coverage_pct": 100.0,
+          "skill_ids_matched": [
+            "sk_alm",
+            "sk_excel",
+            "sk_model_review_challenge",
+            "sk_python",
+            "sk_r",
+            "sk_stress_testing"
+          ],
+          "primary_hit_ids": [
+            "sk_alm",
+            "sk_stress_testing",
+            "sk_model_review_challenge"
+          ],
+          "gap_phrases": [],
+          "suggested_variants": [
+            {
+              "variant": "ALM",
+              "bullets": 8,
+              "skills": 3,
+              "score": 15.0
+            },
+            {
+              "variant": "VAL",
+              "bullets": 3,
+              "skills": 3,
+              "score": 7.5
+            },
+            {
+              "variant": "QUANT",
+              "bullets": 2,
+              "skills": 3,
+              "score": 6.0
+            },
+            {
+              "variant": "VEN",
+              "bullets": 1,
+              "skills": 2,
+              "score": 3.5
+            },
+            {
+              "variant": "CON",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "AVP, Model Risk Governance",
+      "link": "https://td.wd3.myworkdayjobs.com/TD_Bank_Careers/job/Toronto-Ontario/AVP--Model-Risk-Governance_R_1494985",
+      "location": "Toronto, Ontario",
+      "posted_date": "2026-07-15",
+      "keyword_hit": "model validation",
+      "source": "workday:td",
+      "company": "TD Bank",
+      "sector": "Canadian Big 6 Banks",
+      "found_at": "2026-06-24",
+      "newly_seen": false,
+      "lane": "Floor \u00b7 Bank Risk/ALM/Validation",
+      "geo": "\ud83c\udf41 Canada \u2014 GTA",
+      "_triage": {
+        "stage1_pass": true,
+        "rough_tier": 1,
+        "score": 5,
+        "rule_reasons": [
+          "strong=['model risk']",
+          "weak=['governance']",
+          "level=['avp']",
+          "pass:strong_hit"
+        ],
+        "hits_breakdown": {
+          "strong": [
+            "model risk"
+          ],
+          "medium": [],
+          "weak": [
+            "governance"
+          ],
+          "level": [
+            "avp"
+          ]
+        }
+      },
+      "_jd_len": 8000,
+      "fit": {
+        "fit_score": 9,
+        "fit_verdict": "apply_now",
+        "top_3_reasons": [
+          "4 years delegated sign-off authority on institutional model outputs (Moody's); operates within formal governance framework with independent review, challenge, and escalation discipline \u2014 directly matches core AVP accountabilities.",
+          "Proven model-validation toolkit: assumption validation, economic-defensibility assessment, auditability/documentation standards, and exception escalation \u2014 core competencies for enterprise model risk policy oversight and QA/QC process design.",
+          "Big 6 Canadian sector depth (Moody's Analytics institutional client base includes RBC, TD, CIBC, BMO, Scotiabank); understands bank model-risk culture, regulatory interaction patterns, and cross-functional stakeholder management at scale."
+        ],
+        "skill_gaps": [],
+        "tier": 1,
+        "applicable_resume_variants": [
+          "VAL",
+          "ALM"
+        ],
+        "summary": "Model-governance and validation expert with 4 years delegated sign-off authority, formal escalation discipline, and Big 6 institutional-platform delivery. Ready for AVP Model Risk Governance \u2014 lead with VAL / ALM variants emphasizing governance framework, independent review, and policy/procedure documentation rigor.",
+        "deterministic": {
+          "coverage_pct": 100.0,
+          "skill_ids_matched": [
+            "sk_escalation_exception",
+            "sk_model_review_challenge",
+            "sk_osfi_e23"
+          ],
+          "primary_hit_ids": [
+            "sk_model_review_challenge",
+            "sk_escalation_exception"
+          ],
+          "gap_phrases": [],
+          "suggested_variants": [
+            {
+              "variant": "VAL",
+              "bullets": 3,
+              "skills": 3,
+              "score": 7.5
+            },
+            {
+              "variant": "ALM",
+              "bullets": 3,
+              "skills": 2,
+              "score": 6.5
+            },
+            {
+              "variant": "VEN",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            },
+            {
+              "variant": "QUANT",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Senior Asset Liability Management Analyst (HYBRID)",
+      "link": "https://www.linkedin.com/jobs/view/senior-asset-liability-management-analyst-hybrid-at-first-tech-federal-credit-union-4402817412",
+      "company_reported": "First Tech Federal Credit Union",
+      "location": "Marlborough, MA",
+      "keyword_hit": "interest rate risk",
+      "source": "linkedin",
+      "posted_date": "2026-06-26",
+      "company": "First National Financial",
+      "sector": "Mortgage Lenders",
+      "found_at": "2026-07-15",
+      "newly_seen": true,
+      "lane": "Side \u00b7 Fintech",
+      "geo": "\ud83c\udf0d Other / overseas",
+      "_triage": {
+        "stage1_pass": true,
+        "rough_tier": 3,
+        "score": 4,
+        "rule_reasons": [
+          "strong=['asset liability']",
+          "level=['senior']",
+          "pass:strong_hit"
+        ],
+        "hits_breakdown": {
+          "strong": [
+            "asset liability"
+          ],
+          "medium": [],
+          "weak": [],
+          "level": [
+            "senior"
+          ]
+        }
+      },
+      "_jd_len": 3650,
+      "fit": {
+        "fit_score": 9,
+        "fit_verdict": "apply_now",
+        "top_3_reasons": [
+          "7 years of direct ALM modelling, multi-period balance-sheet risk analytics, and cash-flow projection\u2014exactly the core of this role's mandate.",
+          "Delegated sign-off authority on institutional portfolio models at Moody's; experienced overseeing model runs, review controls, and documented validation processes for multi-asset ALM systems.",
+          "Proven track record designing and enhancing financial models for structural balance-sheet behavior, liquidity-gap analysis, and scenario impact assessment across institutional mandates."
+        ],
+        "skill_gaps": [],
+        "tier": 1,
+        "applicable_resume_variants": [
+          "ALM",
+          "VAL"
+        ],
+        "summary": "Perfect fit. Senior ALM analyst role aligns with Saber's 7y institutional portfolio governance, cash-flow modelling, and balance-sheet risk expertise. Lead with ALM variant; apply this week.",
+        "deterministic": {
+          "coverage_pct": 100.0,
+          "skill_ids_matched": [
+            "sk_alm",
+            "sk_multiperiod_bs_risk"
+          ],
+          "primary_hit_ids": [
+            "sk_alm",
+            "sk_multiperiod_bs_risk"
+          ],
+          "gap_phrases": [],
+          "suggested_variants": [
+            {
+              "variant": "ALM",
+              "bullets": 5,
+              "skills": 2,
+              "score": 9.5
+            },
+            {
+              "variant": "VAL",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            },
+            {
+              "variant": "QUANT",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "title": "Model Validation Senior Associate",
+      "link": "https://www.linkedin.com/jobs/view/model-validation-senior-associate-at-the-depository-trust-clearing-corporation-dtcc-4392929733",
+      "company_reported": "The Depository Trust & Clearing Corporation (DTCC)",
+      "location": "Jersey City, NJ",
+      "keyword_hit": "model risk",
+      "source": "linkedin",
+      "posted_date": "2026-06-25",
+      "company": "The Depository Trust & Clearing Corporation (DTCC)",
+      "sector": "Market Infrastructure",
+      "found_at": "2026-06-29",
+      "newly_seen": false,
+      "lane": "A \u00b7 Solutions Engineering",
+      "geo": "\ud83c\uddfa\ud83c\uddf8 US \u2014 on-site (TN)",
+      "_triage": {
+        "stage1_pass": true,
+        "rough_tier": 3,
+        "score": 4,
+        "rule_reasons": [
+          "strong=['model validation']",
+          "level=['senior']",
+          "pass:strong_hit"
+        ],
+        "hits_breakdown": {
+          "strong": [
+            "model validation"
+          ],
+          "medium": [],
+          "weak": [],
+          "level": [
+            "senior"
+          ]
+        }
+      },
+      "_jd_len": 4426,
+      "fit": {
+        "fit_score": 8,
+        "fit_verdict": "apply_now",
+        "top_3_reasons": [
+          "Delegated sign-off authority on institutional models with 4+ years independent model review, challenge, and assumption validation \u2014 directly matches MRGC governance and 'effective challenge' mandate",
+          "Hands-on Python, SQL, and R across multi-asset risk workflows; enterprise platform migration (Calypso\u2192PFaroe) demonstrates implementation validation and client/developer coordination at scale",
+          "Model Risk Management framework fluency: documentation to validation standards, escalation protocols, model-performance monitoring, and SR 11-7 governance awareness from Moody's Analytics"
+        ],
+        "skill_gaps": [
+          "C++ production delivery (gap; Saber has working knowledge only \u2014 JD lists as one of several acceptable languages; Python/SQL strength mitigates)"
+        ],
+        "tier": 1,
+        "applicable_resume_variants": [
+          "VAL",
+          "VEN"
+        ],
+        "summary": "Model-validation and governance expert with 4+ years delegated sign-off authority, independent review/challenge, and SR 11-7 familiarity. Python/SQL/R fluency and enterprise platform-migration experience position Saber as a strong institutional fit for DTCC's MRGC-facing validation and performance-monitoring role. Apply this week.",
+        "deterministic": {
+          "coverage_pct": 85.7,
+          "skill_ids_matched": [
+            "sk_client_onboarding",
+            "sk_model_review_challenge",
+            "sk_python",
+            "sk_r",
+            "sk_sql",
+            "sk_sr_11_7"
+          ],
+          "primary_hit_ids": [
+            "sk_model_review_challenge",
+            "sk_client_onboarding"
+          ],
+          "gap_phrases": [
+            "C++"
+          ],
+          "suggested_variants": [
+            {
+              "variant": "VEN",
+              "bullets": 3,
+              "skills": 3,
+              "score": 7.5
+            },
+            {
+              "variant": "VAL",
+              "bullets": 2,
+              "skills": 2,
+              "score": 5.0
+            },
+            {
+              "variant": "ALM",
+              "bullets": 2,
+              "skills": 1,
+              "score": 4.0
+            },
+            {
+              "variant": "QUANT",
+              "bullets": 1,
+              "skills": 1,
+              "score": 2.5
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "auto_added_ids": [
+    "brief-20260715-01",
+    "brief-20260715-02",
+    "brief-20260715-03"
+  ]
+}

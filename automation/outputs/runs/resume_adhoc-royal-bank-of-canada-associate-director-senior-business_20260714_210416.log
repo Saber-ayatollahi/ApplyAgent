@@ -1,0 +1,20 @@
+# resume_adhoc-royal-bank-of-canada-associate-director-senior-business
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-royal-bank-of-canada-associate-director-senior-business --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-royal-bank-of-canada-associate-director-senior-business.txt
+# started: 2026-07-14T21:04:16.110655
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Associate Director, Senior Business Analyst (Capital Markets) @ Royal Bank of Canada (JD 4923 chars)…
+  [tailor] claude-opus-4-7 cost $0.551 (in=11812, out=4986, cache_read=21949)
+  [tailor] claude-sonnet-4-6 cost $0.083 (in=3821, out=4783, cache_read=14748)
+[resume_agent] validity pass applied.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:07<00:00,  7.81s/it]100%|██████████| 1/1 [00:08<00:00,  8.48s/it]
+[resume_agent] 6 ATS keyword(s) missing (credit risk, risk management, second line of defense, independent challenge, risk appetite, policies); revising once…
+  [tailor] claude-sonnet-4-6 cost $0.038 (in=1997, out=2164, cache_read=14748)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:08<00:00,  8.14s/it]100%|██████████| 1/1 [00:08<00:00,  8.72s/it]
+[resume_agent] note: still missing risk appetite.
+  0%|          | 0/1 [00:00<?, ?it/s]  WARNING: Word/docx2pdf PDF conversion failed: Open.SaveAs
+  0%|          | 0/1 [00:01<?, ?it/s]
+  WARNING: PDF skipped (no libreoffice/soffice on PATH, and Word/docx2pdf unavailable).
+[resume_agent] tracker linked (resume_file + ATS 11/12)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_CIBC-Mellon_Market-Risk-Manager
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_CIBC-Mellon_Market-Risk-Manager

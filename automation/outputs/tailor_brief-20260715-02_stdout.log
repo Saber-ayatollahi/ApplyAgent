@@ -1,0 +1,6 @@
+[jd_tailor] API preflight OK — Valid & credits OK — 5 models, billing works
+[cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$4.159 / cap=$5.00
+[jd_tailor] Tailoring for Deloitte Canada / Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory (Permanent / Contract) ...
+  [tailor] claude-opus-4-8 cost $0.182 (in=5712, out=6135, cache_read=0)
+[jd_tailor] Wrote: C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\tailored\Deloitte_Canada_Consultant_Senior_Consultant_Corporate_Treasury_Modeling_and_20260715.md
+[gate] OK

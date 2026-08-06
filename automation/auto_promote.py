@@ -66,11 +66,11 @@ TRACKER = ROOT / "data" / "job_tracker_data.json"
 # becomes a one-time scrub, not a recurring chore.
 try:
     from location_filter import (  # type: ignore
-        keep_for_toronto_pipeline as _keep_geo,
+        keep_canada_us_remote as _keep_geo,
     )
 except ImportError:
     from .location_filter import (  # type: ignore
-        keep_for_toronto_pipeline as _keep_geo,
+        keep_canada_us_remote as _keep_geo,
     )
 
 # Sector tier registry (replaces the old in-file SECTOR_ROUGH_TIER dict).
@@ -191,6 +191,41 @@ def _identity_keys(row: dict, norm_url_fn) -> set[str]:
     return keys
 
 
+_APPLIED_STATUSES = ("Applied", "Recruiter_Screen", "Phone_Screen",
+                     "Take_Home", "Onsite", "Offer")
+
+
+def _company_title_key(row: dict) -> str:
+    """Normalized company+title identity ('co::title').
+
+    URL keys can't catch a REPOST: LinkedIn assigns a fresh numeric job id
+    (and Workday occasionally a fresh req) when a posting is renewed, so the
+    same role sails past norm_url/reqid dedup and lands as a duplicate row
+    (2026-07 CPP/CC&L duplicate-row bug). Company+title is deliberately used
+    ONLY against rows the user already acted on (see _APPLIED_STATUSES) —
+    two genuinely different openings can share a title (e.g. two BMO
+    'Director, Model Validation' teams), so a blanket company+title dedupe
+    would wrongly merge legitimately distinct postings.
+
+    The company side goes through brand_aliases.canonical_brand because the
+    SAME employer is spelled differently by different boards: the ATS posts
+    the legal entity ("Healthcare of Ontario Pension Plan Trust Fund
+    Company") while LinkedIn posts the brand ("HOOPP"). Without canon-
+    icalization those two never share a key, so a role applied to on Workday
+    kept resurfacing as a "new" LinkedIn posting (2026-07 HOOPP JR102444).
+    """
+    import html as _html
+    from brand_aliases import canonical_brand as _canon
+    co = _canon(_html.unescape(str(row.get("company") or "")))
+    ti = _html.unescape(str(row.get("title") or "")).lower()
+    co = re.sub(r"[^a-z0-9]+", " ", str(co).lower()).strip()
+    ti = re.sub(r"[^a-z0-9]+", " ", ti).strip()
+    return f"{co}::{ti}"
+
+
+_STATUS_OVERRIDE = None  # set by main() from --status; enables reject-from-scored
+
+
 def make_entry(r: dict) -> dict:
     f = r.get("fit") or {}
     verdict = f.get("fit_verdict") or "skip"
@@ -226,10 +261,27 @@ def make_entry(r: dict) -> dict:
         # Unknown / legacy source string — preserve verbatim, tag the scorer
         entry_source = f"{raw_src or 'unknown'}+fit_scorer"
 
+    # Strategy lane (A/B/Floor/Side/Opportunistic) + geo/visa bucket, computed
+    # from sector+title so every tracked role carries them into the dashboard.
+    try:
+        try:
+            from lane_tagger import lane_for
+            from geo_tagger import geo_for
+        except ImportError:
+            from .lane_tagger import lane_for
+            from .geo_tagger import geo_for
+        _lane = lane_for(r.get("sector", ""), r.get("title", ""))
+        _geo = geo_for(r.get("location", ""))
+    except Exception:
+        _lane = ""
+        _geo = ""
+
     return {
         "id": _id,
         "company": co,
         "sector": r.get("sector", ""),
+        "lane": _lane,
+        "geo": _geo,
         "tier": final_tier,
         "title": r["title"],
         "level": "",
@@ -250,7 +302,7 @@ def make_entry(r: dict) -> dict:
         "date_applied": None,
         "date_last_followup": None,
         "source": entry_source,
-        "status": defaults.get("status", "Watch"),
+        "status": (_STATUS_OVERRIDE or defaults.get("status", "Watch")),
         "fit_score": "High" if f.get("fit_score", 0) >= 8 else "Medium" if f.get("fit_score", 0) >= 6 else "Low",
         "fit_score_numeric": int(f.get("fit_score", 0)),
         "resume_variants": variants,
@@ -266,8 +318,8 @@ def make_entry(r: dict) -> dict:
                     "warm_intro_candidate": None, "moodys_alumni_at_target": None},
         "outreach_log": [],
         "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
-        "rejection_reason": None,
-        "rejection_date": None,
+        "rejection_reason": ("Rejected from scored list" if _STATUS_OVERRIDE == "Rejected" else None),
+        "rejection_date": (date.today().isoformat() if _STATUS_OVERRIDE == "Rejected" else None),
         "next_action": "Verify JD live; tailor; find warm intro before submit." if verdict == "apply_now"
                        else "Monitor. Revisit in weekly scan.",
         "notes": f"auto-promoted {date.today().isoformat()} | verdict={verdict} | "
@@ -282,6 +334,9 @@ def main() -> int:
                          "If omitted, promotes worklist_scored.json (the deduped "
                          "scrape ∪ Gmail pool — see automation/worklist.py).")
     ap.add_argument("--commit", action="store_true", help="Actually write the tracker")
+    ap.add_argument("--status", default=None,
+                    help="Override promoted row status (e.g. Rejected) for the UI "
+                         "reject-from-scored action.")
     ap.add_argument("--min-score", type=int, default=7,
                     help="Only promote roles with fit_score >= this (default 7)")
     ap.add_argument("--include-watch", action="store_true",
@@ -308,6 +363,8 @@ def main() -> int:
                          "gate and dedupe still apply. Mutually exclusive with "
                          "--only-url.")
     args = ap.parse_args()
+    global _STATUS_OVERRIDE
+    _STATUS_OVERRIDE = args.status
 
     # Mutually exclusive — a single promote run is either single-URL rescue
     # (legacy `--only-url`) or batch manual selection (`--only-urls FILE`).
@@ -482,6 +539,16 @@ def main() -> int:
             for k in _identity_keys(j, _wl.norm_url):
                 existing_keys.setdefault(k, j)
         existing_ids = {j["id"] for j in tr.get("jobs", []) or []}
+        # Repost guard index: rows the user already applied to (or is
+        # interviewing for), keyed by normalized company+title. Catches
+        # LinkedIn reposts that carry a NEW job id and therefore slip past
+        # the URL-key dedupe above (see _company_title_key docstring).
+        applied_ct: dict[str, dict] = {}
+        for j in tr.get("jobs", []) or []:
+            if j.get("archived"):
+                continue
+            if j.get("date_applied") or j.get("status") in _APPLIED_STATUSES:
+                applied_ct.setdefault(_company_title_key(j), j)
         new_entries: list[dict] = []
         upgrades: list[tuple[str, dict, int]] = []  # (canonical_url, e, score)
         # Audit-pack trail: every row we skip, with reason. Consumed by
@@ -603,7 +670,10 @@ def main() -> int:
             # must affirmatively pass the GTA/Canada predicate. Empty string
             # still passes (LinkedIn omits loc for some Toronto jobs). Geo
             # wins over manual selection — correctness boundary.
-            if not _keep_geo(r.get("location") or ""):
+            # Reject-from-scored (_STATUS_OVERRIDE set) must record the row
+            # regardless of geo — the user explicitly dismissed it. Promotes
+            # still respect the geo gate so the tracker stays GTA-clean.
+            if not _STATUS_OVERRIDE and not _keep_geo(r.get("location") or ""):
                 skipped_geo += 1
                 _audit(r, "geo", score, verdict, r.get("location") or "")
                 continue
@@ -645,6 +715,16 @@ def main() -> int:
                     skipped_dupe += 1
                     _audit(r, "dupe", score, verdict,
                            f"existing={existing.get('fit_score_numeric', 0)}")
+                continue
+            # Repost guard: same company+title as a row already applied /
+            # interviewing → duplicate repost with a fresh URL. Never
+            # auto-add a second row for a role the user already acted on.
+            _ct = _company_title_key(e)
+            if _ct in applied_ct:
+                _ex = applied_ct[_ct]
+                skipped_dupe += 1
+                _audit(r, "dupe_repost_already_applied", score, verdict,
+                       f"existing={_ex.get('id')} status={_ex.get('status')}")
                 continue
             if e["id"] in existing_ids:
                 e["id"] = e["id"] + "-" + str(score)

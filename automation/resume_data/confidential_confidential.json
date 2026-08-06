@@ -1,0 +1,133 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Confidential",
+    "role": "Investment Director",
+    "jd_keywords": [
+      "investment research",
+      "due diligence",
+      "portfolio management",
+      "risk metrics",
+      "macroeconomic",
+      "scenario analysis",
+      "investment memoranda",
+      "asset classes",
+      "Python",
+      "SQL",
+      "financial instruments",
+      "performance attribution",
+      "CFA"
+    ]
+  },
+  "summary": "Investment Director candidate with ~7 years across institutional investment research, portfolio risk analytics, and alternatives-focused due diligence at Moody's Analytics and Ortec Finance. Depth in VaR/CVaR portfolio optimization, risk decomposition, macroeconomic scenario analysis, and LDI across multi-asset mandates, with sign-off authority on outputs for portfolios of $5-25bn per engagement. Fluent in Python and stochastic modelling; CFA charterholder with dual MSc in Financial Modelling and Chemical Engineering.",
+  "core_skills": [
+    "Investment Research & Due Diligence",
+    "Portfolio Management & Optimization (VaR / CVaR)",
+    "Risk Decomposition & Performance Attribution",
+    "Macroeconomic Research & Scenario Analysis",
+    "Multi-Asset & Alternative Strategies",
+    "Financial Instruments & Derivatives Valuation",
+    "Investment Memoranda & Executive Briefs",
+    "Python & SQL for Investment Analysis",
+    "International Markets & Institutional Clients"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics — Asset Management & Buy-Side Solutions",
+      "roles": [
+        {
+          "title": "Asst. Director — Modelling Services (Investment & ALM Risk Lead)",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Investment Analysis & Portfolio Oversight",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and portfolio risk outputs for multi-asset institutional portfolios of $5-25bn per engagement ($50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions.",
+                "Validated derivatives valuation outputs across rates, FX, and inflation, ensuring consistency of sensitivities and scenario impacts at portfolio-level aggregates.",
+                "Reviewed aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream investment and capital processes."
+              ]
+            },
+            {
+              "heading": "Scenario Analysis & Executive Reporting",
+              "bullets": [
+                "Led design of a multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, delivering forward-looking visibility across investment horizons.",
+                "Prepared analytical summaries and periodic briefs for senior stakeholders on interest-rate exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative outputs into investment-committee-ready narratives.",
+                "Escalated outputs lacking economic defensibility, serving as escalation point on client-critical analytical issues for Heads of Risk and investment stakeholders."
+              ]
+            },
+            {
+              "heading": null,
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python (pandas, NumPy, SciPy) and SQL analytics pipelines; deployed agentic-AI workflows (Claude Code, Cursor) reducing development cycle time ~30-40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB and PFaroe PM analytics platforms; translated investment-team requirements into structured development requests and validated model outputs post-deployment.",
+                "Coordinated the full implementation lifecycle across multiple stakeholders, migrating all assigned client accounts from the legacy Calypso platform on schedule."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant — Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning regulatory requirements with financial-reporting frameworks.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management teams on milestone delivery and governance documentation in multi-stakeholder environments."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant — Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition, risk budgeting, and near-optimal frontier analysis to test allocation robustness.",
+                "Built and interpreted stochastic economic scenario generators to assess macroeconomic, interest-rate, and funding-volatility exposures under base-case and stressed environments.",
+                "Delivered investment and ALM studies for Canadian and international pension funds and institutional investors across all major asset classes, covering duration, currency, and inflation exposures.",
+                "Presented investment findings to investment committees on-site, advising on Strategic and Tactical Asset Allocation trade-offs via stress testing and sensitivity analysis.",
+                "Modelled pension actuarial liabilities alongside major investment-product types and economic variables; led onboarding and the study for a three-plan university pension merger on a team of three."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

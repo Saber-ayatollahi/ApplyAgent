@@ -538,6 +538,34 @@ def test_derive_snapshot_promotable_excludes_tracker_urls(fs):
     assert s.promotable_count == 1   # https://x/2 only
 
 
+def test_derive_snapshot_canonicalizes_linkedin_drift(fs):
+    """Regression: LinkedIn URL drift used to evade tracker dedup in the UI.
+    Tracker stores `www.linkedin.com/jobs/view/<id>` (bare canonical); the
+    scored row carries `ca.linkedin.com/jobs/view/<slug>-<id>` (regional +
+    slugged). Both collapse to the same id via worklist.norm_url, so the
+    row must NOT count as promotable — otherwise the user clicks promote,
+    auto_promote correctly drops it as a dupe, and the row stays in the
+    promote table forever."""
+    out = fs["out"]
+    (out / "worklist_scored.json").write_text(json.dumps({
+        "scored_at": datetime.now().isoformat(timespec="seconds"),
+        "stage1_passed": 1, "stage1_dropped": 0,
+        "results": [
+            {"url": ("https://ca.linkedin.com/jobs/view/"
+                     "associate-director-alm-strategy-at-scotiabank-4424008899"),
+             "fit": {"score": 9, "verdict": "apply_now"}},
+        ],
+    }), encoding="utf-8")
+    fs["tracker"].write_text(json.dumps({
+        "jobs": [{"url": "https://www.linkedin.com/jobs/view/4424008899"}],
+    }), encoding="utf-8")
+    s = ps.derive_snapshot(
+        out_dir=out, fit_cache_dir=fs["cache"], tracker_path=fs["tracker"],
+        min_score=7,
+    )
+    assert s.promotable_count == 0
+
+
 def test_derive_snapshot_suppressed_promotable_split(fs):
     """A would-be promotable that hits a sector mute counts toward
     `suppressed_promotable_count`, not `promotable_count`."""
@@ -786,6 +814,25 @@ def test_preflight_already_in_tracker_counted():
         selection={"https://x/1", "https://x/2"},
         scored_rows=rows,
         tracker_urls={"https://x/1"},
+    )
+    assert bd["already_tracked"] == 1
+
+
+def test_preflight_canonicalizes_linkedin_drift():
+    """Regression: a selected LinkedIn URL must be canonicalized through
+    worklist.norm_url before checking tracker membership. The tracker key
+    set is canonical, but the selection (driven by the data_editor) carries
+    raw scored-row URLs that may differ by host (`ca.` vs `www.`) and slug.
+    Without canonicalization the caption says "0 already tracked" and the
+    user is misled into expecting a fresh promote."""
+    scored_url = ("https://ca.linkedin.com/jobs/view/"
+                  "associate-director-alm-strategy-at-scotiabank-4424008899")
+    canon = "https://www.linkedin.com/jobs/view/4424008899"
+    rows = [{"url": scored_url, "fit": {"score": 9, "verdict": "apply_now"}}]
+    bd = ps.compute_preflight_breakdown(
+        selection={scored_url},
+        scored_rows=rows,
+        tracker_urls={canon},   # canonical key, as _tracker_url_set now produces
     )
     assert bd["already_tracked"] == 1
 

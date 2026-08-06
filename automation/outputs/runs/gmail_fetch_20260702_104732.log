@@ -1,0 +1,15 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-07-02T10:47:32.756613
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 2 sender-classified, 2 LinkedIn alert(s); parsed 10 row(s) from 2 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] exclude-list: dropped 5 row(s) from excluded companies — kept 5
+  · drop: Scotiabank — Associate Director, Liquidity Strategy
+  · drop: RBC — Senior Manager - Data Risk and Governance
+  · drop: TD — Senior Manager, Governance and Control, Market Risk and Coun
+  · drop: National Bank of Canada — Senior Manager Risk Strategy
+  · drop: TD — Senior Manager, Business Programs
+[gmail_fetch] ✓ wrote scan_gmail_20260702_104736.json with 5 row(s).
+[gmail_fetch]   2 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 2636 rows (2593 scrape, 31 gmail, 12 both) · 4 new since last score

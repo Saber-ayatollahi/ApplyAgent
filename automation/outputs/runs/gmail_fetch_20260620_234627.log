@@ -1,0 +1,15 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-06-20T23:46:27.071220
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 15 sender-classified, 15 LinkedIn alert(s); parsed 99 row(s) from 15 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] geo filter: dropped 26 non-GTA row(s) — kept 73
+  · drop: Mercor — Greater Montreal Metropolitan Area
+  · drop: Mercor — Greater Montreal Metropolitan Area
+  · drop: Mercor — Greater Montreal Metropolitan Area
+  · drop: Mercor — Greater Montreal Metropolitan Area
+  · drop: Mackenzie Investments — Montreal, QC
+[gmail_fetch] ✓ wrote scan_gmail_20260620_234632.json with 73 row(s).
+[gmail_fetch]   14 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 2130 rows (1802 scrape, 217 gmail, 111 both) · 29 new since last score

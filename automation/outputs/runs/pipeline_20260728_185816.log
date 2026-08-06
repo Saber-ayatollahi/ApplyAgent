@@ -1,0 +1,15 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-dry-run --triage-out worklist_triage.json
+# started: 2026-07-28T18:58:16.522368
+
+=== ApplyAgent pipeline 20260728_185816 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 3607 rows (3270 scrape, 225 gmail, 112 both) · 0 new since last score
+[score] [fit_scorer] Loaded 3607 roles from worklist.json
+[score] [fit_scorer] Stage 1: 1602 pass / 2005 drop / 0 filtered by --only
+[score] [fit_scorer] DRY RUN complete. Wrote worklist.json -> worklist_triage.json
+[stage 3] SKIPPED
+
+=== Pipeline 20260728_185816 complete ===

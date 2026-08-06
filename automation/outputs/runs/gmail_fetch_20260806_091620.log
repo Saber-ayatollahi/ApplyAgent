@@ -1,0 +1,18 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-08-06T09:16:20.262484
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] ⚠️  quarantined 2 row(s) with title==company prefix (parser regression?). See harvest_diagnostics.quarantine in the output envelope.
+  · drop: company='Oliver Wyman' title='Oliver Wyman - Associate Team Leader; Team Leader; Director-Data and Analytics'
+  · drop: company='Oliver Wyman' title='Oliver Wyman - Associate Team Leader; Team Leader; Director-Data and Analytics'
+[gmail_fetch] inbox match: 19 sender-classified, 19 LinkedIn alert(s); parsed 98 row(s) from 19 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] geo filter: dropped 5 non-GTA row(s) — kept 93
+  · drop: City of Regina — Regina, SK
+  · drop: KPMG Canada — Regina, SK
+  · drop: Associated Bank — Richmond, BC
+  · drop: Raymond James — St. Petersburg, FL
+  · drop: TD — Southfield, MI
+[gmail_fetch] ✓ wrote scan_gmail_20260806_091625.json with 93 row(s).
+[gmail_fetch]   19 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 4156 rows (3767 scrape, 256 gmail, 133 both) · 1739 new since last score

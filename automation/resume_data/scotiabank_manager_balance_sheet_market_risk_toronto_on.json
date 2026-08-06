@@ -1,0 +1,131 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Scotiabank",
+    "role": "Manager, Balance Sheet Market Risk",
+    "jd_keywords": [
+      "Balance Sheet",
+      "IRRBB",
+      "ALM",
+      "asset and liability management",
+      "stress testing",
+      "scenario",
+      "KRD",
+      "NII",
+      "yield curve",
+      "model validation",
+      "OSFI",
+      "Basel",
+      "Python",
+      "SQL"
+    ]
+  },
+  "summary": "Manager-level Balance Sheet Market Risk candidate with ~7 years across ALM, IRRBB, and model governance. At Moody's Analytics, holds delegated sign-off on valuation, sensitivity, and ALM outputs for institutional portfolios ($5-25bn per engagement) and operates IRRBB analytics under parallel and non-parallel shocks aligned with OSFI B-12 and Basel. Built a multi-scenario cash-flow projection engine and Python-based reconciliation pipelines. CFA + dual MSc; OSFI E-23 / SR 11-7 aware.",
+  "core_skills": [
+    "ALM & IRRBB (EVE, NII, KRD)",
+    "Yield curve construction & shock design",
+    "Stress testing & scenario analysis",
+    "Independent model review & parallel runs",
+    "Behavioral assumptions (deposits, prepayments)",
+    "OSFI B-12 / E-23 & Basel IRRBB",
+    "Python, SQL, MATLAB, Excel",
+    "Reconciliation & exception reporting",
+    "Governance documentation & model controls"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "IRRBB, ALM & Balance-Sheet Risk",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ranging $5-25bn per engagement (~$50bn+ cumulative), including independent review of curve construction, spread calibration, and cross-asset interactions before production release.",
+                "Oversee interest rate risk and duration analysis under parallel and non-parallel rate shocks, aligned with IRRBB standards analogous to OSFI B-12 and Basel Committee frameworks.",
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios - delivering forward-looking liquidity and NII visibility across ALM horizons.",
+                "Architected configurable time-bucketed gap analytics (T+1 through multi-year) supporting funding, refinancing, and asset-allocation decisions under OSFI LAR-style requirements.",
+                "Embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory expectations - serving as a primary contact for cross-business assumption setting."
+              ]
+            },
+            {
+              "heading": "Model Governance, Validation & Reconciliation",
+              "bullets": [
+                "Operate within a formal model-governance framework: independent review and challenge, assumption validation, and documentation standards consistent with SR 11-7 and OSFI E-23 expectations.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation; reconcile sensitivities (including KRD-style decomposition) and scenario impacts at portfolio-level ALM aggregates against first-line numbers.",
+                "Escalate outputs lacking mathematical or economic defensibility; serve as escalation point for client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders.",
+                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines with embedded logging, validation checks, and exception reporting - the template now reused on adjacent workflows."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform; advised on asset, liability, and ALM configurations and validated outputs post-deployment.",
+                "Contributed to successful migration of all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform; translated investment-team requirements into Product Owner development requests."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation and reporting frameworks.",
+                "Advised actuarial, IT, finance, and PM functions on standards adoption; contributed governance documentation and regulatory-readiness materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors - analyzed funding ratios, duration mismatch, and long-term balance-sheet risk.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base and stressed environments.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk; conducted LDI analysis for pension-fund clients.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR with risk decomposition and near-optimal frontier analysis using Ortec's GLASS platform.",
+                "Led onboarding and the ALM study for a three-plan university pension merger (jointly-sponsored plan), evaluating duration, currency, inflation, and leverage overlay strategies; presented findings to investment committees on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

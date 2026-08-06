@@ -1,0 +1,84 @@
+{
+  "scan_date": "20260610",
+  "source": "worklist_scored.json",
+  "min_score": 7,
+  "include_watch": false,
+  "mode": "commit",
+  "selection_mode": "manual",
+  "summary": {
+    "added": 3,
+    "updated": 0,
+    "expired": 0,
+    "skipped_verdict": 0,
+    "skipped_score": 0,
+    "skipped_dupe": 0,
+    "skipped_geo": 0,
+    "suppressed_after_score": 0
+  },
+  "skipped_rows": [],
+  "suppressed_after_score": [],
+  "promoted": [
+    {
+      "id": "auto-td-treasury-manager-pension-alm-s",
+      "company": "TD",
+      "title": "Treasury Manager - Pension ALM & Strategy",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4423017361",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-jobgether-director-financial-risk",
+      "company": "Jobgether",
+      "title": "Director, Financial Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4425084931",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-associate-director-stress-test",
+      "company": "RBC",
+      "title": "Associate Director, Stress Testing Analytics",
+      "score": 7,
+      "tier": 2,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4424164075",
+      "selection_mode": "manual"
+    }
+  ],
+  "new_entries": [
+    {
+      "id": "auto-td-treasury-manager-pension-alm-s",
+      "company": "TD",
+      "title": "Treasury Manager - Pension ALM & Strategy",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4423017361",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-jobgether-director-financial-risk",
+      "company": "Jobgether",
+      "title": "Director, Financial Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4425084931",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-associate-director-stress-test",
+      "company": "RBC",
+      "title": "Associate Director, Stress Testing Analytics",
+      "score": 7,
+      "tier": 2,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4424164075",
+      "selection_mode": "manual"
+    }
+  ]
+}

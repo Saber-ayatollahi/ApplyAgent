@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-td-treasury-manager-pension-alm-s_20260610_195149",
+  "label": "resume_auto-td-treasury-manager-pension-alm-s",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-td-treasury-manager-pension-alm-s",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 8092,
+  "started_at": "2026-06-10T19:51:49",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-td-treasury-manager-pension-alm-s_20260610_195149.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-td-treasury-manager-pension-alm-s_20260610_195149.json",
+  "state": "finished",
+  "finished_at": "2026-06-10T19:55:14",
+  "returncode": null
+}

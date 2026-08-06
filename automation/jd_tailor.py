@@ -105,7 +105,13 @@ except ImportError:
 # Per-1M-token prices (USD) — same source as fit_scorer._MODEL_PRICES.
 # Tailor uses Opus by default, which is the most expensive model available.
 _MODEL_PRICES = {
-    "claude-opus-4-7":           {"input": 15.0, "output": 75.0},
+    "claude-fable-5":            {"input": 10.0, "output": 50.0},
+    "claude-opus-5":             {"input": 5.0,  "output": 25.0},
+    "claude-opus-4-8":           {"input": 5.0,  "output": 25.0},
+    "claude-sonnet-5":           {"input": 3.0,  "output": 15.0},
+    # 4-7 was carrying Opus-3-era $15/$75 — it bills at $5/$25 like 4-8, so the
+    # ledger overstated every 4-7 call 3x (~$18 of phantom spend lifetime).
+    "claude-opus-4-7":           {"input": 5.0,  "output": 25.0},
     "claude-sonnet-4-6":         {"input": 3.0,  "output": 15.0},
     "claude-haiku-4-5-20251001": {"input": 1.0,  "output": 5.0},
     "claude-haiku-4-5":          {"input": 1.0,  "output": 5.0},
@@ -151,8 +157,8 @@ OUT_DIR = ROOT / "automation" / "outputs"
 # for legacy *.md files written before this split.
 TAILORED_DIR = OUT_DIR / "tailored"
 
-MODEL = os.environ.get("JD_TAILOR_MODEL", "claude-opus-4-7")  # override via env
-FALLBACK_MODEL = os.environ.get("JD_TAILOR_FALLBACK", "claude-sonnet-4-6")
+MODEL = os.environ.get("JD_TAILOR_MODEL", "claude-opus-5")  # override via env
+FALLBACK_MODEL = os.environ.get("JD_TAILOR_FALLBACK", "claude-sonnet-5")
 
 
 def slurp(path: Path) -> str:
@@ -345,7 +351,7 @@ Keep it a 1-2 page equivalent. No fake metrics. No bullets outside the library.
 """
 
 
-def call_claude(system: str, user: str, max_tokens: int = 16000,
+def call_claude(system: str, user: str, max_tokens: int = 32000,
                 cost_guard=None) -> str:
     """Call Claude with cost telemetry, ledger recording, and optional cost guard.
 
@@ -354,6 +360,15 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
     widget would silently undercount. Without a cost guard, a misbehaving
     tracker entry could trigger several tailors via auto-tailor and burn
     real money. Both wrappers are optional so legacy importers still work.
+
+    STREAMS rather than one-shots the request. Opus 5 thinks by default
+    (Opus 4.8 did not), and max_tokens caps thinking + visible output
+    *together* — so the budget has to be generous or a long resume JSON gets
+    truncated mid-answer by its own reasoning. Past ~16k the SDK refuses a
+    non-streaming call whose estimated duration would outlive the idle
+    connection, so raising the ceiling and streaming are one change, not two.
+    get_final_message() hands back the same Message object messages.create()
+    returned, so the usage/telemetry below is untouched.
     """
     client = anthropic.Anthropic()
     last_err: Exception | None = None
@@ -363,12 +378,13 @@ def call_claude(system: str, user: str, max_tokens: int = 16000,
                   f"{cost_guard.reason}", file=sys.stderr)
             raise RuntimeError(f"cost_guard: {cost_guard.reason}")
         try:
-            resp = client.messages.create(
+            with client.messages.stream(
                 model=model,
                 max_tokens=max_tokens,
                 system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                 messages=[{"role": "user", "content": user}],
-            )
+            ) as stream:
+                resp = stream.get_final_message()
             # Cost accounting BEFORE returning so a downstream parser failure
             # doesn't drop spend on the floor. cost_guard.record runs first
             # because it's the in-process bound; ledger.record is the

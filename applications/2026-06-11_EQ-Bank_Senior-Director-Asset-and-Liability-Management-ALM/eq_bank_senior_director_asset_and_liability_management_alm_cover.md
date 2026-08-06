@@ -1,0 +1,17 @@
+Dear Hiring Team,
+
+I currently hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios at Moody's Analytics — the practitioner mandate at the core of the Senior Director, Asset and Liability Management (ALM) role at EQ Bank. With approximately seven years across institutional ALM analytics, IRRBB modelling, and balance-sheet risk, I would like to be considered for this opportunity.
+
+Over the past three years at Moody's I have led the design and implementation of an enterprise multi-scenario cash-flow projection engine supporting base, stress, and reverse-stress scenarios — the analytical spine directly analogous to EQ Bank's EWST, MST, and ICAAP-support requirements. My mandate covers interest-rate risk and duration analysis under parallel and non-parallel rate shocks consistent with OSFI B-12 and Basel IRRBB, validation of rates, FX, and inflation derivatives outputs, and time-bucketed liquidity-gap analytics from T+1 through multi-year horizons. I operate inside a formal model-governance framework — escalating outputs lacking economic defensibility, documenting policies and procedures to validation standards, and preparing scenario-impact summaries for Heads of Risk and senior committees. Before Moody's, I performed cash-flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk at Ortec Finance, and delivered IFRS 9 and IFRS 17 regulatory transformation at EY.
+
+What draws me specifically to EQ Bank is the architect mandate of this role — shaping balance-sheet strategy at Canada's Challenger Bank rather than maintaining a legacy book at a Schedule I. The combination of an active hedging program, a treasury-investment portfolio requiring continuous optimisation against OSFI's evolving market-risk guidance, and a culture that rewards analytical rigour over institutional inertia is exactly the environment where my practitioner depth is most productive. I hold the CFA charter and dual MSc degrees from Western University.
+
+I am based in Toronto, available for interviews immediately, and can commit to a start approximately four weeks after offer acceptance. References are available upon request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
++1 (416) 856-1276 · saber.ayatollahi@gmail.com · linkedin.com/in/sayatollahi
+
+---
+
+**Before submitting:** Honest gaps to own in interview (do NOT put in resume): (1) Title/tenure stretch - JD asks for 15+ yrs and explicit team leadership; Saber has ~7 yrs IC-with-sign-off. Recruiter screen will probe this; lead with depth-of-mandate framing, do not negotiate base into Senior Manager territory unless asked. (2) Hedge accounting (IFRS 9 designation, effectiveness testing) - covered tangentially via EY IFRS 9 work but not deep hands-on; frame as 'applied knowledge, partner closely with Finance'. (3) Direct bank-treasury seat - all bank ALM work is via the vendor seat at Moody's serving Canadian banks, not as a bank insider. Address by emphasising the volume of Schedule I bank engagements in the client book. (4) ICAAP first-hand authorship - has scenario-engine and stress-testing depth but has not personally owned a bank ICAAP submission; frame as 'designed the analytical layer that feeds ICAAP-style processes'. (5) Direct OSFI relationship management - none; do not claim. Apply via warm intro if possible; this is a referral-heavy posting.

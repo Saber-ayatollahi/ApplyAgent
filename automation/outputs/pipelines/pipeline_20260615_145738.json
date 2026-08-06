@@ -1,0 +1,39 @@
+{
+  "pipeline_id": "20260615_145738",
+  "started_at": "2026-06-15T14:57:38",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": false,
+    "skip_score": true,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 2,
+    "score_dry_run": false,
+    "triage_out": null,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "failed",
+  "stages": {
+    "scrape": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\jd_scraper.py",
+        "--expansion"
+      ],
+      "started_at": "2026-06-15T14:57:39",
+      "state": "failed",
+      "finished_at": "2026-06-15T15:54:37",
+      "elapsed_sec": 3418.4,
+      "returncode": 1,
+      "last_line": ""
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260615_145738_suppressions.json"
+}

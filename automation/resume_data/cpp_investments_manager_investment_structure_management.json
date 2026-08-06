@@ -1,0 +1,129 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CPP Investments",
+    "role": "Manager, Investment Structure Management",
+    "experience_label": "PROFESSIONAL EXPERIENCE",
+    "jd_keywords": [
+      "operational process",
+      "governance",
+      "cross-functional",
+      "CFA",
+      "continuous improvement",
+      "AI tools"
+    ]
+  },
+  "summary": "Candidate for Manager, Investment Structure Management with ~7 years coordinating cross-functional teams through complex analytical and operational deliverables for institutional investors. Supports investing, Finance, Operations, and advisory partners through transaction-related workflows, governance documentation, and post-close maintenance — drawing on multi-asset analytics at Moody's Analytics, IFRS transformation delivery at EY, and pension ALM advisory at Ortec Finance. CFA charterholder; dual MSc; deploys AI tools to streamline analytical workflows and drive continuous improvement in operational processes.",
+  "core_skills": [
+    "Cross-functional coordination (Finance, Legal, Operations, external advisors)",
+    "Transaction workflow support and closing project management",
+    "Governance documentation and institutional controls",
+    "Multi-asset institutional investment analytics",
+    "Operational process design and continuous improvement",
+    "Quarterly reporting and senior-stakeholder communication",
+    "AI tools (Claude Code, Cursor IDE) for workflow automation",
+    "Python analytics pipelines; Excel (Advanced)",
+    "CFA charterholder; dual MSc (Financial Modelling, Engineering)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Assistant Director, Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Cross-functional Transaction & Analytical Support",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional client portfolios ($5–25bn per engagement; ~$50bn cumulative) — coordinate review across internal modelling, product, and client-facing teams prior to each production release.",
+                "Serve as escalation point for client-critical analytical issues, interfacing with clients' Heads of Risk and investment stakeholders to resolve structural and methodological complexities across fixed income, derivatives, and multi-asset mandates.",
+                "Translate quantitative outputs into committee-ready narratives for senior stakeholders covering exposure, scenario impacts, and balance-sheet sensitivities."
+              ]
+            },
+            {
+              "heading": "Governance, Controls & Ongoing Maintenance",
+              "bullets": [
+                "Operate within Moody's formal model-governance framework — independently review assumptions, escalate outputs lacking economic defensibility, and maintain review-trail documentation consistent with institutional control standards.",
+                "Prepare analytical summaries for quarterly stakeholder reviews covering interest-rate exposure, scenario impacts, and portfolio sensitivities — supporting visibility into operational and risk metrics."
+              ]
+            },
+            {
+              "heading": "Process Innovation & AI-Enabled Workflows",
+              "bullets": [
+                "Led design and delivery of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios — replacing a manual spreadsheet workflow with a scalable, auditable platform.",
+                "Re-engineered recurring analytical workflows from spreadsheets into Python pipelines with embedded logging and auditability controls, delivering measurable continuous improvement in accuracy and cycle time.",
+                "Deployed agentic AI tools (Claude Code, Cursor IDE) to automate code generation, validation scaffolding, anomaly detection, and documentation — reducing development cycle time by an estimated 30–40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to an enterprise analytics platform — coordinated timelines, milestones, and pre-go-live activities across internal and client stakeholders.",
+                "Served as technical liaison between client investment teams and Moody's Product Owners and developers — scoped requirements into structured development requests and tracked implementation timelines through go-live.",
+                "Transitioned all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation, financial-reporting, and governance frameworks.",
+                "Coordinated cross-functional delivery across actuarial, finance, IT, risk, and program-management teams on milestone planning, implementation materials, and governance documentation.",
+                "Contributed to IFRS 17 advisory product offerings and go-to-market collateral, supporting methodology development and client-facing pursuits."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies and Strategic Asset Allocation advisory for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration alignment, and long-horizon balance-sheet exposures across multi-asset mandates.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform — including risk decomposition, attribution, and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Led the onboarding and ALM study for the University Pension Plan (UPP) — a three-plan jointly-sponsored pension merger — on a team of three building and validating the model capturing all Funding Policy dynamics; evaluated duration, currency, inflation, and leverage overlay strategies.",
+                "Presented findings to investment committees at pension-fund clients and coordinated with internal and external advisors across multi-stakeholder engagements."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

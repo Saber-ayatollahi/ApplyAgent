@@ -1,0 +1,111 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Verita",
+    "role": "Investment Banking Expert",
+    "jd_keywords": [
+      "valuation",
+      "DCF",
+      "financial modeling",
+      "financial models",
+      "financial analyses",
+      "corporate finance",
+      "capital markets",
+      "accounting",
+      "Excel",
+      "CFA"
+    ]
+  },
+  "summary": "CFA charterholder and quantitative finance professional with ~7 years in financial modeling, valuation, and independent model review — aligned to an Investment Banking Expert engagement evaluating AI-generated financial analyses and valuation models. At Moody's Analytics, holds delegated sign-off authority, independently reviewing and validating valuation, derivatives-pricing, and scenario outputs for multi-asset institutional portfolios ($5–25bn per engagement) for accuracy and economic defensibility. Grounded in DCF, corporate finance, accounting (IFRS), and capital markets, with advanced Excel and Python.",
+  "core_skills": [
+    "Financial Modeling & Valuation",
+    "Valuation Analysis – DCF & Multiples",
+    "Derivatives & Fixed-Income Valuation",
+    "Independent Model Review & Validation",
+    "Stress, Scenario & Sensitivity Analysis",
+    "Corporate Finance & Capital Markets",
+    "Accounting & Financial Reporting (IFRS)",
+    "Python, SQL & Advanced Excel",
+    "Model Governance & Documentation"
+  ],
+  "experience": [
+    {
+      "employer": "Moody’s Analytics – Asset Management & Buy-Side Solutions",
+      "roles": [
+        {
+          "title": "Asst. Director – Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Independently review and validate valuation, derivatives-pricing, sensitivity, and scenario outputs for multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative), holding delegated sign-off authority — assessing model accuracy, assumptions, and economic defensibility before release.",
+                "Review and challenge financial models and multi-scenario engines (base, stress, reverse-stress), documenting assumptions, limitations, and testing results to formal model-governance standards.",
+                "Re-engineered manual spreadsheet workflows into auditable Python pipelines and built agentic-AI workflows (Claude Code, Cursor) that cut model development and validation cycle time an estimated 30–40%."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist – ALM & Risk Analytics",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Validated model outputs post-deployment and led client onboarding for U.S. and Canadian pension funds and asset managers migrating to the PFaroe analytics platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 financial-reporting transformation for insurance clients, aligning accounting standards with model and system implementation."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and validated stochastic Monte Carlo economic scenario generators and ALM/LDI studies for pension funds and institutional investors.",
+                "Performed VaR/CVaR portfolio optimization, risk decomposition, and interest-rate/inflation/currency hedging analysis; presented findings to investment committees and senior stakeholders."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

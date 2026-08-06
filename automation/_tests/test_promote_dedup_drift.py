@@ -178,6 +178,97 @@ def test_promote_upgrade_applies_across_drift(isolated, monkeypatch):
     assert jobs[0]["fit_score_numeric"] == 9  # upgraded, not duplicated
 
 
+# --- repost guard: same role, different board ------------------------------
+# 2026-07 bug: HOOPP JR102444 was applied to on Workday, then kept coming back
+# as a "new" candidate because LinkedIn carries a different URL *and* spells
+# the employer differently ("HOOPP" vs the legal entity on the ATS). No URL key
+# can bridge that, so the company+title repost guard has to — which means the
+# company side must be brand-canonical and the title HTML-unescaped.
+
+HOOPP_WD = ("https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/"
+            "Toronto-Ontario-Canada/Senior-Manager--Risk-Analytics---"
+            "Modelling_JR102444")
+HOOPP_LI = ("https://ca.linkedin.com/jobs/view/senior-manager-risk-analytics-"
+            "modelling-at-hoopp-healthcare-of-ontario-pension-plan-4426379280")
+HOOPP_ENTITY = "Healthcare of Ontario Pension Plan Trust Fund Company"
+
+
+def test_company_title_key_collapses_brand_and_legal_entity():
+    """'HOOPP' (LinkedIn) and the legal entity (Workday) are one employer."""
+    k_ats = auto_promote._company_title_key(
+        {"company": HOOPP_ENTITY, "title": "Senior Manager, Risk Analytics &amp; Modelling"})
+    k_li = auto_promote._company_title_key(
+        {"company": "HOOPP", "title": "Senior Manager, Risk Analytics & Modelling"})
+    assert k_ats == k_li, f"{k_ats!r} != {k_li!r}"
+
+
+def test_company_title_key_still_separates_distinct_roles():
+    """The guard must not collapse two different openings at one employer."""
+    a = auto_promote._company_title_key(
+        {"company": "HOOPP", "title": "Senior Manager, Risk Analytics & Modelling"})
+    b = auto_promote._company_title_key(
+        {"company": "HOOPP", "title": "Manager, Market Risk"})
+    assert a != b
+
+
+def test_repost_of_applied_role_is_not_re_added(isolated, monkeypatch):
+    """Applied on Workday → the LinkedIn repost must NOT become a second row.
+
+    Shares no URL key with the tracker row, so only the repost guard can catch
+    it. Without the brand canonicalization this added a duplicate and the role
+    reappeared in the promote list forever.
+    """
+    isolated["tracker"].write_text(json.dumps({
+        "meta": {"schema_version": 3},
+        "jobs": [{
+            "id": "auto-hoopp-senior-manager-risk-analytics",
+            "company": HOOPP_ENTITY,
+            "title": "Senior Manager, Risk Analytics &amp; Modelling",
+            "url": HOOPP_WD, "status": "Applied", "tier": 1,
+            "fit_score_numeric": 8, "archived": False,
+            "date_applied": "2026-07-08", "date_found": "2026-07-01",
+        }],
+    }), encoding="utf-8")
+    _write_scored(isolated["out_dir"], "scan_x_scored.json", [
+        _scored_row(HOOPP_LI, company="HOOPP",
+                    title="Senior Manager, Risk Analytics & Modelling"),
+    ])
+
+    rc = _run(monkeypatch, ["--scan", "scan_x_scored.json", "--commit",
+                            "--min-score", "7"])
+    assert rc == 0
+    jobs = json.loads(isolated["tracker"].read_text(encoding="utf-8"))["jobs"]
+    assert len(jobs) == 1, (
+        f"repost was re-added: {[(j['company'], j['title']) for j in jobs]}")
+    assert jobs[0]["status"] == "Applied"  # untouched
+
+
+def test_new_role_at_applied_employer_still_promotes(isolated, monkeypatch):
+    """The guard is title-scoped — a genuinely different HOOPP role still lands."""
+    isolated["tracker"].write_text(json.dumps({
+        "meta": {"schema_version": 3},
+        "jobs": [{
+            "id": "auto-hoopp-senior-manager-risk-analytics",
+            "company": HOOPP_ENTITY,
+            "title": "Senior Manager, Risk Analytics &amp; Modelling",
+            "url": HOOPP_WD, "status": "Applied", "tier": 1,
+            "fit_score_numeric": 8, "archived": False,
+            "date_applied": "2026-07-08", "date_found": "2026-07-01",
+        }],
+    }), encoding="utf-8")
+    _write_scored(isolated["out_dir"], "scan_x_scored.json", [
+        _scored_row("https://www.linkedin.com/jobs/view/4426379999",
+                    company="HOOPP", title="Director, Fundamental Credit Risk"),
+    ])
+
+    rc = _run(monkeypatch, ["--scan", "scan_x_scored.json", "--commit",
+                            "--min-score", "7"])
+    assert rc == 0
+    jobs = json.loads(isolated["tracker"].read_text(encoding="utf-8"))["jobs"]
+    titles = {j["title"] for j in jobs}
+    assert "Director, Fundamental Credit Risk" in titles, titles
+
+
 # --- standalone runner ------------------------------------------------------
 
 if __name__ == "__main__":

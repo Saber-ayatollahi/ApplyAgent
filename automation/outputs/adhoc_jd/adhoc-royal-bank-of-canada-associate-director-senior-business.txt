@@ -1,0 +1,93 @@
+Job Description
+What is the opportunity?
+Lead business analysis for client data initiatives across RBC Capital Markets.  In this role, you will bridge business requirements and data engineering teams to build foundational data and advanced analytics platforms that transform how the firm measures, understands, optimizes and drives client profitability, resource efficiency, strategic value and opportunities. You will serve as a trusted strategic partner to senior business stakeholders, translating complex Capital Markets challenges and requirements into clear data specifications and scalable data solutions across Corporate and Investment Banking, and Global Markets divisions.  You will combine Capital Markets domain expertise with strong analytical capabilities to solve complex client value measurement, analytics and data challenges facing the organization.
+What will you do?
+Lead business analysis for client value measurement initiatives, including Client Revenue Analytics, Client Resource Consumption, Client Plan, and Client Wallet platforms, leveraging complex financial and operational data to calculate and measure client profitability across all business lines
+Develop comprehensive data requirements and functional specifications for calculating client values for Corporate and Investment Banking transactions and Global Markets trades, ensuring accuracy and compliance with business and regulatory standards
+Own requirements definition for reference data governance and client metrics reporting, collaborating closely with data development and engineering teams to establish data quality standards and validation protocols
+Execute end-to-end project delivery, including scoping, stakeholder alignment, success criteria definition, and production monitoring. Document and communicate milestones, risks, and business impact across technical and business stakeholder groups
+Collaborate and lead discussions with technical teams in project scrum meetings to define clear technical deliverables and drive agile delivery methodologies while maintaining alignment with strategic business objectives
+Present technical solutions to senior business stakeholders, securing approvals and managing acceptance criteria to deliver against business requirements and timelines
+Serve as subject matter expert throughout the analytics product lifecycle, from design and development through implementation, in ensuring solutions meet business expectations and technical standards
+What do you need to succeed? 
+ 
+Must Have 
+Minimum 10 years of business analysis experience in financial institution, preferably Capital Markets
+Strong knowledge of Capital Markets data and products, particularly in Corporate and Investment Banking (credit exposures, new issuances, trades, risk metrics, pricing, reference data, return calculations)
+Strong understanding in Capital Market Risk Management and Compliance / regulatory requirements and be comfortable to interact with Credit Risk, Capital Optimization & Measurement teams in both Risk and Finance groups. 
+Advanced hands-on SQL proficiency with demonstrated expertise in data modeling for complex queries, data validation, and comprehensive data analysis
+Proficient in common data analytics and business intelligence/reporting tools such as Excel, Tableau
+Demonstrated exposure to cloud infrastructure platforms (AWS/Azure) with understanding of enterprise data architecture patterns
+Advanced analytical and problem-solving capabilities, with experience managing large-scale, data-intensive initiatives in enterprise environments
+Demonstrated ability to translate complex, ambiguous business requirements into precise data models, system requirements, and technical specifications
+Working experience with Agile and Scrum methodologies, including active participation in sprint planning and delivery
+Excellent communication and presentation skills, with proven ability to engage and influence senior stakeholders across business and technology functions
+Strong judgment in navigating technical roadblocks and organizational challenges while balancing short-term delivery with long-term strategic interests
+Ability to manage multiple complex projects concurrently while maintaining high quality standards and performing effectively under pressure and tight deadlines
+Nice to have:
+Direct experience supporting data modernization initiatives, cloud migration programs, or enterprise analytics platform implementations
+Knowledge of AI and machine learning applications to business problems, with interest in automation and predictive analytics enhancements
+Background in regulatory, risk, or front-office analytics initiatives within capital markets or financial services
+Experience working with capital markets architecture teams or participating in technical governance and design reviews
+Education and Competencies:
+Bachelor's degree or Master's degree in Business, Finance, Computer Science, or related field
+Advanced technical competency in Excel, SQL, and data analytics platforms
+Excellent written and verbal presentation skills with the ability to communicate technical concepts to non-technical stakeholders
+Demonstrated self-motivation, initiative-taking, and results-driven mindset with minimal oversight required
+Strong team collaboration skills with openness to innovative problem-solving approaches
+Key Relationships
+Front-office business stakeholders including banking, sales, client strategy, finance/product control, and business management teams
+Technology teams across development, production support, and enterprise architecture
+Product managers and business analysts in capital markets and adjacent business units
+Capital Markets architecture and data governance teams
+Cross-functional analytics and client revenue management leadership
+Working Conditions
+Regular engagement with front-office environments, which may involve high-pressure situations and require rapid turnaround on requests
+Return-to-premise requirements and collaboration with global technology teams
+Willingness to travel to RBC offices as needed for stakeholder engagement and project delivery
+Extended hours may be required during critical project phases or market-sensitive deliverables
+What’s in it for you? 
+We thrive on the challenge to be our best, progressive thinking to keep growing, and working together to deliver trusted advice to help our clients thrive and communities prosper. We care about each other, reaching our potential, making a difference to our communities, and achieving success that is mutual.
+A comprehensive Total Rewards Program including bonuses and flexible benefits, competitive compensation, commissions, and stock where applicable.
+Leaders who support your development through coaching and managing opportunities
+Ability to make a difference and lasting impact
+Work in a dynamic, collaborative, progressive, and high-performing team
+Opportunities to take on progressively greater accountabilities.  
+Access to a variety of job opportunities across business and geographies.
+#LI-POST
+#TECHPJ
+Job Skills
+Agile Methodology, Business Data Analysis, Business Process Modeling, Commercial Acumen, Communication, Critical Thinking, Decision Making, Group Problem Solving, Interpersonal Relationship Management, Requirements Analysis
+Additional Job Details
+Address:
+ROYAL BANK PLAZA, 200 BAY ST:TORONTO
+City:
+Toronto
+Country:
+Canada
+Work hours/week:
+37.5
+Employment Type:
+Full time
+Platform:
+CAPITAL MARKETS
+Job Type:
+Regular
+Pay Type:
+Salaried
+Posted Date:
+2026-04-16
+Application Deadline:
+2026-07-31
+Note
+:
+ 
+Applications will be accepted until 11:59 PM on the day prior to the application deadline date above
+Our Employment Opportunities
+At RBC, we are guided by living shared values of Client First, Integrity, Collaboration, Respect and Excellence and winning together as One RBC. We believe an inclusive workplace that has diverse perspectives is core to our continued growth as one of the largest and most successful banks in the world. Maintaining a workplace where our employees feel supported to perform at their best, effectively collaborate, drive innovation, and grow professionally helps to bring our Purpose to life and create value for our clients and communities. RBC strives to deliver this through policies and programs intended to foster a workplace based on respect, belonging and opportunity for all.
+Join our Talent Community
+Stay in-the-know about great career opportunities at RBC. Sign up and get customized info on our latest jobs, career tips and Recruitment events that matter to you.
+Expand your limits and create a new future together at RBC. Find out how we use our passion and drive to enhance the well-being of our clients and communities at 
+jobs.rbc.com
+.
+RBC is presently inviting candidates to apply for this existing vacancy. Applying to this posting allows you to express your interest in this current career opportunity at RBC. Qualified applicants may be contacted to review their resume in more detail.

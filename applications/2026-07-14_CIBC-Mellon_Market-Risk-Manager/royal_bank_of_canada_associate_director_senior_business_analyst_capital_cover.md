@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I currently hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios at Moody's Analytics — independently reviewing curve construction, spread calibration, and cross-asset behavior on portfolios of $5–25bn per engagement before production release. That independent review and challenge posture maps directly onto the accountability of CIBC Mellon's Market Risk Manager role, and it is why I am writing.
+
+Across approximately seven years I have worked directly in market, interest-rate, and liquidity risk analytics. At Moody's I review interest-rate and duration analytics under parallel and non-parallel rate shocks, validate derivatives pricing outputs across rates, FX, and inflation, and led the design of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios. I sit on the model governance committee, contributing to methodology review and documentation standards aligned with formal risk-governance expectations. Before Moody's, I delivered IFRS 17 and IFRS 9 transformation at EY for Canadian and international insurers, and ALM and risk studies at Ortec Finance — including VaR and CVaR portfolio optimization, risk decomposition, and hedging analysis for pension and institutional investor clients. I hold the CFA charter, dual MSc degrees, and work daily in Python and SQL.
+
+What draws me specifically to CIBC Mellon is the asset-servicing context: the market and credit risks your team reviews sit against a client book — pension funds, asset managers, institutional investors — that closely resembles the institutional relationships I have managed at Moody's and Ortec. I have consistently been the person who holds the line when analytical outputs are mathematically defensible but economically unsupported, and who translates that judgment into language senior stakeholders can act on within their risk appetite. I am confident I can contribute immediately to the second-line challenge, policy, and mentoring responsibilities the role describes.
+
+I am Toronto-based, available for interviews immediately, and can start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview (NOT on resume): (1) No direct sell-side trading-desk or CCR/xVA/FRTB experience — frame as applied knowledge and lean on transferable model-governance and sensitivity-review depth. (2) No direct custody / asset-servicing balance-sheet experience — CIBC Mellon's exposures (securities lending, cash reinvestment, FX settlement) differ from institutional-investor portfolios; prepare by reading their public disclosures and BNY/State Street analogs. (3) No Bloomberg terminal, no direct collateral/trade-lifecycle ops experience — deliberately left off resume and skills; if raised, be candid and pivot to the review/challenge and Python/SQL analytics angle. (4) Title level: JD asks 5+ years and pays $98–148k; Saber is at ~7 years and Assistant Director level — this may be a level-down move, so anchor comp expectations at top of band and probe career path in the screen.

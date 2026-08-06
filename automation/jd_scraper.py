@@ -58,7 +58,10 @@ TRACKER = ROOT / "data" / "job_tracker_data.json"
 OUT_DIR = ROOT / "automation" / "outputs"
 
 sys.path.insert(0, str(ROOT / "automation"))
-from location_filter import keep_for_toronto_pipeline as _keep_geo_raw  # noqa: E402
+from location_filter import keep_canada_us_remote as _keep_geo_raw  # noqa: E402
+from lane_tagger import tag_rows, LANE_ORDER  # noqa: E402
+from geo_tagger import tag_geo, GEO_ORDER  # noqa: E402
+import brand_aliases  # noqa: E402
 
 # Per-stage drop audit. Populated by `_keep_geo`/`_is_negative` wrappers below;
 # emitted in the scan envelope under `filter_drops` so the audit-pack export
@@ -167,11 +170,13 @@ TARGETS = [
     {"name": "OMERS", "sector": "Canadian Pension Funds", "linkedin_slug": "omers", "workday": ("omers", "wd3", "OMERS_External")},
     {"name": "Ontario Teachers' Pension Plan", "sector": "Canadian Pension Funds", "linkedin_slug": "ontario-teachers-pension-plan", "workday": ("otppb", "wd3", "OntarioTeachers_Careers")},
     {"name": "CPP Investments", "sector": "Canadian Pension Funds", "linkedin_slug": "cpp-investments", "workday": ("cppib", "wd10", "cppinvestments")},
-    {"name": "PSP Investments", "sector": "Canadian Pension Funds", "linkedin_slug": "psp-investments", "workday": None},
+    {"name": "PSP Investments", "sector": "Canadian Pension Funds", "linkedin_slug": "psp-investments", "workday": ("investpsp", "wd3", "psp_careers")},
     {"name": "OPTrust", "sector": "Canadian Pension Funds", "linkedin_slug": "optrust", "workday": ("optrust", "wd3", "OPTrust")},
     {"name": "CAAT Pension Plan", "sector": "Canadian Pension Funds", "linkedin_slug": "caat-pension-plan", "workday": ("caatpension", "wd10", "Careers")},
     {"name": "IMCO", "sector": "Canadian Pension Funds", "linkedin_slug": "imco", "workday": None},
     {"name": "CDPQ", "sector": "Canadian Pension Funds", "linkedin_slug": "cdpq", "workday": ("cdpq", "wd10", "CDPQ")},
+    {"name": "AIMCo", "sector": "Canadian Pension Funds", "linkedin_slug": "alberta-investment-management-corporation-aimco-", "workday": ("aimco", "wd10", "AIMCoCareers")},
+    {"name": "BCI (British Columbia Investment Mgmt)", "sector": "Canadian Pension Funds", "linkedin_slug": "bci", "workday": None},
 
     # ───── Canadian Asset Managers (12/12) ─────
     {"name": "Brookfield Asset Management", "sector": "Canadian Asset Managers", "linkedin_slug": "brookfield", "workday": ("brookfield", "wd5", "brookfield")},
@@ -212,6 +217,11 @@ TARGETS = [
     {"name": "S&P Global", "sector": "Analytics & Risk Vendors", "linkedin_slug": "s-p-global", "workday": ("spgi", "wd5", "SPGI_Careers")},
     {"name": "FactSet", "sector": "Analytics & Risk Vendors", "linkedin_slug": "factset", "workday": None},
     {"name": "Morningstar DBRS", "sector": "Analytics & Risk Vendors", "linkedin_slug": "morningstar", "workday": None},
+    {"name": "Yields.io", "sector": "Analytics & Risk Vendors", "linkedin_slug": "yields-io", "workday": None},
+    {"name": "Abrigo", "sector": "Analytics & Risk Vendors", "linkedin_slug": "abrigo", "workday": None},
+    {"name": "nCino", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ncino", "workday": None},
+    {"name": "Kamakura (SAS)", "sector": "Analytics & Risk Vendors", "linkedin_slug": "kamakura-corporation", "workday": None},
+    {"name": "Beacon Platform", "sector": "Analytics & Risk Vendors", "linkedin_slug": "beacon-platform", "workday": None},
     {"name": "SS&C Technologies", "sector": "Analytics & Risk Vendors", "linkedin_slug": "ss-c-technologies", "workday": ("ssctech", "wd1", "SSCTechnologies")},
     {"name": "Numerix", "sector": "Analytics & Risk Vendors", "linkedin_slug": "numerix-llc", "workday": None},
     {"name": "Prometeia", "sector": "Analytics & Risk Vendors", "linkedin_slug": "prometeia", "workday": None},
@@ -341,6 +351,11 @@ def _is_finance_title(title: str) -> bool:
 # SF) so we don't 2× traffic for well-covered targets.
 _LINKEDIN_LOC_TORONTO = "Toronto%2C+Ontario%2C+Canada"
 _LINKEDIN_LOC_MISSISSAUGA = "Mississauga%2C+Ontario%2C+Canada"
+_LINKEDIN_LOC_US = "United%20States"
+_LINKEDIN_LOC_CANADA = "Canada"
+# US-remote LinkedIn pass (Phase 4). Flip to False to revert to Canada-only
+# LinkedIn search (it adds query volume → more 429 risk; throttle-aware).
+SEARCH_US_REMOTE = True
 
 # Scan-wide kill-switch. Flipped to True inside fetch_linkedin_jobs when any
 # single company trips the 3-consecutive-429 threshold — a strong signal that
@@ -443,7 +458,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
         return True
 
     def _run_query(keywords_str: str, pages: int, kw_label: str, phase: str,
-                    location: str = _LINKEDIN_LOC_TORONTO) -> bool:
+                    location: str = _LINKEDIN_LOC_TORONTO, extra: str = "") -> bool:
         """Returns True if hard-rate-limited (multiple 429s), to break outer loop."""
         nonlocal rate_limited
         consecutive_429 = 0
@@ -454,6 +469,7 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
                 f"keywords={requests.utils.quote(keywords_str)}"
                 f"&location={location}"
                 f"&start={start}"
+                f"{extra}"
             )
             try:
                 r = requests.get(url, headers=HEADERS, timeout=30)
@@ -500,7 +516,10 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
 
     # Phase 2: company-only, Toronto coords (4 pages; catches keyword-less titles)
     if not rate_limited:
-        _run_query(company["name"], pages=4, kw_label="company_only", phase="company_only")
+        # Company-only pass runs Canada-wide (not Toronto-pinned) so cross-Canada
+        # roles at the two target lanes (e.g. AIMCo/BCI out west) get fetched.
+        _run_query(company["name"], pages=4, kw_label="company_only", phase="company_only",
+                   location=_LINKEDIN_LOC_CANADA)
         time.sleep(0.5)
 
     # Phase 3: company-only, Mississauga coords — ONLY for LinkedIn-only companies.
@@ -513,6 +532,25 @@ def fetch_linkedin_jobs(company: dict, max_queries: int = 12, pages_per_query: i
         gtaw_added = len(all_jobs) - before_gtaw
         if gtaw_added:
             print(f"  [linkedin] GTA-west pass: +{gtaw_added} new for {company['name']}",
+                  file=sys.stderr)
+        time.sleep(0.5)
+
+    # Phase 4: keyword + company, US location + remote filter (f_WT=2) — surfaces
+    # US-remote roles for the broadened geo scope. Lean (<=6 phrases x 2 pages)
+    # to limit LinkedIn call volume; respects the scan-wide throttle.
+    if SEARCH_US_REMOTE and not rate_limited:
+        before_us = len(all_jobs)
+        for kw in LINKEDIN_QUERY_PHRASES[:min(6, max_queries)]:
+            if rate_limited:
+                break
+            if _run_query(f"{kw} {company['name']}", pages=2, kw_label=kw,
+                          phase="keyword_us_remote",
+                          location=_LINKEDIN_LOC_US, extra="&f_WT=2"):
+                break
+            time.sleep(0.5)
+        us_added = len(all_jobs) - before_us
+        if us_added:
+            print(f"  [linkedin] US-remote pass: +{us_added} new for {company['name']}",
                   file=sys.stderr)
         time.sleep(0.5)
 
@@ -1611,7 +1649,24 @@ def scan(companies, linkedin_only: bool = False, workday_only: bool = False,
                     continue
                 if _is_negative_log(j):
                     continue
-                j["company"] = c["name"]; j["sector"] = c.get("sector", "")
+                # LinkedIn's company search is fuzzy: querying IMCO (Investment
+                # Management Corporation of Ontario) can return AIMCo (Alberta)
+                # cards, and the alias substring gate ("imco" ⊂ "aimco") lets
+                # them through. The card's own subtitle (company_reported) is
+                # ground truth — when it canonicalizes to a DIFFERENT brand
+                # than the queried target, trust the card (2026-07 AIMCo-
+                # tracked-as-IMCO bug). Same-brand variants ("TD" vs "TD Asset
+                # Management") still keep the target name for consistency.
+                j["company"] = c["name"]
+                _rep = (j.get("company_reported") or "").strip()
+                if _rep:
+                    try:
+                        if (brand_aliases.canonical_brand(_rep)
+                                != brand_aliases.canonical_brand(c["name"])):
+                            j["company"] = _rep
+                    except Exception:
+                        pass
+                j["sector"] = c.get("sector", "")
                 found.append(j)
             li_count = len(found) - li_before
             if li_count: sources_used.append(f"linkedin:{li_count}")
@@ -1872,6 +1927,11 @@ def main() -> int:
     print(f"[scan] Freshness: {newly_seen} newly-seen URL(s), "
           f"{len(results) - newly_seen} previously seen.", file=sys.stderr)
 
+    # Tag every row with the strategy lane it serves (Spearhead A/B, Floor, Side,
+    # Opportunistic) so the report/dashboard groups roles by where they belong.
+    lane_counts = tag_rows(results)
+    geo_counts = tag_geo(results)
+
     stamp = datetime.now().strftime("%Y%m%d")
     json_path = OUT_DIR / f"scan_{stamp}.json"
     md_path = OUT_DIR / f"scan_{stamp}.md"
@@ -1899,6 +1959,8 @@ def main() -> int:
                 "total_new_candidates": len(results),
                 "dedup_stats": dedupe_stats,
                 "by_sector": sector_counts,
+                "by_lane": {l: lane_counts.get(l, 0) for l in LANE_ORDER if lane_counts.get(l)},
+                "by_geo": {g: geo_counts.get(g, 0) for g in GEO_ORDER if geo_counts.get(g)},
                 "diagnostics": diagnostics,
                 "filter_drops": filter_drops,
                 "results": results,
@@ -1922,6 +1984,26 @@ def main() -> int:
         f"- **Companies scanned:** {len(targets)}",
         f"- **Total new candidates:** {len(results)}",
         "",
+        "## By lane",
+        "",
+        "| Lane | Candidates |",
+        "|---|---|",
+    ]
+    for l in LANE_ORDER:
+        if lane_counts.get(l):
+            md_lines.append(f"| {l} | {lane_counts[l]} |")
+    md_lines += [
+        "",
+        "## By geo",
+        "",
+        "| Geo | Candidates |",
+        "|---|---|",
+    ]
+    for g in GEO_ORDER:
+        if geo_counts.get(g):
+            md_lines.append(f"| {g} | {geo_counts[g]} |")
+    md_lines += [
+        "",
         "## By sector",
         "",
         "| Sector | Candidates |",
@@ -1929,17 +2011,47 @@ def main() -> int:
     ]
     for s, n in sorted(sector_counts.items(), key=lambda x: -x[1]):
         md_lines.append(f"| {s} | {n} |")
+
+    # Coverage / broken-fetcher audit — so an agent (or you) can come back and
+    # wire up the companies that returned nothing. Lists every zero-result
+    # company, whether it has a direct ATS config, and the likely fix.
+    # per_company lives inside scan(); main() only ever sees it via diagnostics.
+    _per_company = diagnostics.get("per_company") or []
+    _zero = [c for c in _per_company if c.get("total", 0) == 0]
+    md_lines += [
+        "",
+        "## Coverage — zero-result companies (fix candidates)",
+        "",
+        f"{len(_zero)} of {len(_per_company)} companies returned 0 postings this run.",
+        "",
+        "| Company | Sector | Direct ATS config? | Likely fix |",
+        "|---|---|---|---|",
+    ]
+    for c in sorted(_zero, key=lambda c: (c.get("sector", ""), c.get("name", ""))):
+        _cfg = bool(c.get("has_workday_config"))
+        _fix = ("Workday config returned 0 — verify tenant/board path or genuinely no openings"
+                if _cfg else
+                "LinkedIn-only — add a Workday/Greenhouse/SuccessFactors config or correct the linkedin_slug")
+        md_lines.append(
+            f"| {c.get('name', '')} | {c.get('sector', '')} | "
+            f"{'yes' if _cfg else 'no (LinkedIn-only)'} | {_fix} |")
+    _comp, _tot = diagnostics.get("completed_count"), diagnostics.get("total_companies")
+    if _comp is not None and _tot and _comp < _tot:
+        md_lines.append(
+            f"\n> {_tot - _comp} companies did not complete the run (timeout/error) — re-run to cover them.")
+
     md_lines += [
         "",
         "## Candidates",
         "",
-        "| Sector | Company | Title | Location | Source | Link |",
-        "|---|---|---|---|---|---|",
+        "| Lane | Geo | Sector | Company | Title | Location | Source | Link |",
+        "|---|---|---|---|---|---|---|---|",
     ]
-    for r in sorted(results, key=lambda r: (r.get("sector", ""), r.get("company", ""))):
+    _lane_rank = {l: i for i, l in enumerate(LANE_ORDER)}
+    for r in sorted(results, key=lambda r: (_lane_rank.get(r.get("lane", ""), 99), r.get("company", ""))):
         link = r.get("link", "")
         md_lines.append(
-            f"| {r.get('sector', '')} | {r.get('company', '')} | {r.get('title', '')} | "
+            f"| {r.get('lane', '')} | {r.get('geo', '')} | {r.get('sector', '')} | {r.get('company', '')} | {r.get('title', '')} | "
             f"{r.get('location', '')} | {r.get('source', '')} | [open]({link}) |"
         )
     md_path.write_text("\n".join(md_lines), encoding="utf-8")

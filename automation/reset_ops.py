@@ -190,19 +190,56 @@ def plan_delete_scan(stem: str) -> ResetPlan:
 # ---------------------------------------------------------------------------
 # Scope 2: clear all scans + scored artifacts
 # ---------------------------------------------------------------------------
+# Worklist artifacts NOT already caught by the scan_* / *_scored globs.
+# The worklist is the DERIVED pool the scorer + funnel read; clearing the
+# raw scans without it leaves a stale 2,130-row worklist on disk, so the
+# Refresh funnel keeps showing the old count until a manual rebuild. We
+# clear these together so "clear scans" actually resets what the user sees.
+#   - worklist.json            the merged scrape ∪ Gmail pool
+#   - worklist_triage.json     rule-triage output
+#   - worklist_scored.prev.json the "previous score" snapshot (the *_scored
+#                              glob catches worklist_scored.json but not the
+#                              .prev. variant)
+_WORKLIST_EXTRA = (
+    "worklist.json",
+    "worklist_triage.json",
+    "worklist_scored.prev.json",
+)
+
+
+def _worklist_extra_files() -> list[Path]:
+    """Worklist pool files that the scan_* / *_scored globs miss. Returned
+    only when present so the plan preview is accurate."""
+    out: list[Path] = []
+    for name in _WORKLIST_EXTRA:
+        p = OUT_DIR / name
+        if p.is_file():
+            out.append(p)
+    return out
+
+
 def plan_clear_scans() -> ResetPlan:
-    """Remove every scan_*.json / *_scored.json / scan_*.md / *_scored.md.
-    Leaves pipelines/, runs/, fit_cache/, jd_cache/, and tracker alone."""
+    """Remove every scan_*.json / *_scored.json / scan_*.md / *_scored.md
+    AND the derived worklist pool (worklist.json + triage + prev-score) so
+    the funnel resets to empty without a separate rebuild step. Leaves
+    pipelines/, runs/, fit_cache/, jd_cache/, and tracker alone."""
     if not OUT_DIR.exists():
         return ResetPlan(scope="clear_scans")
     files: list[Path] = []
+    seen: set[Path] = set()
     for pat in ("scan_*.json", "scan_*.md", "*_scored.json", "*_scored.md"):
         for p in OUT_DIR.glob(pat):
             # Preserve the current checkpoint so pausing doesn't die
             if p.name in ("scan_checkpoint.json",):
                 continue
-            if p.is_file():
+            if p.is_file() and p not in seen:
                 files.append(p)
+                seen.add(p)
+    # Fold in the derived worklist pool files (dedup against the globs above).
+    for p in _worklist_extra_files():
+        if p not in seen:
+            files.append(p)
+            seen.add(p)
     return ResetPlan(
         scope="clear_scans",
         files_to_delete=files,

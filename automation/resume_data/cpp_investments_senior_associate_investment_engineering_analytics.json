@@ -1,0 +1,134 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CPP Investments",
+    "role": "Senior Associate, Investment Engineering & Analytics",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "Python",
+      "SQL",
+      "systematic",
+      "factor",
+      "portfolio",
+      "quantitative",
+      "data pipelines",
+      "analytics",
+      "research",
+      "models",
+      "production",
+      "macro"
+    ]
+  },
+  "summary": "Senior Associate, Investment Engineering & Analytics candidate with ~7 years building quantitative investment and risk analytics for institutional portfolios. At Moody's Analytics, designs and delivers production Python analytics pipelines and multi-asset models supporting portfolio managers; at Ortec Finance, ran systematic asset-only and surplus portfolio optimization on VaR/CVaR with stochastic macro scenario generators, risk decomposition, and factor-style attribution. CFA charterholder; dual MSc (Financial Modelling, Engineering); fluent in Python and SQL.",
+  "core_skills": [
+    "Python · pandas · NumPy · SciPy",
+    "SQL · PostgreSQL",
+    "Systematic macro strategy analytics",
+    "Factor-style risk attribution & decomposition",
+    "Portfolio optimization (VaR / CVaR)",
+    "Stochastic & Monte Carlo modelling",
+    "Production analytics pipelines · Git · CI/CD",
+    "Agentic AI development (Claude Code, Cursor)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Production Models & Portfolio Analytics",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and portfolio analytics outputs for multi-asset institutional portfolios ranging $5–25bn per engagement, cumulatively covering ~$50bn in assets.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation, and review aggregation logic translating security-level exposures into portfolio-level risk and return metrics consumed by portfolio managers.",
+                "Review curve construction, spread calibration, and cross-asset interactions prior to production release within a formal model governance framework — escalating outputs that are mathematically defensible but economically unsupported."
+              ]
+            },
+            {
+              "heading": "Data Pipelines & Engineering",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress macro scenarios across multi-year horizons.",
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with logging, validation, and reproducibility controls.",
+                "Architected configurable time-bucketed analytics (T+1 through multi-year) supporting funding, allocation, and refinancing decisions for live institutional portfolios."
+              ]
+            },
+            {
+              "heading": "AI-Augmented Development & Research Partnership",
+              "bullets": [
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation — reducing development cycle time an estimated 30–40% on comparable modules.",
+                "Partner with product owners and client investment teams to translate analytical requirements into production-grade Python; mentor junior colleagues on coding standards and review practices."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Onboarded U.S. and Canadian pension funds, asset managers, and consulting firms onto the PFaroe multi-asset analytics platform; validated model outputs post-deployment.",
+                "Scoped client analytical requirements into structured Product Owner requests, bridging investment teams and development to ship analytics enhancements into production."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, Financial Services Risk",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurers, aligning data, finance, actuarial, and IT workstreams.",
+                "Contributed to governance documentation and analytics design supporting regulatory-grade financial reporting."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, ALM & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Performed systematic asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition, contribution-to-risk, and near-efficient-frontier robustness analysis.",
+                "Built and interpreted stochastic macro scenario generators driving multi-asset return, inflation, rate, and currency dynamics for institutional portfolios.",
+                "Conducted factor- and asset-class-level risk attribution and hedging analysis (rates, inflation, FX) for international institutional clients.",
+                "Advised pension fund and institutional clients on Strategic and Tactical Asset Allocation via stress testing, sensitivity analysis, and scenario-based research.",
+                "Led ALM study for the University Pension Plan merger (three single-employer plans into a new jointly-sponsored plan), developing and validating models capturing funding-policy dynamics, duration, currency, inflation, and leverage overlays.",
+                "Presented research findings and portfolio recommendations to client investment committees on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

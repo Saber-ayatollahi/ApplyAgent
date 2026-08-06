@@ -1,0 +1,170 @@
+{
+  "scan_date": "2026-07-15",
+  "scan_timestamp": "2026-07-15T17:21:15Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 12,
+    "output": 12,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71233",
+      "71236"
+    ],
+    "processed_uids": [
+      "71233",
+      "71236"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-15T13:24:13",
+    "delete_result": {
+      "moved": 2,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Senior Manager, Risk Platforms",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4440586736",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Senior Manager, Distribution Insights and Analytics",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4432097741",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Senior Manager, Functions Performance Management",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4440912533",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Sr. Manager, Data Governance",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4440581871",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Senior Manager, Operational Resilience Risk Management Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4439093638",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71236"
+    },
+    {
+      "title": "Senior Manager, Risk Platforms",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4440586736",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    },
+    {
+      "title": "Senior Manager, Functions Performance Management",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4440912533",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    },
+    {
+      "title": "Sr. Audit Manager - Model Risk CoE",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4440917416",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    },
+    {
+      "title": "Sr. Manager, Data Governance",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4440581871",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    },
+    {
+      "title": "Director, Intraday Liquidity Risk Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4440905176",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-15",
+      "gmail_uid": "71233"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 2,
+    "linkedin_alerts_seen": 2,
+    "digests_with_rows": 2,
+    "digests_without_rows": 0,
+    "rows_parsed": 12,
+    "rows_dropped_location": 0,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 12,
+    "dropped_location_examples": [],
+    "geo_dropped_rows": [],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

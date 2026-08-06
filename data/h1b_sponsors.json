@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "updated": "2026-07-10",
+  "source_notes": "Seed entries are reputational (well-documented major H-1B petitioners; no counts asserted). Refresh with real counts via: python automation/visa_tagger.py ingest <USCIS Data Hub CSV> — export from https://www.uscis.gov/tools/reports-and-studies/h-1b-employer-data-hub. TN has no public filings; H-1B history is a willingness proxy only.",
+  "employers": {
+    "blackrock": {"name": "BlackRock", "approvals": null, "basis": "seed"},
+    "bloomberg": {"name": "Bloomberg LP", "approvals": null, "basis": "seed"},
+    "msci": {"name": "MSCI Inc", "approvals": null, "basis": "seed"},
+    "s&p global": {"name": "S&P Global", "approvals": null, "basis": "seed"},
+    "factset": {"name": "FactSet Research Systems", "approvals": null, "basis": "seed"},
+    "moodys": {"name": "Moody's Corporation", "approvals": null, "basis": "seed"},
+    "morganstanley": {"name": "Morgan Stanley", "approvals": null, "basis": "seed"},
+    "goldman": {"name": "Goldman Sachs", "approvals": null, "basis": "seed"},
+    "jpmorgan": {"name": "JPMorgan Chase", "approvals": null, "basis": "seed"},
+    "citi": {"name": "Citigroup", "approvals": null, "basis": "seed"},
+    "fidelity": {"name": "Fidelity Investments (FMR)", "approvals": null, "basis": "seed"},
+    "stripe": {"name": "Stripe", "approvals": null, "basis": "seed"},
+    "upstart": {"name": "Upstart", "approvals": null, "basis": "seed"}
+  }
+}

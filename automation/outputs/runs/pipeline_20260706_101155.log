@@ -1,0 +1,35 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-concurrency 6
+# started: 2026-07-06T10:11:55.201549
+
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260706_101159 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 3250 rows (3177 scrape, 51 gmail, 22 both) · 0 new since last score
+[score] [fit_scorer] Loaded 3250 roles from worklist.json
+[score] [fit_scorer] Stage 1: 771 pass / 2479 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK — Valid & credits OK — 5 models, billing works
+[score] [fit_scorer] loaded 540 prior fits from worklist_scored.json (used on cache miss for is_new_since_last_score=False rows).
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$0.000 / cap=$5.00
+[score]   [fit_scorer] scored 10/771 (0.0 min)
+[score]   [fit_scorer] scored 20/771 (0.0 min)
+[score]   [fit_scorer] scored 30/771 (0.0 min)
+[score]   [fit_scorer] scored 40/771 (0.0 min)
+[score]   [fit_scorer] scored 50/771 (0.0 min)
+[score]   [fit_scorer] scored 60/771 (0.0 min)
+[score]   [fit_scorer] scored 70/771 (0.0 min)
+[score]   [fit_scorer] scored 80/771 (0.0 min)
+[score]   [fit_scorer] scored 90/771 (0.1 min)
+[score]   [fit_scorer] scored 100/771 (0.1 min)
+[score]   [fit_scorer] scored 110/771 (0.1 min)
+[score]   [fit_scorer] scored 120/771 (0.1 min)
+[score]   [fit_scorer] scored 130/771 (0.1 min)
+[score]   [fetch_jd] short (0 chars) for https://cib-bic.ca/en/jobs/?gh_jid=5226270008 — likely JS-SPA; not caching  [fetch_jd] short (0 chars) for https://cib-bic.ca/en/jobs/?gh_jid=5022805008 — likely JS-SPA; not caching  [fetch_jd] short (0 chars) for https://cib-bic.ca/en/jobs/?gh_jid=5287507008 — likely JS-SPA; not caching
+[score] 
+[score] 
+[score]   [fit_scorer] scored 140/771 (0.2 min)
+[score]   [fit_scorer] scored 150/771 (0.2 min)
+[score]   [fit_scorer] scored 160/771 (1.2 min)
+[score]   [fit_scorer] scored 170/771 (2.2 min)

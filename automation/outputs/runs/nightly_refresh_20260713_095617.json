@@ -1,0 +1,15 @@
+{
+  "run_id": "nightly_refresh_20260713_095617",
+  "label": "nightly_refresh",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\nightly_refresh.py"
+  ],
+  "pid": 1504,
+  "started_at": "2026-07-13T09:56:17",
+  "log_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260713_095617.log",
+  "status_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\nightly_refresh_20260713_095617.json",
+  "state": "stopped",
+  "finished_at": "2026-07-13T12:17:42",
+  "returncode": null
+}

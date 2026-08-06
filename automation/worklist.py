@@ -123,6 +123,53 @@ def norm_url(row: dict) -> str:
     return norm
 
 
+# Workday requisition-id key — a SECOND identity beyond norm_url. Workday
+# serves ONE posting under many URL spellings (…/en-US/… locale segment,
+# …/External/… board segment, Toronto%2C-… vs Toronto-… comma encoding),
+# which norm_url deliberately keeps DISTINCT (see test_worklist_norm_url::
+# test_workday_board_segment_not_collapsed). The trailing _<REQID> is the
+# posting's true identity and survives that drift, so dedup and tracker
+# matching key on it too. auto_promote._workday_reqid_key is the historical
+# twin of this — keep the two in lockstep (same wd::netloc::reqid format).
+def workday_reqid_key(raw: str) -> str | None:
+    """host+requisition-id key for a Workday job URL, else None."""
+    low = (raw or "").strip().lower()
+    if "myworkdayjobs.com" not in low:
+        return None
+    try:
+        from urllib.parse import urlsplit
+        p = urlsplit(low)
+    except Exception:
+        return None
+    seg = p.path.rstrip("/").rsplit("/", 1)[-1]
+    if "_" not in seg:
+        return None
+    reqid = seg.rsplit("_", 1)[-1].strip()
+    # Drop a trailing posting-index facet ("-1"/"-2") when the core still has a
+    # digit, so two URLs for the same req that differ only by that index match —
+    # but preserve ids like "jr-7887" whose digits ARE the id.
+    core = re.sub(r"-\d+$", "", reqid)
+    if re.search(r"\d", core):
+        reqid = core
+    return f"wd::{p.netloc}::{reqid}" if reqid else None
+
+
+def identity_keys(row: dict) -> set[str]:
+    """Stable dedup keys for a row: always norm_url; for Workday URLs ALSO
+    host+reqid. Two rows sharing ANY key are the same posting. Used by the UI
+    promote matcher so an applied Workday role under a different URL spelling
+    isn't re-surfaced (mirrors auto_promote._identity_keys)."""
+    keys: set[str] = set()
+    nu = norm_url(row)
+    if nu:
+        keys.add(nu)
+    wk = workday_reqid_key(row.get("link") or row.get("url")
+                           or row.get("job_url") or "")
+    if wk:
+        keys.add(wk)
+    return keys
+
+
 def _normalize_title(title: str) -> str:
     """Canonical title — must match jd_scraper._normalize_title so cross-scan
     near-dup detection catches Workday tile vs. LinkedIn /jobs/view/<id>

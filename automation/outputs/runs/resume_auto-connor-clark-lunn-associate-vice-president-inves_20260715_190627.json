@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-connor-clark-lunn-associate-vice-president-inves_20260715_190627",
+  "label": "resume_auto-connor-clark-lunn-associate-vice-president-inves",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-connor-clark-lunn-associate-vice-president-inves",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 27068,
+  "started_at": "2026-07-15T19:06:27",
+  "log_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-connor-clark-lunn-associate-vice-president-inves_20260715_190627.log",
+  "status_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-connor-clark-lunn-associate-vice-president-inves_20260715_190627.json",
+  "state": "finished",
+  "finished_at": "2026-07-15T19:13:47",
+  "returncode": null
+}

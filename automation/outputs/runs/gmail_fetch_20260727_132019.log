@@ -1,0 +1,15 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-07-27T13:20:19.236194
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 34 sender-classified, 34 LinkedIn alert(s); parsed 199 row(s) from 34 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] geo filter: dropped 10 non-GTA row(s) — kept 189
+  · drop: National Bank of Canada — Coquitlam, BC
+  · drop: National Bank of Canada — Coquitlam, BC
+  · drop: KPMG Canada — Saskatoon, SK
+  · drop: Capital One — McLean, VA
+  · drop: First National Financial LP — East York, ON
+[gmail_fetch] ✓ wrote scan_gmail_20260727_132029.json with 189 row(s).
+[gmail_fetch]   34 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 4140 rows (3825 scrape, 204 gmail, 111 both) · 58 new since last score

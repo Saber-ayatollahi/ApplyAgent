@@ -1,0 +1,9 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-07-10T12:13:55.341502
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 1 sender-classified, 1 LinkedIn alert(s); parsed 6 row(s) from 1 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] ✓ wrote scan_gmail_20260710_121358.json with 6 row(s).
+[gmail_fetch]   1 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 3017 rows (2909 scrape, 70 gmail, 38 both) · 0 new since last score

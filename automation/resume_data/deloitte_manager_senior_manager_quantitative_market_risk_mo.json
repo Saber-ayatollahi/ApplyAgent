@@ -1,0 +1,136 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Deloitte",
+    "role": "Manager / Senior Manager, Quantitative Market Risk Models – Financial Engineering and Modeling",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "market risk",
+      "model development",
+      "model validation",
+      "derivatives",
+      "Monte Carlo",
+      "VaR",
+      "Python",
+      "MATLAB",
+      "Financial Engineering",
+      "stress testing",
+      "interest rate",
+      "calibration",
+      "quantitative"
+    ]
+  },
+  "summary": "Manager / Senior Manager, Quantitative Market Risk Models – Financial Engineering and Modeling candidate with ~7 years across quantitative model validation, derivatives pricing review, and model governance at Moody's Analytics, EY, and Ortec Finance. Holds delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ($5–25bn per engagement). Hands-on with stochastic scenario generation, Monte Carlo simulation, and Python analytics. CFA charterholder with dual MSc (Financial Modelling; Chemical Engineering — PDE and numerical-methods foundation); applied working knowledge of VaR/CVaR; familiar with FRTB and CCAR frameworks through client-advisory context, not direct trading-book capital submission.",
+  "core_skills": [
+    "Quantitative Model Validation & Review",
+    "Derivatives Pricing Review (Rates, FX, Inflation)",
+    "Monte Carlo Simulation & Stochastic Scenario Generation",
+    "Value-at-Risk (VaR) & Conditional VaR (CVaR)",
+    "Yield Curve Construction & Calibration",
+    "Interest Rate Risk Analytics (Parallel & Non-Parallel Shocks)",
+    "Stress Testing & Scenario Analysis",
+    "Model Governance, Sign-Off & Documentation",
+    "Python (Advanced), SQL (Intermediate), MATLAB (Intermediate), R (Intermediate)",
+    "PDE & Numerical Methods (Chemical Engineering MSc)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director – Modelling Services (Investment & ALM Risk Lead)",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Derivatives Pricing Review & Quantitative Model Validation",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and risk outputs delivered to institutional client portfolios ranging $5–25bn per engagement (cumulatively ~$50bn+); independently reviews curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validates derivatives pricing outputs across rates, FX, and inflation — reviews sensitivity consistency and scenario impacts at portfolio-level aggregates; escalates outputs lacking mathematical or economic defensibility.",
+                "Reviews interest rate risk and duration analytics under parallel and non-parallel rate shocks; applies quantitative methodologies analogous to sensitivities-based market-risk frameworks."
+              ]
+            },
+            {
+              "heading": "Model Governance, Documentation & Stakeholder Communication",
+              "bullets": [
+                "Operates within a formal model-governance framework — reviews assumptions, validates economic defensibility, and documents to standards consistent with SR 11-7 and OSFI E-23 expectations.",
+                "Serves as escalation point for client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders at Canadian and U.S. institutional clients.",
+                "Prepares quantitative summaries for senior stakeholders on interest rate exposure, scenario impacts, and sensitivity behaviour; translates model outputs into committee-ready narratives."
+              ]
+            },
+            {
+              "heading": "Quantitative Model Development & Python Tooling",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — embedding behavioral assumptions, prepayment logic, and macro stress overlays.",
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded validation, logging, and version control.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection — reducing development cycle time by an estimated 30–40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist – PFaroe Analytics Platform",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform; advised on asset, liability, and risk-model configurations and validated model outputs post-deployment.",
+                "Contributed to the successful migration of all assigned client accounts from the legacy Calypso platform to PFaroe PM, translating client investment-team requirements into structured Product Owner development requests."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 model and technology transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management teams on milestone delivery, governance documentation, and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators using Monte Carlo simulation to assess interest rate, inflation, FX, and equity risk under base-case and stressed environments for pension and institutional clients.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR using Ortec's GLASS platform; conducted risk decomposition, contribution-to-risk attribution, and near-optimal frontier analysis to test allocation robustness.",
+                "Modelled fixed-income and derivatives positions alongside actuarial liabilities; performed cash-flow, liquidity, and hedging analysis across interest rate, inflation, and currency risk for international institutional clients.",
+                "Presented quantitative findings — including duration, currency, inflation, and leverage-overlay strategies — to investment committees at Canadian pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

@@ -1,0 +1,20 @@
+# resume_adhoc-royal-bank-of-canada-associate-director-senior-business
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-royal-bank-of-canada-associate-director-senior-business --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-royal-bank-of-canada-associate-director-senior-business.txt
+# started: 2026-07-14T21:27:51.154532
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Associate Director, Senior Business Analyst (Capital Markets) @ Royal Bank of Canada (JD 9004 chars)…
+  [tailor] claude-opus-4-8 cost $0.192 (in=13023, out=5058, cache_read=0)
+  [tailor] claude-sonnet-5 cost $0.257 (in=5724, out=16000, cache_read=0)
+  [verify] output failed JSON parse (no JSON object found in model output); retrying once…
+  [tailor] claude-sonnet-5 cost $0.257 (in=5810, out=16000, cache_read=21950)
+[resume_agent] validity pass skipped (no JSON object found in model output); using first draft.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.28s/it]100%|██████████| 1/1 [00:03<00:00,  3.47s/it]
+[resume_agent] 1 ATS keyword(s) missing (business analysis); revising once…
+  [tailor] claude-sonnet-5 cost $0.061 (in=2645, out=3518, cache_read=21950)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:02<00:00,  2.31s/it]100%|██████████| 1/1 [00:02<00:00,  2.33s/it]
+[resume_agent] note: still missing data analysis.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.03s/it]100%|██████████| 1/1 [00:01<00:00,  1.04s/it]
+[resume_agent] tracker linked (resume_file + ATS 14/15)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_RBC_Associate-Director-Senior-Business-Analy
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_RBC_Associate-Director-Senior-Business-Analy

@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I advise institutional clients on portfolio construction and asset allocation, and I hold delegated sign-off authority on valuation, sensitivity, and portfolio outputs for multi-asset institutional portfolios of $5-25bn per engagement at Moody's Analytics — the research-to-decision discipline at the centre of Equiton Capital's VP Investment Research & Portfolio Management role. I would welcome the chance to be considered.
+
+My work spans the three pillars this role demands. On research and portfolio analytics, I review curve construction, spread calibration, and cross-asset interactions, and I built the enterprise cash-flow projection engine that gives clients forward-looking portfolio and scenario visibility. On governance and oversight, I sit on Moody's model-governance committee, set documentation and benchmarking standards, and escalate outputs that fail economic defensibility — the same controls discipline that supports IFM and PM obligations. Earlier, at Ortec Finance, I advised pension-fund investment committees on Strategic and Tactical Asset Allocation, ran VaR/CVaR portfolio optimization with risk decomposition, and delivered LDI studies across multi-asset mandates — directly translating research into allocation recommendations that committees adopted.
+
+What draws me to Equiton is the opportunity to help shape an evolving proprietary investment platform where research rigour, governance, and scalable product design intersect — precisely the seam my Moody's platform work and Ortec advisory background sit on. I am a CFA charterholder with dual MSc degrees, and I have spent my career turning complex analytics into clear, decision-ready narratives for senior stakeholders and clients.
+
+I should be direct: my seven years are shorter than the fifteen-year CIO/PM benchmark, and I do not currently hold PM registration — I would pursue registration on the timeline the role requires and would rely on my governance, research, and allocation depth from day one. I am Toronto-based, available to interview immediately, and can start approximately four weeks after an offer. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** MAJOR-STRETCH ROLE — flag before submitting. Hard misses vs mandatory qualifications: (1) 15 yrs as CIO/PM — Saber has ~7.3 yrs, never inflate; (2) current PM registration with a Canadian securities regulator — Saber does NOT hold this; (3) direct real-estate / alternatives PM and HNW-client experience — no repo support; (4) operating within a registered IFM/PM environment — no repo support. This activates the RETIRED Portfolio Manager positioning, which the JD explicitly demands via registration — so the resume is positioned honestly from investment-research/portfolio-analytics + governance + SAA/LDI advisory, NOT as a registered PM. Cover letter owns the registration + tenure gaps directly. Real estate, Bloomberg, and HNW terms deliberately omitted (no evidence). Recommend Saber only proceed if willing to discuss a registration/development path; otherwise this is a low-probability application and effort may be better spent on primary lanes (ALM/IRRBB, Model Validation, Vendor-Platform/Aladdin).

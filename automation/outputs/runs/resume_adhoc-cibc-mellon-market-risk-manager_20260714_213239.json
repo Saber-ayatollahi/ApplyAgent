@@ -1,0 +1,21 @@
+{
+  "run_id": "resume_adhoc-cibc-mellon-market-risk-manager_20260714_213239",
+  "label": "resume_adhoc-cibc-mellon-market-risk-manager",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "adhoc-cibc-mellon-market-risk-manager",
+    "--tier",
+    "balanced",
+    "--jd-file",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\adhoc_jd\\adhoc-cibc-mellon-market-risk-manager.txt"
+  ],
+  "pid": 17608,
+  "started_at": "2026-07-14T21:32:39",
+  "log_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_adhoc-cibc-mellon-market-risk-manager_20260714_213239.log",
+  "status_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_adhoc-cibc-mellon-market-risk-manager_20260714_213239.json",
+  "state": "finished",
+  "finished_at": "2026-07-14T21:39:30",
+  "returncode": null
+}

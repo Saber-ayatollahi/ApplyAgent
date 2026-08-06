@@ -1,0 +1,65 @@
+{
+  "pipeline_id": "20260729_000952",
+  "started_at": "2026-07-29T00:09:52",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": false,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 2,
+    "score_dry_run": true,
+    "triage_out": "worklist_triage.json",
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 3607,
+      "scrape_only": 3270,
+      "gmail_only": 225,
+      "both": 112,
+      "new_since_last_score": 0
+    },
+    "score": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\fit_scorer.py",
+        "--scan",
+        "worklist.json",
+        "--concurrency",
+        "2",
+        "--dry-run",
+        "--triage-out",
+        "worklist_triage.json"
+      ],
+      "started_at": "2026-07-29T00:10:09",
+      "state": "finished",
+      "finished_at": "2026-07-29T00:10:20",
+      "elapsed_sec": 11.4,
+      "returncode": 0,
+      "last_line": "[fit_scorer] DRY RUN complete. Wrote worklist.json -> worklist_triage.json",
+      "scored_file": "worklist_triage.json",
+      "scored_count": 0,
+      "verdicts": {
+        "?": 1602
+      }
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260729_000952_suppressions.json",
+  "finished_at": "2026-07-29T00:10:21"
+}

@@ -1,0 +1,19 @@
+# resume_auto-societe-generale-quantitative-advisor-model-ris
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-societe-generale-quantitative-advisor-model-ris --tier balanced
+# started: 2026-07-15T19:43:36.785392
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Quantitative Advisor-Model Risk Management @ Societe Generale (JD 6563 chars)…
+  [tailor] claude-opus-4-8 cost $0.180 (in=12324, out=4734, cache_read=0)
+  [tailor] claude-sonnet-5 cost $0.258 (in=5996, out=16000, cache_read=0)
+  [verify] output failed JSON parse (no JSON object found in model output); retrying once…
+  [tailor] claude-sonnet-5 cost $0.258 (in=6082, out=16000, cache_read=21950)
+[resume_agent] validity pass skipped (Expecting ',' delimiter: line 71 column 16 (char 3863)); using first draft.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:05<00:00,  5.09s/it]100%|██████████| 1/1 [00:05<00:00,  5.13s/it]
+[resume_agent] 2 ATS keyword(s) missing (pricing models, stress testing); revising once…
+  [tailor] claude-sonnet-5 cost $0.088 (in=2739, out=5314, cache_read=21950)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:02<00:00,  2.88s/it]100%|██████████| 1/1 [00:02<00:00,  2.90s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]100%|██████████| 1/1 [00:00<00:00,  1.05it/s]
+[resume_agent] tracker linked (resume_file + ATS 15/15)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-15_Societe-Generale_Quantitative-Advisor-Model-Risk-Manageme
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-15_Societe-Generale_Quantitative-Advisor-Model-Risk-Manageme

@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-optrust-principal-trader-total-portfol_20260708_111503",
+  "label": "resume_auto-optrust-principal-trader-total-portfol",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-optrust-principal-trader-total-portfol",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 14676,
+  "started_at": "2026-07-08T11:15:03",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-optrust-principal-trader-total-portfol_20260708_111503.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-optrust-principal-trader-total-portfol_20260708_111503.json",
+  "state": "finished",
+  "finished_at": "2026-07-08T11:19:04",
+  "returncode": null
+}

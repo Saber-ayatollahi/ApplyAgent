@@ -1,0 +1,33 @@
+{
+  "scan_date": "20260702",
+  "source": "worklist_scored.json",
+  "min_score": 7,
+  "include_watch": false,
+  "mode": "commit",
+  "selection_mode": "manual",
+  "summary": {
+    "added": 0,
+    "updated": 0,
+    "expired": 0,
+    "skipped_verdict": 0,
+    "skipped_score": 0,
+    "skipped_dupe": 1,
+    "skipped_geo": 0,
+    "suppressed_after_score": 0
+  },
+  "skipped_rows": [
+    {
+      "reason": "dupe",
+      "company": "HOOPP",
+      "title": "Senior Manager, Risk Analytics & Modelling",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/Toronto-Ontario-Canada/Senior-Manager--Risk-Analytics---Modelling_JR102444",
+      "location": "Toronto, Ontario, Canada",
+      "score": 7,
+      "verdict": "tailor_and_apply",
+      "note": "existing=7"
+    }
+  ],
+  "suppressed_after_score": [],
+  "promoted": [],
+  "new_entries": []
+}

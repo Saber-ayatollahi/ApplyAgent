@@ -116,3 +116,66 @@ def keep_for_toronto_pipeline(loc: str) -> bool:
     if s.lower() in ("remote", "remote (anywhere)", "anywhere"):
         return True
     return is_gta_or_canada_remote(s)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Broadened geo gate (additive, 2026-06): keep Canada + US + remote.
+# Used by jd_scraper when the search scope is widened beyond Toronto. The
+# original keep_for_toronto_pipeline above is left untouched for callers that
+# still want the GTA-only gate.
+# ─────────────────────────────────────────────────────────────────────────────
+_US_CITIES = (
+    "new york", "nyc", "brooklyn", "manhattan", "jersey city", "newark",
+    "boston", "chicago", "san francisco", "palo alto", "los angeles",
+    "seattle", "austin", "dallas", "houston", "atlanta", "charlotte",
+    "miami", "denver", "philadelphia", "washington, dc", "washington dc",
+    "minneapolis", "phoenix", "san diego", "san jose", "raleigh", "columbus",
+    "pittsburgh", "salt lake city", "stamford", "greenwich, ct",
+)
+_US_STATE_SUFFIX_RE = re.compile(r",\s*(" + "|".join(_US_STATES) + r")", re.IGNORECASE)
+
+_CA_TOKENS = (
+    "canada", "ontario", "quebec", "québec", "montreal", "montréal",
+    "ottawa", "vancouver", "calgary", "edmonton", "winnipeg", "halifax",
+    "victoria", "alberta", "british columbia", "manitoba", "saskatchewan",
+    "nova scotia", "new brunswick", "newfoundland",
+)
+
+
+def has_us(loc: str) -> bool:
+    """Heuristic: does `loc` refer to the United States?"""
+    sl = str(loc or "").lower()
+    if not sl:
+        return False
+    if "united states" in sl or "usa" in sl:
+        return True
+    if _US_STATE_SUFFIX_RE.search(sl):
+        return True
+    if any(c in sl for c in _US_CITIES):
+        return True
+    return False
+
+
+def has_canada(loc: str) -> bool:
+    """Heuristic: any Canadian token (broader than the GTA/anchor predicate)."""
+    sl = str(loc or "").lower()
+    return any(t in sl for t in _CA_TOKENS)
+
+
+def keep_canada_us_remote(loc: str) -> bool:
+    """Broadened geo gate: keep Canada (GTA or elsewhere), the US (remote OR
+    on-site for a TN move), and location-agnostic remote. Drops only clearly
+    overseas on-site roles ("London, UK", "Singapore"). Empty / bare-remote are
+    kept (scorer decides), mirroring keep_for_toronto_pipeline.
+    """
+    s = str(loc or "").strip()
+    if not s:
+        return True
+    sl = s.lower()
+    if "remote" in sl:
+        return True
+    if is_gta_or_canada_remote(s) or has_canada(s):
+        return True
+    if has_us(s):
+        return True
+    return False

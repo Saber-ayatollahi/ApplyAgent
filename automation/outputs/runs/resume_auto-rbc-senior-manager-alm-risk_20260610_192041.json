@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-rbc-senior-manager-alm-risk_20260610_192041",
+  "label": "resume_auto-rbc-senior-manager-alm-risk",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-rbc-senior-manager-alm-risk",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 12164,
+  "started_at": "2026-06-10T19:20:41",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-rbc-senior-manager-alm-risk_20260610_192041.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-rbc-senior-manager-alm-risk_20260610_192041.json",
+  "state": "finished",
+  "finished_at": "2026-06-10T19:24:10",
+  "returncode": null
+}

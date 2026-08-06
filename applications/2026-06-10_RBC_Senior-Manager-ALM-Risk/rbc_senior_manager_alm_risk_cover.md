@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+I currently hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios at Moody's Analytics — independently reviewing curve construction, spread calibration, and interest-rate risk analytics under parallel and non-parallel shocks before production release. That is the day-to-day discipline RBC's enterprise Balance Sheet and Liquidity Risk – ALM team is built around, and the reason I am writing to be considered for the Senior Manager, ALM Risk role.
+
+Over the past four years at Moody's I have led the design of a multi-scenario cash-flow projection engine, reviewed EVE- and NII-style sensitivity outputs at portfolio-level ALM aggregates, and validated derivatives pricing across rates, FX, and inflation feeding downstream capital processes — all within a formal model-governance framework aligned with OSFI B-12 and Basel IRRBB standards. My reporting practice centers on translating curve construction, spread calibration, and cross-asset interactions into committee-ready narratives for Heads of Risk and senior investment stakeholders. Earlier, at Ortec Finance, I delivered stochastic ALM and LDI studies for Canadian institutional clients — analyzing funding ratios, duration mismatch, and balance-sheet risk exposures across pension and multi-asset mandates — and at EY I worked across IFRS 17 and IFRS 9 transformation programs requiring tight coordination across Finance, Risk, and IT. My toolkit is Python, SQL, and advanced Excel; I have rebuilt spreadsheet workflows into auditable analytics pipelines under formal model-governance review.
+
+What draws me specifically to this role is the BSLR mandate to consolidate reporting across business lines, legal entities, and jurisdictions while partnering with Risk Modernization and ALM Transformation on infrastructure improvements. That blend of independent risk oversight, cross-functional reporting integration, and platform modernization maps directly onto my experience at Moody's and my consulting roots at Ortec and EY.
+
+I am based in Toronto, available for interviews immediately, and can commit to a start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview (NOT on resume): (1) No direct in-bank treasury/ALM seat - all IRRBB work is via Moody's clients (some of which are Big-6 banks) and Ortec pension/insurer mandates; frame as 'practitioner-adjacent, applied IRRBB analytics across institutional balance sheets.' (2) Tableau listed as Excel-heavy on the JD; Saber's visualization stack is Plotly/matplotlib - do not claim Tableau fluency, can say 'comfortable picking up Tableau given Excel/Python BI depth.' (3) US regulatory expectations are a 'nice-to-have' - Saber has not delivered under US Fed/OCC IRRBB regimes; honest framing is 'aware of US regulatory direction via Moody's US client base, not a direct deliverer.' (4) Verb discipline maintained throughout - 'review/validate/oversee' on the Moody's governance work, not 'develop/build' (except for the cash flow engine which the repo backs as a build). (5) Sign-off framed as 'delegated' (role-based on specific outputs), not 'formal portfolio authority.'

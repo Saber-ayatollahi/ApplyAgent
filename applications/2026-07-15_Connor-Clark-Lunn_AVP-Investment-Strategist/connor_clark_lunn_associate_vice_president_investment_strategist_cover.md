@@ -1,0 +1,12 @@
+Dear Hiring Team,
+
+I translate macroeconomic and scenario research into portfolio strategy and decision-ready communication every week at Moody's Analytics - the exact intersection the Associate Vice President, Investment Strategist role is built around. Across ~7 years I have analyzed duration, yield-curve, credit, and cross-asset exposures for multi-asset institutional portfolios and distilled the findings into narratives senior stakeholders can act on. I would welcome the opportunity to bring that discipline to CC&L Private Capital's investment team.
+
+At Moody's I hold delegated sign-off authority on valuation, sensitivity, and portfolio-level outputs for institutional portfolios of $5-25bn per engagement, reviewing curve construction, spread calibration, and cross-asset interactions before release. I designed a multi-scenario projection engine layering macro stress overlays, and I regularly prepare analytical summaries on interest-rate exposure, scenario impacts, and balance-sheet sensitivities for investment stakeholders. Earlier, at Ortec Finance, I advised Canadian pension funds on Strategic and Tactical Asset Allocation, built stochastic scenario generators spanning market cycles, ran VaR/CVaR portfolio optimization with risk decomposition, and presented recommendations directly to investment committees - the multi-asset, macro-to-portfolio work this role requires.
+
+What draws me specifically to CC&L is the mandate to curate and communicate the firm's investment views across equities, fixed income, currencies, and alternatives to portfolio managers, Wealth Advisors, and clients. My strongest edge is connecting rigorous multi-asset analytics to clear, compelling messaging - translating complex positioning into narratives that align stakeholders without direct authority, which is precisely how I operate as an escalation point across investment teams today. I also build the charts, dashboards, and Python pipelines that keep that communication data-driven and repeatable.
+
+I am based in Toronto, available for interviews immediately, and can start approximately four weeks after an offer. My resume is attached, and references are available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA

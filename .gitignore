@@ -156,3 +156,10 @@ automation/outputs/url_history.json
 # But DO keep a placeholder so outputs/ exists after clone
 # ============================================================================
 !automation/outputs/.gitkeep
+
+# ============================================================================
+# Personal data — never commit
+# ============================================================================
+Linkedin data/
+LinkedIn data/
+applications/*/*_ats_report.json

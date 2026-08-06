@@ -1,0 +1,137 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "HOOPP",
+    "role": "Senior Manager, Risk Analytics & Modelling",
+    "jd_keywords": [
+      "instrument risk modelling",
+      "derivatives",
+      "market risk",
+      "investment risk",
+      "Python",
+      "model validation",
+      "benchmarking",
+      "vendor risk system",
+      "portfolio managers",
+      "quantitative",
+      "LLMs",
+      "AI agents",
+      "risk reports",
+      "liabilities"
+    ]
+  },
+  "summary": "Senior Manager, Risk Analytics & Modelling candidate with ~7 years across instrument risk modelling, derivatives valuation, and market risk measurement for institutional portfolios. Delegated sign-off authority at Moody's Analytics on valuation, sensitivity, and risk outputs ($5–25bn per engagement); designed and built an enterprise multi-asset cash-flow projection engine and production Python analytics pipelines, with agentic AI (LLM) workflows in daily use. VaR/CVaR portfolio optimization, stochastic scenario generators, and pension LDI at Ortec Finance. CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Instrument Risk Modelling & Derivatives Valuation",
+    "Investment Risk & Market Risk Measurement",
+    "Risk Tool Design & Development",
+    "Python (pandas, NumPy, SciPy) & SQL",
+    "Stochastic Modelling & Monte Carlo Simulation",
+    "VaR / CVaR & Risk Decomposition",
+    "Model Validation, Benchmarking & Documentation",
+    "Pension Liability & ALM Modelling",
+    "AI Agents & LLM-Powered Automation"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Instrument Risk Modelling & Derivatives Valuation",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ranging $5–25bn per engagement, cumulatively covering ~$50bn of client assets.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation on the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms; cross-check sensitivities and scenario impacts at portfolio-level aggregates for institutional clients including pension funds, asset managers, and their portfolio managers.",
+                "Review curve construction, spread calibration, and cross-asset interactions prior to production release; escalate outputs lacking mathematical or economic defensibility."
+              ]
+            },
+            {
+              "heading": "Risk Tool Development, Scenario Analysis & Risk Reporting",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios across portfolio horizons.",
+                "Architected configurable time-bucketed exposure and liquidity analytics (T+1 through multi-year) supporting hedging, funding, and asset-allocation decisions.",
+                "Oversaw interest-rate and duration analysis under parallel and non-parallel shocks; prepared analytical commentary translating quantitative outputs into investment-committee-ready risk reports."
+              ]
+            },
+            {
+              "heading": "Python Engineering, AI Agents & Model Validation",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines (pandas, NumPy) with embedded logging and validation controls — in production across the modelling team.",
+                "Built agentic AI development workflows leveraging LLMs (Claude Code, Cursor IDE) — automating code generation, validation scaffolding, anomaly detection, and documentation; reduced cycle time ~30–40% on comparable modules.",
+                "Member of the model governance committee — contribute to methodology review and challenge, documentation and benchmarking standards, and assessment of model performance for client-delivered analytics."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation of PFaroe DB and PFaroe PM — vendor risk systems for pension ALM and multi-asset portfolio analytics — for U.S. and Canadian pension funds, asset managers, and consulting firms.",
+                "Served as technical liaison and platform point-of-expertise between client investment teams and product/development functions — scoped requirements, advised on asset, liability, and ALM configurations, and validated model outputs post-deployment.",
+                "Contributed to the successful migration of all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — aligned liability measurement and reporting frameworks with system implementation.",
+                "Advised actuarial, finance, IT, and risk functions on governance documentation, model controls, and regulatory readiness across complex insurer balance sheets."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators (Monte Carlo) assessing interest-rate, inflation, and currency risk under base and stressed environments; performed hedging analysis across rates, inflation, and FX.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR using Ortec's GLASS vendor risk system; conducted risk decomposition, contribution-to-risk, and near-optimal frontier robustness analysis.",
+                "Delivered ALM studies for Canadian and international pension funds — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk, modelling actuarial liabilities alongside all major investment-product types and economic variables.",
+                "Conducted liability-driven investment (LDI) analysis trading off return objectives, duration alignment, and liquidity; presented findings to investment committees on Strategic and Tactical Asset Allocation through stress and sensitivity testing.",
+                "Led onboarding and the ALM study for the University Pension Plan (UPP) three-plan merger — on a team of three, developed and validated the model capturing funding-policy dynamics, evaluating duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

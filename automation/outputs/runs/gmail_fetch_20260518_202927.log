@@ -1,8 +1,0 @@
-# gmail_fetch
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
-# started: 2026-05-18T20:29:27.555707
-
-[gmail_fetch] \u2713 authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
-[gmail_fetch] inbox match: 59 sender-classified, 0 LinkedIn alert(s); parsed 0 row(s) from 0 digest(s) (0 digest(s) yielded zero rows)
-[gmail_fetch] after tracker dedup: 0 kept (-0 already in tracker)
-[gmail_fetch] \u26a0 wrote scan_gmail_20260518_202936.json with 0 rows. (0 alert(s) seen — likely parse miss or all rows already in tracker.)

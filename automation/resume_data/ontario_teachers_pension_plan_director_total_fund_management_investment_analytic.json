@@ -1,0 +1,137 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Ontario Teachers' Pension Plan",
+    "role": "Director, Total Fund Management Investment Analytics",
+    "experience_label": "PROFESSIONAL EXPERIENCE",
+    "jd_keywords": [
+      "investment analytics",
+      "portfolio construction",
+      "Total Fund",
+      "analytics",
+      "AI",
+      "scenario analysis",
+      "risk analytics",
+      "liquidity",
+      "leverage",
+      "cross-asset exposures",
+      "Python",
+      "model governance"
+    ]
+  },
+  "summary": "Investment analytics professional with ~7 years across multi-asset portfolio analytics, ALM, and AI-enabled platform delivery for pension and institutional investors. At Moody's Analytics holds delegated sign-off on valuation, risk, and ALM outputs for portfolios of $5–25bn per engagement, and led design of a cross-asset cash flow, liquidity, and scenario engine. Ex-Ortec Finance ALM consultant to Canadian pensions (VaR/CVaR optimization, portfolio construction, LDI). Familiar with Total Fund analytics needs across leverage, liquidity, and cross-asset exposures. CFA + dual MSc.",
+  "core_skills": [
+    "Multi-asset portfolio analytics & scenario analysis",
+    "ALM, liquidity gap & cash flow projection modelling",
+    "Risk analytics: VaR/CVaR, risk decomposition & attribution",
+    "Cross-asset exposure aggregation & sensitivity analysis",
+    "Portfolio construction analytics: asset-only & asset-liability optimization",
+    "Model governance, validation & escalation frameworks",
+    "AI-assisted development & agentic workflows (Claude Code, Cursor)",
+    "Python (pandas, NumPy, SciPy), SQL & production analytics pipelines",
+    "Stakeholder partnership with investment committees, Heads of Risk & CIO offices"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Assistant Director – Modelling Services (Investment & ALM Analytics Lead)",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Investment Analytics & Portfolio Insight",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional client portfolios ranging $5–25bn per engagement (~$50bn+ cumulative book), spanning pensions, asset managers, and insurers.",
+                "Review and validate aggregation logic converting security-level exposures into portfolio-level risk metrics — covering duration, cross-asset exposures, and scenario impacts — feeding downstream ALM, Total Fund reporting, and investment-committee narratives.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation; ensure consistency of sensitivities and stress impacts at portfolio-level ALM aggregates for client investment committees."
+              ]
+            },
+            {
+              "heading": "Analytics Platform Development & Scenario Engineering",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity and funding visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year), enabling funding optimization, refinancing risk assessment, and asset-allocation decisions; embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays.",
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging and validation controls.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) — automated code generation, validation scaffolding, and anomaly detection — reducing development cycle time an estimated 30–40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Model Governance & Stakeholder Partnership",
+              "bullets": [
+                "Operate within Moody's formal model governance framework — independently review curve construction, spread calibration, cross-asset interactions, and stress behaviour prior to production release; establish documentation and validation standards consistent with industry model-risk-management expectations.",
+                "Serve as escalation point for client-critical analytical issues; interface directly with Heads of Risk and CIO-office stakeholders, translating quantitative outputs into investment-committee-ready narratives.",
+                "Translate client investment-team requirements into structured Product Owner development requests; coordinate across product, engineering, and QA functions in cross-functional squad delivery and validate outputs post-deployment."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist – PFaroe Platform",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe multi-asset analytics platform; translated investment-team requirements into Product Owner development requests.",
+                "Successfully migrated all assigned client accounts from the legacy Calypso platform to PFaroe PM, validating asset, liability, and ALM configurations post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Coordinated across actuarial, finance, IT, risk, and program management on milestone delivery, governance documentation, and regulatory-readiness materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk under stochastic economic scenarios.",
+                "Performed asset-only and asset-liability (surplus) portfolio construction and optimization based on VaR and CVaR using Ortec's GLASS platform; conducted risk decomposition, contribution-to-risk, and near-optimal frontier analysis to test allocation robustness.",
+                "Conducted liability-driven investment (LDI) analysis — trade-offs between return objectives, duration alignment, leverage overlays, and liquidity for pension-fund clients; advised on Strategic and Tactical Asset Allocation via stress testing and sensitivity analysis across cross-asset exposures.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate, inflation, and currency risk; performed cross-asset hedging analysis for international institutional clients.",
+                "Led the ALM study for a three-plan university pension merger (new jointly-sponsored plan, analogous to a Total Fund build) — on a team of three, developed and validated the model capturing all Funding Policy dynamics and evaluated duration, inflation, currency, and leverage overlay strategies.",
+                "Presented ALM study findings to investment committees at Canadian pension-fund clients on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

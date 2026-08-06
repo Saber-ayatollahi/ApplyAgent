@@ -51,12 +51,19 @@ Get a key at https://console.anthropic.com.
 
 ### 4. Optional — override the model
 
-The tailor agent defaults to Claude Opus 4.7 (`claude-opus-4-7`) with Claude Sonnet 4.6 (`claude-sonnet-4-6`) fallback. To override:
+The tailor agent defaults to Claude Opus 5 (`claude-opus-5`) with Claude Sonnet 5 (`claude-sonnet-5`) fallback. To override:
 
 ```powershell
-$env:JD_TAILOR_MODEL = "claude-opus-4-7"
-$env:JD_TAILOR_FALLBACK = "claude-sonnet-4-6"
+$env:JD_TAILOR_MODEL = "claude-opus-5"
+$env:JD_TAILOR_FALLBACK = "claude-sonnet-5"
 ```
+
+Opus 5 costs the same as Opus 4.8 ($5/$25 per MTok) but thinks by default, and
+`max_tokens` bounds thinking + visible output together — which is why
+`call_claude` streams and budgets 32k. `claude-fable-5` is available as the
+`fable` resume tier but bills at $10/$50 (2x Opus 5) and needs 30-day data
+retention, so it stays opt-in. There is no Haiku 5 — `claude-haiku-4-5` is the
+current Haiku and remains the scorer default.
 
 ---
 

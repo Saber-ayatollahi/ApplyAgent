@@ -1,0 +1,526 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --scrape-mode full --skip-score --skip-promote
+# started: 2026-07-08T09:36:21.268836
+
+=== ApplyAgent pipeline 20260708_093621 ===
+Mode: scrape=full skip_scrape=False skip_score=True skip_promote=True
+[scrape] [scan] exclude-list dropped 12 target(s) before scan.
+[scrape] [scan 1/193] HOOPP (sector: Canadian Pension Funds)
+[scrape]   -> 42 new candidate(s) [workday:22, linkedin:20]
+[scrape] [scan 2/193] OMERS (sector: Canadian Pension Funds)
+[scrape]   -> 53 new candidate(s) [workday:24, linkedin:29]
+[scrape] [scan 3/193] Ontario Teachers' Pension Plan (sector: Canadian Pension Funds)
+[scrape]   -> 61 new candidate(s) [workday:28, linkedin:33]
+[scrape] [scan 4/193] CPP Investments (sector: Canadian Pension Funds)
+[scrape]   -> 26 new candidate(s) [workday:15, linkedin:11]
+[scrape] [scan 5/193] PSP Investments (sector: Canadian Pension Funds)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 6/193] OPTrust (sector: Canadian Pension Funds)
+[scrape]   -> 5 new candidate(s) [workday:1, linkedin:4]
+[scrape] [scan 7/193] CAAT Pension Plan (sector: Canadian Pension Funds)
+[scrape]   -> 16 new candidate(s) [workday:6, linkedin:10]
+[scrape] [scan 8/193] IMCO (sector: Canadian Pension Funds)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 9/193] CDPQ (sector: Canadian Pension Funds)
+[scrape]   -> 3 new candidate(s) [workday:3]
+[scrape] [scan 10/193] AIMCo (sector: Canadian Pension Funds)
+[scrape]   [linkedin] US-remote pass: +1 new for AIMCo
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 11/193] BCI (British Columbia Investment Mgmt) (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 12/193] Brookfield Asset Management (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +14 new for Brookfield Asset Management
+[scrape]   -> 80 new candidate(s) [workday:36, linkedin:44]
+[scrape] [scan 13/193] CI Financial (sector: Canadian Asset Managers)
+[scrape]   [linkedin] GTA-west pass: +3 new for CI Financial
+[scrape]   -> 12 new candidate(s) [linkedin:12]
+[scrape] [scan 14/193] Mackenzie Investments (sector: Canadian Asset Managers)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 15/193] AGF Management (sector: Canadian Asset Managers)
+[scrape]   -> 6 new candidate(s) [workday:3, linkedin:3]
+[scrape] [scan 16/193] Fidelity Canada (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +32 new for Fidelity Canada
+[scrape]   -> 73 new candidate(s) [linkedin:73]
+[scrape] [scan 17/193] Connor Clark & Lunn (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +1 new for Connor Clark & Lunn
+[scrape]   -> 21 new candidate(s) [linkedin:21]
+[scrape] [scan 18/193] Guardian Capital Group (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +6 new for Guardian Capital Group
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 19/193] Picton Mahoney Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 20/193] Canada Infrastructure Bank (sector: Canadian Asset Managers)
+[scrape]   -> 12 new candidate(s) [greenhouse:3, linkedin:9]
+[scrape] [scan 21/193] BlackRock (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +23 new for BlackRock
+[scrape]   -> 63 new candidate(s) [workday:41, linkedin:22]
+[scrape] [scan 22/193] PIMCO (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +30 new for PIMCO
+[scrape]   -> 30 new candidate(s) [linkedin:30]
+[scrape] [scan 23/193] Vanguard (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +27 new for Vanguard
+[scrape]   -> 41 new candidate(s) [workday:8, linkedin:33]
+[scrape] [scan 24/193] Invesco (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +8 new for Invesco
+[scrape]   -> 37 new candidate(s) [workday:29, linkedin:8]
+[scrape] [scan 25/193] Wellington Management (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +24 new for Wellington Management
+[scrape]   -> 74 new candidate(s) [workday:42, linkedin:32]
+[scrape] [scan 26/193] Schroders (sector: US & Global Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 27/193] JPMorgan Chase (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +46 new for JPMorgan Chase
+[scrape]   -> 55 new candidate(s) [linkedin:55]
+[scrape] [scan 28/193] Goldman Sachs (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +36 new for Goldman Sachs
+[scrape]   -> 38 new candidate(s) [linkedin:38]
+[scrape] [scan 29/193] Morgan Stanley (sector: US Banks (Toronto))
+[scrape]   -> 136 new candidate(s) [workday:127, linkedin:9]
+[scrape] [scan 30/193] Citi (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +29 new for Citi
+[scrape]   -> 72 new candidate(s) [phenom:3, linkedin:69]
+[scrape] [scan 31/193] HSBC (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +5 new for HSBC
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 32/193] Deutsche Bank (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +34 new for Deutsche Bank
+[scrape]   -> 82 new candidate(s) [workday:48, linkedin:34]
+[scrape] [scan 33/193] BNY Mellon (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +37 new for BNY Mellon
+[scrape]   -> 39 new candidate(s) [linkedin:39]
+[scrape] [scan 34/193] State Street (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +36 new for State Street
+[scrape]   -> 120 new candidate(s) [workday:54, linkedin:66]
+[scrape] [scan 35/193] Northern Trust (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +21 new for Northern Trust
+[scrape]   -> 91 new candidate(s) [workday:67, linkedin:24]
+[scrape] [scan 36/193] Bloomberg (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +14 new for Bloomberg
+[scrape]   -> 14 new candidate(s) [linkedin:14]
+[scrape] [scan 37/193] MSCI (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +3 new for MSCI
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 38/193] S&P Global (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +27 new for S&P Global
+[scrape]   -> 44 new candidate(s) [workday:15, linkedin:29]
+[scrape] [scan 39/193] FactSet (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +7 new for FactSet
+[scrape]   -> 8 new candidate(s) [linkedin:8]
+[scrape] [scan 40/193] Morningstar DBRS (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +2 new for Morningstar DBRS
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 41/193] Yields.io (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 42/193] Abrigo (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 43/193] nCino (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +6 new for nCino
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 44/193] Kamakura (SAS) (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 45/193] Beacon Platform (sector: Analytics & Risk Vendors)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 46/193] SS&C Technologies (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +24 new for SS&C Technologies
+[scrape]   -> 68 new candidate(s) [workday:21, linkedin:47]
+[scrape] [scan 47/193] Numerix (sector: Analytics & Risk Vendors)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 48/193] Prometeia (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 49/193] Manulife (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +1 new for Manulife
+[scrape]   -> 55 new candidate(s) [workday:15, linkedin:40]
+[scrape] [scan 50/193] Sun Life (sector: Canadian Insurers)
+[scrape]   [linkedin] 429 on 'ALM Sun Life' page 0 — backing off 10s (attempt 1)
+[scrape]   [linkedin] US-remote pass: +6 new for Sun Life
+[scrape]   -> 54 new candidate(s) [workday:7, linkedin:47]
+[scrape] [scan 51/193] Canada Life (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +7 new for Canada Life
+[scrape]   -> 77 new candidate(s) [sf:20, linkedin:57]
+[scrape] [scan 52/193] Intact Financial (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +4 new for Intact Financial
+[scrape]   -> 25 new candidate(s) [linkedin:25]
+[scrape] [scan 53/193] Definity Financial (sector: Canadian Insurers)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 54/193] iA Financial Group (sector: Canadian Insurers)
+[scrape]   -> 17 new candidate(s) [workday:6, linkedin:11]
+[scrape] [scan 55/193] RGA (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +4 new for RGA
+[scrape]   -> 23 new candidate(s) [workday:18, linkedin:5]
+[scrape] [scan 56/193] EQB (sector: Mid Canadian Banks)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 57/193] PwC Canada (sector: Big 4 Risk Advisory)
+[scrape]   [linkedin] US-remote pass: +12 new for PwC Canada
+[scrape]   -> 48 new candidate(s) [linkedin:48]
+[scrape] [scan 58/193] Mercer (sector: Pension/ALM Consulting)
+[scrape]   [linkedin] US-remote pass: +24 new for Mercer
+[scrape]   -> 39 new candidate(s) [linkedin:39]
+[scrape] [scan 59/193] WTW (sector: Pension/ALM Consulting)
+[scrape]   [linkedin] US-remote pass: +11 new for WTW
+[scrape]   -> 21 new candidate(s) [linkedin:21]
+[scrape] [scan 60/193] Aon (sector: Pension/ALM Consulting)
+[scrape]   [linkedin] US-remote pass: +26 new for Aon
+[scrape]   -> 54 new candidate(s) [linkedin:54]
+[scrape] [scan 61/193] Oliver Wyman (sector: FS Strategy Consulting)
+[scrape]   [linkedin] US-remote pass: +17 new for Oliver Wyman
+[scrape]   -> 29 new candidate(s) [linkedin:29]
+[scrape] [scan 62/193] Fairstone Bank (sector: Mid Canadian Banks)
+[scrape]   [linkedin] GTA-west pass: +1 new for Fairstone Bank
+[scrape]   -> 14 new candidate(s) [linkedin:14]
+[scrape] [scan 63/193] Home Trust (sector: Mid Canadian Banks)
+[scrape]   [linkedin] US-remote pass: +8 new for Home Trust
+[scrape]   -> 11 new candidate(s) [linkedin:11]
+[scrape] [scan 64/193] Haventree Bank (sector: Mid Canadian Banks)
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 65/193] Laurentian Bank of Canada (sector: Mid Canadian Banks)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 66/193] Tangerine Bank (sector: Mid Canadian Banks)
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 67/193] Amex Bank of Canada (sector: Mid Canadian Banks)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 68/193] Rogers Bank (sector: Mid Canadian Banks)
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 69/193] Canadian Tire Bank (sector: Mid Canadian Banks)
+[scrape]   -> 32 new candidate(s) [linkedin:32]
+[scrape] [scan 70/193] Manulife Bank (sector: Mid Canadian Banks)
+[scrape]   [linkedin] US-remote pass: +2 new for Manulife Bank
+[scrape]   -> 25 new candidate(s) [linkedin:25]
+[scrape] [scan 71/193] RFA Bank of Canada (sector: Mid Canadian Banks)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 72/193] Fairfax Financial Holdings (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +1 new for Fairfax Financial Holdings
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 73/193] ivari (sector: Canadian Insurers)
+[scrape]   -> 11 new candidate(s) [linkedin:11]
+[scrape] [scan 74/193] Foresters Financial (sector: Canadian Insurers)
+[scrape]   -> 16 new candidate(s) [linkedin:16]
+[scrape] [scan 75/193] Empire Life (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +7 new for Empire Life
+[scrape]   -> 12 new candidate(s) [linkedin:12]
+[scrape] [scan 76/193] Equitable Life of Canada (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +6 new for Equitable Life of Canada
+[scrape]   -> 6 new candidate(s) [linkedin:6]
+[scrape] [scan 77/193] Aviva Canada (sector: Canadian Insurers)
+[scrape]   -> 44 new candidate(s) [linkedin:44]
+[scrape] [scan 78/193] Co-operators (sector: Canadian Insurers)
+[scrape]   -> 42 new candidate(s) [linkedin:42]
+[scrape] [scan 79/193] Wawanesa Insurance (sector: Canadian Insurers)
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 80/193] Northbridge Financial (sector: Canadian Insurers)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 81/193] Munich Re Canada (sector: Canadian Insurers)
+[scrape]   [linkedin] 429 on 'ALM Munich Re Canada' page 1 — backing off 10s (attempt 1)
+[scrape]   [linkedin] GTA-west pass: +3 new for Munich Re Canada
+[scrape]   [linkedin] US-remote pass: +22 new for Munich Re Canada
+[scrape]   -> 35 new candidate(s) [linkedin:35]
+[scrape] [scan 82/193] Swiss Re Canada (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +25 new for Swiss Re Canada
+[scrape]   -> 33 new candidate(s) [linkedin:33]
+[scrape] [scan 83/193] Trisura Group (sector: Canadian Insurers)
+[scrape]   [linkedin] US-remote pass: +1 new for Trisura Group
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 84/193] Canada Guaranty (sector: Canadian Insurers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 85/193] Sagen MI Canada (sector: Canadian Insurers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 86/193] MCAP Financial (sector: Mortgage Lenders)
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 87/193] First National Financial (sector: Mortgage Lenders)
+[scrape]   [linkedin] US-remote pass: +2 new for First National Financial
+[scrape]   -> 8 new candidate(s) [linkedin:8]
+[scrape] [scan 88/193] CMLS Financial (sector: Mortgage Lenders)
+[scrape]   -> 7 new candidate(s) [linkedin:7]
+[scrape] [scan 89/193] Element Fleet Management (sector: Non-Bank Lenders)
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 90/193] Ford Credit Canada (sector: Non-Bank Lenders)
+[scrape]   [linkedin] US-remote pass: +19 new for Ford Credit Canada
+[scrape]   -> 20 new candidate(s) [linkedin:20]
+[scrape] [scan 91/193] Hyundai Capital Canada (sector: Non-Bank Lenders)
+[scrape]   [linkedin] US-remote pass: +19 new for Hyundai Capital Canada
+[scrape]   -> 29 new candidate(s) [linkedin:29]
+[scrape] [scan 92/193] Toyota Financial Services Canada (sector: Non-Bank Lenders)
+[scrape]   [linkedin] US-remote pass: +23 new for Toyota Financial Services Canada
+[scrape]   -> 32 new candidate(s) [linkedin:32]
+[scrape] [scan 93/193] Fiera Capital (sector: Canadian Asset Managers)
+[scrape]   [linkedin] GTA-west pass: +2 new for Fiera Capital
+[scrape]   -> 17 new candidate(s) [linkedin:17]
+[scrape] [scan 94/193] Beutel Goodman (sector: Canadian Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 95/193] Burgundy Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 96/193] 1832 Asset Management (sector: Canadian Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 97/193] Purpose Investments (sector: Canadian Asset Managers)
+[scrape]   -> 6 new candidate(s) [linkedin:6]
+[scrape] [scan 98/193] Horizons ETFs / Global X (sector: Canadian Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 99/193] Franklin Templeton Canada (sector: US & Global Asset Managers)
+[scrape]   [linkedin] US-remote pass: +16 new for Franklin Templeton Canada
+[scrape]   -> 15 new candidate(s) [linkedin:15]
+[scrape] [scan 100/193] Polar Asset Management (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 101/193] RPIA (sector: Hedge Funds / Alt AM)
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 102/193] Algonquin Capital (sector: Hedge Funds / Alt AM)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 103/193] Lawrence Park Asset Management (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 104/193] Waratah Capital Advisors (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 105/193] Sagard Holdings (sector: Private Credit)
+[scrape]   [linkedin] GTA-west pass: +1 new for Sagard Holdings
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 106/193] Northleaf Capital Partners (sector: Private Credit)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 107/193] KingSett Capital (sector: Private Credit)
+[scrape]   [linkedin] GTA-west pass: +1 new for KingSett Capital
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 108/193] Ninepoint Partners (sector: Private Credit)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 109/193] Trez Capital (sector: Private Credit)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 110/193] Romspen Investment Corporation (sector: Private Credit)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 111/193] Antares Capital (sector: Private Credit)
+[scrape]   [linkedin] US-remote pass: +3 new for Antares Capital
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 112/193] Third Eye Capital (sector: Private Credit)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 113/193] CIBC Mellon (sector: Fund Admin/Custody)
+[scrape]   [linkedin] US-remote pass: +3 new for CIBC Mellon
+[scrape]   -> 36 new candidate(s) [linkedin:36]
+[scrape] [scan 114/193] RBC Investor Services (sector: Fund Admin/Custody)
+[scrape]   [linkedin] GTA-west pass: +1 new for RBC Investor Services
+[scrape]   [linkedin] US-remote pass: +29 new for RBC Investor Services
+[scrape]   -> 52 new candidate(s) [linkedin:52]
+[scrape] [scan 115/193] Citco Fund Services (sector: Fund Admin/Custody)
+[scrape]   [linkedin] US-remote pass: +8 new for Citco Fund Services
+[scrape]   -> 48 new candidate(s) [linkedin:48]
+[scrape] [scan 116/193] SEI Investments Canada (sector: Fund Admin/Custody)
+[scrape]   [linkedin] US-remote pass: +9 new for SEI Investments Canada
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 117/193] Apex Group (sector: Fund Admin/Custody)
+[scrape]   [linkedin] GTA-west pass: +1 new for Apex Group
+[scrape]   [linkedin] US-remote pass: +12 new for Apex Group
+[scrape]   -> 23 new candidate(s) [linkedin:23]
+[scrape] [scan 118/193] MUFG Investor Services (sector: Fund Admin/Custody)
+[scrape]   [linkedin] US-remote pass: +11 new for MUFG Investor Services
+[scrape]   -> 22 new candidate(s) [linkedin:22]
+[scrape] [scan 119/193] TMX Group (sector: Market Infrastructure)
+[scrape]   -> 15 new candidate(s) [linkedin:15]
+[scrape] [scan 120/193] Fundserv (sector: Market Infrastructure)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 121/193] Finastra (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +3 new for Finastra
+[scrape]   -> 8 new candidate(s) [linkedin:8]
+[scrape] [scan 122/193] FIS Global (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +14 new for FIS Global
+[scrape]   -> 14 new candidate(s) [linkedin:14]
+[scrape] [scan 123/193] Broadridge (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +27 new for Broadridge
+[scrape]   -> 32 new candidate(s) [linkedin:32]
+[scrape] [scan 124/193] DTCC (sector: Market Infrastructure)
+[scrape]   [linkedin] US-remote pass: +2 new for DTCC
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 125/193] Cboe Canada (sector: Market Infrastructure)
+[scrape]   [linkedin] US-remote pass: +8 new for Cboe Canada
+[scrape]   -> 8 new candidate(s) [linkedin:8]
+[scrape] [scan 126/193] SAS Canada (sector: Analytics & Risk Vendors)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 127/193] Wolters Kluwer (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +33 new for Wolters Kluwer
+[scrape]   -> 29 new candidate(s) [linkedin:29]
+[scrape] [scan 128/193] Nasdaq (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] 429 on 'fixed income Nasdaq' page 0 — backing off 10s (attempt 1)
+[scrape]   [linkedin] US-remote pass: +10 new for Nasdaq
+[scrape]   -> 15 new candidate(s) [linkedin:15]
+[scrape] [scan 129/193] Moody's Corporation (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +6 new for Moody's Corporation
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 130/193] Qontigo (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 131/193] Quantifi (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 132/193] ION Group (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +9 new for ION Group
+[scrape]   -> 20 new candidate(s) [linkedin:20]
+[scrape] [scan 133/193] Murex (sector: Analytics & Risk Vendors)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 134/193] SS&C Technologies (Algorithmics) (sector: Analytics & Risk Vendors)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 137/193] Clearwater Analytics (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +18 new for Clearwater Analytics
+[scrape]   -> 18 new candidate(s) [linkedin:18]
+[scrape] [scan 138/193] OSFI (sector: Regulators & Crown)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 139/193] Bank of Canada (sector: Regulators & Crown)
+[scrape]   -> 32 new candidate(s) [sf:22, linkedin:10]
+[scrape] [scan 140/193] CDIC (sector: Regulators & Crown)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 141/193] FSRA Ontario (sector: Regulators & Crown)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 142/193] Ontario Securities Commission (sector: Regulators & Crown)
+[scrape]   -> 6 new candidate(s) [linkedin:6]
+[scrape] [scan 143/193] CMHC (sector: Regulators & Crown)
+[scrape]   -> 50 new candidate(s) [sf:44, linkedin:6]
+[scrape] [scan 144/193] EDC (sector: Regulators & Crown)
+[scrape]   [linkedin] US-remote pass: +1 new for EDC
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 145/193] BDC (sector: Regulators & Crown)
+[scrape]   -> 11 new candidate(s) [linkedin:11]
+[scrape] [scan 146/193] CIRO (sector: Regulators & Crown)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 147/193] Infrastructure Ontario (sector: Regulators & Crown)
+[scrape]   -> 17 new candidate(s) [linkedin:17]
+[scrape] [scan 148/193] Wealthsimple (sector: Fintech)
+[scrape]   [linkedin] US-remote pass: +1 new for Wealthsimple
+[scrape]   -> 9 new candidate(s) [linkedin:9]
+[scrape] [scan 149/193] Questrade Financial Group (sector: Fintech)
+[scrape]   [linkedin] GTA-west pass: +2 new for Questrade Financial Group
+[scrape]   -> 27 new candidate(s) [linkedin:27]
+[scrape] [scan 150/193] Interac (sector: Fintech)
+[scrape]   -> 25 new candidate(s) [linkedin:25]
+[scrape] [scan 151/193] Moneris (sector: Fintech)
+[scrape]   -> 19 new candidate(s) [linkedin:19]
+[scrape] [scan 152/193] Nuvei (sector: Fintech)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 153/193] Neo Financial (sector: Fintech)
+[scrape]   -> 21 new candidate(s) [linkedin:21]
+[scrape] [scan 154/193] Payments Canada (sector: Fintech)
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 155/193] Stripe (sector: Fintech)
+[scrape]   [linkedin] US-remote pass: +40 new for Stripe
+[scrape]   -> 71 new candidate(s) [greenhouse:7, linkedin:64]
+[scrape] [scan 156/193] Affirm (sector: Fintech)
+[scrape]   [linkedin] US-remote pass: +80 new for Affirm
+[scrape]   -> 146 new candidate(s) [greenhouse:17, linkedin:129]
+[scrape] [scan 157/193] Robinhood (sector: Fintech)
+[scrape]   [linkedin] US-remote pass: +3 new for Robinhood
+[scrape]   -> 4 new candidate(s) [greenhouse:1, linkedin:3]
+[scrape] [scan 158/193] Point72 (sector: Hedge Funds / Alt AM)
+[scrape]   [linkedin] US-remote pass: +16 new for Point72
+[scrape]   -> 44 new candidate(s) [greenhouse:28, linkedin:16]
+[scrape] [scan 159/193] SLC Management (sector: Canadian Asset Managers)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 160/193] Manulife Investment Management (sector: Canadian Asset Managers)
+[scrape]   -> 14 new candidate(s) [linkedin:14]
+[scrape] [scan 161/193] CIBC Asset Management (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +3 new for CIBC Asset Management
+[scrape]   -> 29 new candidate(s) [linkedin:29]
+[scrape] [scan 162/193] Desjardins Global Asset Management (sector: Canadian Asset Managers)
+[scrape]   [linkedin] GTA-west pass: +1 new for Desjardins Global Asset Management
+[scrape]   -> 37 new candidate(s) [linkedin:37]
+[scrape] [scan 163/193] Addenda Capital (sector: Canadian Asset Managers)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 164/193] Russell Investments Canada (sector: Canadian Asset Managers)
+[scrape]   [linkedin] US-remote pass: +7 new for Russell Investments Canada
+[scrape]   -> 7 new candidate(s) [linkedin:7]
+[scrape] [scan 165/193] Mawer Investment Management (sector: Canadian Asset Managers)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 166/193] Verition Fund Management (sector: Hedge Funds / Alt AM)
+[scrape]   [linkedin] US-remote pass: +3 new for Verition Fund Management
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 167/193] Marret Asset Management (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 168/193] Hillsdale Investment Management (sector: Hedge Funds / Alt AM)
+[scrape]   -> 2 new candidate(s) [linkedin:2]
+[scrape] [scan 169/193] Anson Funds (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 170/193] Balyasny Asset Management (sector: Hedge Funds / Alt AM)
+[scrape]   [linkedin] US-remote pass: +4 new for Balyasny Asset Management
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 171/193] Citadel (sector: Hedge Funds / Alt AM)
+[scrape]   [linkedin] US-remote pass: +10 new for Citadel
+[scrape]   -> 8 new candidate(s) [linkedin:8]
+[scrape] [scan 172/193] Sprott (sector: Hedge Funds / Alt AM)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 173/193] Onex (Onex Credit) (sector: Private Credit)
+[scrape]   -> 3 new candidate(s) [linkedin:3]
+[scrape] [scan 174/193] Canso Investment Counsel (sector: Private Credit)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 175/193] Blackstone Credit (sector: Private Credit)
+[scrape]   [linkedin] US-remote pass: +32 new for Blackstone Credit
+[scrape]   -> 33 new candidate(s) [linkedin:33]
+[scrape] [scan 176/193] Barings (sector: Private Credit)
+[scrape]   [linkedin] US-remote pass: +4 new for Barings
+[scrape]   -> 4 new candidate(s) [linkedin:4]
+[scrape] [scan 177/193] Bank of America (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +27 new for Bank of America
+[scrape]   -> 33 new candidate(s) [linkedin:33]
+[scrape] [scan 178/193] MUFG Bank (Canada) (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +32 new for MUFG Bank (Canada)
+[scrape]   -> 44 new candidate(s) [linkedin:44]
+[scrape] [scan 179/193] UBS (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +9 new for UBS
+[scrape]   -> 10 new candidate(s) [linkedin:10]
+[scrape] [scan 180/193] Macquarie Group (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +5 new for Macquarie Group
+[scrape]   -> 5 new candidate(s) [linkedin:5]
+[scrape] [scan 181/193] SMBC (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +13 new for SMBC
+[scrape]   -> 13 new candidate(s) [linkedin:13]
+[scrape] [scan 182/193] Mizuho (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +16 new for Mizuho
+[scrape]   -> 16 new candidate(s) [linkedin:16]
+[scrape] [scan 183/193] PNC (Canada) (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +33 new for PNC (Canada)
+[scrape]   -> 32 new candidate(s) [linkedin:32]
+[scrape] [scan 184/193] Natixis CIB (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +14 new for Natixis CIB
+[scrape]   -> 14 new candidate(s) [linkedin:14]
+[scrape] [scan 185/193] Societe Generale (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +19 new for Societe Generale
+[scrape]   -> 22 new candidate(s) [linkedin:22]
+[scrape] [scan 186/193] BNP Paribas (sector: US Banks (Toronto))
+[scrape]   [linkedin] US-remote pass: +21 new for BNP Paribas
+[scrape]   -> 43 new candidate(s) [linkedin:43]
+[scrape] [scan 187/193] WSIB (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 188/193] University Pension Plan (sector: Canadian Pension Funds)
+[scrape]   [linkedin] US-remote pass: +3 new for University Pension Plan
+[scrape]   -> 7 new candidate(s) [linkedin:7]
+[scrape] [scan 189/193] UTAM (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 190/193] OPG Pension Fund (sector: Canadian Pension Funds)
+[scrape]   -> 0 new candidate(s) [none]
+[scrape] [scan 191/193] Ontario Pension Board (sector: Canadian Pension Funds)
+[scrape]   -> 46 new candidate(s) [linkedin:46]
+[scrape] [scan 192/193] Trans-Canada Capital (sector: Canadian Pension Funds)
+[scrape]   -> 1 new candidate(s) [linkedin:1]
+[scrape] [scan 193/193] Fitch Ratings (sector: Analytics & Risk Vendors)
+[scrape]   [linkedin] US-remote pass: +15 new for Fitch Ratings
+[scrape]   -> 48 new candidate(s) [linkedin:48]
+[scrape] [scan] Dedup: 3767 raw -> 2949 unique (-158 dup URL, -660 near-dup)
+[scrape] [scan] Freshness: 518 newly-seen URL(s), 2431 previously seen.
+[scrape] [scan] WARN: 35 companies returned 0 results (may need Workday config or LinkedIn fixes):
+[scrape]     - BCI (British Columbia Investment Mgmt)
+[scrape]     - Schroders
+[scrape]     - Yields.io
+[scrape]     - Abrigo
+[scrape]     - Kamakura (SAS)
+[scrape]     - Prometeia
+[scrape]     - EQB
+[scrape]     - Amex Bank of Canada
+[scrape]     - RFA Bank of Canada
+[scrape]     - Canada Guaranty
+[scrape]     - Sagen MI Canada
+[scrape]     - Beutel Goodman
+[scrape]     - Burgundy Asset Management
+[scrape]     - 1832 Asset Management
+[scrape]     - Horizons ETFs / Global X
+[scrape]     - Polar Asset Management
+[scrape]     - Lawrence Park Asset Management
+[scrape]     - Waratah Capital Advisors
+[scrape]     - Ninepoint Partners
+[scrape]     - Trez Capital
+[scrape] 
+[scrape] [scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260708.json
+[scrape] [scan] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\scan_20260708.md
+[scrape] [scan] 2949 new candidates across 18 sectors.
+[scrape] [scan] worklist rebuilt: 3015 rows (2914 scrape, 68 gmail, 33 both)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 3015 rows (2914 scrape, 68 gmail, 33 both) · 905 new since last score
+[stage 2] SKIPPED
+[stage 3] SKIPPED
+
+=== Pipeline 20260708_093621 complete ===

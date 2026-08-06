@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-ontario-teachers-pen-director-total-fund-management_20260610_201717",
+  "label": "resume_auto-ontario-teachers-pen-director-total-fund-management",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-ontario-teachers-pen-director-total-fund-management",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 19032,
+  "started_at": "2026-06-10T20:17:17",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-ontario-teachers-pen-director-total-fund-management_20260610_201717.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-ontario-teachers-pen-director-total-fund-management_20260610_201717.json",
+  "state": "finished",
+  "finished_at": "2026-06-10T20:21:17",
+  "returncode": null
+}

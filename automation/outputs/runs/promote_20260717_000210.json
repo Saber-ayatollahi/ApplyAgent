@@ -1,0 +1,22 @@
+{
+  "run_id": "promote_20260717_000210",
+  "label": "promote",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\auto_promote.py",
+    "--only-urls",
+    "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\tmpqago0dwk.urls.txt",
+    "--commit",
+    "--status",
+    "Rejected",
+    "--min-score",
+    "1"
+  ],
+  "pid": 13276,
+  "started_at": "2026-07-17T00:02:10",
+  "log_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\promote_20260717_000210.log",
+  "status_path": "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\promote_20260717_000210.json",
+  "state": "finished",
+  "finished_at": "2026-07-17T00:02:11",
+  "returncode": null
+}

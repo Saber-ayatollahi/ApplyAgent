@@ -1,0 +1,132 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Wealthsimple",
+    "role": "Senior Manager, Capital & Liquidity Management",
+    "jd_keywords": [
+      "asset liability management",
+      "balance sheet",
+      "stress testing",
+      "scenario",
+      "liquidity",
+      "forecasting",
+      "funding strategy",
+      "Python",
+      "AI",
+      "asset risk"
+    ]
+  },
+  "summary": "Senior Manager, Capital & Liquidity Management candidate with ~7 years across institutional balance-sheet risk, ALM, and liquidity analytics. Holds delegated sign-off authority on ALM, valuation, and sensitivity outputs for multi-asset portfolios ($5-25bn per engagement) at Moody's Analytics, where a multi-scenario cash-flow projection and liquidity-gap engine was designed end-to-end. Deep in stress testing, funding analysis, and AI-accelerated modelling. CFA charterholder; dual MSc in Financial Modelling and Chemical Engineering.",
+  "core_skills": [
+    "Capital & Liquidity Management",
+    "Asset Liability Management (ALM)",
+    "Balance Sheet & Funding Strategy",
+    "Stress Testing & Scenario Design",
+    "Liquidity Gap & Cash-Flow Forecasting",
+    "Asset Risk Assessment",
+    "Risk Appetite & Limits Frameworks",
+    "Python Analytics & AI-Assisted Workflows",
+    "Executive & Board-Level Reporting"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Capital, Liquidity & Balance-Sheet Analytics",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, delivering forward-looking liquidity visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset-allocation decisions.",
+                "Embedded behavioral cash-flow assumptions, prepayment logic, and macro stress overlays into forecasting to support liquidity planning and contingency analysis.",
+                "Oversaw interest-rate and duration analysis under parallel and non-parallel rate shocks, assessing asset risk and balance-sheet sensitivity across multi-asset positions."
+              ]
+            },
+            {
+              "heading": "Governance, Oversight & Reporting",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5-25bn per engagement; ~$50bn+ cumulative), independently reviewing calibration and cross-asset interactions before release.",
+                "Serves on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment.",
+                "Prepared analytical summaries for senior stakeholders on rate exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative outputs into decision-ready narratives for non-technical audiences.",
+                "Serves as escalation point for client-critical analytical issues, interfacing directly with Heads of Risk and investment stakeholders."
+              ]
+            },
+            {
+              "heading": "Technology & AI Enablement",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging and validation controls.",
+                "Deployed agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, reducing development cycle time an estimated 30-40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform, translating investment-team requirements into development requests and validating model outputs post-deployment.",
+                "Advised clients on asset, liability, and ALM configurations across a multi-account migration from the legacy Calypso platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Advised actuarial, IT, finance, and program teams on governance documentation and regulatory-readiness processes for financial institutions."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors, analyzing funding ratios, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Performed cash-flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for institutional clients, and presented findings to investment committees.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier robustness testing."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "scan_date": "2026-07-02",
+  "scan_timestamp": "2026-07-02T14:47:36Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 5,
+    "output": 5,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "70888",
+      "70890"
+    ],
+    "processed_uids": [
+      "70888",
+      "70890"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-02T10:49:47",
+    "delete_result": {
+      "moved": 2,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Treasury Manager",
+      "company": "Autodesk",
+      "link": "https://www.linkedin.com/jobs/view/4385606546",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-02",
+      "gmail_uid": "70890"
+    },
+    {
+      "title": "Manager, Treasury Operations",
+      "company": "Neo Financial",
+      "link": "https://www.linkedin.com/jobs/view/4434783560",
+      "location": "Calgary, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-02",
+      "gmail_uid": "70890"
+    },
+    {
+      "title": "Manager Treasury & AP",
+      "company": "Professional Staffing",
+      "link": "https://www.linkedin.com/jobs/view/4423948285",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-02",
+      "gmail_uid": "70890"
+    },
+    {
+      "title": "Vice President - Risk",
+      "company": "SBI Canada Bank",
+      "link": "https://www.linkedin.com/jobs/view/4434151923",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-02",
+      "gmail_uid": "70888"
+    },
+    {
+      "title": "Senior Manager, Credit Modeling and Strategy",
+      "company": "Flexiti",
+      "link": "https://www.linkedin.com/jobs/view/4434169295",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-02",
+      "gmail_uid": "70888"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 2,
+    "linkedin_alerts_seen": 2,
+    "digests_with_rows": 2,
+    "digests_without_rows": 0,
+    "rows_parsed": 10,
+    "rows_dropped_location": 0,
+    "rows_dropped_excluded": 5,
+    "rows_kept": 5,
+    "dropped_location_examples": [],
+    "geo_dropped_rows": [],
+    "excluded_dropped_rows": [
+      {
+        "company": "Scotiabank",
+        "title": "Associate Director, Liquidity Strategy",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-02",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70890",
+        "link": "https://www.linkedin.com/jobs/view/4414488070",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "RBC",
+        "title": "Senior Manager - Data Risk and Governance",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-02",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70888",
+        "link": "https://www.linkedin.com/jobs/view/4431578463",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "TD",
+        "title": "Senior Manager, Governance and Control, Market Risk and Counterparty Analytics (5115)",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-02",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70888",
+        "link": "https://www.linkedin.com/jobs/view/4434905562",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "National Bank of Canada",
+        "title": "Senior Manager Risk Strategy",
+        "location": "Montreal, QC",
+        "posted_date": "2026-07-02",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70888",
+        "link": "https://www.linkedin.com/jobs/view/4434973489",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "TD",
+        "title": "Senior Manager, Business Programs",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-02",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70888",
+        "link": "https://www.linkedin.com/jobs/view/4434779370",
+        "drop_reason": "excluded_company"
+      }
+    ],
+    "quarantine": []
+  }
+}

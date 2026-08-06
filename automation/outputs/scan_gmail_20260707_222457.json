@@ -1,0 +1,858 @@
+{
+  "scan_date": "2026-07-07",
+  "scan_timestamp": "2026-07-08T02:24:57Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 58,
+    "output": 58,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "70991",
+      "70995",
+      "70999",
+      "71002",
+      "71005",
+      "71007",
+      "71011",
+      "71015",
+      "71016",
+      "71021",
+      "71025",
+      "71030"
+    ],
+    "processed_uids": [
+      "70991",
+      "70995",
+      "70999",
+      "71002",
+      "71005",
+      "71007",
+      "71011",
+      "71015",
+      "71016",
+      "71021",
+      "71024",
+      "71025",
+      "71030",
+      "71031"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-07T22:25:08",
+    "delete_result": {
+      "moved": 14,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4437138556",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71030"
+    },
+    {
+      "title": "Risk Transformation Lead",
+      "company": "Zurich Cover-More",
+      "link": "https://www.linkedin.com/jobs/view/4417194434",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71030"
+    },
+    {
+      "title": "Director, Internal Controls",
+      "company": "Coca-Cola Canada Bottling Limited",
+      "link": "https://www.linkedin.com/jobs/view/4385473668",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71030"
+    },
+    {
+      "title": "IT Risk Manager",
+      "company": "Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4436057025",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71030"
+    },
+    {
+      "title": "Manager, Compliance - Tier 1",
+      "company": "IG Wealth Management",
+      "link": "https://www.linkedin.com/jobs/view/4437102988",
+      "location": "Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71030"
+    },
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4437138556",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71025"
+    },
+    {
+      "title": "Senior Manager, Regulatory and Market Compliance",
+      "company": "Clearlight Energy",
+      "link": "https://www.linkedin.com/jobs/view/4412254251",
+      "location": "Oakville, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71025"
+    },
+    {
+      "title": "Senior Manager, Business Continuity Planning",
+      "company": "Loblaw Companies Limited",
+      "link": "https://www.linkedin.com/jobs/view/4436479005",
+      "location": "Brampton, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71025"
+    },
+    {
+      "title": "Senior Manager, Trust Accounting",
+      "company": "ADP",
+      "link": "https://www.linkedin.com/jobs/view/4356535360",
+      "location": "Etobicoke, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71025"
+    },
+    {
+      "title": "Senior Nuclear Leader",
+      "company": "Arcadis",
+      "link": "https://www.linkedin.com/jobs/view/4414813394",
+      "location": "Waterloo, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71025"
+    },
+    {
+      "title": "Director, Finance",
+      "company": "Brookfield",
+      "link": "https://www.linkedin.com/jobs/view/4437191659",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71021"
+    },
+    {
+      "title": "VP, Global Finance Transformation",
+      "company": "Sun Life",
+      "link": "https://www.linkedin.com/jobs/view/4436264664",
+      "location": "Kitchener, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71021"
+    },
+    {
+      "title": "Head of Finance",
+      "company": "Revolut",
+      "link": "https://www.linkedin.com/jobs/view/4414702524",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71021"
+    },
+    {
+      "title": "VP, Global Finance Transformation",
+      "company": "Sun Life",
+      "link": "https://www.linkedin.com/jobs/view/4436257958",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71021"
+    },
+    {
+      "title": "Principal, Investment Finance",
+      "company": "Building Ontario Fund",
+      "link": "https://www.linkedin.com/jobs/view/4436242869",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71021"
+    },
+    {
+      "title": "Model Risk (Risk Management) : Job Level - Vice President",
+      "company": "Morgan Stanley",
+      "link": "https://www.linkedin.com/jobs/view/4436268291",
+      "location": "New York, NY",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71016"
+    },
+    {
+      "title": "Risk Manager",
+      "company": "H-Squared",
+      "link": "https://www.linkedin.com/jobs/view/4437431896",
+      "location": "New York City Metropolitan Area",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71016"
+    },
+    {
+      "title": "EFR Capital Risk Manager",
+      "company": "Bank of America",
+      "link": "https://www.linkedin.com/jobs/view/4437476452",
+      "location": "New York, NY",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71016"
+    },
+    {
+      "title": "Vice President Risk and Compliance Assurance",
+      "company": "HSBC",
+      "link": "https://www.linkedin.com/jobs/view/4437431640",
+      "location": "New York, NY",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71016"
+    },
+    {
+      "title": "Sr. Manager - Risk and controls",
+      "company": "Mindlance",
+      "link": "https://www.linkedin.com/jobs/view/4433317675",
+      "location": "Charlotte Metro",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71016"
+    },
+    {
+      "title": "Finance Manager",
+      "company": "Fidelity Canada",
+      "link": "https://www.linkedin.com/jobs/view/4407218258",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71015"
+    },
+    {
+      "title": "Lead Business Consultant, Alternative Investments and Private Credit",
+      "company": "SimCorp",
+      "link": "https://www.linkedin.com/jobs/view/4400304083",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71015"
+    },
+    {
+      "title": "AI Researcher - Emerging Risk",
+      "company": "MSCI Inc.",
+      "link": "https://www.linkedin.com/jobs/view/4385030154",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71015"
+    },
+    {
+      "title": "Catastrophe Modeler",
+      "company": "Zurich Canada",
+      "link": "https://www.linkedin.com/jobs/view/4407955573",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71015"
+    },
+    {
+      "title": "Structured Finance - Structured Credit & CLOs, Senior Director",
+      "company": "Fitch Ratings",
+      "link": "https://www.linkedin.com/jobs/view/4368549633",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71015"
+    },
+    {
+      "title": "Portfolio Manager, Fixed Income & Relative Value",
+      "company": "at",
+      "link": "https://www.linkedin.com/jobs/view/4414233311",
+      "location": "",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Portfolio Manager",
+      "company": "RPIA",
+      "link": "https://www.linkedin.com/jobs/view/4432116191",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Associate Portfolio Manager, Public Credit",
+      "company": "Investment Management Corporation of Ontario (IMCO)",
+      "link": "https://www.linkedin.com/jobs/view/4426685021",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Principal/Trader, Total Portfolio Management",
+      "company": "OPTrust",
+      "link": "https://www.linkedin.com/jobs/view/4429696155",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Principal, Total Portfolio Management Trading Desk",
+      "company": "OPTrust",
+      "link": "https://www.linkedin.com/jobs/view/4428511009",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Portfolio Manager",
+      "company": "Professional Staffing",
+      "link": "https://www.linkedin.com/jobs/view/4403067375",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Principal, Overlay Management",
+      "company": "OMERS",
+      "link": "https://www.linkedin.com/jobs/view/4417279073",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Associate Portfolio Manager, Credit Investing",
+      "company": "Purpose Investments",
+      "link": "https://www.linkedin.com/jobs/view/4410861031",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Investment Director (Remote)",
+      "company": "Confidential",
+      "link": "https://www.linkedin.com/jobs/view/4432169990",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Associate Portfolio Manager, Credit Investing",
+      "company": "Purpose Unlimited",
+      "link": "https://www.linkedin.com/jobs/view/4433122046",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-07",
+      "gmail_uid": "71011"
+    },
+    {
+      "title": "Manager, Market Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4428110825",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71007"
+    },
+    {
+      "title": "Director, Financial Risk",
+      "company": "KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4409029353",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71007"
+    },
+    {
+      "title": "Associate Vice President, Investment Strategist",
+      "company": "Connor, Clark & Lunn Private Capital Ltd. (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4418199281",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71005"
+    },
+    {
+      "title": "Manager, Market Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4428110825",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71005"
+    },
+    {
+      "title": "Associate Vice President, Investment Strategist",
+      "company": "Connor, Clark & Lunn Private Capital Ltd. (CC&L)",
+      "link": "https://www.linkedin.com/jobs/view/4418400260",
+      "location": "Vancouver, BC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71005"
+    },
+    {
+      "title": "Director, Financial Risk",
+      "company": "KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4409029353",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71005"
+    },
+    {
+      "title": "Senior Institutional Investment Consultant",
+      "company": "Mercer",
+      "link": "https://www.linkedin.com/jobs/view/4418185014",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71005"
+    },
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4436983549",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71002"
+    },
+    {
+      "title": "Risk Transformation Lead",
+      "company": "Zurich Cover-More",
+      "link": "https://www.linkedin.com/jobs/view/4417194434",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "71002"
+    },
+    {
+      "title": "Risk Transformation Lead",
+      "company": "Zurich Cover-More",
+      "link": "https://www.linkedin.com/jobs/view/4417194434",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70999"
+    },
+    {
+      "title": "VP, Corporate Controller",
+      "company": "Jefferies",
+      "link": "https://www.linkedin.com/jobs/view/4418187275",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70999"
+    },
+    {
+      "title": "Senior Manager, Financial Controllership",
+      "company": "Bell",
+      "link": "https://www.linkedin.com/jobs/view/4433542105",
+      "location": "Mississauga, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70999"
+    },
+    {
+      "title": "Senior Manager, Financial Controllership",
+      "company": "Bell",
+      "link": "https://www.linkedin.com/jobs/view/4433535317",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70999"
+    },
+    {
+      "title": "Structured Finance - Structured Credit & CLOs, Senior Director",
+      "company": "Fitch Ratings",
+      "link": "https://www.linkedin.com/jobs/view/4368549633",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70999"
+    },
+    {
+      "title": "Manager, Market Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4428110825",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70995"
+    },
+    {
+      "title": "Risk Management Lead",
+      "company": "Turner & Townsend",
+      "link": "https://www.linkedin.com/jobs/view/4354796209",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70995"
+    },
+    {
+      "title": "Risk Manager",
+      "company": "Turner & Townsend",
+      "link": "https://www.linkedin.com/jobs/view/4325359694",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70995"
+    },
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4436983549",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70995"
+    },
+    {
+      "title": "Manager, Enterprise Risk - Financial Services",
+      "company": "MNP",
+      "link": "https://www.linkedin.com/jobs/view/4427209333",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70995"
+    },
+    {
+      "title": "Director, Financial Risk",
+      "company": "KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4409029353",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70991"
+    },
+    {
+      "title": "Manager, Market Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4428110825",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70991"
+    },
+    {
+      "title": "Markets Data Risk BAU Controls Analyst",
+      "company": "Citi",
+      "link": "https://www.linkedin.com/jobs/view/4387195958",
+      "location": "Mississauga, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70991"
+    },
+    {
+      "title": "Treasury Manager",
+      "company": "Equinix",
+      "link": "https://www.linkedin.com/jobs/view/4397502671",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-06",
+      "gmail_uid": "70991"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 14,
+    "linkedin_alerts_seen": 14,
+    "digests_with_rows": 14,
+    "digests_without_rows": 0,
+    "rows_parsed": 78,
+    "rows_dropped_location": 3,
+    "rows_dropped_excluded": 17,
+    "rows_kept": 58,
+    "dropped_location_examples": [
+      "Sallie Mae — Sterling, VA",
+      "Husky Technologies — Bolton, ON",
+      "BMO — Blainville, QC"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "Sallie Mae",
+        "title": "Senior Director, Model Risk",
+        "location": "Sterling, VA",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71016",
+        "link": "https://www.linkedin.com/jobs/view/4437143214",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      },
+      {
+        "company": "Husky Technologies",
+        "title": "Director, Finance (CSM)",
+        "location": "Bolton, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70999",
+        "link": "https://www.linkedin.com/jobs/view/4436053660",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Blainville, QC",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70991",
+        "link": "https://www.linkedin.com/jobs/view/4436956389",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "excluded_dropped_rows": [
+      {
+        "company": "Scotiabank",
+        "title": "Manager, Interest Rate Derivatives - Fixed Income Product Control - Finance",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71031",
+        "link": "https://www.linkedin.com/jobs/view/4436052717",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "RBC",
+        "title": "Lead, Data Management and Governance",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71030",
+        "link": "https://www.linkedin.com/jobs/view/4437131975",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Lending Strategy - Project Management",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71025",
+        "link": "https://www.linkedin.com/jobs/view/4437405464",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71024",
+        "link": "https://www.linkedin.com/jobs/view/4436991464",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Scotiabank",
+        "title": "Manager, Interest Rate Derivatives - Fixed Income Product Control - Finance",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71024",
+        "link": "https://www.linkedin.com/jobs/view/4436052717",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Director, Strategic Initiatives",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71021",
+        "link": "https://www.linkedin.com/jobs/view/4433500969",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71015",
+        "link": "https://www.linkedin.com/jobs/view/4436991464",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Scotiabank",
+        "title": "Director & Portfolio Manager, On Strategy Portfolio",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-07",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71011",
+        "link": "https://www.linkedin.com/jobs/view/4428498594",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Deloitte",
+        "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory (Permanent / Contract)",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71007",
+        "link": "https://www.linkedin.com/jobs/view/4428303194",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71007",
+        "link": "https://www.linkedin.com/jobs/view/4436991464",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Deloitte",
+        "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory (Permanent / Contract)",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71005",
+        "link": "https://www.linkedin.com/jobs/view/4428303194",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "KPMG Canada",
+        "title": "Senior Manager - Technology Risk Services",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71002",
+        "link": "https://www.linkedin.com/jobs/view/4308641553",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71002",
+        "link": "https://www.linkedin.com/jobs/view/4436991464",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "EY",
+        "title": "Senior Manager- Technology Risk - Assurance",
+        "location": "Calgary, AB",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71002",
+        "link": "https://www.linkedin.com/jobs/view/4385488556",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "EY",
+        "title": "Senior Manager- Technology Risk - Assurance",
+        "location": "Edmonton, AB",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71002",
+        "link": "https://www.linkedin.com/jobs/view/4385476952",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Deloitte",
+        "title": "Manager, AI/ML Models - Financial Engineering & Modeling (Permanent / Contract)",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70995",
+        "link": "https://www.linkedin.com/jobs/view/4428192932",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager, Counterparty Credit Risk Analytics",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-06",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70991",
+        "link": "https://www.linkedin.com/jobs/view/4436948800",
+        "drop_reason": "excluded_company"
+      }
+    ],
+    "quarantine": []
+  }
+}

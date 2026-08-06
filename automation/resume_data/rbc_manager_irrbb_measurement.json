@@ -1,0 +1,136 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC",
+    "role": "Manager, IRRBB Measurement",
+    "experience_label": "PROFESSIONAL EXPERIENCE",
+    "jd_keywords": [
+      "IRRBB",
+      "B-12",
+      "Asset Liability Management",
+      "interest rate risk",
+      "Treasury",
+      "balance sheet",
+      "net interest income",
+      "valuation",
+      "earnings",
+      "SQL",
+      "Python",
+      "ALCO",
+      "behavioral",
+      "CFA"
+    ]
+  },
+  "summary": "IRRBB and Asset Liability Management specialist with ~7 years across interest rate risk measurement, balance sheet analytics, and model governance. At Moody's Analytics, holds delegated sign-off on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5–25bn per engagement); led a multi-scenario cash flow projection engine and IRRBB-analogous analytics under parallel and non-parallel shocks, covering both economic-value (EVE) and earnings dimensions, applied in frameworks consistent with OSFI B-12 / BCBS 368. CFA charterholder with dual MSc; advisory background spans Treasury-facing institutional clients across banks, pension funds, and insurers.",
+  "core_skills": [
+    "IRRBB Measurement (EVE & NII)",
+    "Asset Liability Management (ALM)",
+    "OSFI B-12 / BCBS 368 Awareness",
+    "Yield Curve & Spread Calibration",
+    "Behavioral Cash Flow Modelling (Prepayment, Prepayment Logic)",
+    "Cash Flow Projection & Liquidity Gap Analytics",
+    "Python & SQL Analytics Pipelines",
+    "ALCO-Style Reporting & Risk Attribution",
+    "Model Governance & Documentation"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director — Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "IRRBB & Balance Sheet Risk Measurement",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional client portfolios ranging $5–25bn per engagement — independently review curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Review interest rate risk and duration analysis under parallel and non-parallel rate shocks, in frameworks consistent with OSFI B-12 and BCBS 368 — outputs cover economic-value (EVE) and earnings-based sensitivity dimensions analogous to bank Treasury IRRBB measurement.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation — verify consistency of sensitivities and scenario impacts at portfolio-level ALM aggregates feeding downstream balance sheet risk and capital processes."
+              ]
+            },
+            {
+              "heading": "Cash Flow Projection, Behavioral Assumptions & ETL Pipelines",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity and earnings visibility across ALM horizons relevant to balance sheet and funding management.",
+                "Architected configurable time-bucketed gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and balance sheet management decisions.",
+                "Embedded behavioral cash flow assumptions and prepayment logic, with macro stress overlays — covering the non-trading balance sheet behavioral mechanics relevant to IRRBB measurement.",
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python and SQL extract/transform/load pipelines with embedded balance-and-control checks, logging, and version control."
+              ]
+            },
+            {
+              "heading": "ALCO Reporting, Attribution & Model Documentation",
+              "bullets": [
+                "Prepare analytical summaries for senior stakeholders — including clients' Heads of Risk and investment committees — covering interest rate exposure, scenario impacts, attribution of risk-measurement changes, and balance sheet sensitivities consistent with ALCO reporting standards.",
+                "Maintain documentation of risk-measurement methodology, model assumptions, and procedures within a formal model governance framework; escalate outputs lacking mathematical or economic defensibility."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform — advised on asset, liability, and ALM configurations and validated model outputs post-deployment.",
+                "Scoped client investment-team requirements into structured Product Owner requests; contributed to successful migration of all assigned client accounts from legacy Calypso to PFaroe PM."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant — IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Advised actuarial, finance, IT, and PM functions on standard adoption; contributed to governance documentation and regulatory-readiness processes."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant — Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds — analyzed funding ratios, duration mismatch, and long-term balance sheet risk under base-case and stressed environments.",
+                "Built and interpreted stochastic economic scenario generators measuring interest rate risk and funding volatility; performed cash flow, liquidity, and hedging analysis across rates, inflation, and currency.",
+                "Conducted liability-driven investment (LDI) analysis on duration alignment and liquidity trade-offs; presented findings to investment committees on-site.",
+                "Modelled pension actuarial liabilities alongside major investment products and economic variables; performed VaR/CVaR portfolio optimization and risk decomposition on Ortec's GLASS platform."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

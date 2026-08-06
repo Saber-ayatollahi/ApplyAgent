@@ -1,0 +1,53 @@
+{
+  "pipeline_id": "20260721_113936",
+  "started_at": "2026-07-21T11:39:36",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": false,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "triage_out": null,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "failed",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 4108,
+      "scrape_only": 3834,
+      "gmail_only": 172,
+      "both": 102,
+      "new_since_last_score": 11
+    },
+    "score": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\fit_scorer.py",
+        "--scan",
+        "worklist.json",
+        "--concurrency",
+        "6"
+      ],
+      "started_at": "2026-07-21T11:39:38",
+      "state": "failed",
+      "finished_at": "2026-07-21T11:39:51",
+      "elapsed_sec": 13.0,
+      "returncode": 3,
+      "last_line": "[fit_scorer] (to bypass for debugging: APPLYAGENT_SKIP_PREFLIGHT=1)"
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260721_113936_suppressions.json"
+}

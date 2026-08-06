@@ -1,0 +1,44 @@
+{
+  "scan_date": "20260722",
+  "source": "worklist_scored.json",
+  "min_score": 1,
+  "include_watch": false,
+  "mode": "commit",
+  "selection_mode": "manual",
+  "summary": {
+    "added": 1,
+    "updated": 0,
+    "expired": 0,
+    "skipped_verdict": 0,
+    "skipped_score": 0,
+    "skipped_dupe": 0,
+    "skipped_geo": 0,
+    "suppressed_after_score": 0
+  },
+  "skipped_rows": [],
+  "suppressed_after_score": [],
+  "promoted": [
+    {
+      "id": "auto-pwc-canada-valuations-senior-manager",
+      "company": "PwC Canada",
+      "title": "Valuations Senior Manager",
+      "score": 7,
+      "tier": 2,
+      "sector": "Big 4 Risk Advisory",
+      "url": "https://ca.linkedin.com/jobs/view/valuations-senior-manager-at-pwc-canada-4432418695",
+      "selection_mode": "manual"
+    }
+  ],
+  "new_entries": [
+    {
+      "id": "auto-pwc-canada-valuations-senior-manager",
+      "company": "PwC Canada",
+      "title": "Valuations Senior Manager",
+      "score": 7,
+      "tier": 2,
+      "sector": "Big 4 Risk Advisory",
+      "url": "https://ca.linkedin.com/jobs/view/valuations-senior-manager-at-pwc-canada-4432418695",
+      "selection_mode": "manual"
+    }
+  ]
+}

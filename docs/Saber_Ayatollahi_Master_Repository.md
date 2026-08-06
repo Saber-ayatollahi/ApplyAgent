@@ -61,6 +61,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 #### Phase 2: Modelling Services (May 2023 – Present)
 - Holds **sign-off authority on valuation, sensitivity, and ALM outputs** delivered to multi-asset institutional client portfolios; portfolio sizes typically range from **~$5bn to ~$25bn per engagement**, cumulatively covering ~$50bn+ of institutional assets across the book of work.
 - Operates within Moody's internal model governance framework — independently reviews curve construction, spread calibration, cross-asset interactions, and stress behavior prior to production release.
+- **Member of the model governance committee** — participates in methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics *(confirmed 2026-07-09)*.
 - Validates derivatives pricing outputs (rates, FX, inflation) and cross-checks sensitivity consistency at portfolio-level ALM aggregates.
 - Oversees interest rate risk and duration analysis under **parallel and non-parallel rate shocks**, aligned with industry IRRBB standards analogous to OSFI B-12 / Basel IRRBB.
 - Reviews aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes.
@@ -71,9 +72,12 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 - Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines.
 - Built **agentic AI development workflows** using Claude Code and Cursor IDE — automated code generation, validation scaffolding, anomaly detection, and documentation — reducing development cycle time by an estimated 30–40% on comparable modules.
 - Prepared analytical summaries for senior stakeholders covering interest-rate exposure, scenario impacts, and balance-sheet sensitivities.
+- Modelling Services delivery runs on the **PFaroe DB** (risk & ALM analytics) and **PFaroe PM** (portfolio management) platforms — the Assistant Director role's valuation, sensitivity, and validation work is performed on this platform suite *(confirmed 2026-07-09)*.
+
+**Experience framing note** *(confirmed by Saber 2026-07-12)*: professional experience is ~7 years (Feb 2019–present). Where a JD counts "related experience" broadly, the resume may use "**8 years of combined professional and graduate experience**" — including the MSc Financial Modelling (2017–18) — but never a bare "8+ years of work experience" and never "10+ years".
 
 #### Phase 1: Client Service Specialist (May 2022 – May 2023)
-- Led **onboarding and implementation** for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the **PFaroe** analytics platform.
+- Led **onboarding and implementation** for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the **PFaroe** analytics platform — both **PFaroe DB** (pension/DB ALM analytics) and **PFaroe PM** (portfolio management) product lines *(both products confirmed 2026-07-09)*.
 - Served as the technical liaison between clients and product owners, translating investment-team requirements into development requests; advised clients on asset, liability, and ALM configurations; validated model outputs post-deployment.
 - Scoped client needs into Product Owner (PO) requests for development.
 - Contributed to the successful migration of all assigned client accounts from the legacy Calypso platform to the PFaroe PM platform.
@@ -183,6 +187,7 @@ Years of experience: **~7.3 years full-time finance experience** (Feb 2019 → M
 **Languages:**
 - Python (Advanced) — pandas, NumPy, SciPy
 - SQL (Intermediate) — PostgreSQL day-to-day
+- VBA (Working knowledge — confirmed 2026-07-08; reading/maintaining/refactoring Excel macros in professional context, not greenfield development)
 - R (Intermediate — historical use)
 - MATLAB (Intermediate — historical use in research/engineering context)
 

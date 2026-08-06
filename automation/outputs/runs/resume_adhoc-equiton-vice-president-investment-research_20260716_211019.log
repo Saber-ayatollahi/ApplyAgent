@@ -1,0 +1,19 @@
+# resume_adhoc-equiton-vice-president-investment-research
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-equiton-vice-president-investment-research --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-equiton-vice-president-investment-research.txt
+# started: 2026-07-16T21:10:19.010525
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Vice President Investment Research & Portfolio Management @ Equiton (JD 7904 chars)…
+  [tailor] claude-opus-4-8 cost $0.205 (in=12652, out=5662, cache_read=0)
+  [tailor] claude-sonnet-5 cost $0.258 (in=5922, out=16000, cache_read=0)
+  [verify] output failed JSON parse (no JSON object found in model output); retrying once…
+  [tailor] claude-sonnet-5 cost $0.258 (in=6008, out=16000, cache_read=21950)
+[resume_agent] validity pass skipped (no JSON object found in model output); using first draft.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.22s/it]100%|██████████| 1/1 [00:03<00:00,  3.25s/it]
+[resume_agent] 2 ATS keyword(s) missing (alternative investments, performance measurement); revising once…
+  [tailor] claude-sonnet-5 cost $0.074 (in=2799, out=4368, cache_read=21950)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.24s/it]100%|██████████| 1/1 [00:03<00:00,  3.29s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.19it/s]100%|██████████| 1/1 [00:00<00:00,  1.18it/s]
+[resume_agent] tracker linked (resume_file + ATS 13/13)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-16_Equiton_VP-Investment-Research-Portfolio-Managem
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-16_Equiton_VP-Investment-Research-Portfolio-Managem

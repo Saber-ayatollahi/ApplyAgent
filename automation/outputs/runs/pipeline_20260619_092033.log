@@ -1,0 +1,103 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-concurrency 6
+# started: 2026-06-19T09:20:33.915998
+
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260619_092040 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 2102 rows (1807 scrape, 189 gmail, 106 both) · 8 new since last score
+[score] [fit_scorer] Loaded 2102 roles from worklist.json
+[score] [fit_scorer] Stage 1: 811 pass / 1291 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK — Valid & credits OK — 5 models, billing works
+[score] [fit_scorer] loaded 808 prior fits from worklist_scored.json (used on cache miss for is_new_since_last_score=False rows).
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$0.000 / cap=$5.00
+[score]   [fit_scorer] scored 10/811 (0.0 min)
+[score]   [fit_scorer] scored 20/811 (0.0 min)
+[score]   [fit_scorer] scored 30/811 (0.0 min)
+[score]   [fit_scorer] scored 40/811 (0.0 min)
+[score]   [fit_scorer] scored 50/811 (0.0 min)
+[score]   [fit_scorer] scored 60/811 (0.0 min)
+[score]   [fit_scorer] scored 70/811 (0.1 min)
+[score]   [fit_scorer] scored 80/811 (0.1 min)
+[score]   [fit_scorer] scored 90/811 (0.1 min)
+[score]   [fit_scorer] scored 100/811 (0.1 min)
+[score]   [fit_scorer] scored 110/811 (0.1 min)
+[score]   [fit_scorer] scored 120/811 (0.1 min)
+[score]   [fit_scorer] scored 130/811 (0.1 min)
+[score]   [fit_scorer] scored 140/811 (0.1 min)
+[score]   [fit_scorer] scored 150/811 (0.1 min)
+[score]   [fit_scorer] scored 160/811 (0.1 min)
+[score]   [fit_scorer] scored 170/811 (0.1 min)
+[score]   [fit_scorer] scored 180/811 (0.1 min)
+[score]   [fit_scorer] scored 190/811 (0.1 min)
+[score]   [fit_scorer] scored 200/811 (0.2 min)
+[score]   [fit_scorer] scored 210/811 (0.2 min)
+[score]   [fit_scorer] scored 220/811 (0.2 min)
+[score]   [fit_scorer] scored 230/811 (0.2 min)
+[score]   [fit_scorer] scored 240/811 (0.2 min)
+[score]   [fit_scorer] scored 250/811 (0.2 min)
+[score]   [fit_scorer] scored 260/811 (0.2 min)
+[score]   [fit_scorer] scored 270/811 (0.2 min)
+[score]   [fit_scorer] scored 280/811 (0.2 min)
+[score]   [fit_scorer] scored 290/811 (0.2 min)
+[score]   [fit_scorer] scored 300/811 (0.2 min)
+[score]   [fit_scorer] scored 310/811 (0.2 min)
+[score]   [fit_scorer] scored 320/811 (0.3 min)
+[score]   [fit_scorer] scored 330/811 (0.3 min)
+[score]   [fit_scorer] scored 340/811 (0.3 min)
+[score]   [fit_scorer] scored 350/811 (0.3 min)
+[score]   [fit_scorer] scored 360/811 (0.3 min)
+[score]   [fit_scorer] scored 370/811 (0.3 min)
+[score]   [fit_scorer] scored 380/811 (0.3 min)
+[score]   [fit_scorer] scored 390/811 (0.3 min)
+[score]   [fit_scorer] scored 400/811 (0.3 min)
+[score]   [fit_scorer] scored 410/811 (0.3 min)
+[score]   [fit_scorer] scored 420/811 (0.3 min)
+[score]   [fit_scorer] scored 430/811 (0.3 min)
+[score]   [fit_scorer] scored 440/811 (0.3 min)
+[score]   [fit_scorer] scored 450/811 (0.3 min)
+[score]   [fit_scorer] scored 460/811 (0.3 min)
+[score]   [fit_scorer] scored 470/811 (0.3 min)
+[score]   [fit_scorer] scored 480/811 (0.4 min)
+[score]   [fit_scorer] scored 490/811 (0.4 min)
+[score]   [fit_scorer] scored 500/811 (0.4 min)
+[score]   [fit_scorer] scored 510/811 (0.4 min)
+[score]   [fit_scorer] scored 520/811 (0.4 min)
+[score]   [fit_scorer] scored 530/811 (0.4 min)
+[score]   [fit_scorer] scored 540/811 (0.4 min)
+[score]   [fit_scorer] scored 550/811 (0.4 min)
+[score]   [fit_scorer] scored 560/811 (0.4 min)
+[score]   [fit_scorer] scored 570/811 (0.4 min)
+[score]   [fit_scorer] scored 580/811 (0.4 min)
+[score]   [fit_scorer] scored 590/811 (0.4 min)
+[score]   [fit_scorer] scored 600/811 (0.4 min)
+[score]   [fit_scorer] scored 610/811 (0.4 min)
+[score]   [fit_scorer] scored 620/811 (0.4 min)
+[score]   [fit_scorer] scored 630/811 (0.4 min)
+[score]   [fit_scorer] scored 640/811 (0.4 min)
+[score]   [fit_scorer] scored 650/811 (0.5 min)
+[score]   [fit_scorer] scored 660/811 (0.5 min)
+[score]   [fit_scorer] scored 670/811 (0.5 min)
+[score]   [fit_scorer] scored 680/811 (0.5 min)
+[score]   [fit_scorer] scored 690/811 (0.5 min)
+[score]   [fit_scorer] scored 700/811 (0.5 min)
+[score]   [fit_scorer] scored 710/811 (0.5 min)
+[score]   [fit_scorer] scored 720/811 (0.5 min)
+[score]   [fit_scorer] scored 730/811 (0.5 min)
+[score]   [fit_scorer] scored 740/811 (0.5 min)
+[score]   [fit_scorer] scored 750/811 (0.6 min)
+[score]   [fit_scorer] scored 760/811 (0.6 min)
+[score]   [fit_scorer] scored 770/811 (0.6 min)
+[score]   [fit_scorer] scored 780/811 (0.6 min)
+[score]   [fit_scorer] scored 790/811 (0.6 min)
+[score]   [fit_scorer] scored 800/811 (0.6 min)
+[score]   [fit_scorer] scored 810/811 (0.6 min)
+[score]   [fit_scorer] scored 811/811 (0.6 min)
+[score] [fit_scorer] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\worklist_scored.json
+[score] [fit_scorer] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\worklist_scored.md
+[score] [fit_scorer] Verdict counts: {'apply_now': 25, 'tailor_and_apply': 103, 'watch': 45, 'skip': 638}
+[stage 3] SKIPPED
+
+=== Pipeline 20260619_092040 complete ===

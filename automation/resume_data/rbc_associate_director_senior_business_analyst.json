@@ -1,0 +1,130 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC",
+    "role": "Associate Director, Senior Business Analyst (Capital Markets)",
+    "jd_keywords": [
+      "business analysis",
+      "Capital Markets",
+      "requirements",
+      "functional specifications",
+      "data analysis",
+      "data quality",
+      "SQL",
+      "Excel",
+      "Python",
+      "validation",
+      "derivatives",
+      "pricing",
+      "risk metrics",
+      "stakeholder"
+    ]
+  },
+  "summary": "Business-analysis and financial-analytics professional with ~7 years translating complex, ambiguous requirements into data and analytics solutions across financial institutions — the profile an Associate Director, Senior Business Analyst (Capital Markets) role demands. At Moody's Analytics, bridges business and technology teams from requirements and functional specifications through data validation, and holds delegated sign-off on valuation and risk outputs for multi-asset portfolios ($5–25bn per engagement). Fluent in SQL, Python, and advanced Excel; a proven communicator to senior stakeholders. CFA charterholder, dual MSc.",
+  "core_skills": [
+    "Programming & Data: Python (pandas/NumPy/SciPy), SQL (PostgreSQL), advanced Excel & VBA, data analysis & auditable pipelines",
+    "Derivatives & Valuation: rates/FX/inflation derivatives, fixed income, yield-curve construction & calibration, pricing & sensitivities",
+    "Risk & Quant Analytics: VaR/CVaR (Expected Shortfall), Monte Carlo & stochastic scenario generation, scenario & stress testing, risk decomposition & attribution",
+    "Governance & Business Analysis: independent model validation, data quality controls, requirements → functional specifications, risk metrics reporting"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics – Asset Management & Buy-Side Solutions",
+      "roles": [
+        {
+          "title": "Asst. Director – Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Business & Data Requirements Analysis",
+              "bullets": [
+                "Serve as technical liaison between institutional clients' business teams and product/development functions, translating complex investment and analytics requirements into structured Product Owner requests and functional specifications.",
+                "Define and validate data and model requirements for multi-asset valuation, sensitivity, and ALM analytics — reviewing curve construction, spread calibration, and cross-asset inputs for accuracy and business alignment before release.",
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs across multi-asset institutional portfolios ($5–25bn per engagement; $50bn+ cumulative), ensuring outputs meet business and analytical standards.",
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes."
+              ]
+            },
+            {
+              "heading": "Analytics Delivery & Data Pipelines",
+              "bullets": [
+                "Led design and end-to-end delivery of an enterprise multi-asset cash-flow projection and scenario engine (base, stress, reverse-stress) — from requirements scoping and success criteria through production monitoring.",
+                "Architected configurable time-bucketed liquidity-gap analytics (T+1 through multi-year) supporting funding, refinancing, and asset-allocation decisions.",
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python data pipelines with embedded data-validation and logging controls.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating data validation, anomaly detection, and documentation — cutting delivery cycle time an estimated 30–40%."
+              ]
+            },
+            {
+              "heading": "Data Quality, Governance & Stakeholder Communication",
+              "bullets": [
+                "Operate within a formal model-governance framework — establishing data quality and validation standards and escalating outputs lacking economic or mathematical defensibility.",
+                "Present analytical findings and scenario impacts to senior business stakeholders and clients' Heads of Risk, translating complex quantitative outputs into decision-ready narratives and securing alignment."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist – Platform Onboarding & Analytics",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform — gathering requirements and validating data and model outputs post-deployment.",
+                "Contributed to the migration of all assigned client accounts from the legacy Calypso platform to PFaroe, coordinating across client, product, and engineering teams."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for insurance clients — gathering requirements and aligning finance, actuarial, IT, and risk functions on data sourcing and system implementation.",
+                "Built shared requirements documentation and drove milestone delivery across cross-functional program teams."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM and portfolio studies for pension funds and institutional investors — analyzing large financial and economic datasets to inform strategic allocation decisions.",
+                "Performed VaR/CVaR portfolio optimization and risk decomposition on the GLASS platform and built stochastic scenario generators, translating results into recommendations for investment committees.",
+                "Presented findings to investment committees and senior stakeholders on-site to support allocation decisions."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

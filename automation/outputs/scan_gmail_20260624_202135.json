@@ -1,0 +1,899 @@
+{
+  "scan_date": "2026-06-24",
+  "scan_timestamp": "2026-06-25T00:21:35Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 79,
+    "output": 79,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "70630",
+      "70632",
+      "70634",
+      "70639",
+      "70659",
+      "70662",
+      "70665",
+      "70672",
+      "70673",
+      "70677",
+      "70691",
+      "70695",
+      "70709",
+      "70717"
+    ],
+    "processed_uids": [
+      "70630",
+      "70632",
+      "70634",
+      "70639",
+      "70659",
+      "70662",
+      "70665",
+      "70672",
+      "70673",
+      "70677",
+      "70691",
+      "70695",
+      "70709",
+      "70717"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-06-24T20:23:31",
+    "delete_result": {
+      "moved": 14,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Senior Manager, Strategic Projects, Global Risk Management (12-month Contract)",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4431433052",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70717"
+    },
+    {
+      "title": "Senior Manager, Operational Risk",
+      "company": "Shinhan Bank Canada",
+      "link": "https://www.linkedin.com/jobs/view/4431400444",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70717"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4432295538",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70717"
+    },
+    {
+      "title": "Senior Manager, Governance, Risk and Compliance Services",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4365605871",
+      "location": "Winnipeg, MB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70717"
+    },
+    {
+      "title": "Senior Manager, Small Business Risk Policy & Acquisitions",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4431429052",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70717"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4432295538",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Manager, Finance",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4431271490",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Manager Product Control",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4429834445",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Client Risk Manager, Market and Counterparty Risk",
+      "company": "Fidelity Canada",
+      "link": "https://www.linkedin.com/jobs/view/4429491546",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Senior Manager, Unsecured Lending Portfolio Management",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4421863042",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Director, (Structured Credit/MBS)",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4325298832",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70709"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4432295538",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Senior Manager, Strategic Projects, Global Risk Management (12-month Contract)",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4431433052",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Senior Manager, Operational Risk",
+      "company": "Shinhan Bank Canada",
+      "link": "https://www.linkedin.com/jobs/view/4431400444",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Manager, Enterprise & Operational Risk Management",
+      "company": "University Pension Plan Ontario",
+      "link": "https://www.linkedin.com/jobs/view/4423412042",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Client Risk Manager, Market and Counterparty Risk",
+      "company": "Fidelity Canada",
+      "link": "https://www.linkedin.com/jobs/view/4429491546",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Manager, Product Services Group, Global Portfolio Solutions",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4431431285",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70695"
+    },
+    {
+      "title": "Senior Director, Liquidity Management Transformation",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4429834454",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Director, Fundamental Credit Risk",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "link": "https://www.linkedin.com/jobs/view/4414642809",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Director of Finance And Accounting",
+      "company": "Vaco by Highspring",
+      "link": "https://www.linkedin.com/jobs/view/4424439381",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Finance Leader",
+      "company": "City of Calgary",
+      "link": "https://www.linkedin.com/jobs/view/4431268168",
+      "location": "Calgary, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Dir. princ., Trésorerie",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4432260192",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Director, Finance",
+      "company": "Edmonton International Airport (YEG)",
+      "link": "https://www.linkedin.com/jobs/view/4431446135",
+      "location": "Edmonton International Airport, AB",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70691"
+    },
+    {
+      "title": "Lead Quantitative Risk Analyst, Advanced Analytics & Credit Modelling",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4430195911",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Strategic Risk Management Director",
+      "company": "Mastercard",
+      "link": "https://www.linkedin.com/jobs/view/4417990235",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Senior Manager, Credit Risk",
+      "company": "Neo Financial",
+      "link": "https://www.linkedin.com/jobs/view/4410779827",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Senior Manager, Capital & Liquidity Management",
+      "company": "Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4429659355",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Associate Director, Portfolio Strategy & Analytics",
+      "company": "SLC Management",
+      "link": "https://www.linkedin.com/jobs/view/4424815946",
+      "location": "Kitchener, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Senior Manager, Performance Reporting and Attribution",
+      "company": "OMERS",
+      "link": "https://www.linkedin.com/jobs/view/4415241101",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70677"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Manager, Finance & Portfolio Analytics",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4432048294",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Senior Data Analytics Consultant",
+      "company": "CNA Insurance",
+      "link": "https://www.linkedin.com/jobs/view/4428969023",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "Cronos Group",
+      "link": "https://www.linkedin.com/jobs/view/4430599649",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Senior Advisor, Risk management",
+      "company": "Desjardins",
+      "link": "https://www.linkedin.com/jobs/view/4428980077",
+      "location": "Montréal-Ouest, QC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4430388947",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-24",
+      "gmail_uid": "70673"
+    },
+    {
+      "title": "Manager, Finance & Portfolio Analytics",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4432048294",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70672"
+    },
+    {
+      "title": "Responsable du Risque de Portefeuille",
+      "company": "Societe Generale",
+      "link": "https://www.linkedin.com/jobs/view/4429418842",
+      "location": "Montreal, QC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70672"
+    },
+    {
+      "title": "Responsable de la Gestion des Risques d’Entreprise (Gestion intégrée des risques) – Évaluation et Appétit aux Risques",
+      "company": "Societe Generale",
+      "link": "https://www.linkedin.com/jobs/view/4431740862",
+      "location": "Montreal, QC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70672"
+    },
+    {
+      "title": "AVP Third Party Risk Management",
+      "company": "Peoples Group",
+      "link": "https://www.linkedin.com/jobs/view/4391216815",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70665"
+    },
+    {
+      "title": "Director, Finance and Fund Governance",
+      "company": "iA Financial Group (Industrial Alliance)",
+      "link": "https://www.linkedin.com/jobs/view/4431752705",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70665"
+    },
+    {
+      "title": "Vice President, Investments (Capital Markets)",
+      "company": "Thorek/Scott and Partners",
+      "link": "https://www.linkedin.com/jobs/view/4430555425",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70665"
+    },
+    {
+      "title": "Controller",
+      "company": "Vaco",
+      "link": "https://www.linkedin.com/jobs/view/4430564526",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70665"
+    },
+    {
+      "title": "Senior Director, Fraud & Physical Security Risk Management",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4431747362",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70665"
+    },
+    {
+      "title": "Senior Manager, Analytics & Reporting",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4430585880",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "Manager, Finance & Portfolio Analytics",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4432048294",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "Senior Manager, Risk Operations",
+      "company": "Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4430543456",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "Manager, Governance and Control (12 months)",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4432030543",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "AVP Third Party Risk Management",
+      "company": "Peoples Group",
+      "link": "https://www.linkedin.com/jobs/view/4391216815",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "Specialized Finance Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4421867015",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70662"
+    },
+    {
+      "title": "Modelling Lead Americas",
+      "company": "Swiss Re",
+      "link": "https://www.linkedin.com/jobs/view/4430849053",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Strategic Risk Advisor, Senior Specialist",
+      "company": "Vanguard",
+      "link": "https://www.linkedin.com/jobs/view/4432014723",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Manager, Finance & Portfolio Analytics",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4432048294",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Senior Analyst, Investment Controls",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4431736482",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Senior Manager, Analytics & Reporting",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4430585880",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Senior Risk Analyst (14-month Contract)",
+      "company": "BC Financial Services Authority",
+      "link": "https://www.linkedin.com/jobs/view/4430836047",
+      "location": "Vancouver, BC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70659"
+    },
+    {
+      "title": "Quantitative Advisor-Model Risk Management",
+      "company": "Societe Generale",
+      "link": "https://www.linkedin.com/jobs/view/4430488541",
+      "location": "Montreal, QC",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "Investment Director (Remote)",
+      "company": "Confidential",
+      "link": "https://www.linkedin.com/jobs/view/4429095500",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "Associate, Risk",
+      "company": "CPP Investments | Investissements RPC",
+      "link": "https://www.linkedin.com/jobs/view/4427370140",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "Senior Manager, Regulatory and Risk Advisory (Quant)",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4364387083",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "Fixed Income Research and Trading",
+      "company": "Trisura",
+      "link": "https://www.linkedin.com/jobs/view/4426664192",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "Senior Treasury Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4430482438",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-23",
+      "gmail_uid": "70639"
+    },
+    {
+      "title": "IRRBB Manager",
+      "company": "at",
+      "link": "https://www.linkedin.com/jobs/view/4409603191",
+      "location": "",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Senior Manager, Capital & Liquidity Management",
+      "company": "Wealthsimple",
+      "link": "https://www.linkedin.com/jobs/view/4428765174",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Manager, Credit Risk",
+      "company": "Attain Finance",
+      "link": "https://www.linkedin.com/jobs/view/4428177710",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Senior Manager, Financial Risk",
+      "company": "KOHO",
+      "link": "https://www.linkedin.com/jobs/view/4409110032",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Senior Manager, Capital & Liquidity Management",
+      "company": "Jobgether",
+      "link": "https://www.linkedin.com/jobs/view/4429659355",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Associate Portfolio Manager",
+      "company": "Mercor",
+      "link": "https://www.linkedin.com/jobs/view/4411323969",
+      "location": "Greater Montreal Metropolitan Area",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Portfolio Manager - Investment Strategy",
+      "company": "Mercor",
+      "link": "https://www.linkedin.com/jobs/view/4411341248",
+      "location": "Greater Montreal Metropolitan Area",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Manager, Consulting - Asset & Investment Management",
+      "company": "Cutter Associates",
+      "link": "https://www.linkedin.com/jobs/view/4429101328",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Investment Director (Remote)",
+      "company": "Confidential",
+      "link": "https://www.linkedin.com/jobs/view/4429312290",
+      "location": "Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Equity Research Analyst | Upto $105/hr",
+      "company": "Mercor",
+      "link": "https://www.linkedin.com/jobs/view/4411345016",
+      "location": "Greater Montreal Metropolitan Area",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Senior Manager, US Lending Acquisition & Portfolio Strategy",
+      "company": "Momentum Financial Services Group",
+      "link": "https://www.linkedin.com/jobs/view/4409433170",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70634"
+    },
+    {
+      "title": "Senior Vice President - Global Credit Reserve Sr. Lead Analyst - Risk Management (Hybrid)",
+      "company": "Citi",
+      "link": "https://www.linkedin.com/jobs/view/4411710366",
+      "location": "Mississauga, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70632"
+    },
+    {
+      "title": "Senior Manager, Credit Risk Strategy Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411761777",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70632"
+    },
+    {
+      "title": "Strategic Risk Management Director",
+      "company": "Mastercard",
+      "link": "https://www.linkedin.com/jobs/view/4417990235",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70630"
+    },
+    {
+      "title": "Manager, Risk Independence",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4391733462",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70630"
+    },
+    {
+      "title": "Manager, Balance Sheet Advisory",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4421273646",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70630"
+    },
+    {
+      "title": "Senior Vice President - Global Credit Reserve Sr. Lead Analyst - Risk Management (Hybrid)",
+      "company": "Citi",
+      "link": "https://www.linkedin.com/jobs/view/4411710366",
+      "location": "Mississauga, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70630"
+    },
+    {
+      "title": "Senior Manager, Credit Risk Strategy Oversight",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4411761777",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-06-22",
+      "gmail_uid": "70630"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 14,
+    "linkedin_alerts_seen": 14,
+    "digests_with_rows": 14,
+    "digests_without_rows": 0,
+    "rows_parsed": 82,
+    "rows_dropped_location": 3,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 79,
+    "dropped_location_examples": [
+      "KPMG Canada — Windsor, ON",
+      "Vaco — Hamilton, ON",
+      "KPMG Canada — Kanata, ON"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "KPMG Canada",
+        "title": "Senior Manager, Audit Quality Controls & Risk Management",
+        "location": "Windsor, ON",
+        "posted_date": "2026-06-24",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70717",
+        "link": "https://www.linkedin.com/jobs/view/4413210832",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      },
+      {
+        "company": "Vaco",
+        "title": "Chief Financial Officer",
+        "location": "Hamilton, ON",
+        "posted_date": "2026-06-23",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70665",
+        "link": "https://www.linkedin.com/jobs/view/4430585907",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      },
+      {
+        "company": "KPMG Canada",
+        "title": "Manager, Risk Independence",
+        "location": "Kanata, ON",
+        "posted_date": "2026-06-22",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "70630",
+        "link": "https://www.linkedin.com/jobs/view/4391742297",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Aon",
+    "role": "Senior Investment Consultant",
+    "jd_keywords": [
+      "investment consulting",
+      "institutional",
+      "pension",
+      "asset-liability modelling",
+      "ALM",
+      "endowment",
+      "insurance",
+      "stress testing",
+      "liquidity",
+      "scenario analysis",
+      "CFA",
+      "investment committees",
+      "Canadian pension"
+    ]
+  },
+  "summary": "Senior Investment Consultant with ~7 years delivering institutional investment consulting across pension (DB), insurance, and endowment mandates. Delivered ALM studies, LDI strategy, stress testing, liquidity gap analysis, and scenario work for Canadian and international clients at Ortec Finance; currently holds sign-off authority on multi-asset institutional portfolios ($5–25bn per engagement) at Moody's Analytics. Presented findings to investment committees on-site; translated complex analytics into actionable decisions for C-suite and committee-level stakeholders. CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Institutional Investment Consulting",
+    "Pension (DB) & Insurance Fund Consulting",
+    "Asset-Liability Modelling (ALM)",
+    "Liability-Driven Investing (LDI)",
+    "Strategic & Tactical Asset Allocation (SAA/TAA)",
+    "Stress Testing, Liquidity & Scenario Analysis",
+    "Investment Committee Presentation",
+    "Portfolio Optimization (VaR/CVaR)",
+    "Risk Decomposition & Attribution"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director – Modelling Services (Investment & ALM Risk Lead)",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Institutional Client Advisory & Investment Analytics",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional client portfolios ranging $5–25bn per engagement (cumulatively ~$50bn+) — pension funds, asset managers, and consulting firms across Canada and the U.S.",
+                "Serve as escalation point for client-critical analytical issues, interfacing with clients' Heads of Risk, CIO offices, and investment stakeholders on duration positioning, cross-asset exposure, and scenario impacts.",
+                "Prepare investment-committee-ready analytical summaries on interest-rate exposure, funded-status sensitivity, and balance-sheet impacts — translating quantitative outputs into actionable narratives for senior client stakeholders."
+              ]
+            },
+            {
+              "heading": "ALM, Stress Testing & Liquidity Analysis",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset-allocation decisions for institutional clients.",
+                "Oversee interest-rate risk and duration analysis under parallel and non-parallel rate shocks; validate derivatives sensitivities (rates, FX, inflation) at portfolio-level ALM aggregates."
+              ]
+            },
+            {
+              "heading": "Service Enhancement & Junior Colleague Development",
+              "bullets": [
+                "Identified gaps in existing analytics workflows and re-engineered manual spreadsheet processes into scalable, auditable Python pipelines, embedding behavioral cash-flow assumptions aligned with institutional client expectations.",
+                "Review analytical outputs produced by junior colleagues on client engagements and provide coaching on institutional client-communication standards."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform.",
+                "Acted as technical liaison between client investment teams and product owners; advised clients on asset, liability, and ALM configurations and validated model outputs post-deployment.",
+                "Contributed to successful migration of all assigned client accounts from a legacy platform to PFaroe PM."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients; advised actuarial, finance, IT, and program-management functions on adoption of the standards.",
+                "Developed IFRS 17 advisory product offerings and go-to-market collateral; coordinated across actuarial, finance, IT, risk, and PM teams on milestone delivery."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered investment consulting and ALM studies for Canadian and international pension funds and institutional investors — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Conducted liability-driven investing (LDI) analysis and advised clients on Strategic and Tactical Asset Allocation (SAA/TAA) trade-offs via stress testing, scenario analysis, and stochastic economic scenario generators.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR/CVaR with risk decomposition and near-optimal frontier robustness analysis using the GLASS platform.",
+                "Presented ALM study findings to investment committees at Canadian pension-fund clients on-site, including interaction with C-suite and committee-level stakeholders.",
+                "Led onboarding and the ALM study for the University Pension Plan (UPP) — a three-plan JSPP merger — developing and validating the model capturing Funding Policy dynamics, duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

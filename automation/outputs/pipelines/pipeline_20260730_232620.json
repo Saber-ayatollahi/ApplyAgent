@@ -1,0 +1,65 @@
+{
+  "pipeline_id": "20260730_232620",
+  "started_at": "2026-07-30T23:26:20",
+  "args": {
+    "scrape_mode": "full",
+    "sector": null,
+    "company": null,
+    "skip_scrape": true,
+    "skip_score": false,
+    "skip_promote": true,
+    "scan": null,
+    "score_limit": 0,
+    "score_concurrency": 6,
+    "score_dry_run": false,
+    "triage_out": null,
+    "min_score": 7,
+    "include_watch": false,
+    "commit_promote": false,
+    "expire_stale": false,
+    "auto_tailor": false
+  },
+  "state": "finished",
+  "stages": {
+    "scrape": {
+      "state": "skipped"
+    },
+    "worklist": {
+      "state": "finished",
+      "rows": 3669,
+      "scrape_only": 3313,
+      "gmail_only": 238,
+      "both": 118,
+      "new_since_last_score": 8
+    },
+    "score": {
+      "cmd": [
+        "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+        "C:\\Users\\PC\\OneDrive\\Documents\\GitHub\\ApplyAgent\\automation\\fit_scorer.py",
+        "--scan",
+        "worklist.json",
+        "--concurrency",
+        "6"
+      ],
+      "started_at": "2026-07-30T23:26:22",
+      "state": "finished",
+      "finished_at": "2026-07-30T23:27:44",
+      "elapsed_sec": 81.4,
+      "returncode": 0,
+      "last_line": "[fit_scorer] Verdict counts: {'apply_now': 61, 'tailor_and_apply': 234, 'watch': 37, 'skip': 1288}",
+      "scored_file": "worklist_scored.json",
+      "scored_count": 1620,
+      "verdicts": {
+        "apply_now": 61,
+        "tailor_and_apply": 234,
+        "watch": 37,
+        "skip": 1288
+      }
+    },
+    "promote": {
+      "state": "skipped"
+    }
+  },
+  "suppressions_snapshot": "automation\\outputs\\pipelines\\pipeline_20260730_232620_suppressions.json",
+  "finished_at": "2026-07-30T23:27:44"
+}

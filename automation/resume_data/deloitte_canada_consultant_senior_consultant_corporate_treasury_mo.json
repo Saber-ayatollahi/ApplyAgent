@@ -1,0 +1,136 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Deloitte",
+    "role": "Consultant / Senior Consultant, Corporate Treasury Modeling and Advisory",
+    "jd_keywords": [
+      "Corporate Treasury",
+      "Asset Liability Management",
+      "Structural Interest Rate Risk",
+      "Liquidity Stress Testing",
+      "Capital Adequacy",
+      "balance sheet",
+      "model development",
+      "model validation",
+      "stress testing",
+      "Python",
+      "Excel",
+      "CFA",
+      "advisory"
+    ]
+  },
+  "summary": "Consultant / Senior Consultant, Corporate Treasury Modeling and Advisory candidate with ~7 years across asset-liability management (ALM), balance-sheet risk, and model-governance work at Moody's Analytics, EY, and Ortec Finance. Develops and validates structural interest rate risk, liquidity stress-testing, and balance-sheet aggregation models; holds delegated sign-off authority on multi-asset institutional portfolios ($5–25bn per engagement). CFA charterholder with dual MSc degrees (Financial Modelling, Chemical Engineering).",
+  "core_skills": [
+    "Asset-Liability Management (ALM) & Balance-Sheet Model Development",
+    "Model Validation & Model Governance",
+    "Structural Interest Rate Risk Modelling",
+    "Liquidity Stress Testing & Cash-Flow Projection",
+    "Balance-Sheet Aggregation & Capital Adequacy Analytics",
+    "Behavioural Cash-Flow & Prepayment Modelling",
+    "Stress Testing & Scenario Analysis",
+    "Python, Excel (Advanced), SQL, R, MATLAB",
+    "CFA, dual MSc (Financial Modelling, Engineering)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Balance-Sheet Model Development and Validation",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and asset-liability management (ALM) outputs delivered to institutional client portfolios of $5–25bn per engagement ($50bn+ cumulative); independently reviews curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validates balance-sheet aggregation logic converting security-level exposures into portfolio-level ALM and capital adequacy metrics across client treasury and investment books.",
+                "Validates derivatives pricing outputs across rates, FX, and inflation; reviews sensitivity consistency at portfolio-level ALM aggregates to support structural risk reporting.",
+                "Operates within a formal model-governance framework — performs independent model validation: reviews model assumptions, assesses economic defensibility, escalates outputs lacking mathematical or analytical support; documentation standards aligned with SR 11-7-style validation practices."
+              ]
+            },
+            {
+              "heading": "Structural Interest Rate Risk & Liquidity Stress Testing",
+              "bullets": [
+                "Oversees structural interest rate risk and duration analysis under parallel and non-parallel rate shocks, consistent with industry IRRBB frameworks applicable to bank treasury balance sheets.",
+                "Embeds behavioural cash-flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory liquidity stress-testing and contingency-planning expectations.",
+                "Led the design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios — delivering forward-looking liquidity visibility across ALM horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) to support funding optimisation and refinancing risk assessment."
+              ]
+            },
+            {
+              "heading": "Advisory, Tooling & Stakeholder Communication",
+              "bullets": [
+                "Serves as escalation point for client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders; prepares analytical summaries on interest-rate exposure, scenario impacts, and balance-sheet sensitivities for senior decision-makers.",
+                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines; deployed agentic-AI development workflows (Claude Code, Cursor) reducing development cycle time by an estimated 30–40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation of the PFaroe analytics platform for U.S. and Canadian pension funds, asset managers, and consulting firms; advised on asset, liability, and ALM configurations and validated model outputs post-deployment.",
+                "Translated client investment-team requirements into Product Owner development requests; contributed to the successful migration of all assigned accounts from legacy Calypso to PFaroe."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant – IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation engagements for Canadian and international insurance clients; advised actuarial, finance, IT, and PM functions on standard adoption and governance documentation.",
+                "Coordinated cross-functional milestone delivery across actuarial, risk, IT, and finance teams; contributed to go-to-market collateral for the IFRS 17 advisory service offering."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant – Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors; analysed funding ratios, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Built and interpreted stochastic economic scenario generators to assess interest-rate risk and funding volatility under base and stressed environments.",
+                "Performed cash-flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk; conducted liability-driven investment (LDI) analysis on duration alignment and liquidity trade-offs.",
+                "Led the ALM study and onboarding for a three-plan university pension merger — on a team of three, developed and validated the model capturing funding-policy dynamics, duration, currency, inflation, and leverage overlay strategies.",
+                "Presented ALM findings on-site to investment committees at Canadian pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) – CFA Institute, 2024",
+    "MSc, Financial Modelling – Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) – Western University, 2016"
+  ]
+}

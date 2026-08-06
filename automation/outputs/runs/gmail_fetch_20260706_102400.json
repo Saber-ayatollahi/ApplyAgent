@@ -1,0 +1,17 @@
+{
+  "run_id": "gmail_fetch_20260706_102400",
+  "label": "gmail_fetch",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\gmail_fetch.py",
+    "--days",
+    "30"
+  ],
+  "pid": 31032,
+  "started_at": "2026-07-06T10:24:00",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\gmail_fetch_20260706_102400.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\gmail_fetch_20260706_102400.json",
+  "state": "finished",
+  "finished_at": "2026-07-06T10:24:08",
+  "returncode": null
+}

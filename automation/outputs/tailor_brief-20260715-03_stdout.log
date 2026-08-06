@@ -1,0 +1,6 @@
+[jd_tailor] API preflight OK — Valid & credits OK — 5 models, billing works
+[cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$4.159 / cap=$5.00
+[jd_tailor] Tailoring for TD Bank / AVP, Model Risk Governance ...
+  [tailor] claude-opus-4-8 cost $0.162 (in=5104, out=5443, cache_read=0)
+[jd_tailor] Wrote: C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\tailored\TD_Bank_AVP_Model_Risk_Governance_20260715.md
+[gate] OK

@@ -1,0 +1,483 @@
+{
+  "scan_date": "2026-07-29",
+  "scan_timestamp": "2026-07-29T17:59:19Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 41,
+    "output": 41,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71584",
+      "71589",
+      "71591",
+      "71592",
+      "71597",
+      "71600",
+      "71603"
+    ],
+    "processed_uids": [
+      "71584",
+      "71589",
+      "71591",
+      "71592",
+      "71597",
+      "71600",
+      "71603"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-29T14:01:15",
+    "delete_result": {
+      "moved": 7,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Senior Risk Manager, Trading Market Risk - Global Equities",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4446159047",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Senior Manager Liquidity and Non-Trading Market Risk",
+      "company": "Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4445140697",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Manager, Risk Measurement and Reporting",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4444461735",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Treasury ALM Manager",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4445967530",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Lead, Data Management and Governance",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4437131975",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Risk Transformation Lead",
+      "company": "Zurich Cover-More",
+      "link": "https://www.linkedin.com/jobs/view/4417194434",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71603"
+    },
+    {
+      "title": "Senior Manager, Model Validation (Questbank)",
+      "company": "Questrade Financial Group",
+      "link": "https://www.linkedin.com/jobs/view/4436295908",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Associate Director - Data & AI Solutions Architect",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4437728939",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Senior Manager – Enterprise Stress Testing Governance and Controls",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4446312902",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Senior Manager, Commercial Risk Data",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4442940838",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Director, Program Manager",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4446363346",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Director, Business Intelligence",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4446158043",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71600"
+    },
+    {
+      "title": "Senior Manager, Model Validation (Questbank)",
+      "company": "Questrade Financial Group",
+      "link": "https://www.linkedin.com/jobs/view/4436295908",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Senior Risk Manager, Trading Market Risk - Global Equities",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4446159047",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Senior Manager – Enterprise Stress Testing Governance and Controls",
+      "company": "TD",
+      "link": "https://www.linkedin.com/jobs/view/4446312902",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Transformation Risk and Advisory, Senior Manager, JIRA lead",
+      "company": "PwC Canada",
+      "link": "https://www.linkedin.com/jobs/view/4445704807",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Financial Risk Audit Manager, Vice President",
+      "company": "State Street",
+      "link": "https://www.linkedin.com/jobs/view/4441983024",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Senior Manager - Governance, Risk and Compliance Services / Internal Audit (Financial Services)",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4419112454",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71597"
+    },
+    {
+      "title": "Senior Manager, Global Investment Office Client Services & Delivery",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4446102263",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Associate Director, Operational Resilience & BCM- Strategy",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4445998771",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Senior Manager Liquidity and Non-Trading Market Risk",
+      "company": "Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4445140697",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Senior Manager, Commercial Risk Data",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4442940838",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Director, Business Intelligence",
+      "company": "CIBC",
+      "link": "https://www.linkedin.com/jobs/view/4446158043",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Senior Manager, Data Governance",
+      "company": "Investment Management Corporation of Ontario (IMCO)",
+      "link": "https://www.linkedin.com/jobs/view/4445161532",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71592"
+    },
+    {
+      "title": "Manager, Investment Risk",
+      "company": "F&G",
+      "link": "https://www.linkedin.com/jobs/view/4265043533",
+      "location": "United States",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71591"
+    },
+    {
+      "title": "Market Risk Manager",
+      "company": "Natixis Corporate & Investment Banking",
+      "link": "https://www.linkedin.com/jobs/view/4445939573",
+      "location": "New York, NY",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71591"
+    },
+    {
+      "title": "Americas Head, Equity Risk",
+      "company": "Madison-Davis, LLC",
+      "link": "https://www.linkedin.com/jobs/view/4442853365",
+      "location": "New York City Metropolitan Area",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71591"
+    },
+    {
+      "title": "Enterprise Risk Manager",
+      "company": "Finastra",
+      "link": "https://www.linkedin.com/jobs/view/4445966390",
+      "location": "Atlanta, GA",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71591"
+    },
+    {
+      "title": "AI Risk Lead",
+      "company": "KeyBank",
+      "link": "https://www.linkedin.com/jobs/view/4442912242",
+      "location": "Brooklyn, OH",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-29",
+      "gmail_uid": "71591"
+    },
+    {
+      "title": "Senior Manager Liquidity and Non-Trading Market Risk",
+      "company": "Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4445140697",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Lead, Data Management and Governance",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4437131975",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Senior Manager Technical Analysis (Capital Markets Technology)",
+      "company": "Scotiabank",
+      "link": "https://www.linkedin.com/jobs/view/4374630713",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Manager, Risk Modelling",
+      "company": "Rogers Bank",
+      "link": "https://www.linkedin.com/jobs/view/4444892431",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Senior Manager, Next Best Offer",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4442282627",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Manager, Banking and Capital Markets",
+      "company": "KPMG Canada",
+      "link": "https://www.linkedin.com/jobs/view/4445668237",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71589"
+    },
+    {
+      "title": "Senior Manager, Global Investment Office Client Services & Delivery",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4446102263",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    },
+    {
+      "title": "Senior Platform Manager",
+      "company": "RBC",
+      "link": "https://www.linkedin.com/jobs/view/4445998777",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    },
+    {
+      "title": "Senior Manager Liquidity and Non-Trading Market Risk",
+      "company": "Insight Global",
+      "link": "https://www.linkedin.com/jobs/view/4445140697",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    },
+    {
+      "title": "Regional Director Investments",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4443941133",
+      "location": "Ontario, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    },
+    {
+      "title": "Senior Manager, Commercial Risk Data",
+      "company": "BMO",
+      "link": "https://www.linkedin.com/jobs/view/4442940838",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    },
+    {
+      "title": "Senior Manager, Data Governance",
+      "company": "Investment Management Corporation of Ontario (IMCO)",
+      "link": "https://www.linkedin.com/jobs/view/4445161532",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-28",
+      "gmail_uid": "71584"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 7,
+    "linkedin_alerts_seen": 7,
+    "digests_with_rows": 7,
+    "digests_without_rows": 0,
+    "rows_parsed": 42,
+    "rows_dropped_location": 1,
+    "rows_dropped_excluded": 0,
+    "rows_kept": 41,
+    "dropped_location_examples": [
+      "Sallie Mae — Sterling, VA"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "Sallie Mae",
+        "title": "Senior Director, Model Risk",
+        "location": "Sterling, VA",
+        "posted_date": "2026-07-29",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71591",
+        "link": "https://www.linkedin.com/jobs/view/4437143214",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "excluded_dropped_rows": [],
+    "quarantine": []
+  }
+}

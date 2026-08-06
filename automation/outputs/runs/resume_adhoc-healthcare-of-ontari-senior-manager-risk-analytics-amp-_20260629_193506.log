@@ -1,0 +1,17 @@
+# resume_adhoc-healthcare-of-ontari-senior-manager-risk-analytics-amp-
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-healthcare-of-ontari-senior-manager-risk-analytics-amp- --tier balanced --jd-file C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-healthcare-of-ontari-senior-manager-risk-analytics-amp-.txt
+# started: 2026-06-29T19:35:06.167305
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Senior Manager, Risk Analytics &amp; Modelling @ Healthcare of Ontario Pension Plan Trust Fund Company (JD 6049 chars)…
+  [tailor] claude-opus-4-7 cost $0.564 (in=11373, out=5247, cache_read=0)
+  [tailor] claude-sonnet-4-6 cost $0.089 (in=4113, out=5119, cache_read=0)
+[resume_agent] validity pass applied.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:06<00:00,  6.54s/it]100%|██████████| 1/1 [00:07<00:00,  7.53s/it]
+[resume_agent] 3 ATS keyword(s) missing (traders, portfolio managers, LLMs); revising once…
+  [tailor] claude-sonnet-4-6 cost $0.038 (in=2055, out=2136, cache_read=14452)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:02<00:00,  2.08s/it]100%|██████████| 1/1 [00:02<00:00,  2.10s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+[resume_agent] tracker linked (resume_file + ATS 14/14)
+[resume_agent] DONE -> C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-29_HOOPP_Senior-Manager-Risk-Analytics-Modelling
+RESUME_AGENT_FOLDER=C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-29_HOOPP_Senior-Manager-Risk-Analytics-Modelling

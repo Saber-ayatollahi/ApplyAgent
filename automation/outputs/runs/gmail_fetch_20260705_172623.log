@@ -1,0 +1,21 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-07-05T17:26:23.471964
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 16 sender-classified, 16 LinkedIn alert(s); parsed 91 row(s) from 16 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] geo filter: dropped 6 non-GTA row(s) — kept 54
+  · drop: BMO — Blainville, QC
+  · drop: Capital One — McLean, VA
+  · drop: Vanguard — Malvern, PA
+  · drop: JPMorganChase — Wilmington, DE
+  · drop: Hitachi Energy — Nashville, TN
+[gmail_fetch] exclude-list: dropped 31 row(s) from excluded companies — kept 54
+  · drop: RBC — Manager, Enterprise Model Risk Management
+  · drop: TD — Director/Senior Manager, Canadian Interest Rates Coverage (5
+  · drop: BMO — Senior Manager, Counterparty Credit Risk Analytics
+  · drop: RBC — Manager, Enterprise Model Risk Management
+  · drop: RBC — Associate Director, GRM
+[gmail_fetch] ✓ wrote scan_gmail_20260705_172629.json with 54 row(s).
+[gmail_fetch]   16 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 3250 rows (3177 scrape, 51 gmail, 22 both) · 1509 new since last score

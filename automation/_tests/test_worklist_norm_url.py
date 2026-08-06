@@ -78,6 +78,43 @@ def test_empty_and_missing_return_empty_string():
     assert W.norm_url({"link": "   "}) == ""
 
 
+# ── Workday host+reqid identity key (the promote-matcher dedup) ───────────
+# norm_url intentionally keeps Workday URL spellings distinct (above); the
+# reqid key is the second identity that reconciles them for tracker matching.
+def test_workday_reqid_key_collapses_locale_and_comma_variants():
+    # The exact HOOPP JR102444 case: a manual add carries the browser's
+    # /en-US/ + %2C URL while the scraper stores the canonical short form.
+    manual = W.workday_reqid_key(
+        "https://hoopp.wd10.myworkdayjobs.com/en-US/HOOPP/job/"
+        "Toronto%2C-Ontario%2C-Canada/Senior-Manager--Risk-Analytics---Modelling_JR102444")
+    scraped = W.workday_reqid_key(
+        "https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/"
+        "Toronto-Ontario-Canada/Senior-Manager--Risk-Analytics---Modelling_JR102444")
+    assert manual == scraped == "wd::hoopp.wd10.myworkdayjobs.com::jr102444"
+
+
+def test_workday_reqid_key_none_for_non_workday_or_empty():
+    assert W.workday_reqid_key("https://www.linkedin.com/jobs/view/4431885106") is None
+    assert W.workday_reqid_key("") is None
+
+
+def test_identity_keys_match_across_url_spellings():
+    manual = {"url": "https://hoopp.wd10.myworkdayjobs.com/en-US/HOOPP/job/"
+              "Toronto%2C-Ontario%2C-Canada/Senior-Manager--Risk-Analytics---Modelling_JR102444"}
+    scraped = {"link": "https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/"
+               "Toronto-Ontario-Canada/Senior-Manager--Risk-Analytics---Modelling_JR102444"}
+    # norm_url alone misses it (the promote-list bug); identity_keys catches
+    # it via the shared reqid key.
+    assert W.norm_url(manual) != W.norm_url(scraped)
+    assert W.identity_keys(manual) & W.identity_keys(scraped)
+
+
+def test_identity_keys_keep_distinct_reqs_distinct():
+    a = {"link": "https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/T/Role_JR102444"}
+    b = {"link": "https://hoopp.wd10.myworkdayjobs.com/HOOPP/job/T/Role_JR102448"}
+    assert not (W.identity_keys(a) & W.identity_keys(b))
+
+
 if __name__ == "__main__":
     import pytest
     raise SystemExit(pytest.main([__file__, "-q"]))

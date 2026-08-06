@@ -1,0 +1,121 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "S&P Global",
+    "role": "Associate Director, Financial Services",
+    "jd_keywords": [
+      "credit", "fixed income", "capital", "liquidity risk", "quantitative",
+      "financial statement analysis", "accounting", "CFA", "Excel",
+      "committees", "client-facing", "Python", "risk management", "surveillance"
+    ]
+  },
+  "summary": "Associate Director, Financial Services candidate with ~7 years in quantitative risk analysis, fixed income and derivatives analytics, and bank balance-sheet risk for institutional portfolios. Delegated sign-off authority at Moody's Analytics on valuation, sensitivity, and risk outputs ($5–25bn per engagement); client-facing delivery to pension funds, asset managers, and insurers, with committee presentation experience. Deep grounding in capital, liquidity, and interest-rate risk frameworks; financial statement analysis and accounting concepts through CFA and IFRS 17/9 delivery. Python and Excel in daily production use.",
+  "core_skills": [
+    "Fixed Income & Derivatives Analytics",
+    "Balance-Sheet, Capital & Liquidity Risk Analysis",
+    "Quantitative Modeling & Scenario Analysis",
+    "Credit-Spread & Curve Calibration Review",
+    "Financial Statement Analysis & Accounting (CFA; IFRS 17/9)",
+    "Risk Surveillance & Reporting",
+    "Committee Presentation & Client Engagement",
+    "Python (pandas, NumPy) & Excel (Advanced)",
+    "Model Governance & Documentation"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 – Present",
+          "sections": [
+            {
+              "heading": "Quantitative Modeling & Fixed Income Analytics",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ranging $5–25bn per engagement, cumulatively covering ~$50bn of client assets.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation for fixed income and cross-asset mandates — review curve construction, credit-spread calibration, and cross-asset interactions prior to production release; escalate outputs lacking economic defensibility."
+              ]
+            },
+            {
+              "heading": "Capital, Liquidity & Balance-Sheet Risk Analysis",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios — forward-looking liquidity risk and balance-sheet visibility across long-dated horizons.",
+                "Architected configurable time-bucketed liquidity-gap analytics (T+1 through multi-year) supporting funding and refinancing analysis for institutional mandates.",
+                "Oversaw interest-rate risk and duration analysis under parallel and non-parallel rate shocks, aligned with IRRBB standards analogous to OSFI B-12 and Basel Committee capital frameworks."
+              ]
+            },
+            {
+              "heading": "Surveillance, Committees & Communication",
+              "bullets": [
+                "Perform ongoing surveillance-style review of client portfolio analytics — monitor model performance, investigate anomalies, and prepare committee-ready risk commentary for senior stakeholders in client-facing settings.",
+                "Member of the model governance committee — methodology review and challenge, documentation and benchmarking standards; built Python analytics pipelines with embedded validation controls, in production across the modelling team."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 – May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation of PFaroe DB and PFaroe PM vendor risk platforms for U.S. and Canadian pension funds, asset managers, and consulting firms — client-facing requirements scoping and post-deployment validation."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 – Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — applied financial statement analysis and accounting concepts to align liability measurement and reporting frameworks with system implementation.",
+                "Advised actuarial, finance, IT, and risk management functions on governance documentation, model controls, and regulatory readiness across complex insurer balance sheets."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 – Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators (Monte Carlo) assessing interest-rate, inflation, and currency risk under base and stressed environments.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization based on VaR and CVaR; conducted risk decomposition and contribution-to-risk analysis across funds and portfolios.",
+                "Delivered ALM studies for Canadian and international pension funds — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk alongside all major investment-product types.",
+                "Presented quantitative findings to investment committees at pension-fund clients; led onboarding and the ALM study for the University Pension Plan (UPP) three-plan merger, developing and validating the model evaluating duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) — CFA Institute, 2024",
+    "MSc, Financial Modelling — Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) — Western University, 2016"
+  ]
+}

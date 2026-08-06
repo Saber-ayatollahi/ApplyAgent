@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-fitch-ratings-analyst-senior-analyst-enhance_20260619_210538",
+  "label": "resume_auto-fitch-ratings-analyst-senior-analyst-enhance",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-fitch-ratings-analyst-senior-analyst-enhance",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 20056,
+  "started_at": "2026-06-19T21:05:38",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-fitch-ratings-analyst-senior-analyst-enhance_20260619_210538.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-fitch-ratings-analyst-senior-analyst-enhance_20260619_210538.json",
+  "state": "finished",
+  "finished_at": "2026-06-19T21:09:43",
+  "returncode": 0
+}

@@ -1,0 +1,186 @@
+{
+  "scan_date": "2026-07-09",
+  "scan_timestamp": "2026-07-09T18:23:55Z",
+  "source": "gmail_linkedin_alert",
+  "dedup_stats": {
+    "input": 6,
+    "output": 6,
+    "dropped_url": 0,
+    "dropped_near": 0
+  },
+  "diagnostics": {
+    "zero_result_companies": [],
+    "per_company": [],
+    "note": "Produced by gmail_fetch.py — pure Gmail alert harvest. Dedup happens in worklist.rebuild() not here."
+  },
+  "gmail_alerts": {
+    "contributing_uids": [
+      "71048",
+      "71071",
+      "71089"
+    ],
+    "processed_uids": [
+      "71048",
+      "71071",
+      "71089"
+    ],
+    "deleted": true,
+    "deleted_at": "2026-07-09T14:24:07",
+    "delete_result": {
+      "moved": 3,
+      "failed": 0,
+      "errors": []
+    }
+  },
+  "results": [
+    {
+      "title": "Markets Data Risk Controls Lead, North America, Senior Vice President",
+      "company": "Citi",
+      "link": "https://www.linkedin.com/jobs/view/4427757903",
+      "location": "Mississauga, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-09",
+      "gmail_uid": "71089"
+    },
+    {
+      "title": "Senior Manager, Model Validation (Questbank)",
+      "company": "Questrade Financial Group",
+      "link": "https://www.linkedin.com/jobs/view/4436295908",
+      "location": "North York, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-08",
+      "gmail_uid": "71071"
+    },
+    {
+      "title": "Senior Portfolio Analyst",
+      "company": "Mackenzie Investments",
+      "link": "https://www.linkedin.com/jobs/view/4437455284",
+      "location": "Greater Toronto Area, Canada",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-08",
+      "gmail_uid": "71071"
+    },
+    {
+      "title": "Portfolio Manager (Principal) or Associate Portfolio Manager (Senior Analyst), Liquid Alternatives - Global Multi-Asset Strategies",
+      "company": "OMERS",
+      "link": "https://www.linkedin.com/jobs/view/4434516059",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-08",
+      "gmail_uid": "71071"
+    },
+    {
+      "title": "Senior Risk Analyst",
+      "company": "Wealth One Bank of Canada",
+      "link": "https://www.linkedin.com/jobs/view/4436261283",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-08",
+      "gmail_uid": "71071"
+    },
+    {
+      "title": "Manager, Treasury",
+      "company": "Greater Toronto Airports Authority",
+      "link": "https://www.linkedin.com/jobs/view/4436268119",
+      "location": "Toronto, ON",
+      "source": "gmail_linkedin_alert",
+      "sector": "",
+      "posted_date": "2026-07-08",
+      "gmail_uid": "71048"
+    }
+  ],
+  "harvest_diagnostics": {
+    "days_window": 30,
+    "imap_messages_matched": 3,
+    "linkedin_alerts_seen": 3,
+    "digests_with_rows": 3,
+    "digests_without_rows": 0,
+    "rows_parsed": 13,
+    "rows_dropped_location": 1,
+    "rows_dropped_excluded": 6,
+    "rows_kept": 6,
+    "dropped_location_examples": [
+      "RBC Dominion Securities — Coquitlam, BC"
+    ],
+    "geo_dropped_rows": [
+      {
+        "company": "RBC Dominion Securities",
+        "title": "Investment Associate",
+        "location": "Coquitlam, BC",
+        "posted_date": "2026-07-08",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71071",
+        "link": "https://www.linkedin.com/jobs/view/4437744469",
+        "drop_reason": "geo_outside_toronto_pipeline"
+      }
+    ],
+    "excluded_dropped_rows": [
+      {
+        "company": "RBC",
+        "title": "Associate Director",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-09",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71089",
+        "link": "https://www.linkedin.com/jobs/view/4438163472",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "TD",
+        "title": "Finance Manager",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-09",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71089",
+        "link": "https://www.linkedin.com/jobs/view/4429138600",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "TD",
+        "title": "Directeur, Finances",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-09",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71089",
+        "link": "https://www.linkedin.com/jobs/view/4429197105",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "Scotiabank",
+        "title": "Senior Manager, Counterparty Credit Risk",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-09",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71089",
+        "link": "https://www.linkedin.com/jobs/view/4408924286",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "TD",
+        "title": "Senior Manager, Enterprise Decision Support",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-08",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71071",
+        "link": "https://www.linkedin.com/jobs/view/4437703276",
+        "drop_reason": "excluded_company"
+      },
+      {
+        "company": "BMO",
+        "title": "Senior Manager - Business Architecture",
+        "location": "Toronto, ON",
+        "posted_date": "2026-07-08",
+        "source": "gmail_linkedin_alert",
+        "gmail_uid": "71048",
+        "link": "https://www.linkedin.com/jobs/view/4437473365",
+        "drop_reason": "excluded_company"
+      }
+    ],
+    "quarantine": []
+  }
+}

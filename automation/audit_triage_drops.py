@@ -185,7 +185,7 @@ def main() -> int:
     ap.add_argument("--scan", type=Path, default=None,
                     help="triage scan json (default: latest worklist_triage*.json)")
     ap.add_argument("--sweep-model", default="claude-haiku-4-5")
-    ap.add_argument("--confirm-model", default="claude-sonnet-4-6")
+    ap.add_argument("--confirm-model", default="claude-sonnet-5")
     ap.add_argument("--quick", action="store_true",
                     help="sweep only, skip the confirm pass (cheaper)")
     ap.add_argument("--batch", type=int, default=50)

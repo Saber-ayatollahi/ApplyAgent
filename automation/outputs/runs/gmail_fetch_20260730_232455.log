@@ -1,0 +1,11 @@
+# gmail_fetch
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
+# started: 2026-07-30T23:24:55.780070
+
+[gmail_fetch] ✓ authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
+[gmail_fetch] inbox match: 8 sender-classified, 8 LinkedIn alert(s); parsed 43 row(s) from 8 digest(s) (0 digest(s) yielded zero rows)
+[gmail_fetch] geo filter: dropped 1 non-GTA row(s) — kept 42
+  · drop: MNP — Kelowna, BC
+[gmail_fetch] ✓ wrote scan_gmail_20260730_232502.json with 42 row(s).
+[gmail_fetch]   8 alert email(s) produced rows — the UI will offer to move them to Trash.
+[gmail_fetch] worklist rebuilt: 3669 rows (3313 scrape, 238 gmail, 118 both) · 8 new since last score

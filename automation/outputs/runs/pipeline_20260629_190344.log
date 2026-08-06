@@ -1,0 +1,85 @@
+# pipeline
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\run_pipeline.py --skip-scrape --skip-promote --score-concurrency 6
+# started: 2026-06-29T19:03:44.437513
+
+[run_pipeline] API preflight OK — Valid & credits OK — 5 models, billing works
+=== ApplyAgent pipeline 20260629_190347 ===
+Mode: scrape=full skip_scrape=True skip_score=False skip_promote=True
+[stage 1] SKIPPED (using existing scrape inputs)
+[stage 1.5] Rebuilding worklist (scrape ∪ recent Gmail pool)...
+[worklist] 2632 rows (2593 scrape, 27 gmail, 12 both) · 2632 new since last score
+[score] [fit_scorer] Loaded 2632 roles from worklist.json
+[score] [fit_scorer] Stage 1: 616 pass / 2016 drop / 0 filtered by --only
+[score] [fit_scorer] API preflight OK — Valid & credits OK — 5 models, billing works
+[score] [fit_scorer] loaded 808 prior fits from worklist_scored.json (used on cache miss for is_new_since_last_score=False rows).
+[score] [cost_guard] run_spend=$0.000 / cap=$2.00  today_spend=$0.000 / cap=$5.00
+[score]   [fit_scorer] scored 10/616 (0.0 min)
+[score]   [fit_scorer] scored 20/616 (0.0 min)
+[score]   [fit_scorer] scored 30/616 (0.0 min)
+[score]   [fit_scorer] scored 40/616 (0.1 min)
+[score]   [fit_scorer] scored 50/616 (0.2 min)
+[score]   [fit_scorer] scored 60/616 (1.1 min)
+[score]   [fit_scorer] scored 70/616 (1.2 min)
+[score]   [fit_scorer] scored 80/616 (2.1 min)
+[score]   [fetch_jd] short (0 chars) for https://cib-bic.ca/en/jobs/?gh_jid=5022805008 — likely JS-SPA; not caching
+[score]   [fit_scorer] scored 90/616 (2.2 min)
+[score]   [fetch_jd] short (0 chars) for https://cib-bic.ca/en/jobs/?gh_jid=5226270008 — likely JS-SPA; not caching
+[score]   [fit_scorer] scored 100/616 (3.1 min)
+[score]   [fit_scorer] scored 110/616 (4.1 min)
+[score]   [fit_scorer] scored 120/616 (5.1 min)
+[score]   [fit_scorer] scored 130/616 (6.2 min)
+[score]   [fit_scorer] scored 140/616 (7.1 min)
+[score]   [fit_scorer] scored 150/616 (8.1 min)
+[score]   [fit_scorer] scored 160/616 (9.1 min)
+[score]   [fit_scorer] scored 170/616 (10.2 min)
+[score]   [fit_scorer] scored 180/616 (11.2 min)
+[score]   [fit_scorer] scored 190/616 (13.1 min)
+[score]   [fit_scorer] scored 200/616 (14.1 min)
+[score]   [fit_scorer] scored 210/616 (15.2 min)
+[score]   [fit_scorer] scored 220/616 (16.2 min)
+[score]   [fit_scorer] scored 230/616 (18.1 min)
+[score]   [fit_scorer] scored 240/616 (19.2 min)
+[score]   [fit_scorer] scored 250/616 (20.2 min)
+[score]   [fit_scorer] scored 260/616 (21.2 min)
+[score]   [fit_scorer] scored 270/616 (21.3 min)
+[score]   [fit_scorer] scored 280/616 (23.1 min)
+[score]   [fit_scorer] scored 290/616 (23.1 min)
+[score]   [fit_scorer] scored 300/616 (24.1 min)
+[score]   [fit_scorer] scored 310/616 (24.2 min)
+[score]   [fit_scorer] scored 320/616 (25.1 min)
+[score]   [fit_scorer] scored 330/616 (25.2 min)
+[score]   [fit_scorer] scored 340/616 (26.1 min)
+[score]   [fit_scorer] scored 350/616 (27.1 min)
+[score]   [fit_scorer] scored 360/616 (28.1 min)
+[score]   [fit_scorer] scored 370/616 (28.1 min)
+[score]   [fit_scorer] scored 380/616 (29.2 min)
+[score]   [fit_scorer] scored 390/616 (30.1 min)
+[score]   [fit_scorer] scored 400/616 (30.2 min)
+[score]   [fit_scorer] scored 410/616 (31.2 min)
+[score]   [fit_scorer] scored 420/616 (32.2 min)
+[score]   [fit_scorer] scored 430/616 (33.2 min)
+[score]   [fit_scorer] scored 440/616 (34.1 min)
+[score]   [fit_scorer] scored 450/616 (35.2 min)
+[score]   [fit_scorer] scored 460/616 (36.2 min)
+[score]   [fit_scorer] scored 470/616 (37.2 min)
+[score]   [fit_scorer] scored 480/616 (38.2 min)
+[score]   [fit_scorer] scored 490/616 (40.1 min)
+[score]   [fit_scorer] scored 500/616 (40.3 min)
+[score]   [fit_scorer] scored 510/616 (40.3 min)
+[score]   [fit_scorer] scored 520/616 (41.2 min)
+[score]   [fit_scorer] scored 530/616 (42.1 min)
+[score]   [fit_scorer] scored 540/616 (42.2 min)
+[score]   [fit_scorer] scored 550/616 (43.1 min)
+[score]   [fit_scorer] scored 560/616 (44.2 min)
+[score]   [fit_scorer] scored 570/616 (45.2 min)
+[score]   [fit_scorer] scored 580/616 (45.2 min)
+[score]   [fit_scorer] scored 590/616 (46.1 min)
+[score]   [fit_scorer] scored 600/616 (47.1 min)
+[score]   [fit_scorer] scored 610/616 (48.1 min)
+[score]   [fit_scorer] scored 616/616 (49.1 min)
+[score] [fit_scorer] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\worklist_scored.json
+[score] [fit_scorer] Wrote C:\Users\PC\Documents\GitHub\ApplyAgent\automation\outputs\worklist_scored.md
+[score] [fit_scorer] Verdict counts: {'apply_now': 13, 'tailor_and_apply': 76, 'watch': 38, 'skip': 489}
+[stage 3] SKIPPED
+
+=== Pipeline 20260629_190347 complete ===

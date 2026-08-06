@@ -1,0 +1,19 @@
+{
+  "run_id": "resume_auto-mufg-bank-canada-model-risk-management-analyst-_20260619_171238",
+  "label": "resume_auto-mufg-bank-canada-model-risk-management-analyst-",
+  "cmd": [
+    "C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\resume_agent.py",
+    "--job-id",
+    "auto-mufg-bank-canada-model-risk-management-analyst-",
+    "--tier",
+    "balanced"
+  ],
+  "pid": 36496,
+  "started_at": "2026-06-19T17:12:38",
+  "log_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-mufg-bank-canada-model-risk-management-analyst-_20260619_171238.log",
+  "status_path": "C:\\Users\\PC\\Documents\\GitHub\\ApplyAgent\\automation\\outputs\\runs\\resume_auto-mufg-bank-canada-model-risk-management-analyst-_20260619_171238.json",
+  "state": "finished",
+  "finished_at": "2026-06-19T17:16:36",
+  "returncode": null
+}

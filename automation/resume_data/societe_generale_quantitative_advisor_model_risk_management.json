@@ -1,0 +1,139 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Societe Generale",
+    "role": "Quantitative Advisor - Model Risk Management",
+    "jd_keywords": [
+      "Model Risk Management",
+      "SR 11-7",
+      "pricing models",
+      "risk metrics",
+      "Python",
+      "R",
+      "documentation",
+      "conceptual soundness",
+      "model governance",
+      "derivatives",
+      "quantitative",
+      "validation",
+      "monitoring",
+      "stress testing",
+      "Monte Carlo"
+    ]
+  },
+  "summary": "Quantitative Advisor - Model Risk Management candidate with ~7 years across model governance, derivatives-pricing validation, and quantitative risk analytics. Operates within a formal model-governance framework at Moody's Analytics with delegated sign-off on valuation, sensitivity, and risk outputs, independently reviewing pricing models' conceptual soundness, curve calibration, and cross-asset behavior against SR 11-7-aligned standards. Python-fluent, with derivatives (rates, FX, inflation) and stochastic/Monte Carlo depth. CFA charterholder and dual MSc (Financial Modelling, Chemical Engineering).",
+  "core_skills": [
+    "Model Risk Management (MRM)",
+    "SR 11-7-aligned governance",
+    "Pricing-model validation",
+    "Derivatives (rates, FX, inflation)",
+    "Independent review & challenge",
+    "Model documentation & certification",
+    "Python",
+    "R & MATLAB",
+    "Stochastic / Monte Carlo simulation",
+    "Stress testing & scenario analysis",
+    "Risk metrics & sensitivities",
+    "Curve construction & spread calibration",
+    "Cross-functional stakeholder engagement"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Model Governance, Review & Certification",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios ($5-25bn per engagement; $50bn+ cumulative) - independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Operate within a formal model-governance framework as a member of the model governance committee, reviewing methodology, benchmarking standards, assumption validity, and model-performance assessment consistent with SR 11-7-aligned expectations.",
+                "Escalate outputs lacking mathematical or economic defensibility; serve as escalation point for client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders."
+              ]
+            },
+            {
+              "heading": "Pricing-Model Validation & Risk Metrics",
+              "bullets": [
+                "Validate derivatives pricing models across rates, FX, and inflation - cross-checking sensitivity consistency and scenario impacts at portfolio-level risk aggregates.",
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream risk and capital processes.",
+                "Oversee interest-rate risk and duration analysis under parallel and non-parallel rate shocks, reviewing conceptual soundness and accuracy of the underlying methodology."
+              ]
+            },
+            {
+              "heading": "Monitoring Methodology & Tooling",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging, validation, and documentation controls.",
+                "Built agentic-AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection - reducing development cycle time by an estimated 30-40% on comparable modules.",
+                "Prepared analytical documentation and summaries for senior stakeholders on exposure, scenario impacts, and sensitivities, meeting internal governance and documentation standards."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Served as technical liaison between institutional client investment teams and product/development functions - translating quantitative requirements into structured development requests and validating model outputs post-deployment.",
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms across the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for insurance clients, aligning regulatory requirements with system implementation and contributing to governance documentation and regulatory-readiness processes.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management functions on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators for stress testing of interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Performed asset-only and asset-liability portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition, risk attribution, and near-optimal frontier robustness analysis.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients; presented findings to investment committees."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

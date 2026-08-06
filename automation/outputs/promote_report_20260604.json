@@ -1,0 +1,944 @@
+{
+  "scan_date": "20260604",
+  "source": "worklist_scored.json",
+  "min_score": 7,
+  "include_watch": false,
+  "mode": "commit",
+  "selection_mode": "manual",
+  "summary": {
+    "added": 46,
+    "updated": 0,
+    "expired": 0,
+    "skipped_verdict": 0,
+    "skipped_score": 0,
+    "skipped_dupe": 0,
+    "skipped_geo": 0,
+    "suppressed_after_score": 0
+  },
+  "skipped_rows": [],
+  "suppressed_after_score": [],
+  "promoted": [
+    {
+      "id": "auto-scotiabank-manager-balance-sheet-market-r",
+      "company": "Scotiabank",
+      "title": "Manager, Balance Sheet Market Risk - Toronto, ON",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Balance-Sheet-Market-Risk-Toronto%2C-ON-ON-M5H-0B4/600323317/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-associate-director-alm-18-mont",
+      "company": "Scotiabank",
+      "title": "Associate Director, ALM (18 Month Contract)",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/associate-director-alm-18-month-contract-at-scotiabank-4416572126",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-manager-balance-sheet-and-liqu",
+      "company": "RBC",
+      "title": "Manager, Balance Sheet and Liquidity Risk Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/manager-balance-sheet-and-liquidity-risk-model-validation-at-rbc-4419814041",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-capital-markets-model-",
+      "company": "BMO",
+      "title": "Manager, Capital Markets Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Specialist--Capital-Markets-Model-Validation_R260010913",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-director-model-validation",
+      "company": "BMO",
+      "title": "Director, Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Director--Model-Validation_R260010757-1",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cibc-senior-director-funding-and-li",
+      "company": "CIBC",
+      "title": "Senior Director, Funding and Liquidity Risk Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Director--Funding-and-Liquidity-Risk-Management_2610965",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-senior-director-total-portfoli",
+      "company": "HOOPP",
+      "title": "Senior Director, Total Portfolio Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Senior-Director--Total-Portfolio-Risk_JR102408",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-principal-total-portfolio",
+      "company": "HOOPP",
+      "title": "Principal, Total Portfolio",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Principal--Total-Portfolio_JR102327",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-analyst-senior-analyst-total-p",
+      "company": "OMERS",
+      "title": "Analyst/Senior Analyst, Total Plan Risk Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst-Senior-Analyst--Risk-Analytics_JR-7887",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ontario-teachers-pen-director-total-fund-management",
+      "company": "Ontario Teachers' Pension Plan",
+      "title": "Director - Total Fund Management, Investment Analytics",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Director---Total-Fund-Management--Investment-Analytics_6993",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-senior-associate-dynamic-portf",
+      "company": "CPP Investments",
+      "title": "Senior Associate, Dynamic Portfolio Management (12-month Contract)",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Associate--Dynamic-Portfolio-Management--12-month-Contract-_JR00401",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-managing-director-enterprise-r",
+      "company": "CPP Investments",
+      "title": "Managing Director, Enterprise Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Managing-Director--Enterprise-Risk_JR00208",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-manulife-analyst-global-asset-liability",
+      "company": "Manulife",
+      "title": "Analyst, Global Asset Liability Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Insurers",
+      "url": "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Global-Asset-Liability-Management_JR26051056",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-deloitte-canada-consultant-senior-consultant-c",
+      "company": "Deloitte Canada",
+      "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory",
+      "score": 9,
+      "tier": 1,
+      "sector": "Big 4 Risk Advisory",
+      "url": "https://careers.deloitte.ca/job/Toronto%2C-ON-ConsultantSenior-Consultant%2C-Corporate-Treasury-Modeling-and-Advisory-ON-M5C-3G7/1363768600/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ivari-avp-asset-liability-management",
+      "company": "ivari",
+      "title": "AVP, Asset Liability Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Insurers",
+      "url": "https://ca.linkedin.com/jobs/view/avp-asset-liability-management-at-ivari-canada-4395156441",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-manager-balance-sheet-market-r-9",
+      "company": "Scotiabank",
+      "title": "Manager, Balance Sheet Market Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4423968867",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-healthcare-of--senior-director-model-validati",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "title": "Senior Director, Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4414643852",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-healthcare-of--senior-director-total-portfoli",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "title": "Senior Director, Total Portfolio Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4414654470",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-associate-director-alm-strateg",
+      "company": "Scotiabank",
+      "title": "Associate Director, ALM Strategy",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4424008899",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-eq-bank-senior-director-asset-and-liab",
+      "company": "EQ Bank",
+      "title": "Senior Director, Asset and Liability Management (ALM)",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4408200851",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-senior-manager-balance-sheet-a",
+      "company": "RBC",
+      "title": "Senior Manager, Balance Sheet and Liquidity Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4402692951",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-mercury-irrbb-manager",
+      "company": "Mercury",
+      "title": "IRRBB Manager",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4409603191",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-senior-manager-liquidity-risk",
+      "company": "Scotiabank",
+      "title": "Senior Manager, Liquidity Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Liquidity-Risk-ON-M5H-0B4/600441017/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-manager-irrbb-measurement",
+      "company": "RBC",
+      "title": "Manager, IRRBB Measurement",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/manager-irrbb-measurement-at-rbc-4419191922",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-bank-senior-manager-group-risk-capi",
+      "company": "TD Bank",
+      "title": "Senior Manager, Group Risk, Capital Oversight (4456)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Group-Risk--Capital-Oversight--4456-_R_1489394",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-bank-treasury-manager-wholesale-liq",
+      "company": "TD Bank",
+      "title": "Treasury Manager - Wholesale Liquidity Implementation",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Treasury-Manager---Wholesale-Liquidity-Implementation_R_1490916",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-risk-governance-and-co",
+      "company": "BMO",
+      "title": "Manager, Risk Governance and Controls",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Risk-Governance-and-Controls_R260015267-1",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-senior-manager-credit-risk-mod",
+      "company": "BMO",
+      "title": "Senior Manager, Credit Risk Model Validation",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Credit-Risk-Model-Validation_R260011262",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-integrated-risk-insigh",
+      "company": "BMO",
+      "title": "Manager, Integrated Risk Insights, Risk Appetite & Portfolio Management",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Integrated-Risk-Insights--Risk-Appetite---Portfolio-Management_R260015152",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cibc-senior-manager-non-trading-mar",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Non-Trading-Market-Risk--12-Month-Secondment-Contract-_2609197",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-vice-president-private-markets",
+      "company": "HOOPP",
+      "title": "Vice President, Private Markets Finance & Valuations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Vice-President--Private-Markets-Finance---Valuations--E1-_JR102197",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-technical-analyst-valuations-a",
+      "company": "OMERS",
+      "title": "Technical Analyst, Valuations & Analytics",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Technical-Analyst--Valuations---Analytics_JR-7788",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-senior-analyst-financial-plann",
+      "company": "OMERS",
+      "title": "Senior Analyst, Financial Planning & Analysis",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst--Financial-Planning---Analysis_JR-7938",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-senior-manager-performance-rep",
+      "company": "OMERS",
+      "title": "Senior Manager, Performance Reporting and Attribution",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Performance-Reporting-and-Attribution_JR-8094",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ontario-teachers-pen-senior-associate-corporate-fin",
+      "company": "Ontario Teachers' Pension Plan",
+      "title": "Senior Associate, Corporate Finance (12 month contract)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Senior-Associate--Corporate-Finance--12-month-contract-_6980",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-senior-analyst-credit-investme",
+      "company": "CPP Investments",
+      "title": "Senior Analyst, Credit Investment Operations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Analyst--Credit-Investment-Operations_JR00450",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-manager-investment-structure-m",
+      "company": "CPP Investments",
+      "title": "Manager, Investment Structure Management",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Manager--Investment-Structuring-and-Digital-Innovation_JR00166",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-caat-pension-plan-senior-analyst-investment-oper",
+      "company": "CAAT Pension Plan",
+      "title": "Senior Analyst, Investment Operations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://caatpension.wd10.myworkdayjobs.com/job/Toronto-ON/Senior-Analyst--Investment-Operations_JR100139",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-global-asset-man-senior-manager-pension-investm",
+      "company": "RBC Global Asset Management",
+      "title": "Senior Manager – Pension Investments",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Asset Managers",
+      "url": "https://ca.linkedin.com/jobs/view/senior-manager-%E2%80%93-pension-investments-at-rbc-4421270599",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-canada-infrastructur-director-investment-risk",
+      "company": "Canada Infrastructure Bank",
+      "title": "Director, Investment Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Asset Managers",
+      "url": "https://cib-bic.ca/en/jobs/?gh_jid=5022805008",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-tmx-group-senior-analyst-quantitative-mo",
+      "company": "TMX Group",
+      "title": "Senior Analyst, Quantitative Model Validation (Model Vetting)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Market Infrastructure",
+      "url": "https://ca.linkedin.com/jobs/view/senior-analyst-quantitative-model-validation-model-vetting-at-tmx-group-4418823820",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-moody-s-corporation-assc-dir-actuarial-client-supt",
+      "company": "Moody's Corporation",
+      "title": "Assc Dir-Actuarial Client Supt",
+      "score": 8,
+      "tier": 1,
+      "sector": "Analytics & Risk Vendors",
+      "url": "https://ca.linkedin.com/jobs/view/assc-dir-actuarial-client-supt-at-moody-s-corporation-4419481346",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-goeasy-ltd-director-treasury-analytics",
+      "company": "goeasy Ltd.",
+      "title": "Director, Treasury Analytics",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4351596306",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-koho-treasury-manager",
+      "company": "KOHO",
+      "title": "Treasury Manager",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4406800213",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-structural-market-risk",
+      "company": "BMO",
+      "title": "Manager, Structural Market Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4411772536",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-senior-enterprise-liquidity-ri",
+      "company": "TD",
+      "title": "Senior Enterprise Liquidity Risk Analyst (4594) TD",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4410576459",
+      "selection_mode": "manual"
+    }
+  ],
+  "new_entries": [
+    {
+      "id": "auto-scotiabank-manager-balance-sheet-market-r",
+      "company": "Scotiabank",
+      "title": "Manager, Balance Sheet Market Risk - Toronto, ON",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://jobs.scotiabank.com/job/Toronto-Manager%2C-Balance-Sheet-Market-Risk-Toronto%2C-ON-ON-M5H-0B4/600323317/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-associate-director-alm-18-mont",
+      "company": "Scotiabank",
+      "title": "Associate Director, ALM (18 Month Contract)",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/associate-director-alm-18-month-contract-at-scotiabank-4416572126",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-manager-balance-sheet-and-liqu",
+      "company": "RBC",
+      "title": "Manager, Balance Sheet and Liquidity Risk Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/manager-balance-sheet-and-liquidity-risk-model-validation-at-rbc-4419814041",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-capital-markets-model-",
+      "company": "BMO",
+      "title": "Manager, Capital Markets Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Specialist--Capital-Markets-Model-Validation_R260010913",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-director-model-validation",
+      "company": "BMO",
+      "title": "Director, Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Director--Model-Validation_R260010757-1",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cibc-senior-director-funding-and-li",
+      "company": "CIBC",
+      "title": "Senior Director, Funding and Liquidity Risk Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Director--Funding-and-Liquidity-Risk-Management_2610965",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-senior-director-total-portfoli",
+      "company": "HOOPP",
+      "title": "Senior Director, Total Portfolio Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Senior-Director--Total-Portfolio-Risk_JR102408",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-principal-total-portfolio",
+      "company": "HOOPP",
+      "title": "Principal, Total Portfolio",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Principal--Total-Portfolio_JR102327",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-analyst-senior-analyst-total-p",
+      "company": "OMERS",
+      "title": "Analyst/Senior Analyst, Total Plan Risk Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst-Senior-Analyst--Risk-Analytics_JR-7887",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ontario-teachers-pen-director-total-fund-management",
+      "company": "Ontario Teachers' Pension Plan",
+      "title": "Director - Total Fund Management, Investment Analytics",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Director---Total-Fund-Management--Investment-Analytics_6993",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-senior-associate-dynamic-portf",
+      "company": "CPP Investments",
+      "title": "Senior Associate, Dynamic Portfolio Management (12-month Contract)",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Associate--Dynamic-Portfolio-Management--12-month-Contract-_JR00401",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-managing-director-enterprise-r",
+      "company": "CPP Investments",
+      "title": "Managing Director, Enterprise Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Managing-Director--Enterprise-Risk_JR00208",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-manulife-analyst-global-asset-liability",
+      "company": "Manulife",
+      "title": "Analyst, Global Asset Liability Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Insurers",
+      "url": "https://manulife.wd3.myworkdayjobs.com/job/Toronto-Ontario/Analyst--Global-Asset-Liability-Management_JR26051056",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-deloitte-canada-consultant-senior-consultant-c",
+      "company": "Deloitte Canada",
+      "title": "Consultant/Senior Consultant, Corporate Treasury Modeling and Advisory",
+      "score": 9,
+      "tier": 1,
+      "sector": "Big 4 Risk Advisory",
+      "url": "https://careers.deloitte.ca/job/Toronto%2C-ON-ConsultantSenior-Consultant%2C-Corporate-Treasury-Modeling-and-Advisory-ON-M5C-3G7/1363768600/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ivari-avp-asset-liability-management",
+      "company": "ivari",
+      "title": "AVP, Asset Liability Management",
+      "score": 9,
+      "tier": 1,
+      "sector": "Canadian Insurers",
+      "url": "https://ca.linkedin.com/jobs/view/avp-asset-liability-management-at-ivari-canada-4395156441",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-manager-balance-sheet-market-r-9",
+      "company": "Scotiabank",
+      "title": "Manager, Balance Sheet Market Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4423968867",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-healthcare-of--senior-director-model-validati",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "title": "Senior Director, Model Validation",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4414643852",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-healthcare-of--senior-director-total-portfoli",
+      "company": "HOOPP (Healthcare of Ontario Pension Plan)",
+      "title": "Senior Director, Total Portfolio Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4414654470",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-associate-director-alm-strateg",
+      "company": "Scotiabank",
+      "title": "Associate Director, ALM Strategy",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4424008899",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-eq-bank-senior-director-asset-and-liab",
+      "company": "EQ Bank",
+      "title": "Senior Director, Asset and Liability Management (ALM)",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4408200851",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-senior-manager-balance-sheet-a",
+      "company": "RBC",
+      "title": "Senior Manager, Balance Sheet and Liquidity Risk",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4402692951",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-mercury-irrbb-manager",
+      "company": "Mercury",
+      "title": "IRRBB Manager",
+      "score": 9,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4409603191",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-scotiabank-senior-manager-liquidity-risk",
+      "company": "Scotiabank",
+      "title": "Senior Manager, Liquidity Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://jobs.scotiabank.com/job/Toronto-Senior-Manager%2C-Liquidity-Risk-ON-M5H-0B4/600441017/",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-manager-irrbb-measurement",
+      "company": "RBC",
+      "title": "Manager, IRRBB Measurement",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://ca.linkedin.com/jobs/view/manager-irrbb-measurement-at-rbc-4419191922",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-bank-senior-manager-group-risk-capi",
+      "company": "TD Bank",
+      "title": "Senior Manager, Group Risk, Capital Oversight (4456)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Group-Risk--Capital-Oversight--4456-_R_1489394",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-bank-treasury-manager-wholesale-liq",
+      "company": "TD Bank",
+      "title": "Treasury Manager - Wholesale Liquidity Implementation",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://td.wd3.myworkdayjobs.com/job/Toronto-Ontario/Treasury-Manager---Wholesale-Liquidity-Implementation_R_1490916",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-risk-governance-and-co",
+      "company": "BMO",
+      "title": "Manager, Risk Governance and Controls",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Risk-Governance-and-Controls_R260015267-1",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-senior-manager-credit-risk-mod",
+      "company": "BMO",
+      "title": "Senior Manager, Credit Risk Model Validation",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Senior-Manager--Credit-Risk-Model-Validation_R260011262",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-integrated-risk-insigh",
+      "company": "BMO",
+      "title": "Manager, Integrated Risk Insights, Risk Appetite & Portfolio Management",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://bmo.wd3.myworkdayjobs.com/job/Toronto-ON-CAN/Manager--Integrated-Risk-Insights--Risk-Appetite---Portfolio-Management_R260015152",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cibc-senior-manager-non-trading-mar",
+      "company": "CIBC",
+      "title": "Senior Manager, Non-Trading Market Risk (12-Month Secondment/Contract)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Big 6 Banks",
+      "url": "https://cibc.wd3.myworkdayjobs.com/job/Toronto-ON/Senior-Manager--Non-Trading-Market-Risk--12-Month-Secondment-Contract-_2609197",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-hoopp-vice-president-private-markets",
+      "company": "HOOPP",
+      "title": "Vice President, Private Markets Finance & Valuations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://hoopp.wd10.myworkdayjobs.com/job/Toronto-Ontario-Canada/Vice-President--Private-Markets-Finance---Valuations--E1-_JR102197",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-technical-analyst-valuations-a",
+      "company": "OMERS",
+      "title": "Technical Analyst, Valuations & Analytics",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Technical-Analyst--Valuations---Analytics_JR-7788",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-senior-analyst-financial-plann",
+      "company": "OMERS",
+      "title": "Senior Analyst, Financial Planning & Analysis",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Analyst--Financial-Planning---Analysis_JR-7938",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-omers-senior-manager-performance-rep",
+      "company": "OMERS",
+      "title": "Senior Manager, Performance Reporting and Attribution",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://omers.wd3.myworkdayjobs.com/job/Toronto-Ontario/Senior-Manager--Performance-Reporting-and-Attribution_JR-8094",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-ontario-teachers-pen-senior-associate-corporate-fin",
+      "company": "Ontario Teachers' Pension Plan",
+      "title": "Senior Associate, Corporate Finance (12 month contract)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://otppb.wd3.myworkdayjobs.com/job/Toronto-Canada/Senior-Associate--Corporate-Finance--12-month-contract-_6980",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-senior-analyst-credit-investme",
+      "company": "CPP Investments",
+      "title": "Senior Analyst, Credit Investment Operations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Senior-Analyst--Credit-Investment-Operations_JR00450",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-cpp-investments-manager-investment-structure-m",
+      "company": "CPP Investments",
+      "title": "Manager, Investment Structure Management",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://cppib.wd10.myworkdayjobs.com/job/Toronto/Manager--Investment-Structuring-and-Digital-Innovation_JR00166",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-caat-pension-plan-senior-analyst-investment-oper",
+      "company": "CAAT Pension Plan",
+      "title": "Senior Analyst, Investment Operations",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Pension Funds",
+      "url": "https://caatpension.wd10.myworkdayjobs.com/job/Toronto-ON/Senior-Analyst--Investment-Operations_JR100139",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-rbc-global-asset-man-senior-manager-pension-investm",
+      "company": "RBC Global Asset Management",
+      "title": "Senior Manager – Pension Investments",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Asset Managers",
+      "url": "https://ca.linkedin.com/jobs/view/senior-manager-%E2%80%93-pension-investments-at-rbc-4421270599",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-canada-infrastructur-director-investment-risk",
+      "company": "Canada Infrastructure Bank",
+      "title": "Director, Investment Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "Canadian Asset Managers",
+      "url": "https://cib-bic.ca/en/jobs/?gh_jid=5022805008",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-tmx-group-senior-analyst-quantitative-mo",
+      "company": "TMX Group",
+      "title": "Senior Analyst, Quantitative Model Validation (Model Vetting)",
+      "score": 8,
+      "tier": 1,
+      "sector": "Market Infrastructure",
+      "url": "https://ca.linkedin.com/jobs/view/senior-analyst-quantitative-model-validation-model-vetting-at-tmx-group-4418823820",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-moody-s-corporation-assc-dir-actuarial-client-supt",
+      "company": "Moody's Corporation",
+      "title": "Assc Dir-Actuarial Client Supt",
+      "score": 8,
+      "tier": 1,
+      "sector": "Analytics & Risk Vendors",
+      "url": "https://ca.linkedin.com/jobs/view/assc-dir-actuarial-client-supt-at-moody-s-corporation-4419481346",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-goeasy-ltd-director-treasury-analytics",
+      "company": "goeasy Ltd.",
+      "title": "Director, Treasury Analytics",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4351596306",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-koho-treasury-manager",
+      "company": "KOHO",
+      "title": "Treasury Manager",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4406800213",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-bmo-manager-structural-market-risk",
+      "company": "BMO",
+      "title": "Manager, Structural Market Risk",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4411772536",
+      "selection_mode": "manual"
+    },
+    {
+      "id": "auto-td-senior-enterprise-liquidity-ri",
+      "company": "TD",
+      "title": "Senior Enterprise Liquidity Risk Analyst (4594) TD",
+      "score": 8,
+      "tier": 1,
+      "sector": "",
+      "url": "https://www.linkedin.com/jobs/view/4410576459",
+      "selection_mode": "manual"
+    }
+  ]
+}

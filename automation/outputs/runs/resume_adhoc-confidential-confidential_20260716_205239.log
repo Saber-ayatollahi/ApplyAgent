@@ -1,0 +1,19 @@
+# resume_adhoc-confidential-confidential
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-confidential-confidential --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-confidential-confidential.txt
+# started: 2026-07-16T20:52:39.824472
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Confidential @ Confidential (JD 2795 chars)…
+  [tailor] claude-opus-4-8 cost $0.177 (in=11082, out=4858, cache_read=0)
+  [tailor] claude-sonnet-5 cost $0.255 (in=4921, out=16000, cache_read=0)
+  [verify] output failed JSON parse (no JSON object found in model output); retrying once…
+  [tailor] claude-sonnet-5 cost $0.255 (in=5007, out=16000, cache_read=21950)
+[resume_agent] validity pass skipped (no JSON object found in model output); using first draft.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:05<00:00,  5.45s/it]100%|██████████| 1/1 [00:06<00:00,  6.00s/it]
+[resume_agent] 2 ATS keyword(s) missing (macroeconomic, emerging markets); revising once…
+  [tailor] claude-sonnet-5 cost $0.074 (in=2764, out=4412, cache_read=21950)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.46s/it]100%|██████████| 1/1 [00:03<00:00,  3.50s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.03s/it]100%|██████████| 1/1 [00:01<00:00,  1.04s/it]
+[resume_agent] tracker linked (resume_file + ATS 13/13)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-16_Confidential_Investment-Director
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-16_Confidential_Investment-Director

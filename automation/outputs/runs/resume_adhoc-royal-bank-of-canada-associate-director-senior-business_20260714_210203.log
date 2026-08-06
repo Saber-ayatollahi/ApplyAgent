@@ -1,0 +1,19 @@
+# resume_adhoc-royal-bank-of-canada-associate-director-senior-business
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-royal-bank-of-canada-associate-director-senior-business --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-royal-bank-of-canada-associate-director-senior-business.txt
+# started: 2026-07-14T21:02:03.684620
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Associate Director, Senior Business Analyst (Capital Markets) @ Royal Bank of Canada (JD 9004 chars)…
+  [tailor] claude-opus-4-7 cost $0.599 (in=13029, out=5386, cache_read=0)
+  [tailor] claude-sonnet-4-6 cost $0.086 (in=3770, out=5012, cache_read=0)
+  [verify] output failed JSON parse (Invalid \escape: line 32 column 289 (char 1120)); retrying once…
+  [tailor] claude-sonnet-4-6 cost $0.078 (in=3834, out=4435, cache_read=14748)
+[resume_agent] validity pass applied.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:07<00:00,  7.70s/it]100%|██████████| 1/1 [00:07<00:00,  7.80s/it]
+[resume_agent] 1 ATS keyword(s) missing (client value measurement); revising once…
+  [tailor] claude-sonnet-4-6 cost $0.033 (in=1910, out=1823, cache_read=14748)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:02<00:00,  2.25s/it]100%|██████████| 1/1 [00:02<00:00,  2.33s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.86s/it]100%|██████████| 1/1 [00:01<00:00,  1.87s/it]
+[resume_agent] tracker linked (resume_file + ATS 13/13)
+[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_Royal-Bank-of-Canada_Associate-Director-Senior-Business-Analy
+RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_Royal-Bank-of-Canada_Associate-Director-Senior-Business-Analy

@@ -1,8 +1,0 @@
-# gmail_fetch
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\gmail_fetch.py --days 30
-# started: 2026-05-18T20:07:00.275120
-
-[gmail_fetch] \u2713 authenticated as saber.ayatollahi@gmail.com — fetching alerts from last 30 days...
-[gmail_fetch] harvested 0 raw alert row(s)
-[gmail_fetch] after tracker dedup: 0 kept (-0 already in tracker)
-[gmail_fetch] no new rows to write. Your inbox may have no recent alerts, or all alerts are already in the tracker.

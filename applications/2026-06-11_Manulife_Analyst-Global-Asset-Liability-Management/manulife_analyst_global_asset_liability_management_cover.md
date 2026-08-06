@@ -1,0 +1,16 @@
+Dear Hiring Team,
+
+At Moody's Analytics I currently hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional portfolios in the $5–25bn range per engagement — the precise analytical discipline Manulife's Global ALM group is built around. I would like to be considered for the Analyst, Global Asset Liability Management role.
+
+My day-to-day work maps directly onto the position's core responsibilities. I analyze and explain movement in duration gap, earnings risk, and VaR-style sensitivities under parallel and non-parallel rate shocks, and prepare updated risk-position summaries and market-driven gain/loss commentary for senior management — matching the forecasting and reporting accountability in this role. I led the design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, and re-engineered manual spreadsheet workflows into auditable Python pipelines — the kind of ALM systems and process-improvement ownership the role explicitly calls for. I also interface with Heads of Risk and investment stakeholders on emerging business issues — new mandates, restructuring, segmentation changes — translating their requirements into modelling and reporting changes, which aligns with the cross-functional partnership responsibilities described. At EY I delivered IFRS 17 and IFRS 9 transformation for Canadian and international insurers alongside actuarial, finance, and IT teams; at Ortec Finance I built stochastic scenario generators and LDI and hedging analytics for pension clients, including a three-plan university pension merger I co-led end-to-end and presented to the investment committee.
+
+What draws me specifically to Manulife is the breadth of the General Fund — public and private bonds, mortgages, private equity, real estate, and infrastructure — and the central role Global ALM plays in shaping investment strategy and measuring IFRS 17 economic and accounting risk metrics across that book. That is the practitioner environment I want to be working in. I hold the CFA charter and dual MSc degrees from Western University.
+
+I am Toronto-based, available for interviews immediately, and can start approximately four weeks after offer acceptance. References are available on request. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA
+
+---
+
+**Before submitting:** Honest gaps to own in interview, NOT in the resume: (1) no direct insurer-side production ALM seat - all insurer exposure is via EY IFRS 17 transformation and Moody's client delivery, not running Manulife-style General Fund reporting; (2) IFRS 17 experience is transformation/advisory at EY, not production cycle reporting; (3) no hands-on with Manulife's specific ALM stack or actuarial liability modelling platforms (e.g., AXIS, Moody's AXIS-adjacent tools beyond PFaroe). Compensating strengths to lean on: delegated ALM sign-off at Moody's, LDI/duration/hedging depth from Ortec, dual MSc + CFA, Python pipeline modernization. This is junior to the band Saber typically targets (Analyst vs. Senior Manager/Director) - confirm comp band and progression timeline before advancing; only worth pursuing if Manulife frames it as a fast-track into Manager-level ALM.

@@ -209,6 +209,12 @@ def load_crm():
     return {}
 
 
+# Web-scan freshness gate: the Refresh / Full-scrape buttons stay disabled while
+# the latest web scan is younger than this many hours, to avoid needless
+# re-scrapes. Lowered 24 → 8 so a re-scrape is allowed once the scan is 8h+ old.
+SCRAPE_FRESH_HOURS = 8
+
+
 def _web_scan_age_hours() -> float | None:
     """Age of the most recent web scan in hours, or None if no scan exists."""
     files = sorted(
@@ -1986,9 +1992,36 @@ def _find_tailor_docs(job: dict) -> list:
 
 def _resume_tier() -> str:
     """The session-wide cost/quality tier for resume_agent (set via the
-    selector in the Kanban inspector). Default 'balanced' = Opus draft +
-    Sonnet validity check (~$0.60), vs 'max' Opus-everything (~$1.30)."""
+    model picker on the Tailor cards). Default 'balanced' = Opus 4.8 draft +
+    Sonnet 5 validity check."""
     return st.session_state.get("_resume_tier", "balanced")
+
+
+# Direct model picker — maps the chosen draft model to the resume_agent tier
+# that runs it (each keeps the Sonnet 5 validity/keyword check on). Every Tailor
+# button reads _resume_tier(), so the picker just writes that session key.
+_MODEL_PICK = {
+    "🧠 Claude Opus 4.8 · recommended (~$0.25)": "balanced",
+    "🪶 Claude Fable 5 · strongest (~$0.45)": "fable",
+    "⚡ Claude Sonnet 5 · fastest & cheapest (~$0.20)": "cheap",
+}
+_TIER_TO_MODEL_LABEL = {v: k for k, v in _MODEL_PICK.items()}
+
+
+def _render_model_picker(widget_key: str) -> None:
+    """Render the draft-model dropdown and store the mapped tier session-wide.
+    Safe to render on more than one card — each call uses a distinct widget
+    key but reads/writes the shared _resume_tier state."""
+    _labels = list(_MODEL_PICK)
+    _cur_tier = st.session_state.get("_resume_tier", "balanced")
+    _cur_label = _TIER_TO_MODEL_LABEL.get(_cur_tier, _labels[0])
+    _pick = st.selectbox(
+        "Resume model", _labels, index=_labels.index(_cur_label),
+        key=widget_key,
+        help="Which Claude model drafts the resume when you hit ✨ Tailor. "
+             "Each option runs a Sonnet 5 validity/keyword check. Prices are "
+             "typical per-resume; actual scales with JD length.")
+    st.session_state["_resume_tier"] = _MODEL_PICK[_pick]
 
 
 def _find_application_folder(job: dict):
@@ -2440,6 +2473,7 @@ def render_adhoc_tailor(tracker_path):
         _role = _c2.text_input("Role / title", key="_adhoc_role")
         _jd = st.text_area("Job description (paste, or fetched above)",
                            key="_adhoc_jd", height=150)
+        _render_model_picker("_model_pick_adhoc")
         _key_ok = api_key.is_key_valid()
         _co_ok = bool((_co or "").strip())
         _role_ok = bool((_role or "").strip())
@@ -3941,6 +3975,70 @@ sys.path.insert(0, str(ROOT / "automation"))
 import worklist  # noqa: E402
 
 
+def _wl_identity_keys(row):
+    """Identity keys for tracker/scored matching: worklist.norm_url plus a
+    Workday host+reqid key (so one posting under different Workday URL spellings
+    dedups). Defined locally rather than calling worklist.identity_keys so the
+    promote matcher keeps working even if an older worklist.py (without that
+    helper) is loaded. Mirrors worklist.identity_keys / auto_promote."""
+    keys = set()
+    try:
+        _nu = worklist.norm_url(row)
+    except Exception:
+        _nu = ""
+    if _nu:
+        keys.add(_nu)
+    _low = str(row.get("link") or row.get("url") or row.get("job_url") or "").strip().lower()
+    if "myworkdayjobs.com" in _low:
+        try:
+            from urllib.parse import urlsplit
+            import re as _re
+            _p = urlsplit(_low)
+            _seg = _p.path.rstrip("/").rsplit("/", 1)[-1]
+            if "_" in _seg:
+                _reqid = _seg.rsplit("_", 1)[-1].strip()
+                _core = _re.sub(r"-\d+$", "", _reqid)
+                if _re.search(r"\d", _core):
+                    _reqid = _core
+                if _reqid:
+                    keys.add("wd::%s::%s" % (_p.netloc, _reqid))
+        except Exception:
+            pass
+    return keys
+
+
+# Statuses that mean "the user already acted on this role" — the repost guard
+# below only fires against these. Mirrors auto_promote._APPLIED_STATUSES.
+_WL_APPLIED_STATUSES = ("Applied", "Recruiter_Screen", "Phone_Screen",
+                        "Take_Home", "Onsite", "Offer")
+
+
+def _wl_ct_key(row) -> str:
+    """Brand-canonical company + normalized title ('co::title'), '' if either
+    side is blank. Mirrors auto_promote._company_title_key — keep the two in
+    lockstep, because this is what makes the promote table agree with what
+    auto_promote will actually do.
+
+    URL identity alone cannot see a REPOST: the same role carries a Workday
+    req on the employer's ATS and a fresh numeric id on LinkedIn, so an
+    already-applied role kept coming back as a "new" candidate. Company goes
+    through canonical_brand since boards spell one employer several ways
+    (legal entity on the ATS, brand on LinkedIn), and titles are HTML-
+    unescaped so a tracker row holding "Risk Analytics &amp; Modelling"
+    matches the scraped "Risk Analytics & Modelling"."""
+    import html as _html
+    try:
+        from brand_aliases import canonical_brand as _canon
+    except Exception:  # pragma: no cover - brand map optional
+        def _canon(s):
+            return (s or "").lower()
+    _co = _canon(_html.unescape(str(row.get("company") or "")))
+    _ti = _html.unescape(str(row.get("title") or "")).lower()
+    _co = re.sub(r"[^a-z0-9]+", " ", str(_co).lower()).strip()
+    _ti = re.sub(r"[^a-z0-9]+", " ", _ti).strip()
+    return f"{_co}::{_ti}" if _co and _ti else ""
+
+
 def latest_scan() -> Path | None:
     """Scorer/funnel input: working set -> scrape source -> newest scan."""
     return worklist.effective_scan()
@@ -4875,7 +4973,7 @@ if page == "🏠 Dashboard":
         st.markdown("#### ⚡ Quick actions")
         qa1, qa2, qa3, qa4, qa5 = st.columns([2, 2, 2, 2, 2])
         _dash_scrape_age_h = _web_scan_age_hours()
-        _dash_scrape_fresh = _dash_scrape_age_h is not None and _dash_scrape_age_h < 24
+        _dash_scrape_fresh = _dash_scrape_age_h is not None and _dash_scrape_age_h < SCRAPE_FRESH_HOURS
         _counts = _target_counts()
         with qa1:
             # Single scrape action — always the FULL company list. The old
@@ -6474,7 +6572,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _nr_key_ok = api_key.is_key_valid()
             _nr_can_run = not any_work_active
             _nr_scrape_age = _web_scan_age_hours()
-            _nr_scrape_fresh = _nr_scrape_age is not None and _nr_scrape_age < 24
+            _nr_scrape_fresh = _nr_scrape_age is not None and _nr_scrape_age < SCRAPE_FRESH_HOURS
             _nr_brief_today = _today_brief_exists()
             _nr_help = ("Scrape → rebuild worklist → score → morning brief. "
                         "~25 min, ~$0.03. Requires API key.")
@@ -6823,6 +6921,70 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                 )
                 st.rerun()
 
+            # ── Reset scrape list ───────────────────────────────────────
+            # One-click "start fresh": delete every raw scan (web + Gmail)
+            # AND the derived worklist pool, then rebuild to an empty list so
+            # the funnel/Worklist card reset to 0 in one step (no separate
+            # Admin trip + manual rebuild). Reversible only via re-scraping —
+            # so it sits behind a confirm. Does NOT touch the tracker, CRM,
+            # caches, or url_history (rotate that separately in Admin if you
+            # want the next scrape to revisit already-seen URLs).
+            st.markdown("---")
+            st.caption(
+                "**Reset scrape list** — clears all scans + the worklist "
+                "pool and rebuilds to empty. Tracker, CRM, and caches are "
+                "untouched. Use this to start a clean scrape from scratch."
+            )
+            # Nonce in the checkbox key lets a successful reset remount the
+            # widget UNticked on the next run. Streamlit forbids writing to a
+            # widget's session_state key after it's instantiated, so we can't
+            # just set it False — bumping the nonce is the supported pattern.
+            _reset_nonce = st.session_state.get("_refresh_reset_nonce", 0)
+            _reset_ok = st.checkbox(
+                "Confirm — delete all scans + worklist",
+                key=f"refresh_reset_worklist_confirm_{_reset_nonce}",
+                disabled=any_work_active,
+            )
+            if st.button(
+                "🗑 Reset scrape list",
+                type="primary",
+                width='stretch',
+                disabled=any_work_active or not _reset_ok,
+                key="refresh_reset_worklist_go",
+                help=("Disabled while another job is running."
+                      if any_work_active else
+                      "Tick the confirm box to enable." if not _reset_ok
+                      else "Delete all scans + worklist, then rebuild empty."),
+            ):
+                try:
+                    import reset_ops as _reset_ops  # noqa: WPS433
+                except Exception:
+                    from automation import reset_ops as _reset_ops  # noqa: WPS433
+                try:
+                    _plan = _reset_ops.plan_clear_scans()
+                    _res = _reset_ops.execute(_plan)
+                    # Rebuild so a valid empty worklist.json exists rather
+                    # than a missing file (cleaner for every reader).
+                    _rs = worklist.rebuild()
+                    st.cache_data.clear()
+                    if _res.errors:
+                        st.error(
+                            f"Deleted {_res.deleted_files} file(s); "
+                            f"{len(_res.errors)} error(s): "
+                            + "; ".join(_res.errors[:3])
+                        )
+                    else:
+                        st.toast(
+                            f"🗑 Reset — deleted {_res.deleted_files} file(s), "
+                            f"worklist now {_rs['total']} rows.",
+                            icon="✅",
+                        )
+                    # Remount the confirm checkbox unticked (see nonce note).
+                    st.session_state["_refresh_reset_nonce"] = _reset_nonce + 1
+                    st.rerun()
+                except Exception as _rexc:  # noqa: BLE001
+                    st.error(f"Reset failed: {_rexc}")
+
     # ---------- Funnel data collection ----------
     scan_f = latest_scan()
     scored_f = latest_scored()
@@ -7092,6 +7254,12 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
     # process's promote subprocess, the auto_promote CLI, another tab) is
     # reflected on the next render instead of after the TTL expires.
     _tracker_urls = set()
+    # Repost-guard index: company+title of rows the user already ACTED ON.
+    # Kept separate from _tracker_urls (and deliberately narrower) because two
+    # genuinely different openings can share a title — only rows already
+    # applied to / interviewing for are safe to collapse this way. Mirrors
+    # auto_promote's applied_ct index so this table predicts what promote does.
+    _tracker_ct = set()
     try:
         _tr_mtime = TRACKER.stat().st_mtime if TRACKER.exists() else 0.0
         if _tr_mtime > st.session_state.get("_tracker_mtime_seen", 0.0):
@@ -7099,9 +7267,18 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             st.session_state["_tracker_mtime_seen"] = _tr_mtime
         _tr_data = load_tracker()
         for _j in _tr_data.get("jobs") or []:
-            _c = worklist.norm_url(_j)
-            if _c:
-                _tracker_urls.add(_c)
+            # Index BOTH norm_url and the Workday host+reqid key. A manually
+            # added Workday role often carries the browser's /en-US/ + %2C URL
+            # while the scraper stores the canonical short form; those yield
+            # different norm_url values, so without the reqid key an already-
+            # applied role keeps reappearing in the promote list.
+            _tracker_urls |= _wl_identity_keys(_j)
+            if _j.get("archived"):
+                continue
+            if _j.get("date_applied") or _j.get("status") in _WL_APPLIED_STATUSES:
+                _ct = _wl_ct_key(_j)
+                if _ct:
+                    _tracker_ct.add(_ct)
     except Exception:
         pass
 
@@ -7648,6 +7825,22 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             "preflight failed, or all roles dropped at stage 1.")
                 else:
                     # Flatten — column order: score → identity → details → metadata
+                    # Import level_for on its OWN so a stale/older level_tagger
+                    # (missing OUT_OF_BAND_LEVELS) can't take the level tagger
+                    # down with it — a grouped import fails atomically.
+                    try:
+                        from level_tagger import level_for as _level_for
+                    except Exception:
+                        _level_for = lambda _t="": ""
+                    try:
+                        from level_tagger import OUT_OF_BAND_LEVELS as _OOB_LEVELS
+                    except Exception:
+                        # Inline fallback so the Focus-band filter still works
+                        # even if level_tagger hasn't synced the constant yet.
+                        _OOB_LEVELS = frozenset({
+                            "Intern / Co-op", "Analyst", "Associate",
+                            "MD / Head", "C-suite / Partner",
+                        })
                     rows = []
                     for r in results:
                         f = r.get("fit") or {}
@@ -7656,10 +7849,15 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             "fit": f.get("fit_score", 0),
                             "verdict": f.get("fit_verdict", ""),
                             "tier": f.get("tier", 4),
-                            "in_tracker": "✅" if worklist.norm_url(r) in _tracker_urls else "",
+                            "in_tracker": "✅" if (
+                                (_wl_identity_keys(r) & _tracker_urls)
+                                or _wl_ct_key(r) in _tracker_ct) else "",
                             "company": r.get("company", ""),
                             "title": r.get("title", ""),
+                            "level": _level_for(r.get("title", "")),
                             "sector": r.get("sector", ""),
+                            "lane": r.get("lane", ""),
+                            "geo": r.get("geo", ""),
                             "variants": "/".join(f.get("applicable_resume_variants") or []),
                             "summary": f.get("summary", ""),
                             "gaps": ", ".join(f.get("skill_gaps") or []),
@@ -7671,9 +7869,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     df = pd.DataFrame(rows).sort_values(["fit", "tier"],
                                                          ascending=[False, True])
 
-                    f1, f2, f3, f4 = st.columns([2, 2, 2, 2])
+                    f1, f2, f3, f4, f5 = st.columns([2, 2, 2, 2, 2])
                     with f1:
-                        min_fit = st.slider("Min fit score", 1, 10, 7, key="triage_min")
+                        fit_lo, fit_hi = st.slider(
+                            "Fit score range", 1, 10, (7, 10),
+                            key="triage_fit_range",
+                            help="Show roles scored between these bounds "
+                                 "(inclusive). Drag either handle.")
                     with f2:
                         _verdict_opts = sorted(df["verdict"].dropna().unique())
                         _verdict_defaults = [v for v in ["apply_now", "tailor_and_apply"]
@@ -7686,17 +7888,91 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             "Sector", sorted(df["sector"].dropna().unique()),
                             key="triage_sector")
                     with f4:
+                        level_filter = st.multiselect(
+                            "Level", sorted(df["level"].dropna().unique()),
+                            key="triage_level",
+                            help="Seniority inferred from the title — hide junior "
+                                 "roles (Analyst/Associate) to see your band.")
+                        focus_band = st.checkbox(
+                            "Focus band only", value=True, key="triage_focus_band",
+                            help="Hide out-of-band levels — plain Analyst/Associate "
+                                 "& Intern below, MD/Head & C-suite above. Keeps "
+                                 "Senior Analyst/Associate and Manager → VP/Sr "
+                                 "Director. Uncheck to see every level.")
+                        hide_tracked = st.checkbox(
+                            "Hide already in tracker", value=True,
+                            key="triage_hide_tracked",
+                            help="Hide roles already in your tracker (promoted, "
+                                 "applied, or rejected) so triage shows only new "
+                                 "candidates. Uncheck to see them.")
+                    with f5:
                         search = st.text_input("Search company/title", key="triage_q")
+                    g1, g2, g3 = st.columns([2, 2, 2])
+                    with g1:
+                        lane_filter = st.multiselect(
+                            "Lane", sorted(df["lane"].dropna().unique()),
+                            key="triage_lane",
+                            help="A=Solutions Eng; B=Pension/Buy-Side; "
+                                 "Floor=Bank Risk/ALM/Val; Side=Fintech.")
+                    with g2:
+                        geo_filter = st.multiselect(
+                            "Geo", sorted(df["geo"].dropna().unique()),
+                            key="triage_geo",
+                            help="Canada (GTA/other), Remote, US-remote, "
+                                 "US on-site (TN), Other.")
+                    with g3:
+                        # Insertion order == dropdown order. The 1–4 day windows
+                        # sit up top because a daily scrape makes "what landed
+                        # since I last looked" the common question; the longer
+                        # windows stay for back-filling a gap.
+                        _DATE_PRESETS = {"Any time": None,
+                                         "Last 1 day": 1, "Last 2 days": 2,
+                                         "Last 3 days": 3, "Last 4 days": 4,
+                                         "Last 7 days": 7,
+                                         "Last 14 days": 14, "Last 30 days": 30,
+                                         "Last 60 days": 60, "Last 90 days": 90}
+                        _date_choice = st.selectbox(
+                            "Posted within", list(_DATE_PRESETS),
+                            key="triage_posted_within",
+                            help="Filters on the posting date; falls back to "
+                                 "the date the scraper found the row when the "
+                                 "board didn't expose one. Rows with no date "
+                                 "at all are hidden while a window is set.")
+                        _date_days = _DATE_PRESETS[_date_choice]
 
-                    view = df[df["fit"] >= min_fit]
+                    view = df[(df["fit"] >= fit_lo) & (df["fit"] <= fit_hi)]
+                    if _date_days is not None:
+                        # ISO date strings compare correctly as strings; use
+                        # posted_date when present, else the scraper found-at
+                        # date (both truncated to YYYY-MM-DD).
+                        _cutoff = (date.today()
+                                   - timedelta(days=_date_days)).isoformat()
+                        _posted = view["posted"].astype(str).str[:10]
+                        _found = view["found"].astype(str).str[:10]
+                        _eff = _posted.where(_posted.str.len() == 10, _found)
+                        view = view[_eff >= _cutoff]
                     if verdict_filter:
                         view = view[view["verdict"].isin(verdict_filter)]
                     if sector_filter:
                         view = view[view["sector"].isin(sector_filter)]
+                    if level_filter:
+                        view = view[view["level"].isin(level_filter)]
+                    if focus_band and _OOB_LEVELS:
+                        view = view[~view["level"].isin(_OOB_LEVELS)]
+                    if lane_filter:
+                        view = view[view["lane"].isin(lane_filter)]
+                    if geo_filter:
+                        view = view[view["geo"].isin(geo_filter)]
                     if search:
                         sl = search.lower()
                         view = view[view["company"].str.lower().str.contains(sl, na=False) |
                                     view["title"].str.lower().str.contains(sl, na=False)]
+
+                    # Count in-tracker rows before optionally hiding them, so the
+                    # caption still reports the total that matched the tracker.
+                    _in_tracker_ct = int((view["in_tracker"] == "✅").sum())
+                    if hide_tracked:
+                        view = view[view["in_tracker"] != "✅"]
 
                     # Promotable rows = visible rows not already in the
                     # tracker. (Already-tracked rows surface in the caption
@@ -7706,8 +7982,29 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
 
                     st.caption(
                         f"Showing {len(view)} of {len(df)} scored candidates "
-                        f"({len(_not_promotable)} already in tracker)"
+                        + (f"({_in_tracker_ct} already in tracker, hidden)"
+                           if hide_tracked else
+                           f"({_in_tracker_ct} already in tracker)")
                     )
+                    st.caption(
+                        "Tip: drag the divider between two column headers to "
+                        "resize any column (resets on refresh)."
+                    )
+
+                    # Sensible default widths for the text-heavy columns so
+                    # summary/gaps aren't truncated by default. Streamlit's
+                    # native drag-to-resize still works on top of these.
+                    _scored_colcfg = {
+                        "title": st.column_config.TextColumn("title", width="large"),
+                        "company": st.column_config.TextColumn("company", width="medium"),
+                        "sector": st.column_config.TextColumn("sector", width="medium"),
+                        "lane": st.column_config.TextColumn("lane", width="medium"),
+                        "geo": st.column_config.TextColumn("geo", width="medium"),
+                        "variants": st.column_config.TextColumn("variants", width="medium"),
+                        "summary": st.column_config.TextColumn("summary", width="large"),
+                        "gaps": st.column_config.TextColumn("gaps", width="large"),
+                        "url": st.column_config.LinkColumn("url"),
+                    }
 
                     if not _promotable.empty:
                         # ── Cluster A: URL-keyed selection state ──
@@ -7728,10 +8025,10 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             _promotable,
                             hide_index=True, width='stretch', height=500,
                             column_config={
+                                **_scored_colcfg,
                                 "promote": st.column_config.CheckboxColumn(
                                     "📋", help="Select to promote to tracker",
                                     default=False, width="small"),
-                                "url": st.column_config.LinkColumn("url"),
                             },
                             disabled=[c for c in _promotable.columns if c != "promote"],
                             key="scored_editor",
@@ -7803,7 +8100,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     "to the tracker (large batch)",
                                     key="scored_bulk_confirm")
 
-                            _bcol1, _bcol2 = st.columns([2, 1])
+                            _bcol1, _bcol2, _bcol3 = st.columns([2, 1, 1])
                             with _bcol1:
                                 _send_clicked = st.button(
                                     f"📋 Send {len(_sel_state)} selected to tracker",
@@ -7815,6 +8112,14 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     pipeline_state.format_preflight_caption(_bd)
                                 )
                             with _bcol2:
+                                _reject_clicked = st.button(
+                                    f"🚫 Reject {len(_sel_state)} selected",
+                                    disabled=any_work_active or not _bulk_confirmed,
+                                    key="scored_bulk_reject",
+                                    help="Record the selected roles straight to the "
+                                         "tracker as Rejected — skip the promote-then-"
+                                         "reject-in-kanban round trip.")
+                            with _bcol3:
                                 if st.button("Clear selection",
                                              key="scored_bulk_clear"):
                                     st.session_state["scoring_selected_urls"] = set()
@@ -7864,10 +8169,38 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     "ts": datetime.now().isoformat(timespec="seconds"),
                                 }
                                 st.rerun()
+
+                            if _reject_clicked:
+                                import tempfile as _tf
+                                _rt = _tf.NamedTemporaryFile(
+                                    mode="w", encoding="utf-8", suffix=".urls.txt",
+                                    delete=False, dir=str(OUT_DIR))
+                                for _u in sorted(_sel_state):
+                                    _rt.write(_u + "\n")
+                                _rt.close()
+                                _rrec = scan_runner.start_run("promote", [
+                                    sys.executable,
+                                    str(ROOT / "automation" / "auto_promote.py"),
+                                    "--only-urls", _rt.name,
+                                    "--commit", "--status", "Rejected",
+                                    "--min-score", "1",
+                                ])
+                                st.toast(f"🚫 Rejecting {len(_sel_state)} role(s)…",
+                                         icon="🚫")
+                                st.session_state["scoring_selected_urls"] = set()
+                                st.session_state["_last_launch"] = {
+                                    "run_id": _rrec.run_id, "label": "Reject selected"}
+                                st.rerun()
                     else:
-                        st.dataframe(view, hide_index=True, width='stretch',
-                                     height=500,
-                                     column_config={"url": st.column_config.LinkColumn("url")})
+                        if hide_tracked and _in_tracker_ct:
+                            st.info(
+                                f"All {_in_tracker_ct} role(s) in this view are "
+                                "already in your tracker — hidden. Uncheck "
+                                "“Hide already in tracker” to see them.")
+                        else:
+                            st.dataframe(view, hide_index=True, width='stretch',
+                                         height=500,
+                                         column_config=_scored_colcfg)
 
             # --- Sub-tab 2: dropped (rule-triage) ---------------------------
             with triage_tabs[1]:
@@ -8211,7 +8544,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             # mockup place them. Same freshness/active-run disable guards.
             _in_can_run = not any_work_active
             _in_scrape_age = _web_scan_age_hours()
-            _in_scrape_fresh = _in_scrape_age is not None and _in_scrape_age < 24
+            _in_scrape_fresh = _in_scrape_age is not None and _in_scrape_age < SCRAPE_FRESH_HOURS
             _in_gmail_age = _latest_glob_age_hours("scan_gmail_*.json")
             _in_gmail_fresh = _in_gmail_age is not None and _in_gmail_age < 1
             _in_gmail_ok = gmail_ui.is_connected()
@@ -8352,6 +8685,30 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _tr_total = _wstats.get("total", 0)
             _tr_label = (f"🎯 Run triage (free · {_tr_total} rows)" if _tr_total
                          else "🎯 Run triage (no rows)")
+            # Toggle: skip US on-site (TN) roles at triage so you do not pay to
+            # score relocate-via-TN positions. Backed by a geo-scope mute that
+            # persists and lifts cleanly; triage drops them before scoring.
+            try:
+                from automation import suppressions as _supp_tn  # noqa: WPS433
+                _TN_LABEL = "🇺🇸 US — on-site (TN)"
+                _tn_active = any(
+                    e.get("canonical_key") == _TN_LABEL.lower()
+                    for e in _supp_tn.load_active().get("geos", []))
+                _tn_new = st.checkbox(
+                    "⏭ Skip US on-site (TN) roles when scoring (save cost)",
+                    value=_tn_active, key="_vc_skip_tn",
+                    help="On: TN-visa relocation roles are dropped at triage and "
+                         "never scored. Toggle off any time to include them.")
+                if _tn_new != _tn_active:
+                    from datetime import date as _dt, timedelta as _td  # noqa: WPS433
+                    if _tn_new:
+                        _supp_tn.add_geo(_TN_LABEL, _dt.today() + _td(days=365),
+                                         "Skip TN-visa roles to save scoring cost (UI toggle)")
+                    else:
+                        _supp_tn.lift("geo", _TN_LABEL)
+                    st.rerun()
+            except Exception as _tn_exc:  # noqa: BLE001
+                st.caption(f"(TN-skip toggle unavailable: {_tn_exc})")
             if st.button(_tr_label, width="stretch", key="_vc_triage_run",
                          disabled=(any_work_active or not _tr_total),
                          help="Rule-stage only — no API cost. Produces the "
@@ -8427,6 +8784,91 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             st.dataframe(
                                 pd.DataFrame(_tp_rows), hide_index=True,
                                 width='stretch', height=380,
+                                column_config={
+                                    "url": st.column_config.LinkColumn("open")})
+
+                # Flip side of the drop preview: which rows PASSED triage and
+                # would be scored — eyeball the paid pool (and confirm a mute
+                # landed) before spending.
+                if _vc_inspect_toggle(
+                        "scoring_pool",
+                        f"👁 Which rows WILL be scored — the passed pool ({_tr_age_s})"):
+                    try:
+                        _spv = json.loads(_tr_preview.read_text(encoding="utf-8"))
+                    except Exception:
+                        _spv = {}
+                    _sp_rows = _spv.get("results") or []
+                    _scored_urls = set()
+                    try:
+                        _sc_files = sorted(OUT_DIR.glob("*_scored.json"),
+                                           key=lambda p: p.stat().st_mtime, reverse=True)
+                        if _sc_files:
+                            _scd = json.loads(_sc_files[0].read_text(encoding="utf-8"))
+                            for _sr in (_scd.get("results") or []):
+                                _su = (_sr.get("link") or _sr.get("url") or "").split("?")[0].rstrip("/").lower()
+                                if _su:
+                                    _scored_urls.add(_su)
+                    except Exception:
+                        _scored_urls = set()
+
+                    def _is_unscored(_r):
+                        _u = (_r.get("link") or _r.get("url") or "").split("?")[0].rstrip("/").lower()
+                        return bool(_u) and _u not in _scored_urls
+                    _unscored_ct = sum(1 for _r in _sp_rows if _is_unscored(_r))
+                    st.caption(
+                        f"{len(_sp_rows):,} rows passed triage · {_unscored_ct} unscored "
+                        "(would be paid), rest already cached (free). Muted sectors "
+                        "are NOT here — re-run 🎯 Run triage above to apply a mute.")
+                    _sp_only_unscored = st.checkbox(
+                        f"💲 Show only unscored (would be paid) — {_unscored_ct}",
+                        key="scoring_pool_unscored_only",
+                        help="The uncached rows a Score run pays for; the rest are "
+                             "already scored (free from cache).")
+                    if _sp_rows:
+                        try:
+                            from lane_tagger import lane_for as _lf
+                            from geo_tagger import geo_for as _gf
+                            from level_tagger import level_for as _lvl
+                        except Exception:
+                            _lf = lambda _s, _t="": ""
+                            _gf = lambda _l="": ""
+                            _lvl = lambda _t="": ""
+                        from collections import Counter as _Counter
+                        _sp_sec = _Counter((r.get("sector") or "—") for r in _sp_rows)
+                        _sp_hist = pd.DataFrame(
+                            [{"sector": k, "rows": v} for k, v in _sp_sec.most_common()])
+                        if not _sp_hist.empty:
+                            st.markdown("**Scoring pool by sector** (where the spend goes)")
+                            st.dataframe(_sp_hist, hide_index=True,
+                                         width="stretch", height=210)
+                        _sp_q = st.text_input(
+                            "Search company/title in the scoring pool",
+                            key="scoring_pool_q",
+                            placeholder="rbc / solutions engineer / ...")
+                        _sp_tbl = []
+                        for r in _sp_rows:
+                            co, ti = r.get("company", ""), r.get("title", "")
+                            if _sp_only_unscored and not _is_unscored(r):
+                                continue
+                            if _sp_q:
+                                q = _sp_q.lower()
+                                if q not in co.lower() and q not in ti.lower():
+                                    continue
+                            _sp_tbl.append({
+                                "status": "💲 paid" if _is_unscored(r) else "✅ cached",
+                                "company": co, "title": ti,
+                                "level": _lvl(ti),
+                                "sector": r.get("sector", ""),
+                                "lane": r.get("lane") or _lf(r.get("sector", ""), ti),
+                                "geo": r.get("geo") or _gf(r.get("location", "")),
+                                "location": r.get("location", ""),
+                                "url": r.get("link", ""),
+                            })
+                        st.caption(f"Showing {len(_sp_tbl):,} of {len(_sp_rows):,}")
+                        if _sp_tbl:
+                            st.dataframe(
+                                pd.DataFrame(_sp_tbl), hide_index=True,
+                                width="stretch", height=440,
                                 column_config={
                                     "url": st.column_config.LinkColumn("open")})
 
@@ -8539,6 +8981,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _sc_pre_cached = 0
             _sc_pre_needs = 0
             _sc_pre_stale_scored = 0
+            _sc_unscored_rows = []
             if _sc_tr_path.exists():
                 try:
                     import sys as _sp_sys
@@ -8581,6 +9024,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             _sc_pre_stale_scored += 1
                         if not _has_cache and not _in_sc:
                             _sc_pre_needs += 1
+                            _sc_unscored_rows.append(_r)
                 except Exception:
                     _sc_pre_total = None  # treat any failure as "no preview"
 
@@ -8654,6 +9098,76 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 "💡 Tip: the per-run cap is a safety brake. For a "
                                 "large first-pass run, raise it with "
                                 "`COST_GUARD_PER_RUN_CAP_USD` (e.g. `4`).")
+                    if _sc_unscored_rows:
+                        with st.expander(
+                                f"👁 See the {len(_sc_unscored_rows):,} unscored jobs (the paid pool)",
+                                expanded=False):
+                            try:
+                                from lane_tagger import lane_for as _ulf
+                                from geo_tagger import geo_for as _ugf
+                                from level_tagger import level_for as _ulv
+                            except Exception:
+                                _ulf = lambda _s, _t="": ""
+                                _ugf = lambda _l="": ""
+                                _ulv = lambda _t="": ""
+                            _un_df = pd.DataFrame([{
+                                "company": _r.get("company", ""),
+                                "title": _r.get("title", ""),
+                                "level": _ulv(_r.get("title", "")),
+                                "sector": _r.get("sector", ""),
+                                "lane": _r.get("lane") or _ulf(_r.get("sector", ""), _r.get("title", "")),
+                                "geo": _r.get("geo") or _ugf(_r.get("location", "")),
+                                "url": _r.get("link") or _r.get("url", ""),
+                            } for _r in _sc_unscored_rows])
+                            _uf1, _uf2, _uf3, _uf4 = st.columns(4)
+                            with _uf1:
+                                _u_lane = st.multiselect("Lane", sorted(_un_df["lane"].dropna().unique()), key="unscored_lane")
+                            with _uf2:
+                                _u_geo = st.multiselect("Geo", sorted(_un_df["geo"].dropna().unique()), key="unscored_geo")
+                            with _uf3:
+                                _u_level = st.multiselect("Level", sorted(_un_df["level"].dropna().unique()), key="unscored_level")
+                            with _uf4:
+                                _u_sector = st.multiselect("Sector", sorted(_un_df["sector"].dropna().unique()), key="unscored_sector")
+                            _u_q = st.text_input("Search company/title", key="unscored_q")
+                            _uview = _un_df
+                            if _u_lane:
+                                _uview = _uview[_uview["lane"].isin(_u_lane)]
+                            if _u_geo:
+                                _uview = _uview[_uview["geo"].isin(_u_geo)]
+                            if _u_level:
+                                _uview = _uview[_uview["level"].isin(_u_level)]
+                            if _u_sector:
+                                _uview = _uview[_uview["sector"].isin(_u_sector)]
+                            if _u_q:
+                                _ql = _u_q.lower()
+                                _uview = _uview[_uview["company"].str.lower().str.contains(_ql, na=False) | _uview["title"].str.lower().str.contains(_ql, na=False)]
+                            st.caption(f"Showing {len(_uview):,} of {len(_un_df):,} unscored — tick rows, then Score selected.")
+                            _uview = _uview.copy()
+                            _uview.insert(0, "score", False)
+                            _uedit = st.data_editor(
+                                _uview, hide_index=True, width="stretch", height=340,
+                                column_config={
+                                    "score": st.column_config.CheckboxColumn("🎯", help="Tick to score this row", default=False, width="small"),
+                                    "url": st.column_config.LinkColumn("open"),
+                                },
+                                disabled=[c for c in _uview.columns if c != "score"],
+                                key="unscored_editor")
+                            _u_sel_urls = [u for u in _uedit.loc[_uedit["score"] == True, "url"].tolist() if u]
+                            _u_score_click = st.button(
+                                f"🎯 Score selected ({len(_u_sel_urls)} · ~${len(_u_sel_urls) * 0.005:.2f})",
+                                type="primary",
+                                disabled=(not _u_sel_urls) or any_work_active or not api_key.is_key_valid(),
+                                key="unscored_score_btn",
+                                help="Scores ONLY the ticked rows and MERGES results into your scored list — existing scores are preserved.")
+                            if _u_score_click and _u_sel_urls:
+                                _uscmd = [sys.executable, str(ROOT / "automation" / "fit_scorer.py"),
+                                          "--scan", "worklist.json", "--concurrency", "6"]
+                                for _uu in _u_sel_urls:
+                                    _uscmd += ["--only-url", _uu]
+                                _urec = scan_runner.start_run("score", _uscmd)
+                                st.session_state["_last_launch"] = {"run_id": _urec.run_id, "label": "Score selected"}
+                                st.toast(f"🎯 Scoring {len(_u_sel_urls)} selected role(s)…", icon="🎯")
+                                st.rerun()
             else:
                 st.caption("ℹ️ Run 🎯 **Run triage** above to see a per-row "
                            "cached-vs-paid breakdown before scoring.")
@@ -9088,6 +9602,11 @@ elif page == "📋 Jobs Kanban":
                        "via 🧹 Clear stale leads on the Active tab.",
         }.get(_kan_tab, "Nothing in this view.")
         st.info(_empty_msg)
+        # The ad-hoc resume builder tailors a resume for ANY job not yet in
+        # the tracker, so it must stay reachable even with an empty pipeline.
+        # Render it BEFORE halting, otherwise st.stop() hides it on the
+        # zero-leads empty state.
+        render_adhoc_tailor(TRACKER)
         st.stop()
 
     # Derive gta_area for every row — prefer explicit location, fall back to
@@ -9115,6 +9634,34 @@ elif page == "📋 Jobs Kanban":
 
     if not jobs_df.empty:
         jobs_df = jobs_df.assign(gta_area=jobs_df.apply(_area_for_row, axis=1))
+
+    # Strategy lane + geo/visa bucket per row. Use the stored value if the row
+    # already carries it (auto_promote tags new rows); else compute live from
+    # sector+title+location so older rows still show a Lane/Geo.
+    try:
+        from lane_tagger import lane_for as _lane_for
+        from geo_tagger import geo_for as _geo_for
+    except Exception:
+        _lane_for = lambda _s, _t="": ""
+        _geo_for = lambda _l="": ""
+    def _lane_for_row(row):
+        v = row.get("lane") if isinstance(row, dict) else getattr(row, "lane", None)
+        if isinstance(v, str) and v:
+            return v
+        sec = (row.get("sector") if isinstance(row, dict) else getattr(row, "sector", "")) or ""
+        ttl = (row.get("title") if isinstance(row, dict) else getattr(row, "title", "")) or ""
+        return _lane_for(sec, ttl)
+    def _geo_for_row(row):
+        v = row.get("geo") if isinstance(row, dict) else getattr(row, "geo", None)
+        if isinstance(v, str) and v:
+            return v
+        loc = (row.get("location") if isinstance(row, dict) else getattr(row, "location", "")) or ""
+        return _geo_for(loc)
+    if not jobs_df.empty:
+        jobs_df = jobs_df.assign(
+            lane=jobs_df.apply(_lane_for_row, axis=1),
+            geo=jobs_df.apply(_geo_for_row, axis=1),
+        )
 
     # Filters
     f1, f2, f3, f4, f5 = st.columns([2, 2, 2, 2, 2])
@@ -9144,6 +9691,20 @@ elif page == "📋 Jobs Kanban":
         )
     with f5:
         sel_area = st.multiselect("GTA area", areas, default=[])
+    g1, g2 = st.columns([2, 2])
+    lanes = sorted(jobs_df["lane"].dropna().unique()) if "lane" in jobs_df.columns else []
+    geos = sorted(jobs_df["geo"].dropna().unique()) if "geo" in jobs_df.columns else []
+    with g1:
+        sel_lane = st.multiselect(
+            "Lane", lanes, default=[],
+            help="Strategy lane: A = Solutions Engineering; B = Pension / "
+                 "Buy-Side; Floor = Bank Risk/ALM/Validation; Side = Fintech; "
+                 "Opportunistic.")
+    with g2:
+        sel_geo = st.multiselect(
+            "Geo", geos, default=[],
+            help="Geography / work-auth: Canada (GTA/other), Remote, "
+                 "US-remote, US on-site (TN), Other.")
     q = st.text_input("Search (company/title)", "", placeholder="e.g. Scotiabank, ALM...")
 
     view = jobs_df.copy()
@@ -9157,13 +9718,17 @@ elif page == "📋 Jobs Kanban":
         view = view[view["primary_variant"].isin(sel_variant)]
     if sel_area:
         view = view[view["gta_area"].isin(sel_area)]
+    if sel_lane and "lane" in view.columns:
+        view = view[view["lane"].isin(sel_lane)]
+    if sel_geo and "geo" in view.columns:
+        view = view[view["geo"].isin(sel_geo)]
     if q:
         qlo = q.lower()
         view = view[view["company"].str.lower().str.contains(qlo, na=False) |
                     view["title"].str.lower().str.contains(qlo, na=False)]
 
     _filter_active = any([sel_sector, sel_status, sel_fit, sel_variant,
-                          sel_area, q])
+                          sel_area, sel_lane, sel_geo, q])
     st.caption(f"Showing {len(view)} of {len(jobs_df)} roles" + (" (filtered)" if _filter_active else ""))
 
     # Enrich view with a "draft" indicator based on whether a tailor output
@@ -9306,10 +9871,10 @@ elif page == "📋 Jobs Kanban":
     # underlying frame and still drives the priority sort below — it just
     # doesn't take up column real estate when "Variant" already says
     # WHAT KIND of role this is.
-    _compact_cols = ["company", "title", "status", "primary_variant",
+    _compact_cols = ["company", "title", "status", "lane", "geo", "primary_variant",
                      "fit_score_numeric", "urgency", "posted_date",
                      "date_found", "url"]
-    _full_cols = ["company", "title", "status", "primary_variant",
+    _full_cols = ["company", "title", "status", "lane", "geo", "primary_variant",
                   "fit_score_numeric", "urgency", "follow_up", "warm",
                   "draft", "sector", "gta_area", "posted_date",
                   "date_found", "date_applied", "src", "freshness", "url"]
@@ -9342,6 +9907,14 @@ elif page == "📋 Jobs Kanban":
         "src": st.column_config.TextColumn("Src", width="small"),
         "freshness": st.column_config.TextColumn("Age", width="small"),
         "gta_area": st.column_config.TextColumn("Area", width="small"),
+        "lane": st.column_config.TextColumn(
+            "Lane", width="medium",
+            help="Strategy lane: A=Solutions Engineering; B=Pension/Buy-Side; "
+                 "Floor=Bank Risk/ALM/Validation; Side=Fintech; Opportunistic."),
+        "geo": st.column_config.TextColumn(
+            "Geo", width="medium",
+            help="Geography / work-auth: Canada (GTA/other), Remote, US-remote, "
+                 "US on-site (TN), Other."),
         "posted_date": st.column_config.TextColumn(
             "Posted", width="small",
             help="When the role went live on the board (vs Found = when we "
@@ -9549,24 +10122,8 @@ elif page == "📋 Jobs Kanban":
                     job, key_prefix="kanban_inspect", tracker_data=tr,
                     tracker_path=TRACKER,
                 )
-                # Cost/quality tier for ALL resume generation (session-wide).
-                _tier_labels = {
-                    "balanced": "⚖️ Balanced · Opus draft + Sonnet check (~$0.60)",
-                    "max":      "💎 Max · Opus everything (~$1.30)",
-                    "cheap":    "💰 Cheap · Sonnet (~$0.25)",
-                    "draft":    "⚡ Draft · Sonnet, no validity check (~$0.10)",
-                }
-                _cur = st.session_state.get("_resume_tier", "balanced")
-                st.session_state["_resume_tier"] = st.selectbox(
-                    "Resume cost/quality", list(_tier_labels),
-                    index=(list(_tier_labels).index(_cur)
-                           if _cur in _tier_labels else 0),
-                    format_func=lambda k: _tier_labels[k],
-                    key="_resume_tier_select",
-                    help="Per-resume API cost when you hit ✨ Tailor resume. "
-                         "Balanced keeps the Opus-quality draft but runs the "
-                         "validity check on cheaper Sonnet. Draft skips the "
-                         "validity check entirely.")
+                # Draft-model picker for ALL resume generation (session-wide).
+                _render_model_picker("_model_pick_inspect")
 
                 _nxt = job.get("next_action") or ""
                 if _nxt:
@@ -11433,7 +11990,7 @@ elif page == "⚙️ Admin":
             language="powershell",
         )
     _admin_scrape_age = _web_scan_age_hours()
-    _admin_scrape_fresh = _admin_scrape_age is not None and _admin_scrape_age < 24
+    _admin_scrape_fresh = _admin_scrape_age is not None and _admin_scrape_age < SCRAPE_FRESH_HOURS
     _admin_nr_help = "Disabled while another job is running." if any_work_active else None
     if _admin_scrape_fresh and not any_work_active:
         _admin_nr_help = (f"⚠️ Scan is only {_admin_scrape_age:.0f}h old — "
@@ -12903,13 +13460,13 @@ elif page == "🔔 Follow-ups":
         for _job in _fu_no_sched:
             _fu_render_card(_job, "Needs schedule", "#94a3b8")
 
-    # ── DUE THIS WEEK ─────────────────────────────────────────────────────
+    # ── DUE THIS WEEK ─────────────────────────────────────
     if _fu_this_week:
         with st.expander(f"🟢 Due this week ({len(_fu_this_week)})", expanded=False):
             for _days_left, _job in _fu_this_week:
                 _fu_render_card(_job, f"In {_days_left}d", "#10b981")
 
-    # ── UPCOMING ─────────────────────────────────────────────────────────
+    # ── UPCOMING ───────────────────────────────────────
     if _fu_upcoming:
         with st.expander(f"📅 Upcoming ({len(_fu_upcoming)})", expanded=False):
             for _days_left, _job in _fu_upcoming:

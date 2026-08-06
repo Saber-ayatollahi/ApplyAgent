@@ -141,6 +141,16 @@ except ImportError:
     except Exception:
         _suppressions = None  # type: ignore
 
+# Worklist helpers — _ct_key (brand-canonical company + normalized title) is
+# reused to gate out reposts of already-rejected roles before the LLM call.
+try:
+    import worklist as _worklist  # type: ignore
+except ImportError:
+    try:
+        from . import worklist as _worklist  # type: ignore
+    except Exception:
+        _worklist = None  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "automation" / "outputs"
 JD_CACHE = OUT_DIR / "jd_cache"
@@ -153,7 +163,7 @@ MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")
 # burns 2× attempts against the same model on any non-transient failure.
 # Sonnet is a stronger model that a rare Haiku parse-failure on a weird JD is
 # very unlikely to repeat on. Cost impact is ~$0.01 per fallback, rare.
-FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-4-6")
+FALLBACK_MODEL = os.environ.get("FIT_SCORER_FALLBACK_MODEL", "claude-sonnet-5")
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
@@ -537,6 +547,12 @@ NEG_TITLE_TERMS = [
     # Legal / audit-only / generic
     "senior counsel", "junior counsel", "legal counsel",
     "registered supervisor",
+    # Too senior (added 2026-07-08): market calibration from the HOOPP process
+    # — Senior Director sits 3 rungs above Saber's current slot (Sr Manager /
+    # Assistant Director); every SD application to date was rejected at screen.
+    # Deliberately does NOT touch "Director", "Associate Director", "VP", or
+    # "Principal" titles (BlackRock VP SE and OPTrust Principal are live fits).
+    "senior director", "sr director", "sr. director",
 ]
 
 
@@ -762,10 +778,41 @@ def _is_target_company(row: dict | None) -> bool:
     return bool(src) and not src.startswith(("gmail", "linkedin"))
 
 
+_TERMINAL_SKIP_STATUSES = ("Rejected", "Declined", "Withdrawn", "Expired")
+_rejected_ct_cache = None  # None = not loaded yet; a set once loaded
+
+
+def _load_rejected_ct_index() -> set:
+    """Company+title keys (brand-canonical) of terminal-status tracker jobs —
+    Rejected/Declined/Withdrawn/Expired. A scored candidate matching one is
+    dropped at rule_triage BEFORE the LLM call, so a role the user already
+    passed on that is REPOSTED under a new URL (which the URL-keyed fit cache
+    can't catch) doesn't burn tokens re-scoring it. Cached per process."""
+    global _rejected_ct_cache
+    if _rejected_ct_cache is not None:
+        return _rejected_ct_cache
+    idx: set = set()
+    if _worklist is not None:
+        try:
+            _tr = json.loads(
+                (ROOT / "data" / "job_tracker_data.json").read_text(encoding="utf-8"))
+            for _j in _tr.get("jobs", []) or []:
+                if _j.get("status") in _TERMINAL_SKIP_STATUSES:
+                    _k = _worklist._ct_key(_j.get("company", ""), _j.get("title", ""))
+                    if _k:
+                        idx.add(_k)
+        except Exception as _e:
+            if _log_error is not None:
+                _log_error("rejected_ct_index_load", _e, module="fit_scorer")
+    _rejected_ct_cache = idx
+    return idx
+
+
 def rule_triage(title: str,
                 row: dict | None = None,
                 suppression_snapshot: dict | None = None,
-                only_url_override: bool = False) -> dict:
+                only_url_override: bool = False,
+                rejected_ct_index: set | None = None) -> dict:
     """Weighted stage-1 triage. Passes if total score >= STAGE1_THRESHOLD.
 
     Returns {stage1_pass, rough_tier, score, rule_reasons, hits_breakdown}.
@@ -810,6 +857,21 @@ def rule_triage(title: str,
                 else:
                     return {"stage1_pass": False, "rough_tier": 5, "score": 0,
                             "rule_reasons": [drop_reason], "hits_breakdown": {}}
+
+    # Already-rejected repost gate. A role whose brand-canonical company+title
+    # matches a terminal-status (rejected/declined/withdrawn/expired) tracker
+    # entry is dropped HERE — before the LLM call — so a repost under a new URL
+    # (which the URL-keyed fit cache can't catch) doesn't burn tokens
+    # re-scoring something the user already passed on. Shows in the triage
+    # "Dropped (rule-triage)" tab as reason "already_rejected".
+    if rejected_ct_index and row is not None and _worklist is not None:
+        try:
+            _rej_key = _worklist._ct_key(row.get("company", ""), title)
+        except Exception:
+            _rej_key = None
+        if _rej_key is not None and _rej_key in rejected_ct_index:
+            return {"stage1_pass": False, "rough_tier": 5, "score": 0,
+                    "rule_reasons": ["already_rejected"], "hits_breakdown": {}}
 
     strong = _distinct_hits(t, STRONG_POS)
     # Medium and weak are matched against the remaining (post-strong) title
@@ -1275,6 +1337,36 @@ _STRATEGY_CAPABILITIES = (
     "Python/agentic-AI workflows, or sector experience (pension/insurer/Big 6/vendor).\n"
 )
 
+
+_STRATEGY_CALIBRATION = (
+    "SCORING CALIBRATION (weight Saber's real experience + education correctly; this\n"
+    "fixes prior UNDER-scoring of strong-fit risk-analytics / validation roles):\n"
+    "1. Treat 'asset' / 'nice-to-have' items in a JD as STRONG positives when Saber has\n"
+    "   them — they are DIFFERENTIATORS that RAISE the score, not neutral: (a) hands-on\n"
+    "   Python; (b) experience with a VENDOR risk/trading platform (Saber: Calypso->PFaroe\n"
+    "   migration, Moody's multi-asset platform, Aladdin-class systems); (c) hands-on LLM /\n"
+    "   AI-agent / AI-automation tooling in a professional setting (Saber: Claude Code,\n"
+    "   Cursor, agentic validation workflows — rare among finance-risk candidates); (d)\n"
+    "   model validation / governance. A role centered on risk analytics or model\n"
+    "   validation that ALSO lists these assets is an 8-9 fit for Saber, not a 6-7.\n"
+    "2. RISK-SIDE vs FRONT-OFFICE — do NOT penalize. Saber's derivatives/instrument work is\n"
+    "   RISK-SIDE: he VALIDATES rates/FX/inflation derivatives outputs, builds cash-flow /\n"
+    "   scenario / Monte-Carlo engines, and models liabilities (ALM) inside model-governance\n"
+    "   frameworks. A JD asking to model derivatives/instruments 'in the context of risk\n"
+    "   management', 'within a risk system', 'for model validation', or 'risk measurement'\n"
+    "   is directly in his wheelhouse — score it a strong fit. Do NOT treat 'no front-office\n"
+    "   derivatives-pricing / production / trading-desk depth' as a disqualifying gap for a\n"
+    "   RISK-side role; that only matters for actual trading-DESK PRICING roles (out of scope).\n"
+    "3. Hedge-fund INSTRUMENT modelling inside a risk system is ADJACENT, not a wall — Saber\n"
+    "   has the quant framework (stochastic, Monte Carlo, multi-asset risk, VaR/CVaR). Note\n"
+    "   HF-specific valuation as a MINOR tailoring item in skill_gaps only; it must NOT drag\n"
+    "   an otherwise-strong risk-analytics / model-validation role below fit 8.\n"
+    "4. EDUCATION: Saber's dual MSc (Financial Modelling + Chemical Engineering; quantitative\n"
+    "   / STEM) plus the CFA satisfy any 'graduate / advanced degree in a quantitative field'\n"
+    "   requirement — never flag his degree or education as a gap.\n"
+)
+
+
 _STRATEGY_OUT_OF_SCOPE = (
     "HARD OUT-OF-SCOPE (score 1-3, verdict=skip):\n"
     "- Pure software engineering (web/mobile/backend/devops/SRE/QA)\n"
@@ -1305,6 +1397,8 @@ _FALLBACK_SYSTEM_PROMPT = (
     "- Toronto-based, not relocating.\n"
     "\n"
     + _STRATEGY_VARIANTS +
+    "\n"
+    + _STRATEGY_CALIBRATION +
     "\n"
     "Score each role on CAPABILITY FIT against the skill inventory above. Judge whether\n"
     "Saber can do the job and whether the role advances his trajectory. Strategy, market\n"
@@ -1414,6 +1508,8 @@ def _build_system_prompt() -> str:
         "Senior Manager at a target Toronto finance employer and the JD has substantive\n"
         "quantitative, risk, or platform-delivery content.\n"
         "\n"
+        "# " + _STRATEGY_CALIBRATION +
+        "\n"
         "# " + _STRATEGY_OPPORTUNISTIC +
         "\n"
         "# HARD RULE — top_3_reasons and fit drivers\n"
@@ -1478,8 +1574,14 @@ def _cache_path_fit(url: str) -> Path:
 _MODEL_PRICES = {
     "claude-haiku-4-5-20251001": {"input": 1.0,  "output": 5.0},
     "claude-haiku-4-5":          {"input": 1.0,  "output": 5.0},
+    "claude-fable-5":            {"input": 10.0, "output": 50.0},
+    "claude-opus-5":             {"input": 5.0,  "output": 25.0},
+    "claude-opus-4-8":           {"input": 5.0,  "output": 25.0},
+    "claude-sonnet-5":           {"input": 3.0,  "output": 15.0},
     "claude-sonnet-4-6":         {"input": 3.0,  "output": 15.0},
-    "claude-opus-4-7":           {"input": 15.0, "output": 75.0},
+    # 4-7 was carrying Opus-3-era $15/$75 — it bills at $5/$25 like 4-8, so the
+    # ledger overstated every 4-7 call 3x (~$18 of phantom spend lifetime).
+    "claude-opus-4-7":           {"input": 5.0,  "output": 25.0},
 }
 
 
@@ -1941,10 +2043,12 @@ def main() -> int:
                 _log_error("suppression_live_load", _e, module="fit_scorer")
             _supp_snapshot = None
     _only_url_active = bool(only_url_targets)
+    _rejected_ct_index = _load_rejected_ct_index()
     for r in roles:
         tri = rule_triage(r["title"], row=r,
                           suppression_snapshot=_supp_snapshot,
-                          only_url_override=_only_url_active)
+                          only_url_override=_only_url_active,
+                          rejected_ct_index=_rejected_ct_index)
         r["_triage"] = tri
         if not tri["stage1_pass"]:
             triage_drops.append({

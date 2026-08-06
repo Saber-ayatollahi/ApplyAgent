@@ -45,16 +45,21 @@ INSTRUCTIONS = ROOT / "docs" / "resume_agent_instructions.md"
 # The DRAFT benefits from the strongest model; the validity/keyword passes
 # are review/edit tasks a cheaper model handles well. Tier picks the model
 # per call (and whether to verify). Rough cost per resume (PDFs are free):
-#   max       Opus  / Opus   / verify ON   ~ $1.30  (best)
+#   fable     Fable 5 / Sonnet / verify ON  ~ $0.55 (strongest draft —
+#             Mythos-class model above Opus; $10/$50 per MTok published)
+#   max       Opus  / Opus   / verify ON   ~ $1.30
 #   balanced  Opus  / Sonnet / verify ON   ~ $0.60  (default — Opus draft,
 #                                                     cheap check)
 #   cheap     Sonnet/ Sonnet / verify ON   ~ $0.25
 #   draft     Sonnet/  —     / verify OFF  ~ $0.10  (fastest, no check)
-_MODELS = {"opus": "claude-opus-4-7", "sonnet": "claude-sonnet-4-6",
+_MODELS = {"fable": "claude-fable-5",
+           "opus": "claude-opus-5", "sonnet": "claude-sonnet-5",
            "haiku": "claude-haiku-4-5"}
-_FALLBACK = {"opus": "claude-sonnet-4-6", "sonnet": "claude-haiku-4-5",
+_FALLBACK = {"fable": "claude-opus-5",
+             "opus": "claude-sonnet-5", "sonnet": "claude-haiku-4-5",
              "haiku": "claude-haiku-4-5"}
 TIERS = {
+    "fable":    {"draft": "fable",  "verify": "sonnet", "do_verify": True},
     "max":      {"draft": "opus",   "verify": "opus",   "do_verify": True},
     "balanced": {"draft": "opus",   "verify": "sonnet", "do_verify": True},
     "cheap":    {"draft": "sonnet", "verify": "sonnet", "do_verify": True},
@@ -208,7 +213,7 @@ def _revise_for_keywords(rc: dict, missing: list[str], system: str) -> dict:
         "the corrected resume_content.json inside a single ```json fenced "
         "block."
     )
-    raw = jd_tailor.call_claude(system, user, max_tokens=12000)
+    raw = jd_tailor.call_claude(system, user, max_tokens=24000)
     m = re.search(r"```json\s*(\{.*?\})\s*```", raw, re.DOTALL) \
         or re.search(r"(\{.*\})", raw, re.DOTALL)
     if not m:
@@ -271,7 +276,7 @@ def _verify_pass(payload: dict, jd: str, company: str, role: str,
         "STRICT JSON: escape every double quote inside string values — in the "
         "validity_report prose, prefer single quotes around cited phrases."
     )
-    raw = jd_tailor.call_claude(system, user, max_tokens=16000)
+    raw = jd_tailor.call_claude(system, user, max_tokens=32000)
     try:
         revised = _extract_json(raw)
     except (json.JSONDecodeError, ValueError) as e:
@@ -290,7 +295,7 @@ def _verify_pass(payload: dict, jd: str, company: str, role: str,
               f"values (use single quotes for cited phrases in "
               f"validity_report)."
         )
-        raw = jd_tailor.call_claude(system, retry_user, max_tokens=16000)
+        raw = jd_tailor.call_claude(system, retry_user, max_tokens=32000)
         revised = _extract_json(raw)
     revised = revised if "resume_content" in revised else {"resume_content": revised}
     # carry over what the verifier doesn't regenerate
@@ -407,9 +412,11 @@ def main() -> int:
                     help="skip the adversarial validity/critique pass "
                          "(faster + cheaper, but no traceability check).")
     ap.add_argument("--tier", choices=list(TIERS), default=DEFAULT_TIER,
-                    help="cost/quality tier (default: balanced). max=Opus all "
-                         "(~$1.30); balanced=Opus draft + Sonnet check "
-                         "(~$0.60); cheap=Sonnet all (~$0.25); draft=Sonnet, "
+                    help="cost/quality tier (default: balanced). "
+                         "fable=Fable 5 draft + Sonnet check (strongest, "
+                         "premium price); max=Opus all (~$1.30); "
+                         "balanced=Opus draft + Sonnet check (~$0.60); "
+                         "cheap=Sonnet all (~$0.25); draft=Sonnet, "
                          "no verify (~$0.10).")
     ap.add_argument("--model", help="override the DRAFT model explicitly")
     args = ap.parse_args()
@@ -437,7 +444,7 @@ def main() -> int:
     # focused retry with the parse error fed back recovers it; without this a
     # ~$0.55 draft call was thrown away on a parse hiccup (observed live).
     _use_model(args.model or tier["draft"])
-    raw = jd_tailor.call_claude(system, user, max_tokens=16000)
+    raw = jd_tailor.call_claude(system, user, max_tokens=32000)
     payload = None
     for _attempt in (1, 2):
         try:
@@ -456,7 +463,7 @@ def main() -> int:
                            f"response as ONE strictly valid ```json block — "
                            f"escape all double quotes inside string values, "
                            f"and output NOTHING after the closing fence.",
-                    max_tokens=16000)
+                    max_tokens=32000)
                 continue
             print(f"[resume_agent] model output unusable: {e}", file=sys.stderr)
             dump = HERE / "outputs" / f"resume_agent_raw_{_slug(company)}.txt"

@@ -1,0 +1,17 @@
+# resume_auto-optrust-principal-trader-total-portfol
+# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-optrust-principal-trader-total-portfol --tier balanced
+# started: 2026-07-08T11:15:03.649072
+
+[resume_agent] tier=balanced (draft=opus, verify=sonnet)
+[resume_agent] tailoring Principal/Trader, Total Portfolio Management @ OPTrust (JD 4651 chars)…
+  [tailor] claude-opus-4-7 cost $0.558 (in=11022, out=5229, cache_read=0)
+  [tailor] claude-sonnet-4-6 cost $0.087 (in=3859, out=5028, cache_read=0)
+[resume_agent] validity pass applied.
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:05<00:00,  5.67s/it]100%|██████████| 1/1 [00:06<00:00,  6.28s/it]
+[resume_agent] 4 ATS keyword(s) missing (trading, credit, risk management, alpha); revising once…
+  [tailor] claude-sonnet-4-6 cost $0.033 (in=2039, out=1823, cache_read=14452)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.26s/it]100%|██████████| 1/1 [00:03<00:00,  3.32s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.16it/s]100%|██████████| 1/1 [00:00<00:00,  1.12it/s]
+[resume_agent] tracker linked (resume_file + ATS 12/12)
+[resume_agent] DONE -> C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-07-08_OPTrust_Principal-Trader-Total-Portfolio-Managem
+RESUME_AGENT_FOLDER=C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-07-08_OPTrust_Principal-Trader-Total-Portfolio-Managem
