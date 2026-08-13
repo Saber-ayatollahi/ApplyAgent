@@ -37,17 +37,30 @@ Thumbs.db
 .tmp_*/
 
 # ============================================================================
-# Agent outputs — tracked so both machines stay in sync
+# Agent outputs
 # ============================================================================
-# Intentionally NOT ignored (so they commit):
-#   scan_*.json / scan_*.md           — scraper output
-#   *_scored.json / *_scored.md       — fit-scorer output
-#   SCAN_*.md                         — narrative reports
-#   promote_report_*.md               — promote run summaries
-#   weekly_report_*.md                — weekly retrospectives
-#   runs/                             — background-run metadata + logs
-#   pipelines/                        — pipeline status JSONs
-#   *_prompt.md / *_resume.md / *_cover.md / *_brief.md  — tailor artifacts
+# scan_*.json/.md, scan_gmail_*.json, runs/, pipelines/, promote_report_* used
+# to be tracked "so both machines stay in sync" — in practice this meant every
+# scrape/pipeline run added a multi-MB commit of pure operational exhaust that
+# worklist.rebuild() regenerates from scratch anyway (see "Regenerated
+# pipeline artifacts" below for the same rationale re: worklist.json etc).
+# Cleaned up 2026-08-06: untracked + pruned to a 14-day local retention window
+# (30 days for scan_gmail_* to match worklist.py's own GMAIL_WINDOW_DAYS).
+# Still intentionally tracked: applications/ (real submitted-application
+# record) and data/archives/ (deliberate monthly tracker snapshots).
+automation/outputs/scan_*.json
+automation/outputs/scan_*.md
+automation/outputs/runs/
+automation/outputs/pipelines/
+automation/outputs/promote_report_*.json
+automation/outputs/promote_report_*.md
+
+# Bulk-select promote/reject URL lists — tempfiles with delete=False (the
+# detached auto_promote.py subprocess needs to read them after the UI call
+# returns), intentionally left on disk as an audit trail. Never git-add them.
+automation/outputs/tmp*.urls.txt
+data/job_tracker_data.json.bak_*
+data/suppressions.json.bak.*
 
 # ============================================================================
 # Ephemeral — too noisy or too large to track

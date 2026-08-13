@@ -1,17 +1,0 @@
-# resume_auto-cpp-investments-senior-associate-investment-en
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-cpp-investments-senior-associate-investment-en --tier balanced
-# started: 2026-06-19T22:09:06.638317
-
-[resume_agent] tier=balanced (draft=opus, verify=sonnet)
-[resume_agent] tailoring Senior Associate, Investment Engineering & Analytics @ CPP Investments (JD 3966 chars)…
-  [tailor] claude-opus-4-7 cost $0.511 (in=10739, out=4667, cache_read=0)
-  [tailor] claude-sonnet-4-6 cost $0.071 (in=3532, out=4009, cache_read=0)
-[resume_agent] validity pass applied.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:05<00:00,  5.55s/it]100%|██████████| 1/1 [00:06<00:00,  6.16s/it]
-[resume_agent] 3 ATS keyword(s) missing (factor investing, asset pricing, signals); revising once…
-  [tailor] claude-sonnet-4-6 cost $0.034 (in=1867, out=1862, cache_read=14452)
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.97s/it]100%|██████████| 1/1 [00:04<00:00,  4.01s/it]
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.44s/it]100%|██████████| 1/1 [00:01<00:00,  1.47s/it]
-[resume_agent] tracker linked (resume_file + ATS 12/12)
-[resume_agent] DONE -> C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_CPP-Investments_Senior-Associate-Investment-Engineering
-RESUME_AGENT_FOLDER=C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_CPP-Investments_Senior-Associate-Investment-Engineering

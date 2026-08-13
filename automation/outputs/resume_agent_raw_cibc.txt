@@ -11,35 +11,39 @@
     },
     "target": {
       "company": "CIBC",
-      "role": "Senior Director, Funding and Liquidity Risk Management",
+      "role": "Senior Manager Treasury Analytics",
       "jd_keywords": [
-        "Liquidity Risk",
-        "Funding",
-        "Liquidity",
-        "Market Risk",
-        "Risk Management Framework",
-        "Regulatory",
-        "Treasury",
+        "ALM",
+        "cash-flow modelling",
+        "interest rate risk",
+        "interest rate derivatives",
+        "valuation",
+        "hedging",
         "balance sheet",
-        "Contingency",
-        "governance",
-        "stress",
-        "derivative",
-        "CFA",
-        "Analytical"
+        "stress testing",
+        "model risk management",
+        "stochastic modelling",
+        "Monte Carlo",
+        "duration",
+        "Python",
+        "SQL",
+        "statistics"
       ]
     },
-    "summary": "Senior Director-level Funding and Liquidity Risk candidate with ~7 years across balance-sheet, liquidity, and market risk analytics. Holds delegated sign-off authority on multi-asset institutional portfolios ($5-25bn per engagement) at Moody's Analytics, where designing a multi-scenario cash flow projection and liquidity gap engine, leading second-line-style independent review, and aligning outputs with regulatory liquidity expectations. Prior pension ALM and LDI advisory at Ortec Finance; IFRS 17/9 governance delivery at EY. CFA charterholder; dual MSc.",
+    "summary": "Senior Manager, Treasury Analytics candidate with ~7 years in asset-liability management, cash-flow modelling, and quantitative risk analytics at Moody's Analytics and Ortec Finance. Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios of $5-25bn per engagement; led design of a multi-scenario cash-flow projection engine embedding behavioural and prepayment assumptions. Validates rates, FX, and inflation derivatives outputs and portfolio-level sensitivities. Python, SQL, R; CFA charterholder with dual MSc degrees.",
     "core_skills": [
-      "Liquidity Risk & Funding Risk Oversight",
-      "Contingency Funding & Recovery Planning",
-      "Liquidity Stress Testing & Scenario Analysis",
-      "Cash Flow Projection & Liquidity Gap Analytics",
-      "Balance Sheet & Market Risk Analytics",
-      "Risk Management Framework & Governance",
-      "Regulatory Engagement (OSFI / Basel-aligned)",
-      "Derivatives Valuation & Sensitivity Review",
-      "Python, SQL & Analytical Modelling"
+      "Asset-Liability Management (ALM) & Balance Sheet Modelling",
+      "Cash-Flow Modelling & Time-Bucketed Liquidity Gap Analytics",
+      "Behavioural Cash-Flow & Prepayment Assumptions",
+      "Interest Rate Risk, Duration & Convexity Analytics",
+      "Interest Rate Derivatives Valuation & Sensitivity Review",
+      "Yield Curve Construction & Spread Calibration",
+      "Stochastic Modelling, Monte Carlo & Scenario Generation",
+      "Risk Modelling, Stress Testing & Reverse-Stress Analysis",
+      "Model Risk Management, Vetting & Documentation",
+      "Python (pandas, NumPy, SciPy) - SQL - R - MATLAB",
+      "Statistics & Quantitative Analytics",
+      "Risk Driver Attribution & Executive Reporting"
     ],
     "experience": [
       {
@@ -50,34 +54,29 @@
             "location_date": "Toronto, May 2023 - Present",
             "sections": [
               {
-                "heading": "Liquidity, Funding & Contingency Analytics",
+                "heading": "Cash-Flow Modelling & Balance Sheet Risk Representation",
                 "bullets": [
-                  "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios - delivering forward-looking liquidity visibility across funding horizons analogous to contingency funding planning needs.",
-                  "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and balance-sheet allocation decisions aligned with OSFI LAR-style liquidity expectations.",
-                  "Embedded behavioral cash flow assumptions, prepayment logic, and macro stress overlays consistent with regulatory liquidity stress testing and executive contingency-planning use cases."
+                  "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, delivering forward-looking liquidity visibility across ALM horizons.",
+                  "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year), enabling funding optimization, refinancing risk assessment, and asset-allocation decisions.",
+                  "Embedded behavioural cash-flow assumptions, prepayment logic, and macro stress overlays into projection models, aligned with regulatory liquidity expectations and executive contingency planning.",
+                  "Reviewed aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes."
                 ]
               },
               {
-                "heading": "Second-Line Oversight & Risk Governance",
+                "heading": "Interest Rate & Derivative Analytics",
                 "bullets": [
-                  "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional client portfolios ($5-25bn per engagement; ~$50bn+ cumulative) - independent review and effective challenge of curve construction, spread calibration, and cross-asset interactions before release.",
-                  "Operates within a formal model-governance framework providing second-line-style independent review; escalates outputs lacking mathematical or economic defensibility to senior stakeholders and clients' Heads of Risk.",
-                  "Reviews aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM, liquidity, and capital processes."
+                  "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                  "Validated derivatives pricing outputs across rates, FX, and inflation, confirming sensitivity consistency at portfolio-level ALM aggregates.",
+                  "Oversaw interest rate risk and duration analysis under parallel and non-parallel rate shocks, applying IRRBB-style standards analogous to Basel Committee frameworks."
                 ]
               },
               {
-                "heading": "Balance Sheet, Market Risk & Derivatives Analytics",
+                "heading": "Model Vetting, Governance & Analytics Tooling",
                 "bullets": [
-                  "Oversees interest-rate risk and duration analysis under parallel and non-parallel rate shocks aligned with Basel IRRBB and OSFI B-12 frameworks - feeding balance-sheet sensitivity and funding-risk views.",
-                  "Validates derivatives pricing outputs across rates, FX, and inflation; cross-checks sensitivity consistency at portfolio-level aggregates supporting Treasury and market-risk reporting.",
-                  "Prepares analytical summaries for senior stakeholders covering interest-rate exposure, scenario impacts, and balance-sheet sensitivities - translating quantitative outputs into committee-ready narratives."
-                ]
-              },
-              {
-                "heading": "Project Leadership & Delivery",
-                "bullets": [
-                  "Re-engineered manual spreadsheet workflows into scalable, auditable Python analytics pipelines with embedded logging and validation controls supporting governance audits.",
-                  "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection - reducing development cycle time ~30-40% on comparable modules."
+                  "Serves on the model governance committee, contributing to methodology review, benchmarking and documentation standards, and model-performance assessment for client-delivered analytics.",
+                  "Escalated outputs lacking mathematical or economic defensibility and acted as escalation point for client-critical analytical issues with clients' Heads of Risk and investment stakeholders.",
+                  "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls.",
+                  "Communicated analytical findings to senior stakeholders on interest-rate exposure, scenario impacts, and balance sheet sensitivity drivers."
                 ]
               }
             ]
@@ -89,8 +88,8 @@
               {
                 "heading": null,
                 "bullets": [
-                  "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to an enterprise risk and ALM analytics platform; served as technical liaison between client investment/treasury teams and product/development functions.",
-                  "Successfully migrated all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform; advised on asset, liability, and ALM configurations and validated model outputs post-deployment."
+                  "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms adopting PFaroe DB (risk & ALM analytics) and PFaroe PM (portfolio management), validating model outputs post-deployment.",
+                  "Translated investment-team requirements into scoped Product Owner requests, advised on asset, liability, and ALM configurations, and migrated all assigned accounts from the legacy Calypso environment."
                 ]
               }
             ]
@@ -107,8 +106,8 @@
               {
                 "heading": null,
                 "bullets": [
-                  "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients; advised actuarial, finance, IT, and risk functions on adoption.",
-                  "Contributed to governance documentation, control design, and regulatory-readiness processes for financial institutions; coordinated cross-functional milestone delivery."
+                  "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning measurement requirements with system implementation and financial-reporting processes.",
+                  "Advised actuarial, finance, IT, and program-management functions on standard adoption and contributed to governance documentation and regulatory-readiness processes."
                 ]
               }
             ]
@@ -125,10 +124,12 @@
               {
                 "heading": null,
                 "bullets": [
-                  "Delivered ALM studies for Canadian and international pension funds and institutional investors; analyzed funding ratios, duration mismatch, and long-term balance-sheet risk.",
-                  "Built and interpreted stochastic economic scenario generators assessing interest-rate, funding, and liquidity volatility under base-case and stressed environments.",
+                  "Delivered ALM studies for Canadian and international pension funds and institutional investors, analyzing funding ratios, duration mismatch, and long-term balance sheet risk exposures.",
+                  "Built and interpreted stochastic economic scenario generators quantifying interest rate risk and funding volatility under base-case and stressed environments.",
                   "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.",
-                  "Presented findings to investment committees, including discussions with pension-fund senior leadership on contingency strategies and funding outcomes."
+                  "Executed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec GLASS, with risk decomposition and near-optimal frontier analysis to test allocation robustness.",
+                  "Modelled pension actuarial liabilities alongside all major investment-product types and economic variables, supporting liability-driven investment (LDI) trade-off analysis.",
+                  "Led onboarding and the ALM study for a three-plan university pension merger, on a team of three developing and validating the model capturing all Funding Policy dynamics and evaluating duration, currency, inflation, and leverage overlay strategies."
                 ]
               }
             ]
@@ -142,9 +143,8 @@
       "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
     ]
   },
-  "cover_letter": "Dear Hiring Team,\n\nI currently lead the design of multi-scenario cash flow projection and liquidity gap analytics for multi-asset institutional portfolios at Moody's Analytics, with delegated sign-off authority on the outputs delivered to clients. That work - forward-looking liquidity visibility under base, stress, and reverse-stress scenarios, with embedded behavioral cash flow assumptions and macro overlays - is the practitioner core of what CIBC's Senior Director, Funding and Liquidity Risk Management mandate is built around.\n\nOver the past four years at Moody's I have operated as an independent reviewer within a formal model-governance framework - the second-line discipline your role requires. My remit covers liquidity gap analytics (T+1 through multi-year), funding-risk and refinancing analysis, derivatives sensitivity validation across rates, FX and inflation, and the escalation of outputs lacking economic defensibility. I have re-engineered manual workflows into auditable Python pipelines and partnered with Product and senior client stakeholders - including Heads of Risk - to translate methodology into committee-ready narratives. Earlier at Ortec Finance I delivered stochastic ALM and LDI studies for Canadian pension funds and institutional investors, presenting funding-ratio and contingency scenarios directly to investment committees; at EY I led governance documentation and cross-functional alignment on IFRS 17/9 transformation programs.\n\nWhat draws me to CIBC specifically is the breadth of this mandate - liquidity and funding risk, intraday liquidity, recovery and resolution, contingency funding, and subsidiary oversight under one second-line group with direct engagement at the CBA and OSFI table. My practitioner background in liquidity gap design, balance-sheet sensitivity analytics, and model governance maps onto each of those pillars, and the leadership scope is the natural next step after building and signing off on the analytics underneath them. I hold the CFA charter and dual MSc degrees in Financial Modelling and Chemical Engineering from Western University.\n\nI am based in Toronto, available immediately for interviews, and can start approximately four weeks after offer acceptance.\n\nSincerely,\nSaber Ayatollahi, CFA",
-  "interview_brief": "## 5 Most Likely Technical Questions\n\n**1. Walk us through how you would design a liquidity stress testing framework for a Canadian D-SIB.**\nGround the answer in the Moody's cash flow projection engine: configurable time buckets T+1 through multi-year, base / stress / reverse-stress scenarios, embedded behavioral assumptions (deposit run-off, prepayments), and macro overlays. Tie it to OSFI LAR expectations and explain why the reverse-stress scenario is where senior leadership actually learns something. Acknowledge that at CIBC the same skeleton needs to be enriched for intraday liquidity, collateral, and FX funding gaps.\n\n**2. How do you think about contingency funding planning vs. recovery and resolution planning?**\nCFP is about pre-positioned funding actions under a defined liquidity stress - your toolkit and triggers. R&R goes one layer further: governance playbook for going-concern recovery and, if necessary, resolution, integrated with capital. Frame your evidence honestly: hands-on with CFP-style scenario design at Moody's and Ortec; familiar with R&R at the framework level and expect to deepen quickly in seat.\n\n**3. How would you assess and challenge Treasury's behavioral cash flow assumptions?**\nReference STAR Story 2 (escalated output that was mathematically defensible but economically wrong). Walk through assumption decomposition by product/segment, back-test against historical run-off, sensitivity-test the tail (what break would force re-pricing), and require documented economic rationale - not just a calibration number. Tie to second-line effective challenge.\n\n**4. Tell us about a model you reviewed where the math was right but the answer was wrong.**\nUse STAR Story 2 verbatim: portfolio-level sensitivities under a specific rate-shock scenario; held release, decomposed by asset class, traced to short-end curve calibration edge case, escalated to PO and client Head of Risk, captured in validation tests. Result: 48-hour delay, client avoided acting on wrong numbers, became their escalation contact.\n\n**5. How do you approach OSFI and CBA engagement on liquidity topics?**\nBe honest: direct CBA/OSFI representation is the part of the mandate that's new - I have engaged regulators indirectly through clients at Moody's and EY (IFRS 17 readiness) and have applied familiarity with B-12, LAR, and E-23. Plan in seat: rely on the existing second-line governance cadence, bring quantitative defensibility to every position, and lean on the team's CBA history while building relationships.\n\n## 3 Sharp Questions Saber Should Ask\n\n1. How does the second-line liquidity risk group currently divide effective challenge between methodology review and limits/appetite oversight - and where does this role most need to sharpen the line vs. Treasury?\n2. What does the intraday liquidity build-out look like over the next 18 months given OSFI LAR 2026 - is the focus on data plumbing, methodology, or both?\n3. How is subsidiary oversight currently coordinated across the U.S. and other jurisdictions, and what is the biggest governance gap the new Senior Director would be expected to close in year one?\n\n## 1 Competency Gap to Prepare For\n\n**People management at scale.** This is a Senior Director role explicitly responsible for leading multiple second-line groups; Saber's direct people-management track record is thinner than his technical depth. Prepare a concrete answer on how he has led without formal authority (cross-functional initiatives, mentoring, client-team coordination), how he would structure the first 90 days with the team, and his philosophy on coaching senior ICs vs. building bench. Avoid overclaiming a large prior team."
-  },
-  "notes": "Honest gaps to own in interview, NOT to put in the resume: (1) No direct sell-side Treasury or bank second-line liquidity-desk experience - Saber's liquidity/funding evidence is from buy-side analytics platforms (Moody's) and pension ALM advisory (Ortec); frame as 'practitioner who built the analytics underneath the second-line function, now ready to run it.' (2) No direct OSFI or CBA representation experience - has applied familiarity with LAR, B-12, E-23 but has not sat at the CBA table; acknowledge and lean on the team. (3) No formal Recovery & Resolution Planning delivery - framework-level understanding only. (4) Title jump risk: 'Senior Director' is a notable step from Asst. Director at Moody's; recruiter may probe span-of-control and people-leadership. Prepare a clear, honest narrative on leadership without formal direct reports (cross-functional, client-team, mentorship). (5) Intraday liquidity is mentioned in JD - Saber has cash flow projection and gap analytics evidence but not intraday-specific delivery; reframe as adjacent, not direct."
+  "cover_letter": "Dear Hiring Team,\n\nI led the design and delivery of an enterprise multi-asset cash-flow projection engine at Moody's Analytics, embedding behavioural cash-flow assumptions, prepayment logic, and macro stress overlays across base, stress, and reverse-stress scenarios. That is the same modelling machinery your team maintains in CIBC's cash-flow modelling book, and it is why I would like to be considered for the Senior Manager, Treasury Analytics role.\n\nAt Moody's I hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios of $5-25bn per engagement, independently reviewing curve construction, spread calibration, and cross-asset interactions before release, and validating rates, FX, and inflation derivatives outputs for sensitivity consistency at portfolio-level aggregates. I oversee duration and interest rate risk analysis under parallel and non-parallel shocks, serve on the model governance committee covering methodology review, benchmarking, and documentation standards, and re-engineered spreadsheet workflows into auditable Python pipelines. Earlier, at Ortec Finance, I built stochastic economic scenario generators and ran VaR and CVaR optimization with risk decomposition for pension clients, which built the habit of explaining which drivers moved a number rather than only reporting the number.\n\nWhat draws me to CIBC's Treasury Analytics function is that the mandate sits precisely where analytics development, model vetting, and Lines-of-Business dialogue meet: retail behavioural parameters, identification of hedge-able risk, and explanation of cash-flow modelling variability. That seam is where I have spent four years, as the person clients' Heads of Risk escalate to when an output is mathematically defensible but economically unsupported. On the statistical side I work daily in Python and SQL, with R and graduate training in stochastic and numerical methods; advanced GLM and survival techniques are an area I have studied rather than shipped, and I would ramp on your parameter-review suite quickly and honestly.\n\nI am Toronto-based, comfortable with a one-to-three day hybrid arrangement, available for interviews immediately, and able to start approximately four weeks after offer acceptance. I hold the CFA charter and dual MSc degrees. Thank you for your consideration.\n\nSincerely,\nSaber Ayatollahi, CFA",
+  "interview_brief": "## Likely technical questions\n\n**1. How would you model prepayment or early-redemption behaviour on a retail mortgage or GIC book?**\nFrame from the Moody's cash-flow engine: behavioural assumptions were parameterised (rate-incentive, seasoning, macro overlay) and made switchable by scenario so the engine could run base, stress, and reverse-stress consistently. Be explicit that the calibration work was assumption-driven and validated against client data rather than a full GLM/Cox estimation exercise, and describe how you would extend it with a hazard-rate specification.\n\n**2. Walk me through how you validate a rates derivative valuation you did not build.**\nUse STAR Story 2: sensitivities passed all internal checks but conflicted with the client's economic intuition under one rate shock. Decomposed sensitivities by asset class, isolated a curve-calibration edge case in short-end inversion handling, held the release 48 hours, escalated to the Product Owner and the client's Head of Risk, and captured the defect in validation tests.\n\n**3. Non-parallel shocks: why do they matter more than parallel shifts for a retail balance sheet?**\Ground it in the Moody's IRRBB-style work: parallel shocks understate repricing mismatch because retail assets and liabilities cluster at different tenors; steepeners and short-end inversions move duration gap and option value differently. Tie to key-rate duration and to how curve construction choices propagate into reported sensitivity.\n\n**4. A cash-flow model result moves materially month over month. How do you explain it?**\nDecompose before you narrate: separate position/new-business change, curve and spread move, behavioural-assumption change, and model/methodology change, then attribute the residual. This is the same discipline as risk decomposition and contribution-to-risk analysis performed at Ortec with GLASS.\n\n**5. How do you make a spreadsheet-based analytic auditable?**\nUse STAR Story 6: parallel-built the Python pipeline, ran two cycles in shadow mode, reconciled outputs line by line, cut over with a rollback plan, and added logging plus validation tests. The governance audit closed and the pipeline became the template for adjacent workflows.\n\n## Questions to ask\n\n1. Where does the cash-flow modelling book currently generate the most P&L variability, and is that a parameter problem, a hedge-construction problem, or a data problem?\n2. How is the boundary drawn between Treasury Analytics' methodology ownership and the model vetting group's independent review, especially for behavioural parameter refreshes?\n3. Which retail products are next in the parameter-review queue, and what does the first 90 days of this role realistically deliver against that queue?\n\n## Competency gap to prepare\n\nAdvanced GLM, Cox regression, survival analysis, and panel time-series model selection are the honest gap; so is funds transfer pricing mechanics and swaption-specific pricing. Prepare a short, unapologetic answer: strong statistics and stochastic-modelling foundation plus daily Python, hands-on behavioural cash-flow parameterisation, and a concrete study plan (hazard models on retail redemption data, FTP curve construction). Never imply you have shipped a Cox model in production.",
+  "notes": "Gaps deliberately left off the resume: advanced GLM / Cox regression / survival analysis / panel time series (JD must-have, no repo evidence); funds transfer pricing; swaption valuation specifically; C++; retail banking products (mortgages, GICs, commitments) as direct experience; cash-flow modelling P&L decomposition and daily/monthly P&L production; people management (JD skills list mentions it - Saber has mentorship only, not direct reports). IRRBB appears once, hedged as 'IRRBB-style ... analogous to Basel', inside a bullet only - not in summary, headings, or core skills. Sign-off framed as delegated, $5-25bn per engagement / ~$50bn cumulative. Experience stated as ~7 years. Confirm work authorization line before submitting; hybrid 1-3 days on-site at 161 Bay St is acceptable per Toronto-only search."
 }
 ```

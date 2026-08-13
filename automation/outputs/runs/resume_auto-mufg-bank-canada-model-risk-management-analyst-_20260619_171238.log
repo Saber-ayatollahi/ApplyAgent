@@ -1,18 +1,0 @@
-# resume_auto-mufg-bank-canada-model-risk-management-analyst-
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-mufg-bank-canada-model-risk-management-analyst- --tier balanced
-# started: 2026-06-19T17:12:38.922735
-
-[resume_agent] tier=balanced (draft=opus, verify=sonnet)
-[resume_agent] tailoring Model Risk Management Analyst, AVP @ MUFG Bank (Canada) (JD 3374 chars)…
-  [tailor] claude-opus-4-7 cost $0.538 (in=10619, out=5045, cache_read=0)
-  [tailor] claude-sonnet-4-6 cost $0.078 (in=3521, out=4479, cache_read=0)
-[resume_agent] validity pass applied.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:10<00:00, 10.83s/it]100%|██████████| 1/1 [00:10<00:00, 10.94s/it]
-[resume_agent] 3 ATS keyword(s) missing (machine learning, economic capital, validation report); revising once…
-  [tailor] claude-sonnet-4-6 cost $0.035 (in=1961, out=1970, cache_read=14452)
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:04<00:00,  4.33s/it]100%|██████████| 1/1 [00:04<00:00,  4.65s/it]
-[resume_agent] note: still missing validation report.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.11s/it]100%|██████████| 1/1 [00:01<00:00,  1.12s/it]
-[resume_agent] tracker linked (resume_file + ATS 10/11)
-[resume_agent] DONE -> C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_MUFG-Bank-Canada_Model-Risk-Management-Analyst-AVP
-RESUME_AGENT_FOLDER=C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_MUFG-Bank-Canada_Model-Risk-Management-Analyst-AVP

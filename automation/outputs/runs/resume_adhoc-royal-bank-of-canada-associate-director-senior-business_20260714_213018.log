@@ -1,19 +1,0 @@
-# resume_adhoc-royal-bank-of-canada-associate-director-senior-business
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id adhoc-royal-bank-of-canada-associate-director-senior-business --tier balanced --jd-file C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\outputs\adhoc_jd\adhoc-royal-bank-of-canada-associate-director-senior-business.txt
-# started: 2026-07-14T21:30:18.719573
-
-[resume_agent] tier=balanced (draft=opus, verify=sonnet)
-[resume_agent] tailoring Associate Director, Senior Business Analyst (Capital Markets) @ Royal Bank of Canada (JD 9004 chars)…
-  [tailor] claude-opus-4-8 cost $0.182 (in=13023, out=4657, cache_read=21950)
-  [tailor] claude-sonnet-5 cost $0.257 (in=5739, out=16000, cache_read=21950)
-  [verify] output failed JSON parse (no JSON object found in model output); retrying once…
-  [tailor] claude-sonnet-5 cost $0.257 (in=5825, out=16000, cache_read=21950)
-[resume_agent] validity pass skipped (Expecting ',' delimiter: line 125 column 4 (char 7159)); using first draft.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:04<00:00,  4.58s/it]100%|██████████| 1/1 [00:04<00:00,  4.61s/it]
-[resume_agent] 3 ATS keyword(s) missing (business analysis, data validation, cloud); revising once…
-  [tailor] claude-sonnet-5 cost $0.066 (in=2651, out=3895, cache_read=21950)
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:04<00:00,  4.85s/it]100%|██████████| 1/1 [00:04<00:00,  4.88s/it]
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.42s/it]100%|██████████| 1/1 [00:01<00:00,  1.43s/it]
-[resume_agent] tracker linked (resume_file + ATS 14/14)
-[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_RBC_Associate-Director-Senior-Business-Analy
-RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-14_RBC_Associate-Director-Senior-Business-Analy

@@ -1,19 +1,0 @@
-# resume_auto-questrade-financial--senior-manager-model-validatio
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-questrade-financial--senior-manager-model-validatio --tier balanced
-# started: 2026-07-15T19:09:02.230440
-
-[resume_agent] tier=balanced (draft=opus, verify=sonnet)
-[resume_agent] tailoring Senior Manager, Model Validation (Questbank) @ Questrade Financial Group (JD 5762 chars)…
-  [tailor] claude-opus-4-8 cost $0.170 (in=12017, out=4401, cache_read=21950)
-  [tailor] claude-sonnet-5 cost $0.257 (in=5732, out=16000, cache_read=21950)
-  [verify] output failed JSON parse (Expecting ',' delimiter: line 130 column 4 (char 7098)); retrying once…
-  [tailor] claude-sonnet-5 cost $0.258 (in=5835, out=16000, cache_read=21950)
-[resume_agent] validity pass skipped (Expecting ',' delimiter: line 129 column 4 (char 7152)); using first draft.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:03<00:00,  3.70s/it]100%|██████████| 1/1 [00:03<00:00,  3.73s/it]
-[resume_agent] 2 ATS keyword(s) missing (credit risk, validation reports); revising once…
-  [tailor] claude-sonnet-5 cost $0.069 (in=2627, out=4106, cache_read=21950)
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:02<00:00,  2.90s/it]100%|██████████| 1/1 [00:03<00:00,  3.10s/it]
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.27s/it]100%|██████████| 1/1 [00:01<00:00,  1.28s/it]
-[resume_agent] tracker linked (resume_file + ATS 14/14)
-[resume_agent] DONE -> C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-15_Questrade_Senior-Manager-Model-Validation
-RESUME_AGENT_FOLDER=C:\Users\PC\OneDrive\Documents\GitHub\ApplyAgent\applications\2026-07-15_Questrade_Senior-Manager-Model-Validation

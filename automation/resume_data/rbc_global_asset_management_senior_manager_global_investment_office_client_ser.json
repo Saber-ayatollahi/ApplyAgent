@@ -1,0 +1,138 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC Global Asset Management",
+    "role": "Senior Manager, Client Services & Delivery",
+    "jd_keywords": [
+      "client service",
+      "client onboarding",
+      "cross-functional",
+      "institutional clients",
+      "portfolio analytics",
+      "risk attribution",
+      "benchmarking",
+      "reporting",
+      "operational efficiency",
+      "process enhancement",
+      "risk frameworks",
+      "governance",
+      "automation",
+      "Python",
+      "stakeholder"
+    ]
+  },
+  "summary": "Senior Manager, Client Services & Delivery candidate for RBC's Global Investment Office: seven years of client-facing investment analytics and service delivery for institutional clients (pension funds, asset managers, and consulting firms) at Moody's Analytics, Ortec Finance, and EY. Led client onboarding and platform migrations, coordinating cross-functional product, development, and investment teams to resolve delivery issues. Holds delegated sign-off on portfolio valuation and ALM outputs across $5-25bn institutional engagements, sits on a model governance committee, and drives process enhancement through Python automation and AI-enabled workflows. CFA charterholder; dual MSc (Financial Modelling, Chemical Engineering).",
+  "core_skills": [
+    "Institutional Client Service Delivery",
+    "Client Onboarding & Platform Implementation",
+    "Cross-Functional Project Coordination",
+    "Portfolio Analytics & Reporting",
+    "Risk Attribution & Portfolio Optimization",
+    "Risk Frameworks & Model Governance",
+    "Senior Stakeholder & Investment-Committee Communication",
+    "Process Automation, Operational Efficiency & Python Analytics Pipelines",
+    "AI-Enabled Workflow Design (Claude Code, Cursor)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Client Delivery & Analytical Sign-Off",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional clients with portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions before release.",
+                "Serve as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders to resolve them.",
+                "Prepare analytical summaries for senior stakeholders covering portfolio exposures, scenario impacts, and balance-sheet sensitivities - translating quantitative output into investment-committee-ready narratives."
+              ]
+            },
+            {
+              "heading": "Institutional Reporting, Controls & Governance",
+              "bullets": [
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics that support downstream ALM analytics and institutional client reporting.",
+                "Sit on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics.",
+                "Operate within a formal model-governance framework - validate assumptions, document economic defensibility, and escalate outputs lacking analytical support in line with internal review and risk frameworks."
+              ]
+            },
+            {
+              "heading": "Process Enhancement & Digital Solutions",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls - improving operational efficiency and auditability of client-delivered analytics.",
+                "Built agentic AI automation workflows (Claude Code, Cursor IDE) for code generation, validation scaffolding, and documentation, cutting development cycle time an estimated 30-40% on comparable modules.",
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios across client ALM horizons."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led client onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms.",
+                "Acted as technical liaison between client investment teams and product owners - scoped requirements into development requests and advised on asset, liability, and ALM configurations.",
+                "Contributed to the migration of all assigned client accounts from the legacy Calypso platform to PFaroe PM, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Coordinated actuarial, finance, IT, risk, and program-management teams on milestone delivery and implementation materials for IFRS 17 and IFRS 9 transformation programs at Canadian and international insurers.",
+                "Advised client functions on adoption of IFRS 17 and IFRS 9, contributing to governance documentation and regulatory-readiness processes; developed advisory offerings and go-to-market collateral."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and the ALM study for a three-plan university pension merger into a new jointly-sponsored plan - on a team of three developing and validating the model capturing all Funding Policy dynamics across duration, currency, inflation, and leverage overlays.",
+                "Presented study findings on-site to investment committees at Canadian pension-fund clients, and advised on Strategic and Tactical Asset Allocation trade-offs through stress testing and sensitivity analysis.",
+                "Delivered ALM studies for Canadian and international institutional clients, analyzing funding ratios, duration mismatch, and long-term balance-sheet exposures.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and risk attribution to test the robustness of allocation recommendations.",
+                "Built and interpreted stochastic economic scenario generators, and performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

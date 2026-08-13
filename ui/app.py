@@ -1992,7 +1992,7 @@ def _find_tailor_docs(job: dict) -> list:
 
 def _resume_tier() -> str:
     """The session-wide cost/quality tier for resume_agent (set via the
-    model picker on the Tailor cards). Default 'balanced' = Opus 4.8 draft +
+    model picker on the Tailor cards). Default 'balanced' = Opus 5 draft +
     Sonnet 5 validity check."""
     return st.session_state.get("_resume_tier", "balanced")
 
@@ -2001,7 +2001,7 @@ def _resume_tier() -> str:
 # that runs it (each keeps the Sonnet 5 validity/keyword check on). Every Tailor
 # button reads _resume_tier(), so the picker just writes that session key.
 _MODEL_PICK = {
-    "🧠 Claude Opus 4.8 · recommended (~$0.25)": "balanced",
+    "🧠 Claude Opus 5 · recommended (~$0.25)": "balanced",
     "🪶 Claude Fable 5 · strongest (~$0.45)": "fable",
     "⚡ Claude Sonnet 5 · fastest & cheapest (~$0.20)": "cheap",
 }

@@ -1,17 +1,0 @@
-# resume_auto-fitch-ratings-analyst-senior-analyst-enhance
-# cmd: C:\Users\PC\AppData\Local\Programs\Python\Python311\python.exe C:\Users\PC\Documents\GitHub\ApplyAgent\automation\resume_agent.py --job-id auto-fitch-ratings-analyst-senior-analyst-enhance --tier balanced
-# started: 2026-06-19T21:05:38.304605
-
-[resume_agent] tier=balanced (draft=opus, verify=sonnet)
-[resume_agent] tailoring Analyst/Senior Analyst - Enhanced Analytics - Toronto @ Fitch Ratings (JD 6886 chars)…
-  [tailor] claude-opus-4-7 cost $0.533 (in=11646, out=4784, cache_read=0)
-  [tailor] claude-sonnet-4-6 cost $0.083 (in=3958, out=4718, cache_read=0)
-[resume_agent] validity pass applied.
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:07<00:00,  7.79s/it]100%|██████████| 1/1 [00:08<00:00,  8.26s/it]
-[resume_agent] 5 ATS keyword(s) missing (MongoDB, data analyst, data engineer, non-relational, Agile); revising once…
-  [tailor] claude-sonnet-4-6 cost $0.035 (in=1921, out=1942, cache_read=14452)
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:09<00:00,  9.01s/it]100%|██████████| 1/1 [00:09<00:00,  9.35s/it]
-  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.37s/it]100%|██████████| 1/1 [00:01<00:00,  1.38s/it]
-[resume_agent] tracker linked (resume_file + ATS 11/11)
-[resume_agent] DONE -> C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_Fitch-Ratings_Analyst-Senior-Analyst-Enhanced-Analytic
-RESUME_AGENT_FOLDER=C:\Users\PC\Documents\GitHub\ApplyAgent\applications\2026-06-19_Fitch-Ratings_Analyst-Senior-Analyst-Enhanced-Analytic

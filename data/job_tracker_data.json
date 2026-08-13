@@ -2,7 +2,7 @@
   "meta": {
     "version": "2.0",
     "created_at": "2026-05-18T18:16:10",
-    "total_roles": 113,
+    "total_roles": 125,
     "changelog": [
       {
         "date": "2026-06-24",
@@ -432,6 +432,61 @@
         "date": "2026-07-31",
         "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
         "roles": 113
+      },
+      {
+        "date": "2026-08-07",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 114
+      },
+      {
+        "date": "2026-08-07",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 115
+      },
+      {
+        "date": "2026-08-07",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 116
+      },
+      {
+        "date": "2026-08-07",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 117
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +2 new, 0 upgraded, 0 expired, 1 geo-skipped (min_score=7)",
+        "roles": 119
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 120
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 121
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 122
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 123
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 124
+      },
+      {
+        "date": "2026-08-13",
+        "event": "auto_promote: +1 new, 0 upgraded, 0 expired, 0 geo-skipped (min_score=7)",
+        "roles": 125
       }
     ],
     "status_enum": [
@@ -454,7 +509,7 @@
       "coffees": 3,
       "linkedin_posts": 1
     },
-    "last_scan": "2026-07-31",
+    "last_scan": "2026-08-13",
     "schema_version": 3,
     "last_reset": "2026-06-24",
     "campaign_start": "2026-06-24",
@@ -4874,7 +4929,10 @@
           21
         ]
       },
-      "outreach_log": []
+      "outreach_log": [],
+      "archived": true,
+      "archived_at": "2026-08-13T22:14:36Z",
+      "archive_reason": "manual_bulk_kanban"
     },
     {
       "id": "brief-20260715-02",
@@ -4941,7 +4999,10 @@
           21
         ]
       },
-      "outreach_log": []
+      "outreach_log": [],
+      "archived": true,
+      "archived_at": "2026-08-13T22:05:20Z",
+      "archive_reason": "manual_bulk_kanban"
     },
     {
       "id": "adhoc-confidential-confidential",
@@ -5576,8 +5637,8 @@
       "expected_comp_band_cad": "",
       "fit_notes": "Operations and UHNW client-services role at a wealth-management desk. Saber's strength is institutional ALM, risk analytics, and platform delivery—not client operations, compliance coordination, or CIRO-licensed servicing. Skip. | Top reasons: Role is operations/client-services delivery for UHNW wealth clients—not quantitative, risk, ALM, or platform-systems work; 7+ years requirement is satisfied, but JD emphasizes project management, compliance liaison, and internal stakeholder coordination—outside Saber's core track record (institutional risk modelling, ALM, platform delivery); No mention of portfolio analytics, risk measurement, investment systems, or quant-adjacent work; primarily operational/administrative with CIRO compliance focus",
       "keywords": [],
-      "resume_file": null,
-      "cover_letter_file": null,
+      "resume_file": "applications/2026-08-13_RBC-Global-Asset-Man_Senior-Manager-Client-Services-Delivery/Saber_Ayatollahi_RBC-Global-Asset-Man_Senior-Manager-Client-Services-Delivery.docx",
+      "cover_letter_file": "applications/2026-08-13_RBC-Global-Asset-Man_Senior-Manager-Client-Services-Delivery/rbc_global_asset_management_senior_manager_global_investment_office_client_ser_cover.docx",
       "contact": {
         "recruiter_name": null,
         "recruiter_email": null,
@@ -5598,7 +5659,11 @@
       "rejection_reason": null,
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
-      "notes": "auto-promoted 2026-07-31 | verdict=skip | skill_gaps=['Wealth management client-services operations (not institutional risk/ALM)', \"UHNW/private-client complex structures and servicing (Saber's experience is institutional pension/insurer/fund, not UHNW/family office)\", 'CIRO licensing or regulatory compliance licensing (not held; different from model-governance or risk-oversight)'] | manual_override_skip_verdict=true"
+      "notes": "auto-promoted 2026-07-31 | verdict=skip | skill_gaps=['Wealth management client-services operations (not institutional risk/ALM)', \"UHNW/private-client complex structures and servicing (Saber's experience is institutional pension/insurer/fund, not UHNW/family office)\", 'CIRO licensing or regulatory compliance licensing (not held; different from model-governance or risk-oversight)'] | manual_override_skip_verdict=true",
+      "tailored_at": "2026-08-13T18:37:07",
+      "ats_matched": 15,
+      "ats_total": 15,
+      "ats_missing": []
     },
     {
       "id": "auto-bnp-paribas-transaction-banking-vp-trade-f",
@@ -6649,6 +6714,701 @@
       "rejection_date": null,
       "next_action": "Monitor. Revisit in weekly scan.",
       "notes": "auto-promoted 2026-07-31 | verdict=skip | skill_gaps=['Internal audit function experience and audit methodology/planning', 'Audit workpaper review and audit-report authorship (vs. model-validation documentation)', 'Audit team management and audit-function leadership', '10+ years in audit or control-function roles (Saber has 7 years in risk-model and governance roles)'] | manual_override_skip_verdict=true"
+    },
+    {
+      "id": "auto-aimco-manager-quantitative-analytics",
+      "company": "AIMCo",
+      "sector": "Canadian Pension Funds",
+      "lane": "B · Pension / Buy-Side",
+      "geo": "🍁 Canada — other",
+      "tier": 1,
+      "title": "Manager, Quantitative Analytics & Reporting",
+      "level": "",
+      "location": "Edmonton, Alberta, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/manager-quantitative-analytics-reporting-at-alberta-investment-management-corporation-aimco-4446915217",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-07-30",
+      "date_found": "2026-08-07",
+      "date_jd_verified": "2026-08-07",
+      "date_applied": "2026-08-13",
+      "date_last_followup": null,
+      "source": "scraper+fit_scorer",
+      "status": "Applied",
+      "fit_score": "Medium",
+      "fit_score_numeric": 7,
+      "resume_variants": [
+        "QUANT",
+        "VAL",
+        "VEN"
+      ],
+      "primary_variant": "QUANT",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit: investment-risk analytics, Python, and multi-asset portfolio reporting depth. Aladdin/Databricks are gaps, but Saber's vendor-platform and model-validation credentials are directly transferable—tailor cover letter to bridge platform specifics. | Top reasons: 7+ years investment risk analytics, multi-asset portfolio-level stress & scenario analysis, VaR/CVaR decomposition—directly aligns with QAR's core mission of enterprise-wide quantitative risk measurement across asset classes.; Advanced Python (expert, 7y) + hands-on risk-reporting infrastructure delivery (Moody's platform migration, Calypso→PFaroe); proven ability to validate, enhance, and automate reporting solutions.; Delegated sign-off authority on institutional portfolio risk outputs, independent model review, and anomaly investigation experience—matches QAR's requirement to validate, interpret, and escalate investment risk analytics with confidence.",
+      "keywords": [],
+      "resume_file": "applications/2026-08-13_AIMCo_Manager-Quantitative-Analytics-Reporting/Saber_Ayatollahi_AIMCo_Manager-Quantitative-Analytics-Reporting.docx",
+      "cover_letter_file": "applications/2026-08-13_AIMCo_Manager-Quantitative-Analytics-Reporting/aimco_manager_quantitative_analytics_reporting_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": "2026-08-16",
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-07 | verdict=tailor_and_apply | skill_gaps=[\"Aladdin hands-on user experience (Saber: configured/validated Moody's multi-asset platform and led PFaroe migration—functionally analogous but not Aladdin-specific)\", 'Databricks production experience (Saber: PostgreSQL day-to-day, no Databricks; minor data-engineering gap, not disqualifying for QAR scope)']",
+      "tailored_at": "2026-08-13T18:16:29",
+      "ats_matched": 14,
+      "ats_total": 14,
+      "ats_missing": []
+    },
+    {
+      "id": "auto-psp-investments-senior-manager-capital-plannin",
+      "company": "PSP Investments",
+      "sector": "Canadian Pension Funds",
+      "lane": "B · Pension / Buy-Side",
+      "geo": "🍁 Canada — other",
+      "tier": 1,
+      "title": "Senior Manager, Capital Planning, Research and Portfolio Analytics",
+      "level": "",
+      "location": "Montreal",
+      "url": "https://investpsp.wd3.myworkdayjobs.com/psp_careers/job/Montreal/Senior-Manager--Capital-Planning--Research-and-Portfolio-Analytics_R4828",
+      "portal_url": "https://investpsp.wd3.myworkdayjobs.com/psp_careers/job/Montreal/",
+      "archived": false,
+      "posted_date": "2026-07-11",
+      "date_found": "2026-08-07",
+      "date_jd_verified": "2026-08-07",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scraper+fit_scorer",
+      "status": "Watch",
+      "fit_score": "Medium",
+      "fit_score_numeric": 7,
+      "resume_variants": [
+        "QUANT",
+        "ALM",
+        "CON"
+      ],
+      "primary_variant": "QUANT",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong analytics, scenario-analysis, and IC-presentation fit; lacks specific RE market and private-markets experience. Tailor cover letter to emphasize stress-testing depth, cross-asset portfolio work at PSP-peer institutions (OMERS/HOOPP), and willingness to build RE domain. French-fluency confirmation required. | Top reasons: Stress-testing & scenario-analysis expert (7y hands-on at Moody's & Ortec); JD calls for 'scenario analysis' and 'covenant testing' — directly aligned on core deliverable; Demonstrated investment-committee presentation and strategic communication experience (Ortec); comfortable synthesizing complex analytics for senior leadership, which is core to role's liaison and reporting mandate; Macro/micro scenario-generator development (Ortec ESG engine, stochastic Monte Carlo); capable of leading benchmarking, leverage-position analysis, and climate-scenario work the role requires",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-07 | verdict=tailor_and_apply | skill_gaps=[\"Real estate market depth — no commercial/residential/logistics portfolio experience on file; JD emphasizes 'strong understanding of global real estate markets'\", \"Private-markets capital allocation frameworks — pension and Moody's institutional work is multi-asset, not dedicated RE; will need accelerated onboarding\", \"BI/visualization tools (Power BI, Tableau) — Saber's stack is Excel/Plotly/Python; these are learnable but not hands-on yet\", \"Bilingual French fluency — JD states 'bilingualism English and French' as required; confirm current proficiency\"]"
+    },
+    {
+      "id": "auto-deloitte-canada-senior-manager-analytics-insig",
+      "company": "Deloitte Canada",
+      "sector": "Big 4 Risk Advisory",
+      "lane": "Opportunistic",
+      "geo": "🍁 Canada — GTA",
+      "tier": 2,
+      "title": "Senior Manager, Analytics Insights",
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/senior-manager-analytics-insights-at-deloitte-4446583930",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-07-29",
+      "date_found": "2026-08-07",
+      "date_jd_verified": "2026-08-07",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scrape+gmail+fit_scorer",
+      "status": "Watch",
+      "fit_score": "Medium",
+      "fit_score_numeric": 6,
+      "resume_variants": [
+        "VEN",
+        "CON"
+      ],
+      "primary_variant": "VEN",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong technical and model-governance fit (Python, SQL, R, agentic-AI workflows, validation frameworks). Consulting advisory roots (EY, Ortec) and institutional platform delivery experience align with Deloitte's transformation mandate. Gap: large-scale consulting P&L ownership and BI-platform depth — tailor cover letter to translate Moody's/Ortec platform-delivery leadership into engagement-economics framing. | Top reasons: Python, SQL, R, and data-visualization stack (Plotly/matplotlib) match Deloitte's technical requirements exactly — Saber has 7y Python production experience at Moody's and Ortec, including agentic-AI workflows (Claude Code, Cursor) that align with the Generative/Agentic AI emphasis.; Delegated sign-off authority and model-governance experience at Moody's directly maps to 'model lifecycle management, validation, monitoring, explainability, and responsible AI adoption' — a differentiator among consulting candidates.; EY-delivered IFRS 17/IFRS 9 transformation programs and Ortec advisory roots provide the 'business understanding + advanced techniques (statistical modeling, optimization, simulation)' credibility to advise PE sponsors and C-suite on analytics-driven transformation.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-07 | verdict=tailor_and_apply | skill_gaps=[\"Deloitte-scale engagement economics, planning/budgeting, and multi-workstream staffing leadership — Saber has delivered complex programs at Moody's and Ortec but not explicitly managed P&L or large consulting teams.\", 'Hands-on BI platform (Tableau, Power BI, Looker) depth — Saber has Excel/Plotly/Python visualization but no enterprise-BI-platform operational background.', \"Predictive-AI / machine-learning production pipelines — Saber's AI experience is validation and tooling-assisted workflows, not ML model development or deployment.\"]"
+    },
+    {
+      "id": "auto-canada-infrastructur-director-investment-risk-and-e",
+      "company": "Canada Infrastructure Bank",
+      "sector": "Canadian Asset Managers",
+      "lane": "B · Pension / Buy-Side",
+      "geo": "🍁 Canada — GTA",
+      "tier": 2,
+      "title": "Director, Investment Risk and Equity Valuation",
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/director-investment-risk-and-equity-valuation-at-canada-infrastructure-bank-banque-de-l-infrastructure-du-canada-4446940174",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": true,
+      "posted_date": "2026-07-30",
+      "date_found": "2026-08-07",
+      "date_jd_verified": "2026-08-07",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scrape+gmail+fit_scorer",
+      "status": "Watch",
+      "fit_score": "Medium",
+      "fit_score_numeric": 7,
+      "resume_variants": [
+        "QUANT",
+        "VAL"
+      ],
+      "primary_variant": "QUANT",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit on valuation methodology, stress testing, model governance, and mentorship; infrastructure-sector knowledge and project-finance specifics are the main tailor. Lead with portfolio risk analytics and model-review authority; emphasize DCF and probability-weighted scenario capability. | Top reasons: Expert-level stress testing, scenario analysis, and sensitivity modelling across multi-asset institutional portfolios directly translates to CIB's infrastructure equity valuation and revenue-risk assessment mandate.; Delegated sign-off authority on institutional model review and independent challenge of valuations, assumptions, and methodologies—exactly the governance and mentorship framework CIB seeks in a Director role.; Strong DCF, business valuation, and probability-weighted scenario modelling foundation from Ortec (asset-liability optimization, stochastic Monte Carlo, risk decomposition) and Moody's (multi-asset platform stress-test design) fills the valuation-methodology and model-review playbook leadership gap.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-07 | verdict=tailor_and_apply | skill_gaps=[\"Infrastructure-specific sector depth: CIB role emphasizes PPPs, project finance, and infrastructure asset-class experience; Saber's background is institutional ALM/pension/insurer/vendor—not project-finance or infrastructure-focused. Tailor by emphasizing transferable project-valuation and revenue-risk analytics to infrastructure context.\", 'Credit risk rating methodologies: CIB JD calls for credit-rating familiarity (particularly infrastructure/project finance); Saber has model-review and governance experience but no explicit credit-rating-scale or credit-assessment background. Cover letter should reframe risk-rating/sign-off authority as analogous institutional risk-governance skill.', \"Infrastructure financing models and market-specific valuation benchmarking: CIB values 'deep knowledge of industry dynamics' and 'global infrastructure financing models'; Saber will need to study CIB's portfolio, sector focus, and typical valuation comparables before interview to speak credibly.\"]",
+      "archived_at": "2026-08-13T22:15:28Z",
+      "archive_reason": "manual_bulk_kanban"
+    },
+    {
+      "id": "auto-scotiabank-senior-manager-alm-risk-modell",
+      "company": "Scotiabank",
+      "sector": "Canadian Big 6 Banks",
+      "lane": "Floor · Bank Risk/ALM/Validation",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Senior Manager, ALM Risk Modelling",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4451938362",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-08-12",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": "2026-08-13",
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Applied",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "ALM",
+        "QUANT",
+        "VAL"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Perfect-fit ALM modelling role at Big-6 target bank. Saber has 7y of balance-sheet-risk modelling, Python engineering rigour, derivatives expertise, and institutional ALM credibility. Apply immediately. | Top reasons: 7 years of direct ALM modelling experience with delegated sign-off authority on institutional balance-sheet risk at Moody's Analytics — exact alignment with role's core mandate of structural interest-rate risk modelling across asset-liability portfolios.; Advanced Python proficiency (pandas, NumPy, SciPy) with proven track record designing and coding models under software best practices; built enterprise cash-flow projection engine and stochastic scenario generators — directly matches 'software engineering mindset' and code-quality expectations.; Demonstrated expertise in derivatives valuation, yield-curve calibration, parallel and non-parallel rate-shock analytics, and customer-behaviour modelling (mortgage prepayment, deposit dynamics, option-adjusted spreads) — foundational to Scotiabank's mortgage-prepayment and deposit-behaviour calibration mandate.",
+      "keywords": [],
+      "resume_file": "applications/2026-08-13_Scotiabank_Senior-Manager-ALM-Risk-Modelling/Saber_Ayatollahi_Scotiabank_Senior-Manager-ALM-Risk-Modelling.docx",
+      "cover_letter_file": "applications/2026-08-13_Scotiabank_Senior-Manager-ALM-Risk-Modelling/scotiabank_senior_manager_alm_risk_modelling_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": "2026-08-16",
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=[]",
+      "tailored_at": "2026-08-13T17:14:40",
+      "ats_matched": 15,
+      "ats_total": 15,
+      "ats_missing": []
+    },
+    {
+      "id": "auto-cibc-senior-manager-treasury-analyt",
+      "company": "CIBC",
+      "sector": "Canadian Big 6 Banks",
+      "lane": "Floor · Bank Risk/ALM/Validation",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Senior Manager, Treasury Analytics",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4451562795",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-08-12",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": "2026-08-13",
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Applied",
+      "fit_score": "High",
+      "fit_score_numeric": 8,
+      "resume_variants": [
+        "ALM",
+        "QUANT",
+        "VAL"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit. 7y ALM + cash-flow modelling + stochastic analytics at Moody's & Ortec match retail CFMB, hedging, and risk representation. Python/SQL/statistical depth and model governance discipline align squarely with Treasury Analytics' technical and governance scope. Apply immediately. | Top reasons: 7 years ALM, cash-flow modelling, and stochastic analytics directly match retail CFMB design, hedging strategy, and risk representation—core to this role's scope.; Hands-on Python, SQL, R, and statistical modelling (GLM-adjacent via actuarial liability work at Ortec) align with Treasury Analytics' quantitative tooling and consumer-behaviour analytics.; Delegated sign-off authority on institutional models, independent review, and documentation discipline transfer directly to CIBC's model vetting and risk-management governance expectations.",
+      "keywords": [],
+      "resume_file": "applications/2026-08-13_CIBC_Senior-Manager-Treasury-Analytics/Saber_Ayatollahi_CIBC_Senior-Manager-Treasury-Analytics.docx",
+      "cover_letter_file": "applications/2026-08-13_CIBC_Senior-Manager-Treasury-Analytics/cibc_senior_manager_treasury_analytics_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": "2026-08-16",
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=['C++/TypeScript/Node.js production delivery (not required; Python/R/SQL proficiency covers the JD intent)']",
+      "tailored_at": "2026-08-13T17:42:34",
+      "ats_matched": 14,
+      "ats_total": 14,
+      "ats_missing": []
+    },
+    {
+      "id": "auto-duca-financial-servi-senior-analyst-asset-liability",
+      "company": "DUCA Financial Services Credit Union Ltd.",
+      "sector": "",
+      "lane": "Opportunistic",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Senior Analyst, Asset Liability Management (ALM) & Market Risk (8 Month Contract)",
+      "level": "",
+      "location": "North York, ON",
+      "url": "https://www.linkedin.com/jobs/view/4452453411",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": true,
+      "posted_date": "2026-08-12",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 8,
+      "resume_variants": [
+        "ALM",
+        "QUANT"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Perfect-fit ALM analyst role for a candidate with 7y delegated sign-off authority, advanced Excel/Python financial modelling, hedging analytics, and enterprise cash-flow engine delivery. Apply immediately. | Top reasons: 7+ years direct ALM, structural risk, and market risk experience with demonstrable sign-off authority on institutional portfolios—exact scope of this role's core mandate.; Expert Excel and advanced financial modelling (cash-flow projection engines, scenario generation, hedging analytics) plus Python for data manipulation and statistical analysis.; Hands-on hedging strategy, FX and interest-rate derivatives valuation, liquidity-gap and cash-flow modelling across multi-year horizons—all core to DUCA's treasury and ALM functions.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=[]",
+      "archived_at": "2026-08-13T21:28:28Z",
+      "archive_reason": "manual_bulk_kanban"
+    },
+    {
+      "id": "auto-bny-mellon-vice-president-treasury-and-al",
+      "company": "BNY Mellon",
+      "sector": "US Banks (Toronto)",
+      "lane": "Floor · Bank Risk/ALM/Validation",
+      "geo": "🇺🇸 US — on-site (TN)",
+      "tier": 1,
+      "title": "Vice President, Treasury and ALM",
+      "level": "",
+      "location": "New York, NY",
+      "url": "https://www.linkedin.com/jobs/view/vice-president-treasury-and-alm-at-bny-4444710441",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": true,
+      "posted_date": "2026-07-23",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scraper+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "ALM",
+        "VAL"
+      ],
+      "primary_variant": "ALM",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Exceptional fit. Saber's 7-year ALM/stress-testing depth, delegated sign-off authority, governance discipline, and expert Python/SQL/visualization stack position him as a standout for this VP-level Treasury/ALM role at a custodian. | Top reasons: 7 years of hands-on ALM, stress testing, and liquidity-gap cash-flow projection modelling — directly aligned with intraday liquidity and FMI stress-testing framework leadership; Delegated sign-off authority on institutional portfolio models and governance discipline (escalation, documentation, exception handling) — matches BNY's regulatory/audit/control governance expectations; Expert Python, SQL, and data-visualization proficiency (Plotly, matplotlib) with production risk-system experience — rare combination in ALM/treasury risk candidates",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=[]",
+      "archived_at": "2026-08-13T22:04:55Z",
+      "archive_reason": "manual_bulk_kanban"
+    },
+    {
+      "id": "auto-eq-bank-director-treasury-finance-and-",
+      "company": "EQ Bank",
+      "sector": "Mid Canadian Banks",
+      "lane": "Floor · Bank Risk/ALM/Validation",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Director, Treasury, Finance, and Stress Testing Model Validation",
+      "level": "",
+      "location": "Toronto, ON",
+      "url": "https://www.linkedin.com/jobs/view/4450655840",
+      "portal_url": "https://www.linkedin.com/jobs/view/",
+      "archived": true,
+      "posted_date": "2026-08-09",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "gmail_linkedin_alert+fit_scorer",
+      "status": "Found",
+      "fit_score": "High",
+      "fit_score_numeric": 9,
+      "resume_variants": [
+        "VAL",
+        "ALM",
+        "QUANT"
+      ],
+      "primary_variant": "VAL",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Perfect-fit Director-level model-validation role in Canadian Big 5 (EQ) treasury/ALM/stress-testing. Saber has 7y direct evidence, all required programming languages, and formal MRM governance experience. Apply immediately with VAL + ALM variants. | Top reasons: 7+ years treasury-risk model validation and ALM/IRRBB modelling directly matched to the Director role scope; delegated sign-off authority on multi-asset institutional models at Moody's validates readiness for independent review and VP-support responsibilities.; Expert proficiency in Python, SQL, Excel VBA, and MATLAB—all explicitly required—plus hands-on stress-testing, liquidity-gap, and cash-flow-projection engine development demonstrates the quantitative depth and technical execution the MRM team needs.; Formal model-governance framework experience (assumption validation, economically-defensible outputs, escalation protocols, auditability standards) directly aligns with MRM mandate to enforce policy and regulatory compliance; led Calypso→PFaroe enterprise platform migration showcasing ability to manage model-risk at scale.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=[]",
+      "archived_at": "2026-08-13T22:04:34Z",
+      "archive_reason": "manual_bulk_kanban"
+    },
+    {
+      "id": "auto-mufg-investor-servic-model-risk-management-analyst--8",
+      "company": "MUFG Investor Services",
+      "sector": "Fund Admin/Custody",
+      "lane": "Opportunistic",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Model Risk Management Analyst, AVP",
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/model-risk-management-analyst-avp-at-mufg-4441941458",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-07-17",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": "2026-08-13",
+      "date_last_followup": null,
+      "source": "scraper+fit_scorer",
+      "status": "Applied",
+      "fit_score": "High",
+      "fit_score_numeric": 8,
+      "resume_variants": [
+        "VAL",
+        "QUANT"
+      ],
+      "primary_variant": "VAL",
+      "urgency": "High",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit for Quantitative Risk Control model-validation role. Saber's delegated sign-off authority, independent model-review discipline, Python/R depth, and stress-testing expertise directly satisfy the core AVP mandate. Credit-risk specifics are learnable; quantitative framework is established. | Top reasons: Expert-level model validation and independent review authority (4y delegated sign-off on multi-asset institutional models at Moody's); directly matches primary JD responsibility of independent model validation with high-quality documentation and findings resolution.; Advanced quantitative skillset: Python (expert, 7y), R (intermediate, 3y), stress testing and scenario analysis (expert, 7y); aligns with JD's emphasis on statistical analysis, machine learning validation, and quantitative methods across credit/risk models.; Hands-on model governance framework experience: assumption validation, escalation of economically-indefensible outputs, model-inventory maintenance, and model annual review discipline within a formal risk-control environment (Moody's Analytics, 4y).",
+      "keywords": [],
+      "resume_file": "applications/2026-08-13_MUFG-Investor-Servic_Model-Risk-Management-Analyst-AVP/Saber_Ayatollahi_MUFG-Investor-Servic_Model-Risk-Management-Analyst-AVP.docx",
+      "cover_letter_file": "applications/2026-08-13_MUFG-Investor-Servic_Model-Risk-Management-Analyst-AVP/mufg_investor_services_model_risk_management_analyst_avp_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": "2026-08-16",
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Verify JD live; tailor; find warm intro before submit.",
+      "notes": "auto-promoted 2026-08-13 | verdict=apply_now | skill_gaps=['SAS: Saber has Python and R but not SAS production experience (minor; Python expertise transfers, SAS is learnable in role context).', \"Wholesale credit risk modeling: Saber's background is ALM, derivatives valuation, and portfolio risk; credit-risk-specific methodologies (PD/LGD/EAD, scorecard development) are an onboarding topic, not a blocking gap given model-validation framework strength.\"]",
+      "tailored_at": "2026-08-13T18:12:20",
+      "ats_matched": 14,
+      "ats_total": 14,
+      "ats_missing": []
+    },
+    {
+      "id": "auto-citco-fund-services-vice-president-performance-rep",
+      "company": "Citco Fund Services",
+      "sector": "Fund Admin/Custody",
+      "lane": "Opportunistic",
+      "geo": "🍁 Canada — GTA",
+      "tier": 2,
+      "title": "Vice President, Performance Reporting & Analytics",
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/vice-president-performance-reporting-analytics-at-the-citco-group-limited-4440481784",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-07-21",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scrape+gmail+fit_scorer",
+      "status": "Watch",
+      "fit_score": "Medium",
+      "fit_score_numeric": 7,
+      "resume_variants": [
+        "QUANT",
+        "ALM",
+        "VEN"
+      ],
+      "primary_variant": "QUANT",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong fit: VaR, stress-testing, cash-flow forecasting, and client-onboarding depth align with Citco's institutional analytics and reporting leadership role. Gap: Barra platform experience (tailor to emphasize platform-migration fluency and investment-analytics tooling acumen). | Top reasons: Expert stress-testing, scenario analysis, and cash-flow projection experience across multi-asset institutional portfolios (Moody's ALM engine, Ortec LDI and VaR/CVaR optimization); directly translates to Citco's portfolio-risk and liquidity-forecasting mandate.; Proven client onboarding, solution-delivery, and investment-committee presentation experience at Moody's Analytics (Calypso→PFaroe migration, performance reporting platform configuration); aligns with Citco's RFP, client-demo, and board-materials requirements.; Advanced Python, Excel, and data-visualization (Plotly/matplotlib) expertise with hands-on data-pipeline and reconciliation workflows; complements Citco's analytics-platform and data-governance focus.",
+      "keywords": [],
+      "resume_file": "applications/2026-08-13_Citco_VP-Performance-Reporting-Analytics/Saber_Ayatollahi_Citco_VP-Performance-Reporting-Analytics.docx",
+      "cover_letter_file": "applications/2026-08-13_Citco_VP-Performance-Reporting-Analytics/citco_fund_services_vice_president_performance_reporting_analytics_cover.docx",
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-13 | verdict=tailor_and_apply | skill_gaps=[\"Barra / MSCI RiskMetrics platform (hands-on depth) — Citco explicitly lists this; Saber has not worked with Barra operationally. Tailor cover letter to emphasize rapid platform ramp-on-boarding capability via analogous Calypso / PFaroe / Moody's-platform migration experience.\"]",
+      "tailored_at": "2026-08-13T18:37:49",
+      "ats_matched": 15,
+      "ats_total": 15,
+      "ats_missing": []
+    },
+    {
+      "id": "auto-ontario-teachers-pen-manager-finance-data-analytics-6",
+      "company": "Ontario Teachers' Pension Plan",
+      "sector": "Canadian Pension Funds",
+      "lane": "B · Pension / Buy-Side",
+      "geo": "🍁 Canada — GTA",
+      "tier": 1,
+      "title": "Manager, Finance Data Analytics & Insights",
+      "level": "",
+      "location": "Toronto, Ontario, Canada",
+      "url": "https://ca.linkedin.com/jobs/view/manager-finance-data-analytics-insights-at-ontario-teachers-%E2%80%8B-pension-plan-4425699918",
+      "portal_url": "https://ca.linkedin.com/jobs/view/",
+      "archived": false,
+      "posted_date": "2026-07-21",
+      "date_found": "2026-08-13",
+      "date_jd_verified": "2026-08-13",
+      "date_applied": null,
+      "date_last_followup": null,
+      "source": "scraper+fit_scorer",
+      "status": "Watch",
+      "fit_score": "Medium",
+      "fit_score_numeric": 6,
+      "resume_variants": [
+        "VEN",
+        "QUANT",
+        "ALM"
+      ],
+      "primary_variant": "VEN",
+      "urgency": "Medium",
+      "expected_comp_band_cad": "",
+      "fit_notes": "Strong technical + sector fit (Python, SQL, R, pension background, CFA). Tailor cover letter to bridge Snowflake/Power BI gaps and highlight Moody's platform-delivery and Ortec pension analytics depth. OTPP values cross-functional initiative + domain expertise—both demonstrated. | Top reasons: 7 years Python expertise + SQL/R proficiency directly match JD's technical stack; hands-on platform implementation (Calypso→PFaroe migration, Moody's multi-asset platform) translates to BI/self-service analytics development.; CFA + dual MSc satisfy credential requirement; pension-fund sector experience (Ortec ALM/LDI/portfolio analytics across institutional mandates) and finance-operations fluency (cash-flow projection, dashboarding, reporting automation) address domain depth.; Stochastic scenario-generator design, multi-asset risk decomposition, and cross-functional stakeholder coordination (Ortec advisory context) position Saber to develop the analytical capabilities and ESG/risk/valuation dashboards the role requires.",
+      "keywords": [],
+      "resume_file": null,
+      "cover_letter_file": null,
+      "contact": {
+        "recruiter_name": null,
+        "recruiter_email": null,
+        "hiring_manager_name": null,
+        "hiring_manager_linkedin": null,
+        "warm_intro_candidate": null,
+        "moodys_alumni_at_target": null
+      },
+      "outreach_log": [],
+      "followup_schedule": {
+        "next_due": null,
+        "cadence_days": [
+          3,
+          10,
+          21
+        ]
+      },
+      "rejection_reason": null,
+      "rejection_date": null,
+      "next_action": "Monitor. Revisit in weekly scan.",
+      "notes": "auto-promoted 2026-08-13 | verdict=tailor_and_apply | skill_gaps=['Snowflake hands-on production experience (gap: JD lists as strong technical requirement; Saber has PostgreSQL day-to-day, not cloud data-warehouse)', 'Power BI / Tableau hands-on (JD emphasizes BI visualization tools; Saber has Plotly/matplotlib, not enterprise BI platform experience)', 'Explicit pension-fund trade lifecycle and EOD operations depth (Saber has pension ALM/LDI/valuation from Ortec, not internal pension-operations/trade-settlement familiarity)']"
     }
   ]
 }
