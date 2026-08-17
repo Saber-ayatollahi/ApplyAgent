@@ -572,6 +572,56 @@ def _neg_hit(term: str, title_lower: str) -> bool:
     return term in title_lower
 
 
+# ---------------------------------------------------------------------------
+# Hard reject — French/bilingual language requirement. Saber is not bilingual;
+# these roles are an automatic no regardless of fit score. Two checkpoints:
+#   1. Title-level, in rule_triage() — catches "Bilingual Client Manager"
+#      titles for free, before any JD fetch.
+#   2. JD-body-level, in score_one() right after fetch_jd() — catches
+#      "must be fluent in French" buried in the description, BEFORE the LLM
+#      call so a deterministic reject never burns a token on a role Saber
+#      can't take regardless of how well it otherwise fits.
+# Deliberately precision-leaning: only fires on clear REQUIREMENT phrasing
+# and explicitly backs off when French is framed as an asset/nice-to-have
+# ("bilingualism is considered an asset" must NOT hard-reject — that's a
+# real Toronto-market phrasing for "optional").
+# ---------------------------------------------------------------------------
+_FRENCH_REQ_PATTERNS = [
+    r"bilingual\w*\s*\(?\s*(english\s*(?:and|/|&)\s*french|french\s*(?:and|/|&)\s*english)",
+    r"(?:fluen(?:t|cy))\s+in\s+(?:both\s+)?(?:english\s+and\s+french|french\s+and\s+english|french)\b",
+    r"proficien(?:t|cy)\s+in\s+(?:both\s+)?(?:english\s+and\s+french|french\s+and\s+english|french)\b",
+    r"bilingualism\s*\(?[^)]*\)?\s*(?:is\s+)?(?:required|mandatory|essential|a\s+requirement)",
+    r"french\s+language\s+(?:skills\s+)?(?:is\s+|are\s+)?(?:required|mandatory|essential)",
+    r"(?:must|required?\s+to)\s+(?:be\s+able\s+to\s+)?(?:speak|communicate|write)\s+(?:in\s+)?(?:both\s+)?(?:english\s+and\s+french|french)",
+    r"ability\s+to\s+communicate\s+(?:effectively\s+)?in\s+(?:both\s+)?(?:english\s+and\s+french|french)",
+    r"requires?\s+(?:strong\s+)?(?:written\s+and\s+spoken\s+)?french",
+]
+_FRENCH_REQ_RE = re.compile("|".join(f"(?:{p})" for p in _FRENCH_REQ_PATTERNS), re.IGNORECASE)
+
+_FRENCH_ASSET_GUARD_RE = re.compile(
+    r"(asset|nice[\s-]to[\s-]have|preferred\s+but\s+not\s+required|considered\s+an\s+asset|"
+    r"is\s+an\s+asset|would\s+be\s+an\s+asset|not\s+required|not\s+mandatory|"
+    r"highly\s+desirable|desirable\s+but\s+not|an\s+advantage|would\s+be\s+beneficial|"
+    r"is\s+a\s+plus|preferred\s+qualification)",
+    re.IGNORECASE,
+)
+
+
+def _requires_french(text: str) -> str | None:
+    """Return the matched phrase if `text` states a hard French/bilingual
+    requirement, else None. Checks a +/-60 char window around each candidate
+    match for asset/nice-to-have framing and backs off if found."""
+    if not text:
+        return None
+    for m in _FRENCH_REQ_RE.finditer(text):
+        start = max(0, m.start() - 60)
+        end = min(len(text), m.end() + 60)
+        if _FRENCH_ASSET_GUARD_RE.search(text[start:end]):
+            continue
+        return m.group(0)[:80]
+    return None
+
+
 # Weighted positive signals. score ≥ 3 passes stage 1.
 # Matched longest-first; each distinct phrase contributes its weight once.
 STRONG_POS = [  # +3 each — unambiguous lane hits
@@ -830,6 +880,16 @@ def rule_triage(title: str,
         if _neg_hit(n, t):
             return {"stage1_pass": False, "rough_tier": 5, "score": 0,
                     "rule_reasons": [f"neg:{n}"], "hits_breakdown": {}}
+
+    # Hard-fail on a French/bilingual requirement stated in the title itself
+    # ("Bilingual Client Service Manager"). The JD-body check in score_one()
+    # catches requirements buried in the description; this one is free —
+    # no JD fetch needed — and fires before that stage even runs.
+    _fr_hit = _requires_french(title or "")
+    if _fr_hit:
+        return {"stage1_pass": False, "rough_tier": 5, "score": 0,
+                "rule_reasons": [f"lang:french_required:{_fr_hit}"],
+                "hits_breakdown": {}}
 
     # Suppression check — applied after neg-term (correctness) but before the
     # keyword/level scoring (taste). Short-circuits cleanly when the snapshot
@@ -2198,6 +2258,25 @@ def main() -> int:
         try:
             jd = fetch_jd(r["link"])
             r["_jd_len"] = len(jd)
+            # Hard reject — French/bilingual requirement buried in the JD body
+            # (title-only postings are already caught in rule_triage). Checked
+            # AFTER fetch (need the text) but BEFORE the LLM call, so this is
+            # a deterministic $0 reject rather than relying on the model to
+            # notice a requirement Saber can't meet. Does not touch fit_cache,
+            # so a previously-cached apply_now verdict for a role that turns
+            # out to require French won't be silently overwritten here — only
+            # fresh (uncached) scoring passes through this gate.
+            _fr_hit = _requires_french(jd)
+            if _fr_hit:
+                r["fit"] = {
+                    "fit_score": 0, "fit_verdict": "skip", "tier": 5,
+                    "top_3_reasons": [f"lang:french_required:{_fr_hit}"],
+                    "skill_gaps": [],
+                    "summary": "Hard reject — JD states a French/bilingual "
+                               f"requirement (\"{_fr_hit}\"). Not scored by "
+                               "the LLM.",
+                }
+                return r, False, False
             r["fit"] = score_with_llm(client, r, jd)
         except Exception as e:
             error = True
