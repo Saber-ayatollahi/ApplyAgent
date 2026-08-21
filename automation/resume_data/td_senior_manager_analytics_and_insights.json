@@ -1,0 +1,140 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "TD",
+    "role": "Senior Manager, Analytics and Insights",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "analytics",
+      "insights",
+      "performance metrics",
+      "reporting",
+      "Python",
+      "SQL",
+      "data pipelines",
+      "automated",
+      "anomaly detection",
+      "quality assurance",
+      "governance",
+      "stakeholder management",
+      "executive summaries",
+      "Excel",
+      "scenario analysis"
+    ]
+  },
+  "summary": "Senior Manager, Analytics and Insights profile with ~7 years producing performance metrics, automated reporting, and decision-ready insights for risk and governance stakeholders. At Moody's Analytics, holds delegated sign-off on analytical outputs for institutional portfolios ($5-25bn per engagement), re-engineered manual spreadsheet reporting into auditable Python analytics pipelines, and cut cycle time an estimated 30-40% via automated validation and anomaly-detection scaffolding. CFA charterholder with dual MSc degrees; regular presenter to executive and committee audiences.",
+  "core_skills": [
+    "Performance Metrics & Executive Reporting",
+    "Executive Summaries & Data Storytelling",
+    "Deep-Dive Quantitative Analysis & Sensitivity Review",
+    "Python (pandas, NumPy, SciPy)",
+    "SQL (PostgreSQL)",
+    "Automated Data Pipelines & Workflow Automation",
+    "Advanced Excel & Visualization (Plotly, matplotlib)",
+    "Scenario Analysis & Stress Testing",
+    "Quality Assurance, Governance & Oversight",
+    "Issue Identification, Challenge & Escalation",
+    "Stakeholder Management & Cross-Functional Delivery",
+    "Agentic AI Workflows (Claude Code, Cursor) - automated validation scaffolding & anomaly detection in code/analytics pipelines; Git / CI-CD"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Reporting, Portfolio Insights & Executive Communication",
+              "bullets": [
+                "Prepared analytical summaries for senior stakeholders covering exposure, scenario impacts, and balance-sheet sensitivities - translating quantitative results into committee-ready narratives for executive and business-line audiences.",
+                "Served as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders on findings requiring management attention.",
+                "Reviewed aggregation logic converting security-level detail into portfolio-level metrics, giving stakeholders both headline and more granular views of the same book."
+              ]
+            },
+            {
+              "heading": "Automated Reporting, Data Pipelines & Analytics Tooling",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation - reducing development cycle time an estimated 30-40% on comparable modules.",
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, providing forward-looking visibility used in executive contingency planning."
+              ]
+            },
+            {
+              "heading": "Quality Assurance, Governance & Oversight",
+              "bullets": [
+                "Held delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing methodology and assumptions before production release.",
+                "Contributed as a member of the model governance committee to methodology review, documentation and benchmarking standards, and performance assessment of client-delivered analytics.",
+                "Challenged and escalated outputs that were mathematically consistent but economically indefensible, holding release until assumptions and methodology could be independently justified."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms adopting the PFaroe DB (risk & ALM analytics) and PFaroe PM (portfolio management) platforms.",
+                "Acted as technical liaison between client teams and product owners - scoping business requirements into development requests and validating model outputs post-deployment.",
+                "Contributed to migrating all assigned client accounts from the legacy Calypso environment to PFaroe PM."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients.",
+                "Contributed to governance documentation and regulatory-readiness processes while coordinating actuarial, finance, IT, risk, and program-management teams on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered analytical studies for Canadian and international pension funds - quantifying funding-ratio, duration-mismatch, and long-horizon exposures under base-case and stressed conditions.",
+                "Built and interpreted stochastic scenario generators and performed risk decomposition and attribution (contribution-to-risk, risk budgeting) to isolate the drivers behind headline results.",
+                "Presented study findings and recommendations on-site to investment committees at pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Robertson & Company",
+    "role": "Director Business Analytics & Insights",
+    "jd_keywords": [
+      "business analytics",
+      "insights",
+      "analytics",
+      "data quality",
+      "data visualization",
+      "Python",
+      "SQL",
+      "Excel",
+      "asset management",
+      "executive",
+      "reporting",
+      "stakeholders",
+      "scenario analysis",
+      "cross-functional"
+    ]
+  },
+  "summary": "Analytics and insights professional with ~7 years across asset management, pension, and insurance clients — directly aligned to the Director, Business Analytics & Insights mandate. Holds delegated sign-off on valuation, sensitivity, and portfolio analytics delivered to institutional portfolios of $5-25bn per engagement at Moody's Analytics, translating those outputs into executive- and investment-committee-ready reporting. Re-engineered manual spreadsheet workflows into auditable Python pipelines, and partners with product, technology, and client stakeholders on model governance, validation, and reporting quality. CFA; dual MSc.",
+  "core_skills": [
+    "Executive & Committee-Level Reporting",
+    "Scenario & Stress-Testing Analytics",
+    "Multi-Asset Investment Analytics",
+    "Python (pandas, NumPy, SciPy)",
+    "SQL / PostgreSQL",
+    "Data Visualization (Plotly, Excel)",
+    "Model Governance & Data Auditability",
+    "Cross-Functional Partnership (Technology, Product, Client Teams)",
+    "Asset Management & Pension Domain Analytics",
+    "Client Onboarding & Requirements Scoping",
+    "Risk Decomposition & Attribution",
+    "Mentoring & Senior Analytical Review"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Analytics, Insights & Executive Reporting",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and portfolio analytics delivered to institutional clients - portfolios of $5-25bn per engagement, ~$50bn+ cumulative - independently reviewing methodology and results before release.",
+                "Translates complex quantitative outputs into decision-ready reporting for senior stakeholders, covering portfolio exposures, scenario impacts, and balance-sheet sensitivities for investment committees.",
+                "Serves as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders."
+              ]
+            },
+            {
+              "heading": "Advanced Analytics & Solution Build",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenario analysis across multi-year horizons.",
+                "Architected configurable time-bucketed analytics (T+1 through multi-year) enabling funding, refinancing, and asset-allocation decisions for institutional clients.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation - cutting development cycle time an estimated 30-40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Data Quality, Model Governance & Auditability",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls.",
+                "Serves on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics.",
+                "Reviews aggregation logic converting security-level exposures into portfolio-level metrics feeding downstream reporting; mentors junior colleagues within the ~12-person Modelling Services team."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms adopting the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) analytics platforms.",
+                "Acted as technical liaison between client investment teams and product owners - scoping business requirements into development requests and validating model outputs post-deployment.",
+                "Contributed to the successful migration of all assigned client accounts from the legacy Calypso platform to PFaroe PM."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, Financial Risk",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation programs for Canadian and international insurers, aligning reporting requirements with system implementation.",
+                "Coordinated actuarial, finance, IT, risk, and program-management teams on milestone delivery and implementation materials.",
+                "Developed advisory product offerings and go-to-market collateral for IFRS 17 implementation services."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, ALM & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Presented study findings and allocation recommendations directly to investment committees at Canadian pension-fund clients.",
+                "Performed asset-only and asset-liability portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test the robustness of recommendations.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Delivered ALM studies for pension funds and institutional investors - funding ratios, duration mismatch, and long-term balance-sheet exposures.",
+                "Led onboarding and the ALM study for a three-plan university pension merger on a team of three, developing and validating the model capturing all funding-policy dynamics."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

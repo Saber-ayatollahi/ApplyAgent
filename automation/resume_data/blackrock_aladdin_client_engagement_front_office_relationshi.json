@@ -1,0 +1,140 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "BlackRock",
+    "role": "Aladdin Client Engagement FO Relationship Manager VP",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "portfolio management",
+      "portfolio optimization",
+      "risk decomposition",
+      "client engagement",
+      "multi-asset",
+      "Python",
+      "SQL",
+      "onboarding",
+      "implementation",
+      "stakeholders",
+      "scenario analysis",
+      "asset managers",
+      "pension funds",
+      "product owners",
+      "financial services"
+    ]
+  },
+  "summary": "Candidate for Aladdin Client Engagement, Front Office Relationship Manager, Vice President with ~7 years in financial services bridging institutional investment teams and enterprise portfolio and risk platforms. Four years at Moody's Analytics onboarding pension funds, asset managers, and consulting firms onto the PFaroe platform, leading a full Calypso migration and translating client requirements into product owner requests. Hands-on portfolio optimization, risk decomposition, and multi-asset analytics from Ortec Finance. CFA, dual MSc, Python and SQL.",
+  "core_skills": [
+    "Client Relationship Management",
+    "Portfolio Management Workflows",
+    "Portfolio Optimization (VaR / CVaR)",
+    "Risk Decomposition & Attribution",
+    "Multi-Asset Portfolio Analytics",
+    "Enterprise Platform Implementation & Migration",
+    "Client Requirements Scoping for Product Owners",
+    "Stress Testing & Scenario Analysis",
+    "Senior Stakeholder & Investment-Committee Presentation",
+    "Derivatives, Fixed Income & Rates Analytics",
+    "Python (pandas, NumPy, SciPy)",
+    "SQL (PostgreSQL)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Client Partnership & Senior Stakeholder Advisory",
+              "bullets": [
+                "Served as escalation point for client-critical analytical issues, partnering directly with clients' Heads of Risk and investment stakeholders to resolve portfolio-level questions under delivery deadlines.",
+                "Translated quantitative outputs into investment-committee-ready narratives, preparing analytical summaries for senior stakeholders on portfolio exposure, scenario impacts, and balance-sheet sensitivities."
+              ]
+            },
+            {
+              "heading": "Portfolio Analytics, Risk & Reporting",
+              "bullets": [
+                "Held delegated sign-off authority on valuation, sensitivity, and portfolio risk outputs delivered to multi-asset institutional client portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validated derivatives pricing outputs across rates, FX, and inflation, confirming consistency of sensitivities and scenario impacts at portfolio-level aggregates.",
+                "Oversaw duration and interest-rate sensitivity analysis under parallel and non-parallel rate shocks across client mandates, supporting asset-liability and funding decisions."
+              ]
+            },
+            {
+              "heading": "Product Feedback, Platform Delivery & Automation",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, reducing development cycle time an estimated 30-40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform, acting as technical liaison between client investment teams and product owners.",
+                "Migrated all assigned client accounts from a legacy Calypso environment to the PFaroe PM portfolio management platform, validating model outputs post-deployment.",
+                "Scoped client investment-team requirements into structured development requests for product owners and advised clients on asset, liability, and portfolio configurations."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management teams on milestone delivery and client implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Advised institutional clients on Strategic Asset Allocation (SAA) and Tactical Asset Allocation (TAA) trade-offs through stress testing and sensitivity analysis.",
+                "Presented study findings on-site to investment committees at Canadian pension-fund clients, converting stochastic output into allocation decisions.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Conducted liability-driven investment (LDI) analysis across duration alignment, return objectives, and liquidity for pension funds and institutional investors."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

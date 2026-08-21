@@ -1,0 +1,60 @@
+Job Description
+What is the opportunity?
+The Associate Director is responsible for methodologies related to market risk. This includes model specification, implementation, performance monitoring, documenting and presenting of these methodologies.
+GRA (Global Risk Analytics) Market Risk Analytics team has primary responsibility for risk methodologies related to the measurement of market risk for RBC trading business and selected investment portfolios.
+This includes leading the methodology specifications, prototype implementation, as well as performance monitoring and maintenance of these methodologies. The team is also responsible for market data and scenarios services to various risk systems.
+What will you do?
+Develop, implement, document, maintain and monitor methodologies for market risk and CCR across various asset classes (includes fixed income, interest rate derivatives, equity, and foreign exchange). This includes, but not limited to VaR / SVaR / Stress P&L calculations. 
+Work with Local and Enterprise Market Risk teams, Risk IT and Enterprise IT to implement end-to-end solution for projects.
+Present methodology proposal and analytical impacts to senior management committee member for approval or sharing information.
+What do you need to succeed? 
+Must-have 
+2+ years of working experience in quantitative analytics, such as derivative pricing, market risk models or CCR models
+Master’s in Financial, Engineering, Statistics/Mathematics/Physics or equivalent. PhD in Finance, Engineering, Applied Sciences or Economics is a plus.
+Strong programming experience in Python/C++/C# and SQL.
+Strong communication skills in oral and written formats.
+Team players to collaborate and innovate.
+Self-motivated with a high level of analytical capabilities and attention to detail.
+Eager to learn.
+Nice-to-have 
+Experience in a similar role
+What’s in it for you? 
+We thrive on the challenge to be our best, progressive thinking to keep growing, and working together to deliver trusted advice to help our clients thrive and communities prosper. We care about each other, reaching our potential, making a difference to our communities, and achieving success that is mutual.
+A comprehensive Total Rewards Program including bonuses and flexible benefits and competitive compensation.
+Leaders who support your development through coaching and managing opportunities.
+Ability to make a difference and lasting impact. 
+Flexible work/life balance options.
+Work in a dynamic, collaborative, progressive, and high-performing team.
+Opportunities to do challenging work.
+Job Skills
+Client Counseling, Competitive Markets, Critical Thinking, Financial Instruments, Financial Regulation, Investment Risk Management, Long Term Planning, Pricing Models, Quantitative Methods, Risk Management, Risk Management Analysis
+Additional Job Details
+Address:
+ROYAL BANK PLAZA, 200 BAY ST:TORONTO
+City:
+Toronto
+Country:
+Canada
+Work hours/week:
+37.5
+Employment Type:
+Full time
+Platform:
+Job Type:
+Regular
+Pay Type:
+Salaried
+Posted Date:
+2026-08-11
+Application Deadline:
+2026-08-25
+Note
+:
+
+Applications will be accepted until 11:59 PM on the day prior to the application deadline date above
+Our Employment Opportunities
+At RBC, we are guided by living shared values of Client First, Integrity, Collaboration, Respect and Excellence and winning together as One RBC. We believe an inclusive workplace that has diverse perspectives is core to our continued growth as one of the largest and most successful banks in the world. Maintaining a workplace where our employees feel supported to perform at their best, effectively collaborate, drive innovation, and grow professionally helps to bring our Purpose to life and create value for our clients and communities. RBC strives to deliver this through policies and programs intended to foster a workplace based on respect, belonging and opportunity for all.
+Join our Talent Community
+Stay in-the-know about great career opportunities at RBC. Sign up and get customized info on our latest jobs, career tips and Recruitment events that matter to you.
+Expand your limits and create a new future together at RBC. Find out how we use our passion and drive to enhance the well-being of our clients and communities at jobs.rbc.com</a/span>
+RBC is presently inviting candidates to apply for this existing vacancy. Applying to this posting allows you to express your interest in this current career opportunity at RBC. Qualified applicants may be contacted to review their resume in more detail.

@@ -1,0 +1,147 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "OMERS",
+    "role": "Senior Analyst Portfolio Analytics",
+    "jd_keywords": [
+      "Python",
+      "pandas",
+      "NumPy",
+      "SciPy",
+      "SQL",
+      "PostgreSQL",
+      "Git",
+      "CI/CD",
+      "Portfolio Analytics",
+      "quantitative modelling",
+      "optimization",
+      "VaR",
+      "CVaR",
+      "derivatives",
+      "Tactical Asset Allocation"
+    ]
+  },
+  "summary": "Senior Analyst (Senior Associate), Portfolio Analytics candidate with ~7 years of multi-asset investment and risk analytics for pension and institutional portfolios. Ran VaR/CVaR portfolio optimization, risk decomposition, and currency, inflation, and duration/leverage overlay analysis at Ortec Finance; now holds delegated sign-off on valuation and sensitivity outputs for $5-25bn multi-asset portfolios at Moody's Analytics. Re-engineers manual workflows into production Python (pandas, NumPy, SciPy) and PostgreSQL analytics pipelines. CFA charter, dual MSc.",
+  "core_skills": [
+    "Multi-Asset Portfolio Analytics",
+    "Portfolio Optimization (VaR / CVaR)",
+    "Risk Decomposition & Attribution",
+    "Derivatives Valuation (Rates, FX, Inflation)",
+    "Quantitative Modelling & Monte Carlo Simulation",
+    "Stochastic Scenario Generation & Stress Testing",
+    "Python (pandas, NumPy, SciPy)",
+    "SQL / PostgreSQL Analytics Pipelines",
+    "Git & CI/CD Workflows (professional-context)",
+    "Currency, Inflation & Duration Hedging Analysis",
+    "Strategic & Tactical Asset Allocation (SAA / TAA)",
+    "Requirements Translation for Investment Teams"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Multi-Asset Portfolio Analytics & Cross-Asset Valuation",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and portfolio risk outputs delivered to multi-asset institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validate derivatives pricing outputs across rates, FX, and inflation, confirming consistency of sensitivities and scenario impacts at portfolio-level aggregates.",
+                "Review aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream analytics and reporting.",
+                "Serve on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics."
+              ]
+            },
+            {
+              "heading": "Quantitative Modelling & Scenario Analytics",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios across investment horizons.",
+                "Architected configurable time-bucketed projection analytics (T+1 through multi-year) used for funding, liquidity, and asset-allocation decisions.",
+                "Oversee duration and interest-rate exposure analysis under parallel and non-parallel curve shocks, incorporating spread calibration across fixed income holdings feeding portfolio-level risk aggregates."
+              ]
+            },
+            {
+              "heading": "Data Pipelines & AI-Assisted Engineering",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python (pandas, NumPy, SciPy) and PostgreSQL analytics pipelines with embedded logging, validation, and auditability controls, running shadow cycles before cutover.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation, cutting development cycle time an estimated 30-40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Partnering with Investment Teams",
+              "bullets": [
+                "Act as escalation point for client-critical analytical issues, holding releases where outputs lack mathematical or economic defensibility and walking Heads of Risk and investment stakeholders through remediation.",
+                "Translate quantitative output into decision-ready narratives on exposure, scenario impacts, and portfolio sensitivities for senior investment stakeholders."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Onboarded U.S. and Canadian pension funds, asset managers, and consultants onto PFaroe DB (risk analytics) and PFaroe PM (portfolio management), scoping investment-team requirements into structured Product Owner requests for development.",
+                "Migrated all assigned client accounts from the legacy Calypso platform to PFaroe PM, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurers, coordinating actuarial, finance, IT, and risk teams on data sourcing, milestone delivery, and governance documentation."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, ALM & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition, contribution-to-risk budgeting, and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Built and interpreted stochastic economic scenario generators (Monte Carlo) assessing interest-rate risk and funding volatility under base-case and stressed regimes.",
+                "Advised institutional clients on Strategic Asset Allocation and Tactical Asset Allocation trade-offs through stress testing and sensitivity analysis.",
+                "Conducted cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.",
+                "Led the ALM study for a three-plan university pension merger on a team of three, developing and validating the model and evaluating duration, currency, inflation, and leverage overlay strategies.",
+                "Presented study findings and allocation recommendations to investment committees at Canadian pension-fund clients on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

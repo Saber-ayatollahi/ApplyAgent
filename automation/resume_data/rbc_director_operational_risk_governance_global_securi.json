@@ -1,0 +1,148 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC",
+    "role": "Director, Operational Risk Governance (Global Security)",
+    "jd_keywords": [
+      "Operational Risk Governance",
+      "risk governance",
+      "governance framework",
+      "Control Framework",
+      "risk assessment",
+      "scenario analysis",
+      "stress testing",
+      "model risk",
+      "OSFI",
+      "Basel",
+      "regulatory requirements",
+      "escalation",
+      "remediation",
+      "stakeholder management",
+      "Python",
+      "automation"
+    ]
+  },
+  "summary": "Risk governance and controls professional with ~7 years of experience, targeting RBC's Director, Operational Risk Governance (Global Security) role. Model governance committee member at Moody's Analytics holding delegated sign-off on analytics delivered to institutional portfolios of $5-25bn per engagement. Contributes to control framework documentation, benchmarking, and escalation standards within a formal governance framework; coordinates cross-functional regulatory transformation programs and stakeholder management across risk, product, and client functions; quantifies exposures through scenario and stress analysis. CFA charterholder with dual MSc degrees and applied familiarity with OSFI E-23 model-risk expectations and Basel Committee-aligned IRRBB standards.",
+  "core_skills": [
+    "Risk Governance & Control Framework Contribution (Documentation, Benchmarking, Methodology Review)",
+    "Independent Review, Challenge & Delegated Sign-Off",
+    "Model Risk Management (OSFI E-23 / SR 11-7 aligned)",
+    "Risk Assessment, Quantification & Prioritization",
+    "Scenario Analysis & Stress Testing",
+    "Control Documentation & Audit Readiness",
+    "Escalation, Remediation & Stakeholder Management",
+    "Regulatory Readiness (OSFI-aligned; IFRS 17 / IFRS 9 transformation)",
+    "Cross-Functional Program Delivery (Influence Without Direct Authority)",
+    "Executive & Committee-Level Reporting",
+    "Process Automation & AI-Assisted Anomaly Detection",
+    "Python, SQL & Advanced Excel"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Governance Execution & Independent Oversight",
+              "bullets": [
+                "Serves on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for analytics delivered to institutional clients.",
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions before production release.",
+                "Operates within a formal model governance framework, validating assumptions and economic defensibility against documentation standards consistent with SR 11-7 and OSFI E-23 model risk expectations."
+              ]
+            },
+            {
+              "heading": "Risk Assessment, Scenario Analysis & Monitoring",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios, giving senior stakeholders forward-looking exposure visibility.",
+                "Architected configurable time-bucketed liquidity and balance-sheet exposure analytics (T+1 through multi-year), enabling funding-related risk exposures to be quantified, monitored, and escalated across horizons.",
+                "Oversees quantification of interest-rate and balance-sheet exposures under parallel and non-parallel shock scenarios, an approach analogous to Basel Committee IRRBB supervisory frameworks."
+              ]
+            },
+            {
+              "heading": "Process Control Design, Automation & Audit Readiness",
+              "bullets": [
+                "Re-engineered manual spreadsheet workflows into scalable Python pipelines with embedded logging, validation, and auditability controls, shadow-running two cycles before cutover to satisfy governance audit requirements.",
+                "Built agentic AI workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, reducing development cycle time an estimated 30-40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Escalation, Remediation & Stakeholder Communication",
+              "bullets": [
+                "Acts as escalation point for client-critical analytical issues, holding release of outputs lacking mathematical or economic defensibility and coordinating remediation with product owners and clients' Heads of Risk.",
+                "Prepares analytical summaries for senior stakeholders covering exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative output into committee-ready narratives as part of ongoing stakeholder management with Heads of Risk and investment stakeholders."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms, acting as technical liaison between client stakeholders and product owners.",
+                "Contributed to the migration of all assigned client accounts from the legacy Calypso platform to PFaroe PM, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation programs for Canadian and international insurers, translating regulatory requirements into system implementation and financial reporting frameworks.",
+                "Contributed to governance documentation and regulatory-readiness processes for financial institutions, advising actuarial, IT, finance, and program-management functions on standards adoption.",
+                "Coordinated actuarial, finance, IT, risk, and project-management teams on milestone delivery and implementation materials across enterprise-wide programs, without formal authority over those teams."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Quantified funding-ratio, duration-mismatch, and long-horizon balance-sheet risk exposures through ALM studies for Canadian and international pension funds and institutional investors.",
+                "Built and interpreted stochastic economic scenario generators assessing risk and funding volatility under base-case and stressed environments.",
+                "Performed risk decomposition and attribution (contribution-to-risk, risk budgeting) alongside VaR and CVaR optimization on Ortec's GLASS platform to prioritize exposures and test the robustness of recommendations.",
+                "Designed stochastic risk-management frameworks tailored to specific client mandates.",
+                "Presented study findings and risk recommendations on-site to investment committees at Canadian pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

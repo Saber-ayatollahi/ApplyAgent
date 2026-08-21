@@ -1,0 +1,12 @@
+Dear Hiring Team,
+
+Independent review and challenge of financial risk analytics is my day job. At Moody's Analytics I hold delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to institutional portfolios of $5-25bn per engagement, and I sit on the model governance committee that sets methodology-review, benchmarking, and documentation standards. Your posting says you are not necessarily looking for a traditional auditor, but for someone who understands how financial risks are measured, governed, and controlled - that is precisely the seat I occupy today, and I would like to be considered for the Financial Risk Audit Manager, Vice President role.
+
+My depth sits squarely in interest rate, liquidity, and market risk. I oversee duration and rate-shock analytics under parallel and non-parallel scenarios, led the design of an enterprise multi-asset cash-flow projection engine covering base, stress, and reverse-stress scenarios, and architected time-bucketed liquidity gap analytics from T+1 through multi-year horizons. At Ortec Finance I ran VaR and CVaR portfolio optimization with risk decomposition and attribution, and presented conclusions to pension investment committees. The habit that matters most for assurance work is one I already practise: holding a release when outputs are mathematically clean but economically indefensible, decomposing the result, and escalating it to product owners and the client's Head of Risk with a remediation path.
+
+State Street is a natural fit because the institutional investors who rely on you are the same constituency I have served for seven years from the analytics side - pension funds, asset managers, and insurers whose risk measurement I have configured, validated, and signed off. My EY work on IFRS 17 and IFRS 9 added the governance-documentation and regulatory-readiness dimension, coordinating actuarial, finance, IT, and risk functions toward a defensible control position. I bring a practitioner's view of how risk is measured and governed day-to-day, which is what makes effective challenge land with senior stakeholders rather than feel theoretical.
+
+I am Toronto-based, available to interview immediately, and can start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA

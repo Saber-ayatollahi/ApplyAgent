@@ -1,0 +1,91 @@
+Job Description
+WHAT IS THE OPPORTUNITY? 
+The Vice President, Quantitative Analysis role within the Capital Markets Treasury Quant Team focuses on developing and implementing new quantitative models while maintaining and enhancing existing rate and spread product models and related analytical tools. This position emphasizes Capital Markets Treasury operations, particularly funding and liquidity transactions, fixed income investments, and related hedging derivatives.
+The primary contribution of this role is ensuring that Capital Markets Treasury maintains robust analytical models and tools that meet current and future market conditions and regulatory requirements, enabling informed decision-making and effective risk management.
+WHAT WILL YOU DO? 
+Model Development and Implementation: Design, implement, test, and deploy rate and spread product models within the current analytical environment, applying advanced quantitative methods to address complex financial problems. Ensure models are accurate, efficient, and aligned with business requirements and regulatory standards.
+Business Support and Stakeholder Engagement: Provide comprehensive support to Capital Markets Treasury business partners, including traders, risk managers, and product controllers. Assist stakeholders in understanding model mechanics, interpreting model outputs, and applying analytics to business decisions. Deliver both business-as-usual support and ad hoc analytical assistance as required.
+Model Documentation and Validation: Prepare thorough model documentation and validation submissions in accordance with internal policies and regulatory guidelines. Monitor and track model performance on an ongoing basis, identifying areas for improvement and ensuring models remain fit for purpose as market conditions evolve.
+Risk Management and Compliance: Review and comply with all firm policies applicable to business activities. Proactively identify and escalate operational risk events, control deficiencies, and emerging risks to line management and relevant risk and control functions in a timely manner. Maintain awareness of regulatory developments affecting quantitative models.
+Independent Ownership and Initiative
+Take ownership of assigned projects and deliverables, working independently to drive initiatives from conception through implementation. Demonstrate accountability for outcomes and proactively identify opportunities to enhance models, processes, and tools.
+WHAT DO YOU NEED TO SUCCEED?
+Must have: 
+Education: Ph.D. or Master’s degree in a quantitative discipline such as mathematics, statistics, physics, computer science, financial engineering, or a related field.
+Experience:
+ 3-4 years of relevant experience in quantitative analysis, financial modeling, or a related field within the financial services industry. Hands-on experience in developing interest rate and spread product models is highly desirable.
+Technical Expertise:
+ Solid knowledge of financial instruments and derivatives, including bonds, interest rate swaps, futures, forwards, and options, as well as associated pricing and risk management models. Understanding of fixed income markets and treasury operations is essential.
+Programming Proficiency:
+ Proficiency in Python is required. Working experience with C++, C#, VBA, and enterprise tools such as GitHub, version control systems, and collaborative development platforms is preferred.
+AI Literacy:
+ Strong AI literacy with working experience using AI-powered development tools such as GitHub Copilot, Claude, ChatGPT, Windsurf, or similar platforms. Must demonstrate a proactive approach to learning and adopting emerging AI technologies to enhance productivity and model development capabilities.
+Communication Skills:
+ Excellent communication skills, both verbal and written, with the ability to explain complex quantitative concepts to non-technical stakeholders. Capable of preparing clear documentation and presenting findings effectively to diverse audiences.
+Work Style and Attributes:
+ Highly detail-oriented and organized with strong analytical and problem-solving abilities. Demonstrates a sense of ownership over assigned tasks and projects. Able to work independently with minimal supervision while also collaborating effectively within a team environment. Self-motivated with the ability to manage multiple priorities and meet deadlines.
+Nice-to-Have:
+Broad knowledge of market risk management principles and regulatory frameworks relevant to financial institutions is beneficial. Familiarity with capital adequacy requirements, stress testing, and risk metrics is a plus.
+Previous experience in data analytics, balance sheet management, hedge accounting (IFRS 9/IAS 39), and Interest Rate Risk in the Banking Book (IRRBB) is advantageous and will enhance the candidate’s ability to contribute across Treasury functions.
+What’s in it for you?
+We thrive on the challenge to be our best, progressive thinking to keep growing, and working together to deliver trusted advice to help our clients thrive and communities prosper. We care about each other, reaching our potential, making a difference to our communities, and achieving success that is mutual.
+A comprehensive Total Rewards Program including bonuses and flexible benefits, competitive compensation, commissions, and stock where applicable.
+Leaders who support your development through coaching and managing opportunities.
+Ability to make a difference and lasting impact.
+Work in a dynamic, collaborative, progressive, and high-performing team.
+A world-class training program in financial services.
+Flexible work/life balance options.
+Opportunities to do challenging work.
+Job Skills
+Additional Job Details
+Address:
+ROYAL BANK PLAZA, 200 BAY ST:TORONTO
+City:
+Toronto
+Country:
+Canada
+Work hours/week:
+37.5
+Employment Type:
+Full time
+Platform:
+CAPITAL MARKETS
+Job Type:
+Regular
+Pay Type:
+Salaried
+Posted Date:
+2026-08-13
+Application Deadline:
+2026-09-25
+Note
+:
+ 
+Applications will be accepted until 11:59 PM on the day prior to the application deadline date above
+Our Employment Opportunities
+At RBC, we are guided by living shared values of Client First, Integrity, Collaboration, Respect and Excellence and winning together as One RBC. We believe an inclusive workplace that has diverse perspectives is core to our continued growth as one of the largest and most successful banks in the world. Maintaining a workplace where our employees feel supported to perform at their best, effectively collaborate, drive innovation, and grow professionally helps to bring our Purpose to life and create value for our clients and communities. RBC strives to deliver this through policies and programs intended to foster a workplace based on respect, belonging and opportunity for all.
+Join our Talent Community
+Stay in-the-know about great career opportunities at RBC. Sign up and get customized info on our latest jobs, career tips and Recruitment events that matter to you.
+Expand your limits and create a new future together at RBC. Find out how we use our passion and drive to enhance the well-being of our clients and communities at jobs.rbc.com</a/span>
+RBC is presently inviting candidates to apply for this existing vacancy. Applying to this posting allows you to express your interest in this current career opportunity at RBC. Qualified applicants may be contacted to review their resume in more detail.
+
+
+
+
+
+
+
+        
+            Show more
+          
+
+          
+
+
+
+
+
+
+
+        
+            Show less

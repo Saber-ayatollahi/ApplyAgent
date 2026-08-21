@@ -1,0 +1,69 @@
+At IMCO, our talent is among the best! IMCO offers a uniquely stimulating and rewarding environment where you can help build and drive organizational transformation, all while seeking to challenge yourself, learn, and grow your career.
+Our culture is built on collaboration and passion, with a shared commitment to delivering lasting value to the clients we serve. Located in downtown Toronto, our vision is to be the partner of choice for Ontario’s public sector funds and to build a high-performing, value-driven asset management firm.
+This job posting is for an existing vacancy. If you are ready to deliver best-in-class service and join a collaborative, motivated and fun team of professionals, IMCO offers the opportunity to do impactful work and broaden your expertise.
+If you’re looking to use your expertise to drive strategic outcomes, we’d love to hear from you.
+‎
+We are looking for a highly motivated Senior Manager, Investment Products & Delivery!
+Acting as a critical bridge between the Investment business and technology/data teams, the Senior Manager will be responsible for working with the investment teams (Public and Private covering Private Equity, Global Credit, Infrastructure and Real Estate), other business stakeholders and IMCO enabling functions (Operations, Performance, Data, IT etc.) to shape the overall design and business architecture of various reporting and data platforms and their processes. This will include multiple cloud solutions including but not limited to: Portfolio Monitoring, Workflow, CRM, ETL, Data Storage, Reporting and Analytics tooling.
+Post design, the Senior Manager would assume a functional oversight mandate and work to integrate platforms and workflows at the business level by playing a lead role in the detailed design, build and support of the integrated platform.
+The role requires a close partnership with external service providers (e.g., SaaS vendors, consultants, etc.) and other functions within the organization including the Front Office, Investment Operations, Finance, and IT & Data teams.
+As a Member of Our Team You Will be Responsible For:
+Product related
+Develop and own the business and functional requirements to feed technology solutions; work with various investment teams to understand requirements and collaborate with IT/Data to design and implement modern, scalable solutions / apps / platforms, with appropriate sequencing.
+Responsible to define/evolve Product roadmap on behalf of the business, identify, prioritize, and work with IT to maintain and implement capabilities that deliver business value in alignment with enterprise strategies for the integrated platform. 
+Maintain & manage the product backlog for investment business applications (PMS, CRM, Workflow applications, BI tools, etc.); including ensuring items on the backlog are properly prioritized and implemented with proper controls in a timely manner.
+Surfaces risk, dependencies and process impacts, working with stakeholders to create and implement solutions.
+Understands IMCO investment strategies and asset class activities and able to offer well reasoned, proactive solutions and guidance.
+Assist in user training sessions & ad-hoc walkthroughs covering core functionality and use cases within core applications. 
+Data related
+As part of product management activities, responsible for supporting data operating model needs for investment applications / platforms: o Articulate investment business data needs, assist in the development of IMCO’s strategic data direction and master data management (MDM) approach. o Support historical data gathering, transformation and onboarding activities. o Support data dictionary & definition cataloging, including incorporating enterprise data domains and elements as required. o Summarize application & data landscape, including types of data housed & key identifiers, technology & business owners, points of origination, downstream users of data & frequency/timing of use, and sources of truth. o Support to define data flows amongst third-party applications, integrated platform and various data sources.
+Assist in developing a data validation framework to test reasonability, accuracy & completeness of converted data within third-part applications and for the data feeds being ingested into integrated platform.
+Identify the data needs of the business line and drive the procurement process (in collaboration with enterprise procurement).
+Overall Management & Coordination Related
+Develop timelines and detailed work plans to create structure for initiative teams to plan and coordinate activities and resources. 
+Develop recommendations based on data from multiple stakeholders, and leverage data to support and inform timely, effective decisions.
+Create and execute a structured change management, stakeholder management, and communication strategy. 
+Help prepare materials for ad hoc projects, including developing focused analytics, conducting research, and preparing presentations.
+Work with internal functions to improve processes and reduce risk.
+Identify and resolve business breaks and workflow issues.
+What do you need to succeed?
+Minimum of 10 years of work experience in a financial institution or a consulting firm supporting Private Markets investment teams with portfolio monitoring and data analytics.
+Well-rounded, thorough understanding of overall Private Markets data platforms (e.g., reports, data dictionary, templates, etc.) and Private Markets business activities.
+Experience with one or multiple tools such as Bloomberg, Chronograph, MSCI RiskManager, Blackrock Aladdin, iLevel, Yardi, AllVue, Charles River, 73 Strings, Burgiss Caissa, BarraOne, OmegaPoint etc.
+Experience with data visualization tools e.g., Tableau, Power BI, PowerPivot, etc.
+Experience in selection, design, implementation, testing, and/or deployment of portfolio monitoring, CRM and workflow business applications.
+Knowledgeable in investment data management including Reference Data, Data Quality Improvement, Metadata Management, and Data Governance.
+Experience working with senior stakeholders to build trusted relationships and act as a trusted advisor.
+Experience in documenting detailed business and reporting requirements.
+Experience in designing and performing reasonability, accuracy & completeness data validation checks.
+Working knowledge of Extract, Transform and Load (ETL) and Application User Interface (API) tools using on premise and cloud environments.
+Experience with investment operations and middle office processes; Experience with business operations, project management, stakeholder management, change management, executive communication.
+Experience of being imbedded in the business is highly desirable.
+Undergraduate degree in Business, Finance or Technology is required. Master’s level education or relevant designations (CFA etc) are highly desirable. 
+What IMCO Can Offer You:
+We thrive on the challenge to be our best, to deliver unparalleled employee experience and to work as one team to continuously improve the management of broader public-sector investment funds. In addition to offering a competitive salary and comprehensive benefit package, we pride ourselves on helping you reach your potential, making a difference in our communities, and achieving success that is mutual.
+‎
+We thank all applicants for their interest. Only those selected for an interview will be contacted.
+Our hybrid work model prioritizes an office-first approach, encouraging employees to make the most of our collaborative workspace at 16 York Street, Suite 2400, Toronto, ON M5J 0E6. This welcoming environment fosters teamwork, connection, and professional growth. While flexibility remains a key component of our model, we believe that regular in-office engagement enhances productivity and strengthens our culture. Our approach supports a fulfilling lifestyle that balances professional ambition with personal wellbeing.
+IMCO is committed to providing accommodation for people with disabilities throughout the recruitment process. If you require support, please let us know and we will work with you to meet your needs. Artificial intelligence (AI) tools may be used to support parts of our recruitment process, such as screening and assessments. However, all hiring decisions are made by our recruitment team. Candidates being considered for this position will be required to undergo background screening.
+
+
+
+
+
+
+
+        
+            Show more
+          
+
+          
+
+
+
+
+
+
+
+        
+            Show less

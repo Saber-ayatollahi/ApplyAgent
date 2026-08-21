@@ -1,0 +1,12 @@
+Dear Hiring Team,
+
+For the past four years at Moody's Analytics I have delivered, configured, and governed the enterprise platform that institutional investment teams use to value, monitor, and report on multi-asset portfolios — and I led every assigned client account off a legacy Calypso environment onto the modern PFaroe PM platform. That is the same discipline the VP, Portfolio Management, Investing & Oversight role at Richardson Wealth is built on: bringing portfolio management to life digitally, with governance built in, across two wealth businesses.
+
+My work sits at three layers of that problem. At the client layer, I onboarded U.S. and Canadian pension funds, asset managers, and consulting firms, acting as technical liaison between investment teams and product owners — translating workflow requirements into development requests and validating model outputs after deployment. At the governance layer, I hold delegated sign-off on valuation, sensitivity, and portfolio analytics for institutional portfolios of $5-25bn per engagement, and I sit on Moody's model governance committee, where methodology review, documentation, and benchmarking standards are set — an approvals-and-documentation discipline analogous to what model-portfolio lifecycle governance requires. At the delivery layer, I re-engineered manual spreadsheet workflows into Python pipelines with embedded logging, validation, and auditability controls. Earlier, at EY I coordinated actuarial, finance, IT, and risk functions through IFRS 17 and IFRS 9 transformation programs; at Ortec Finance I advised pension investment committees on strategic asset allocation and portfolio construction trade-offs.
+
+What draws me to Richardson Wealth specifically is the requirement that this capability demonstrably scale across both Richardson Wealth and IA Private Wealth. Multi-entity rollouts succeed or fail on whether governance, documentation, and benchmarking standards are agreed once and adopted everywhere — that is the negotiation I run at Moody's between client investment teams who want flexibility and governance committees who want evidence, and it is the same negotiation this mandate will require across two dealer platforms.
+
+I am Toronto-based, available for interviews immediately, and can start approximately four weeks after offer acceptance. Thank you for your consideration.
+
+Sincerely,
+Saber Ayatollahi, CFA

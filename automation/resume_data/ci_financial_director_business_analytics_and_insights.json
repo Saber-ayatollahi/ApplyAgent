@@ -1,0 +1,147 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "CI Financial",
+    "role": "Director, Business Analytics and Insights",
+    "jd_keywords": [
+      "business analytics",
+      "insights",
+      "Python",
+      "SQL",
+      "data visualization",
+      "automation",
+      "AI",
+      "KPI",
+      "stakeholder management",
+      "asset management",
+      "prototyping",
+      "data quality",
+      "governance",
+      "reporting",
+      "cross-functional"
+    ]
+  },
+  "summary": "Business analytics professional with ~7 years partnering with senior stakeholders at asset managers, pension funds, and consulting firms to turn complex data into decisions -- directly aligned with the Director, Business Analytics and Insights mandate. Led the design of an enterprise analytics engine, re-engineered manual spreadsheet reporting into audited Python pipelines, and built agentic AI workflows that cut development cycle time an estimated 30-40%. CFA charterholder with dual MSc degrees; track record of independently-reviewed analytical output trusted across roughly $50bn of institutional client portfolios.",
+  "core_skills": [
+    "Business Analytics & Insight Delivery",
+    "Performance & Risk Metrics Reporting (KPI-style)",
+    "Data Visualization (Python/Excel) & Executive Reporting",
+    "AI-Enabled Automation (Claude Code, Cursor)",
+    "Rapid Prototyping & Pipeline Modernization",
+    "Python (pandas, NumPy, SciPy)",
+    "SQL / PostgreSQL",
+    "Git & CI/CD Workflows",
+    "Model & Data Quality, Governance & Controls",
+    "Executive & Stakeholder Management",
+    "Asset Management & Institutional Client Domain",
+    "Cross-Functional Delivery & Mentorship"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Business Analytics & Insight Delivery",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios, converting a manual process into a repeatable analytics capability across institutional portfolios of $5-25bn per engagement.",
+                "Architected configurable time-bucketed analytics (T+1 through multi-year) that gave client investment teams forward-looking funding and liquidity insight to guide allocation decisions.",
+                "Reviewed aggregation logic converting security-level data into portfolio-level risk and performance metrics -- the analytics equivalent of KPI reporting -- delivered to client Heads of Risk and downstream reporting processes."
+              ]
+            },
+            {
+              "heading": "AI Enablement, Automation & Rapid Prototyping",
+              "bullets": [
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation - reducing development cycle time an estimated 30-40% on comparable modules.",
+                "Re-engineered manual spreadsheet reporting workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls, improving data quality and consistency of outputs.",
+                "Prototyped replacement pipelines in parallel with live delivery, ran them in shadow mode for two reporting cycles, reconciled results, and cut over with a rollback plan - a pattern reused across adjacent workflows."
+              ]
+            },
+            {
+              "heading": "Stakeholder Partnership & Executive Communication",
+              "bullets": [
+                "Prepared analytical summaries for senior stakeholders on exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative output into investment-committee-ready narratives.",
+                "Served as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders to resolve and remediate.",
+                "Mentored junior colleagues and acted as senior reviewer within a 12-person modelling services team, setting the review standard applied before client release."
+              ]
+            },
+            {
+              "heading": "Model & Data Governance, Controls & Quality",
+              "bullets": [
+                "Held delegated sign-off authority on valuation, sensitivity, and ALM outputs delivered to multi-asset institutional portfolios ($5-25bn per engagement, ~$50bn+ cumulative), independently reviewing methodology and assumptions before production release.",
+                "Member of the model governance committee - contributed to methodology review, documentation and benchmarking standards, and performance assessment for client-delivered analytics."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM analytics) and PFaroe PM (portfolio management) platforms.",
+                "Acted as technical liaison between client investment teams and product owners, scoping business requirements into prioritized development requests and validating outputs post-deployment.",
+                "Contributed to the successful migration of all assigned client accounts from the legacy Calypso platform to PFaroe PM."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation projects for Canadian and international insurance clients, aligning reporting requirements with system implementation.",
+                "Coordinated cross-functional actuarial, finance, IT, risk, and program-management teams on milestone delivery, governance documentation, and regulatory-readiness materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered analytics studies for Canadian and international pension funds and institutional investors, quantifying funding ratio, duration, and long-horizon exposures to inform strategic allocation decisions.",
+                "Performed asset-only and asset-liability portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and attribution to test the robustness of recommendations.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate and funding volatility under base-case and stressed environments.",
+                "Presented findings and recommendations on-site to investment committees at pension-fund clients, including the onboarding and study for a three-plan university pension merger."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

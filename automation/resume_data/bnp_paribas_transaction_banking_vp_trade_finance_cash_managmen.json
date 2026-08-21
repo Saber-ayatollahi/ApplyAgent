@@ -1,0 +1,137 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "BNP Paribas",
+    "role": "VP Transaction Banking Liquidity Solutions",
+    "jd_keywords": [
+      "Transaction Banking",
+      "Liquidity Solutions",
+      "liquidity",
+      "cash flow",
+      "client onboarding",
+      "implementation",
+      "institutional clients",
+      "hedging",
+      "FX",
+      "stress testing",
+      "asset allocation",
+      "pricing",
+      "governance"
+    ]
+  },
+  "summary": "Liquidity and balance-sheet analytics professional with ~7 years of institutional client-facing and advisory experience, aligned to the Transaction Banking - VP, Trade Finance, Cash Management and Liquidity Solutions mandate at BNP Paribas. Designed a multi-scenario cash flow projection engine and time-bucketed liquidity gap analytics at Moody's Analytics; led onboarding and implementation for U.S. and Canadian institutional clients; delivered multi-currency hedging, funding, and asset allocation studies at Ortec Finance across Canadian and international mandates. CFA charterholder; dual MSc, Financial Modelling and Chemical Engineering.",
+  "core_skills": [
+    "Liquidity Solutions & Cash Flow Projection",
+    "Liquidity Gap & Funding Analysis (T+1 to Multi-Year)",
+    "Client Onboarding & Implementation Delivery",
+    "Institutional Client Advisory & Stakeholder Engagement",
+    "Client Requirements Translation & Solution Configuration",
+    "Balance-Sheet & Accounting Analysis (CFA Foundation; IFRS 9/17 Transformation Delivery)",
+    "Multi-Currency Hedging (FX, Inflation, Interest Rate)",
+    "Scenario Analysis & Stress Testing",
+    "Operational Controls, Documentation & Governance"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Liquidity Solutions & Cash Flow Analytics",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios, delivering forward-looking liquidity visibility across institutional balance-sheet horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) enabling funding optimization, refinancing risk assessment, and asset allocation decisions for client portfolios.",
+                "Embedded behavioural cash flow assumptions, prepayment logic, and macro stress overlays aligned with regulatory liquidity expectations and executive contingency planning."
+              ]
+            },
+            {
+              "heading": "Client Portfolio Reviews & Senior Stakeholder Engagement",
+              "bullets": [
+                "Hold delegated sign-off authority on valuation, sensitivity, and balance-sheet outputs delivered to multi-asset institutional clients, $5-25bn per engagement and ~$50bn+ cumulatively across the book of work.",
+                "Serve as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders to resolve them under delivery deadlines.",
+                "Prepare periodic analytical reviews for senior stakeholders covering interest rate exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative output into committee-ready narratives."
+              ]
+            },
+            {
+              "heading": "Multi-Currency Derivatives Validation & Operational Controls",
+              "bullets": [
+                "Validate derivatives pricing outputs across rates, FX, and inflation, confirming consistency of sensitivities and scenario impacts at portfolio-level aggregates.",
+                "Contribute to the model governance framework as a committee member, reviewing methodology, documentation and benchmarking standards, and escalating outputs lacking economic defensibility.",
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": "Client Onboarding, Implementation & Requirements Translation",
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms.",
+                "Acted as technical liaison between client investment teams and product owners, scoping complex client requirements into structured development requests and advising on asset, liability, and ALM configurations.",
+                "Contributed to the successful migration of all assigned client accounts from the legacy Calypso environment to the PFaroe PM platform, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning accounting and regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Developed IFRS 17 advisory product offerings and go-to-market collateral, and coordinated actuarial, finance, IT, risk, and program-management teams on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM and balance-sheet studies for Canadian and international pension funds and institutional investors, analyzing funding ratios, duration mismatch, and long-term balance-sheet and liquidity risk exposures.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.",
+                "Advised clients on Strategic Asset Allocation and Tactical Asset Allocation trade-offs through stress testing and sensitivity analysis, including liability-driven investment work balancing return, duration, and liquidity objectives.",
+                "Presented study findings on-site to investment committees at Canadian pension-fund clients, converting technical results into decisions the committee could act on.",
+                "Led onboarding and the ALM study for a three-plan university pension merger, on a team of three developing and validating the model capturing all Funding Policy dynamics and evaluating duration, currency, inflation, and leverage overlay strategies."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016",
+    "Languages: English (fluent), French (conversational)"
+  ]
+}

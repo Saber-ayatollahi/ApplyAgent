@@ -1,0 +1,140 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "RBC",
+    "role": "VP Capital Markets Treasury Quant",
+    "jd_keywords": [
+      "Python",
+      "SQL",
+      "VBA",
+      "Git",
+      "derivatives",
+      "fixed income",
+      "curve construction",
+      "spread calibration",
+      "IRRBB",
+      "liquidity",
+      "stress testing",
+      "model documentation",
+      "model governance",
+      "balance sheet",
+      "IFRS 9"
+    ]
+  },
+  "summary": "Quantitative modeller with ~7 years across ALM, balance-sheet, and derivatives analytics, targeting the Vice President, Capital Markets Treasury Quant mandate at RBC. Led design and implementation of an enterprise multi-asset cash-flow projection and liquidity-gap engine in Python; holds delegated sign-off on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement, independently reviewing curve construction, spread calibration, and rates/FX/inflation derivatives pricing. Model governance committee member; daily user of Claude Code and Cursor for AI-assisted model development. CFA, dual MSc (Financial Modelling; Chemical Engineering).",
+  "core_skills": [
+    "Fixed Income & Derivatives Valuation",
+    "Curve Construction & Spread Calibration Review",
+    "Interest Rate Risk (IRRBB) & Duration Analytics",
+    "Funding, Liquidity & Cash-Flow Projection Modelling",
+    "Balance Sheet & ALM Analytics",
+    "Model Documentation, Validation & Governance",
+    "Stress Testing & Scenario Analysis",
+    "Stochastic Simulation & Monte Carlo",
+    "Python (pandas, NumPy, SciPy), SQL, VBA, Git version control",
+    "AI-Assisted Development (Claude Code, Cursor IDE)",
+    "Stakeholder Communication & Model Explanation"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Model Development & Implementation",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash-flow projection engine supporting base, stress, and reverse-stress scenarios, delivering forward-looking liquidity visibility across ALM and funding horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year), enabling funding optimization, refinancing risk assessment, and asset-allocation decisions.",
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, cutting development cycle time an estimated 30-40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Curve, Spread & Derivatives Model Review",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validated derivatives pricing outputs across rates, FX, and inflation, confirming sensitivity consistency at portfolio-level ALM aggregates.",
+                "Oversaw interest rate risk and duration analysis under parallel and non-parallel rate shocks, aligned with IRRBB standards analogous to OSFI B-12 and Basel Committee frameworks.",
+                "Reviewed aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes."
+              ]
+            },
+            {
+              "heading": "Model Documentation, Governance & Business Support",
+              "bullets": [
+                "Serves on the model governance committee, contributing to methodology review, model documentation and benchmarking standards, and ongoing model-performance assessment for client-delivered analytics.",
+                "Escalated outputs lacking mathematical or economic defensibility and acted as escalation point for client-critical analytical issues with Heads of Risk and investment stakeholders.",
+                "Prepared analytical summaries for senior stakeholders on interest rate exposure, scenario impacts, and balance sheet sensitivities, translating quantitative output into decision-ready narratives for non-technical audiences."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds and asset managers migrating to the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms; validated model outputs post-deployment.",
+                "Translated investment-team requirements into scoped development requests for Product Owners and advised clients on asset, liability, and ALM configurations."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Advised actuarial, finance, IT, and program-management functions on standards adoption and contributed to governance documentation and regulatory-readiness processes."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators assessing interest rate risk and funding volatility under base-case and stressed environments.",
+                "Performed cash flow, liquidity, and hedging analysis across interest rate, inflation, and currency risk for international institutional clients.",
+                "Delivered ALM studies analyzing funding ratios, duration mismatch, and long-term balance sheet risk exposures for pension funds and institutional investors.",
+                "Performed asset-only and surplus portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test allocation robustness."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

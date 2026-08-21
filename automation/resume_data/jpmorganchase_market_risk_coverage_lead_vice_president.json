@@ -1,0 +1,144 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "JPMorganChase",
+    "role": "Market Risk Coverage Lead - Vice President",
+    "experience_label": "EXPERIENCE",
+    "jd_keywords": [
+      "market risk",
+      "investment risk",
+      "VaR",
+      "CVaR",
+      "stress testing",
+      "sensitivities",
+      "portfolio risk",
+      "scenario analysis",
+      "liquidity",
+      "risk decomposition",
+      "anomaly detection",
+      "Python",
+      "SQL",
+      "valuation",
+      "CFA"
+    ]
+  },
+  "summary": "Investment and market risk specialist with ~7 years of institutional risk analytics experience, aligned to the Market Risk Coverage Lead - Vice President mandate at J.P. Morgan Asset Management Risk. Delegated sign-off authority on valuation and sensitivity outputs for multi-asset institutional portfolios of $5-25bn per engagement at Moody's Analytics, serving buy-side pension, asset-management, and consulting clients. Hands-on VaR and CVaR portfolio optimization, risk decomposition, stress testing, and stochastic scenario modelling for pension and institutional mandates at Ortec Finance. Python and SQL analytics; CFA charterholder with dual MSc degrees.",
+  "core_skills": [
+    "Market Risk Monitoring & Measurement",
+    "Value-at-Risk (VaR) & Conditional VaR (CVaR)",
+    "Stress Testing & Scenario Analysis",
+    "Portfolio Risk Analysis & Sensitivities",
+    "Risk Decomposition & Attribution",
+    "Investment Risk Oversight & Escalation",
+    "Liquidity & Cash Flow Risk Analytics",
+    "Portfolio Valuations & Risk Systems (PFaroe, GLASS)",
+    "Stochastic Modelling & Monte Carlo Simulation",
+    "Anomaly Detection & Validation Automation (AI-assisted code/output review)",
+    "Python, SQL & Analytics Pipelines",
+    "Model Governance & Independent Review"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics - Asset Management & Buy-Side Solutions",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Independent Risk Measurement & Assessment",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation and sensitivity outputs for multi-asset institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions before production release.",
+                "Validated derivatives pricing outputs across rates, FX, and inflation, confirming consistency of sensitivities and scenario impacts at portfolio-level aggregates.",
+                "Serves on the model governance committee, contributing to methodology review, benchmarking and documentation standards, and model-performance assessment for client-delivered analytics.",
+                "Reviewed aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream risk and capital processes."
+              ]
+            },
+            {
+              "heading": "Portfolio Stress, Scenario & Liquidity Risk Analysis",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios across multi-year horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year), supporting funding, refinancing-risk, and asset-allocation decisions.",
+                "Oversaw duration and rate-sensitivity analysis under parallel and non-parallel shocks across multi-asset institutional books."
+              ]
+            },
+            {
+              "heading": "Risk Oversight, Escalation & Stakeholder Engagement",
+              "bullets": [
+                "Escalated outputs lacking mathematical or economic defensibility and served as escalation point for client-critical analytical issues, interfacing directly with clients' Heads of Risk and investment stakeholders.",
+                "Prepared analytical summaries for senior stakeholders covering exposure, scenario impacts, and portfolio sensitivities, translating quantitative output into investment-committee-ready narratives.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating validation scaffolding and anomaly detection in code and model outputs, cutting development cycle time an estimated 30-40% on comparable modules.",
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM analytics) and PFaroe PM (portfolio management) platforms.",
+                "Served as technical liaison between client investment teams and product owners, scoping requirements into development requests and validating model outputs post-deployment; contributed to migrating all assigned accounts off the legacy Calypso platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 risk and finance transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation.",
+                "Coordinated across actuarial, finance, IT, risk, and program-management teams on milestone delivery, governance documentation, and readiness processes."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Built and interpreted stochastic economic scenario generators assessing interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Advised institutional clients on strategic and tactical asset allocation trade-offs through stress testing and sensitivity analysis.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency risk for international institutional clients.",
+                "Led onboarding and the ALM study for a three-plan university pension merger, on a team of three developing and validating the model capturing all funding-policy dynamics and evaluating duration, currency, inflation, and leverage overlay strategies.",
+                "Presented study findings and risk recommendations on-site to investment committees at Canadian pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}
