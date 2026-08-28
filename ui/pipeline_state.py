@@ -1358,6 +1358,10 @@ def normalize_drop_reason(rr: str) -> tuple[str, str | None]:
         return ("unknown", None)
     if rr.startswith("neg:"):
         return ("neg_title_match", rr[4:])
+    if rr.startswith("below_grade:"):
+        # Seniority-floor drops (analyst / associate / bank_manager) collapse
+        # into one histogram row; the sub-class survives as detail.
+        return ("below_grade", rr[len("below_grade:"):])
     if rr.startswith("suppressed_sector_"):
         return ("suppressed_sector", rr[len("suppressed_sector_"):])
     if rr.startswith("suppressed_company_"):

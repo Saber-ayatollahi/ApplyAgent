@@ -8212,6 +8212,32 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
 
             # --- Sub-tab 2: dropped (rule-triage) ---------------------------
             with triage_tabs[1]:
+                # 📏 Active hard-drop policies — sourced from the scorer's
+                # TRIAGE_POLICIES registry so this panel can never drift from
+                # the code that enforces it. Guarded import: an older
+                # fit_scorer without the registry just hides the panel.
+                try:
+                    from fit_scorer import TRIAGE_POLICIES as _triage_policies
+                except Exception:
+                    _triage_policies = []
+                if _triage_policies:
+                    with st.expander(
+                            f"📏 Active hard-drop policies "
+                            f"({len(_triage_policies)}) — seniority floor & "
+                            "hard rejects", expanded=False):
+                        st.caption(
+                            "Enforced at rule-triage, before any scoring "
+                            "spend. Each policy stamps its `tag` into a "
+                            "dropped row's *why* column below — filter the "
+                            "drops table by `below_grade` to audit the "
+                            "seniority floor. Edit in "
+                            "`automation/fit_scorer.py` (TRIAGE_POLICIES + "
+                            "matching rules).")
+                        st.dataframe(
+                            pd.DataFrame(_triage_policies,
+                                         columns=["policy", "action",
+                                                  "scope", "tag", "why"]),
+                            hide_index=True, width='stretch')
                 drops = sc.get("triage_drops") or []
                 if not drops:
                     st.info(

@@ -64,23 +64,21 @@ def test_real_interns_still_dropped():
 
 def test_vocab_gap_recoveries():
     """False-negatives surfaced by the full drop audit — title-only vocab
-    gaps for genuine risk/treasury/credit roles. Each must now pass stage-1."""
+    gaps for genuine risk/treasury/credit roles. Each must now pass stage-1.
+    (Analyst-grade variants moved to the seniority-floor block below — the
+    2026-08-28 policy supersedes vocab recovery for below-band titles.)"""
     for ti in ("Central Funding & Securitized Products Quants",          # securitized
                "Manager, Loss Forecasting",                              # loss forecast
-               "Senior Analyst, Global Corporate Funding"):              # corporate funding
+               "Director, Global Corporate Funding"):                    # corporate funding
         r = rule_triage(ti, row={"title": ti})
         assert r["stage1_pass"] is True, ti
 
 
 @pytest.mark.parametrize("title", [
-    "Sr. Analyst, CCR Capital",                      # CCR acronym
-    "Director, CCR Oversight",
+    "Director, CCR Oversight",                       # CCR acronym
     "Director, Cash Management",                      # treasury phrasing
     "Senior Manager, Cash Management",
-    "Analyst - TDS Credit Analytics",                # credit analytics
-    "Analyst, Total Fund Management",                # pension quant
     "Principal, Overlay Management",                 # derivatives overlay
-    "Analyst or Associate Financial Resource Management",  # capital/RWA
     "Dir. princ., Trésorerie",                       # French treasury
     "Vice-président, Trésorerie et stratégie",
     "Consultant en tarification senior",             # French actuarial pricing
@@ -92,22 +90,47 @@ def test_llm_audit_recoveries(title):
     assert rule_triage(title, row={"title": title})["stage1_pass"] is True, title
 
 
+@pytest.mark.parametrize("title", [
+    # Formerly vocab-gap recoveries; below the seniority floor since the
+    # 2026-08-28 user policy (analyst/associate = below band, any company).
+    "Sr. Analyst, CCR Capital",
+    "Analyst - TDS Credit Analytics",
+    "Analyst, Total Fund Management",
+    "Analyst or Associate Financial Resource Management",
+    "Senior Analyst, Global Corporate Funding",
+])
+def test_seniority_floor_supersedes_vocab_recovery(title):
+    r = rule_triage(title, row={"title": title})
+    assert r["stage1_pass"] is False, title
+    assert any(rr.startswith("below_grade:") for rr in r["rule_reasons"]), title
+
+
 # ── Funnel-widening safety net (senior risk roles at target companies) ───
 def _trow(title, source="scrape"):
     return {"title": title, "source": source}
 
 
 def test_safety_net_recovers_bare_risk_role_at_target():
-    # "Analyst, Risk" has a risk token but no level/second-hit — it would drop
-    # under the strict rules; at a scraped TARGET the safety net lets it through.
-    r = rule_triage("Analyst, Risk", row=_trow("Analyst, Risk"))
+    # A solo risk token with no level/second-hit would drop under the strict
+    # rules; at a scraped TARGET the safety net lets it through. (Title must
+    # sit at/above the seniority floor — "Analyst, Risk" now hard-drops as
+    # below_grade before the safety net is consulted.)
+    r = rule_triage("Specialist, Risk", row=_trow("Specialist, Risk"))
     assert r["stage1_pass"] is True
     assert any("safety_net" in x for x in r["rule_reasons"])
 
 
 def test_safety_net_only_at_target_not_gmail_firehose():
-    r = rule_triage("Analyst, Risk", row=_trow("Analyst, Risk", source="gmail"))
+    r = rule_triage("Specialist, Risk", row=_trow("Specialist, Risk", source="gmail"))
     assert r["stage1_pass"] is False
+
+
+def test_seniority_floor_beats_safety_net_at_target():
+    # Even at a scraped target, an analyst-grade title never reaches the
+    # safety net — the floor fires first (2026-08-28 policy).
+    r = rule_triage("Analyst, Risk", row=_trow("Analyst, Risk"))
+    assert r["stage1_pass"] is False
+    assert r["rule_reasons"] == ["below_grade:analyst"]
 
 
 def test_safety_net_ignores_noisy_solo_tokens():

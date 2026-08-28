@@ -750,6 +750,92 @@ MGR_LEVEL_TERMS = (
 
 STAGE1_THRESHOLD = 2  # lowered from 3 — see stage1_pass() for combo rules
 
+# ---------------------------------------------------------------------------
+# Seniority floor (user policy, 2026-08-28). Saber operates at the Senior
+# Manager / Associate Director band; titles below it are hard-dropped at
+# triage before any scoring spend:
+#   - Analyst-level titles, ANY company — includes "Senior Analyst",
+#     "Principal Analyst", and French "Analyste".
+#   - Associate-level titles, ANY company — includes "Senior Associate".
+#     Titles that ALSO carry a Director/VP-class token stay: "Associate
+#     Director" and "Associate Vice President" are AT grade.
+#   - Bare "Manager" titles AT BANKS ONLY (Big 6 / Mid Canadian / US banks):
+#     the bank Manager band sits below Senior Manager. "Senior … Manager"
+#     stays everywhere; non-bank Managers stay (a pension "Portfolio
+#     Manager" is a live target class, a bank "Manager, X" is not).
+#   - "Senior Director" (3 rungs above) stays in NEG_TITLE_TERMS, where its
+#     2026-07-08 market-calibration rationale lives.
+# TRIAGE_POLICIES below is the UI-facing registry of these hard drops —
+# ui/app.py renders it on the Triage page so the policy is visible, not
+# buried in code. Keep the two in sync when editing.
+# ---------------------------------------------------------------------------
+_BANK_SECTORS = ("Canadian Big 6 Banks", "Mid Canadian Banks",
+                 "US Banks (Toronto)")
+_ANALYST_RE = re.compile(r"\b(analyst|analyste)\b", re.IGNORECASE)
+_ASSOCIATE_RE = re.compile(r"\bassociate\b", re.IGNORECASE)
+_MANAGER_RE = re.compile(r"\bmanager\b", re.IGNORECASE)
+_SENIOR_QUAL_RE = re.compile(r"\b(senior|sr\.?)\b", re.IGNORECASE)
+# Director/VP-class tokens that exempt a title from the floor. Deliberately
+# EXCLUDES "principal" (a "Principal Analyst" is a senior IC, still an
+# analyst role) and "lead"; substring match mirrors the tier classifier.
+_ABOVE_GRADE_TOKENS = ("director", "vice president", "vp", "head of",
+                       "chief", "avp", "managing director")
+
+
+def _below_grade_reason(title: str, row: dict | None) -> str | None:
+    """Return a 'below_grade:<class>' reason if `title` falls under the
+    seniority floor, else None. `row` supplies the sector for the
+    bank-scoped Manager rule (missing/blank sector == not a bank)."""
+    t = (title or "").lower()
+    if not t:
+        return None
+    if any(tok in t for tok in _ABOVE_GRADE_TOKENS):
+        return None
+    if _ANALYST_RE.search(t):
+        return "below_grade:analyst"
+    if _ASSOCIATE_RE.search(t):
+        return "below_grade:associate"
+    sector = ((row or {}).get("sector") or "").strip()
+    if (sector in _BANK_SECTORS and _MANAGER_RE.search(t)
+            and not _SENIOR_QUAL_RE.search(t)):
+        return "below_grade:bank_manager"
+    return None
+
+
+# UI-facing policy registry — rendered on the Triage page (ui/app.py) so the
+# active hard-drop rules are visible in the app, not just in code. `tag` is
+# the rule_reasons prefix each policy writes, so drop rows are greppable.
+TRIAGE_POLICIES = [
+    {"policy": "Senior Director titles",
+     "action": "drop", "scope": "all companies",
+     "tag": "neg:senior director",
+     "why": "3 rungs above current band; every SD application to date was "
+            "rejected at screen (2026-07 market calibration)"},
+    {"policy": "Analyst-level titles (incl. Senior/Principal Analyst, Analyste)",
+     "action": "drop", "scope": "all companies",
+     "tag": "below_grade:analyst",
+     "why": "below Saber's Senior Manager / Associate Director band"},
+    {"policy": "Associate-level titles (incl. Senior Associate)",
+     "action": "drop",
+     "scope": "all companies — Associate Director / AVP stay (at grade)",
+     "tag": "below_grade:associate",
+     "why": "below band; director/VP-class titles are exempt"},
+    {"policy": "Bare 'Manager' titles at banks",
+     "action": "drop",
+     "scope": "Big 6 / Mid Canadian / US banks only — Senior Manager stays; "
+              "non-bank Managers (e.g. pension Portfolio Manager) stay",
+     "tag": "below_grade:bank_manager",
+     "why": "bank Manager band sits below Senior Manager"},
+    {"policy": "Hard French/bilingual requirement (title or JD body)",
+     "action": "drop", "scope": "all companies",
+     "tag": "lang:french_required",
+     "why": "Saber is not bilingual; asset/nice-to-have phrasing is kept"},
+    {"policy": "Reposts of roles already Rejected/Declined/Withdrawn/Expired",
+     "action": "drop", "scope": "all companies (company+title match)",
+     "tag": "already_rejected",
+     "why": "already passed on — a repost under a new URL is not a new role"},
+]
+
 
 def _distinct_hits(title_lower: str, phrases: list[str]) -> list[str]:
     """Return phrases found in title_lower, longest-first, with substring
@@ -904,6 +990,13 @@ def rule_triage(title: str,
         return {"stage1_pass": False, "rough_tier": 5, "score": 0,
                 "rule_reasons": [f"lang:french_required:{_fr_hit}"],
                 "hits_breakdown": {}}
+
+    # Seniority floor — analyst / associate / bank-Manager titles are below
+    # Saber's band (see TRIAGE_POLICIES; rendered in the UI Triage page).
+    _bg = _below_grade_reason(title or "", row)
+    if _bg:
+        return {"stage1_pass": False, "rough_tier": 5, "score": 0,
+                "rule_reasons": [_bg], "hits_breakdown": {}}
 
     # Suppression check — applied after neg-term (correctness) but before the
     # keyword/level scoring (taste). Short-circuits cleanly when the snapshot
