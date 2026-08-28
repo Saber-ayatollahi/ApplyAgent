@@ -47,8 +47,14 @@ def _new_run_id(prefix: str) -> str:
     return f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
 
-def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None) -> RunRecord:
-    """Launch `cmd` in the background, return a RunRecord (already persisted)."""
+def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None,
+              env: Optional[dict] = None) -> RunRecord:
+    """Launch `cmd` in the background, return a RunRecord (already persisted).
+
+    `env` merges extra variables into the child's environment — used by the UI
+    to raise COST_GUARD_* caps for a single run so a cost-capped scoring run
+    can be resumed without restarting Streamlit with new env vars.
+    """
     run_id = _new_run_id(label.replace(" ", "_").lower())
     log_path = RUNS_DIR / f"{run_id}.log"
     status_path = RUNS_DIR / f"{run_id}.json"
@@ -63,7 +69,8 @@ def start_run(label: str, cmd: list[str], cwd: Optional[Path] = None) -> RunReco
             stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             cwd=str(cwd or ROOT),
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            env={**os.environ, "PYTHONUNBUFFERED": "1",
+                 **{str(k): str(v) for k, v in (env or {}).items()}},
         )
         if sys.platform == "win32":
             # CREATE_NO_WINDOW (not DETACHED_PROCESS): we want the child to

@@ -130,6 +130,11 @@ VERDICT_DEFAULTS = {
     "tailor_and_apply": {"status": "Watch", "urgency": "Medium", "default_tier": 2},
     "watch":            {"status": "Watch", "urgency": "Low",    "default_tier": 3},
     "skip":             None,
+    # Placeholder verdicts — the row was never actually judged (cost-cap
+    # abort / API failure / JD fetch returned unusable content). Never
+    # promotable; counted and warned about in main(), not silently dropped.
+    "error":            None,
+    "refetch":          None,
 }
 
 
@@ -435,6 +440,28 @@ def main() -> int:
         return 1
 
     scored = json.loads(scored_path.read_text(encoding="utf-8"))
+
+    # ── Unscored-row guard — "non-evaluable ≠ rejected" ──────────────────
+    # Rows with verdict error (cost-cap abort / API failure) or refetch (JD
+    # fetch returned thin/boilerplate content) were never actually judged.
+    # They carry fit_score 0, so the min-score filter silently drops them —
+    # which is correct behavior (never promote an unjudged row) but must
+    # never be SILENT: a capped run once buried 258 rows this way, invisible
+    # among genuine rejections. Warn loudly and put the count in the report.
+    _unscored_rows = [
+        r for r in (scored.get("results") or [])
+        if (r.get("fit") or {}).get("fit_verdict") in ("error", "refetch")
+    ]
+    if _unscored_rows:
+        _n_ref = sum(1 for r in _unscored_rows
+                     if r["fit"].get("fit_verdict") == "refetch")
+        print(f"[auto_promote] ⚠️  {len(_unscored_rows)} row(s) in "
+              f"{scored_path.name} were never actually scored "
+              f"({_n_ref} awaiting JD re-fetch, "
+              f"{len(_unscored_rows) - _n_ref} abort/error placeholders). "
+              f"They are NOT rejections and are excluded from this promote. "
+              f"Re-run fit_scorer to complete them (cached rows are free).",
+              file=sys.stderr)
 
     # --only-url: filter the scored input down to the supplied URL(s) before
     # we even look at the tracker. Uses worklist.norm_url so a LinkedIn
@@ -824,6 +851,9 @@ def main() -> int:
         f"- Skipped — already in tracker at equal/higher score: {skipped_dupe}",
         f"- Skipped — geo gate (out of GTA/Canada-remote): {skipped_geo}",
         f"- Suppressed at promote (race-window): {len(suppressed_after_score)}",
+        (f"- ⚠️ **Unscored rows excluded — NOT rejections**: "
+         f"{len(_unscored_rows)} (error/refetch placeholders; re-run "
+         f"fit_scorer to complete)" if _unscored_rows else ""),
         "",
         "## Top 20 would-be-added (by score)",
         "",
@@ -862,6 +892,11 @@ def main() -> int:
                     "skipped_dupe": skipped_dupe,
                     "skipped_geo": skipped_geo,
                     "suppressed_after_score": len(suppressed_after_score),
+                    # Never-scored rows (verdict error/refetch) present in the
+                    # scored input. Excluded from promote by design; surfaced
+                    # here so a capped/failed scoring run is visible in the
+                    # audit pack instead of masquerading as rejections.
+                    "unscored_excluded": len(_unscored_rows),
                 },
                 "skipped_rows": preview["skipped_rows"],
                 "suppressed_after_score": suppressed_after_score,

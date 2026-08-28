@@ -2534,7 +2534,11 @@ def render_adhoc_tailor(tracker_path):
                 "archived": False, "date_found": date.today().isoformat(),
                 "posted_date": date.today().isoformat(), "date_applied": None,
                 "date_last_followup": None, "source": "manual_adhoc",
-                "status": "Found", "fit_score": "Manual", "fit_score_numeric": 0,
+                "status": "Found", "fit_score": "Unscored", "fit_score_numeric": 0,
+                # 0 is a placeholder, NOT a verdict — `needs_scoring` marks the row
+                # so the Rescore bucket surfaces it regardless of tier. Kept numeric
+                # (not None) because auto_promote/weekly_report do arithmetic on it.
+                "needs_scoring": True,
                 "resume_variants": [], "primary_variant": "", "urgency": "Medium",
                 "expected_comp_band_cad": "",
                 "fit_notes": "Ad-hoc job added from the tailor form.",
@@ -5298,12 +5302,16 @@ if page == "🏠 Dashboard":
         and len(j.get("fit_notes", "") or "") < 80
     ]
 
-    # Bucket 4 — Scoring errors (fit_score_numeric=0 on Found/Watch)
+    # Bucket 4 — Scoring errors (fit_score_numeric=0)
+    # Two ways in: (a) top-tier entry whose LLM scoring errored, (b) any entry
+    # explicitly flagged `needs_scoring` — ad-hoc rows added via the tailor form
+    # land at tier 4, so the tier gate alone would hide them forever.
     scoring_errors = [
         j for j in jobs
         if int(j.get("fit_score_numeric") or 0) == 0
         and _att_active(j)
-        and j.get("tier", 4) <= 2  # only flag top-tier broken entries
+        and (j.get("tier", 4) <= 2 or j.get("needs_scoring")
+             or str(j.get("fit_score", "")).lower() in ("unscored", "manual"))
     ]
 
     # Bucket 5 — Missing primary_variant (pre-variant-upgrade entries)
@@ -8999,7 +9007,23 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 _sc_scored_path.read_text(encoding="utf-8"))
                             for _r in _sp_sc.get("results", []) or []:
                                 _u = _r.get("link") or _r.get("url") or ""
-                                if _u:
+                                if not _u:
+                                    continue
+                                # Only count a prior verdict as REUSABLE if it
+                                # is a real verdict. fit_scorer.score_with_llm
+                                # refuses to reuse placeholders (verdict in
+                                # {error, skip, None} / score 0 / no reasons) —
+                                # the preview must apply the same test or a
+                                # cost-cap-aborted run shows "0 to pay" and the
+                                # user is told there is nothing left to score,
+                                # while the scorer would in fact re-score them.
+                                _pf = _r.get("fit") or {}
+                                _bad = (
+                                    _pf.get("fit_verdict") in ("error", "skip", None)
+                                    or not (_pf.get("fit_score") or 0)
+                                    or not _pf.get("top_3_reasons")
+                                )
+                                if not _bad:
                                     _sp_scored_urls.add(_u)
                         except Exception:
                             pass
@@ -9164,7 +9188,15 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                           "--scan", "worklist.json", "--concurrency", "6"]
                                 for _uu in _u_sel_urls:
                                     _uscmd += ["--only-url", _uu]
-                                _urec = scan_runner.start_run("score", _uscmd)
+                                # Same cost-cap override as the Score-worklist
+                                # button below (widget keys persist in session
+                                # state, so this picks up whatever is set there).
+                                _urec = scan_runner.start_run(
+                                    "score", _uscmd,
+                                    env={"COST_GUARD_DAILY_CAP_USD":
+                                         st.session_state.get("_cc_daily_cap", 5.0),
+                                         "COST_GUARD_PER_RUN_CAP_USD":
+                                         st.session_state.get("_cc_run_cap", 2.0)})
                                 st.session_state["_last_launch"] = {"run_id": _urec.run_id, "label": "Score selected"}
                                 st.toast(f"🎯 Scoring {len(_u_sel_urls)} selected role(s)…", icon="🎯")
                                 st.rerun()
@@ -9194,6 +9226,32 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             elif _sc_is_stale:
                 _sc_help += (f" 🟠 Last score {_fmt_age(_sc_scored_age_h)} old "
                              "and pre-dates current triage pool.")
+            # ── 💸 Cost-cap override ─────────────────────────────────────
+            # cost_guard defaults to $5/day (rolling 24h) and $2/run. When a
+            # scoring run trips a cap it stops early and the remaining rows
+            # keep placeholder `skip` verdicts — which read like real "no fit"
+            # decisions. These inputs raise the ceiling for runs launched from
+            # this page so a capped run can be resumed in-app, instead of
+            # setting COST_GUARD_* env vars in a terminal and restarting
+            # Streamlit (the scorer is a child process and inherits our env).
+            with st.expander("💸 Cost caps — raise these to resume a capped run"):
+                _cc1, _cc2 = st.columns(2)
+                _cc_daily = _cc1.number_input(
+                    "Daily cap (USD)", min_value=0.0, max_value=100.0,
+                    value=5.0, step=1.0, key="_cc_daily_cap",
+                    help="Rolling 24-hour spend across ALL runs. Default $5. "
+                         "Raise this if a run halted with 'daily cap exceeded'.")
+                _cc_run = _cc2.number_input(
+                    "Per-run cap (USD)", min_value=0.0, max_value=50.0,
+                    value=2.0, step=1.0, key="_cc_run_cap",
+                    help="Spend within a single run. Default $2.")
+                st.caption(
+                    "Applies to scoring runs launched from this page. Cached "
+                    "rows are always free — only unscored rows bill, so "
+                    "resuming a capped run costs just the remainder.")
+            _cc_env = {"COST_GUARD_DAILY_CAP_USD": _cc_daily,
+                       "COST_GUARD_PER_RUN_CAP_USD": _cc_run}
+
             if st.button(_sc_label, width="stretch", key="_vc_scoring_score_worklist",
                          type="primary" if (_sc_key_ok and _sc_ws_total) else "secondary",
                          disabled=(not _sc_can_run or not _sc_key_ok or not _sc_ws_total),
@@ -9202,7 +9260,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     sys.executable, str(ROOT / "automation" / "run_pipeline.py"),
                     "--skip-scrape", "--skip-promote",
                     "--score-concurrency", "6",
-                ])
+                ], env=_cc_env)
                 st.session_state["_last_launch"] = {"run_id": rec.run_id,
                                                     "label": "Score worklist"}
                 st.toast("🤖 Scorer launched!", icon="🚀")

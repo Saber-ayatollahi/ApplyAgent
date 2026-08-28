@@ -158,6 +158,12 @@ FIT_CACHE = OUT_DIR / "fit_cache"
 MASTER_REPO = ROOT / "docs" / "Saber_Ayatollahi_Master_Repository.md"
 PROGRESS_PATH = OUT_DIR / "fit_scorer_progress.json"
 
+# Zero-coverage gate (see score_with_llm). Skips the paid LLM call when the
+# deterministic extractor matched no Master-Repo skills in a substantive JD.
+# Measured 96.7% precision for score<=3 over 2,060 verdicts; ~19% of calls.
+_DET_GATE_ENABLED = os.environ.get("APPLYAGENT_DET_GATE", "1") not in ("0", "false", "False")
+_DET_GATE_MIN_JD = int(os.environ.get("APPLYAGENT_DET_GATE_MIN_JD", "800"))
+
 MODEL = os.environ.get("FIT_SCORER_MODEL", "claude-haiku-4-5-20251001")
 # Fallback must be a DIFFERENT model — otherwise score_with_llm's retry loop
 # burns 2× attempts against the same model on any non-transient failure.
@@ -397,13 +403,21 @@ _cost_state = {
 
 def _cost_tick(model: str | None = None, in_tokens: int = 0, out_tokens: int = 0,
                cache_create: int = 0, cache_read: int = 0, cache_hit: bool = False,
-               prev_fit_reuse: bool = False):
+               prev_fit_reuse: bool = False, det_gated: bool = False,
+               refetch: bool = False):
     cost = 0.0
     with _progress_lock:
         if cache_hit:
             _cost_state["cache_hits"] += 1
             if prev_fit_reuse:
                 _cost_state["prev_fit_reuses"] += 1
+            if det_gated:
+                _cost_state["det_gated"] = _cost_state.get("det_gated", 0) + 1
+            if refetch:
+                # JD-quality gate fired: row NOT scored, needs a re-fetch.
+                # Counted under cache_hits (free path, mirrors det_gated) but
+                # broken out so the UI can show "N awaiting re-fetch".
+                _cost_state["refetch_needed"] = _cost_state.get("refetch_needed", 0) + 1
         else:
             _cost_state["llm_calls"] += 1
             _cost_state["input_tokens"] += in_tokens
@@ -1243,6 +1257,59 @@ def _fetch_jd_via_api(url: str) -> str:
     return ""
 
 
+# ---------------------------------------------------------------------------
+# JD quality classification — the guard against the poisoned-cache / confident-
+# skip failure mode found in the 2026-08-25 rejected-jobs audit. A transient
+# ATS-API failure used to fall back to a raw GET of the JS shell; ~1.7KB of
+# benefits/EEO boilerplate cleared the 300-char cache bar, got cached FOREVER,
+# and the LLM then scored the boilerplate 1/skip ("JD incomplete") — burying
+# bullseye roles (BMO Senior Manager Model Validation) as rejections.
+#
+# Classification is deliberately precision-first in BOTH directions:
+#   "thin"        — under _JD_MIN_CHARS: a failed/truncated fetch, never a
+#                   scorable description.
+#   "boilerplate" — long enough, but contains NO job-content marker AND at
+#                   least one careers-page boilerplate marker. Both conditions
+#                   required, so an unusual-but-real JD (no standard headers)
+#                   stays "ok" and is scored normally.
+#   "ok"          — everything else.
+# Rows that fail quality get verdict `refetch` (see score_with_llm) — never
+# `skip` — and their text is never written to jd_cache.
+# ---------------------------------------------------------------------------
+_JD_MIN_CHARS = int(os.environ.get("APPLYAGENT_JD_MIN_CHARS", "300"))
+
+_JD_CONTENT_RE = re.compile(
+    r"(responsibilit|qualificat|accountabilit|requirement|duties|mandate"
+    r"|what (you.{0,3}ll|will you) do|what do you need|is this role right"
+    r"|about (the|this) role|the opportunity|we are looking for"
+    r"|years? of experience|key deliverables|your (role|impact)"
+    r"|exigences|responsabilit)",  # French ATS postings
+    re.IGNORECASE)
+
+_JD_BOILERPLATE_RE = re.compile(
+    r"(equal opportunity|accommodation|total rewards|employee share"
+    r"|sign in to|cookie|privacy (policy|notice)|talent community"
+    r"|apply now|job alert|similar jobs)",
+    re.IGNORECASE)
+
+
+def _jd_quality(jd_text: str) -> str:
+    """Classify fetched JD text: 'ok' | 'thin' | 'boilerplate'."""
+    t = (jd_text or "").strip()
+    if len(t) < _JD_MIN_CHARS:
+        return "thin"
+    if not _JD_CONTENT_RE.search(t) and _JD_BOILERPLATE_RE.search(t):
+        return "boilerplate"
+    return "ok"
+
+
+def _should_cache_jd(jd_text: str) -> bool:
+    """Cache gate for fetch_jd. Only 'ok'-quality text is persisted, so a
+    bad fetch (JS shell, blocked page, API hiccup) self-heals on the next
+    run instead of poisoning every future score of that URL."""
+    return _jd_quality(jd_text) == "ok"
+
+
 def fetch_jd(url: str, max_chars: int = 8000) -> str:
     """Fetch, strip HTML, clean boilerplate, prefer responsibilities section.
 
@@ -1267,7 +1334,11 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
     if any(h in (url or "") for h in ("linkedin.com", "myworkdayjobs.com")):
         _api = _fetch_jd_via_api(url)
         if _api and len(_api) >= 300:
-            _atomic_write_text(cache_path, _api)
+            # Quality-gate the cache write (not the return): boilerplate from
+            # a half-rendered API response must never be persisted, or every
+            # future run scores garbage (the poisoned-cache bug).
+            if _should_cache_jd(_api):
+                _atomic_write_text(cache_path, _api)
             return _extract_sections(_api, max_chars)
     # Retrying GET: handles transient 5xx/429 + Retry-After, logs terminal
     # failures to logs/errors.jsonl. Returns None when retries are exhausted.
@@ -1336,7 +1407,16 @@ def fetch_jd(url: str, max_chars: int = 8000) -> str:
             except Exception as e:
                 if _log_error is not None:
                     _log_error("jd_cache_legacy_unlink", e, module="fit_scorer")
-        _atomic_write_text(cache_path, cleaned)
+        # Quality gate on the cache write. The old bar (len >= 300) let the
+        # BMO Workday JS-shell fallback — 1.7KB of benefits/EEO boilerplate —
+        # persist forever; the LLM then confidently skip-scored the shell on
+        # every subsequent run. Return the text either way (the caller's
+        # refetch gate decides what to do with it); just never persist junk.
+        if _should_cache_jd(cleaned):
+            _atomic_write_text(cache_path, cleaned)
+        else:
+            print(f"  [fetch_jd] {_jd_quality(cleaned)} content for {url} "
+                  f"— returning uncached so next run retries", file=sys.stderr)
         return _extract_sections(cleaned, max_chars)
     except Exception as e:
         if _log_error is not None:
@@ -1424,6 +1504,24 @@ _STRATEGY_CALIBRATION = (
     "4. EDUCATION: Saber's dual MSc (Financial Modelling + Chemical Engineering; quantitative\n"
     "   / STEM) plus the CFA satisfy any 'graduate / advanced degree in a quantitative field'\n"
     "   requirement — never flag his degree or education as a gap.\n"
+    "5. CREDENTIAL OR-LISTS: when a JD lists several acceptable professional designations\n"
+    "   joined by 'or' / '/' / ',' (e.g. 'CPA, CFA, or FSA/FCIA', 'CFA/CAIA/FRM') as required\n"
+    "   OR as an asset, Saber's CFA satisfies that item OUTRIGHT if CFA appears anywhere in\n"
+    "   the list — do NOT flag the OTHER listed designations (FSA, FCIA, CPA, CAIA, FRM, etc.)\n"
+    "   as a missing credential; he does not need all of them, only one. Separately, ANY\n"
+    "   designation described as 'an asset', 'a plus', 'preferred', or 'nice-to-have' (as\n"
+    "   opposed to a hard requirement) is NEVER a basis for score <=5 or verdict=skip even if\n"
+    "   Saber lacks every option listed — treat a missing 'asset' item as a non-issue, not\n"
+    "   a gap worth naming.\n"
+    "6. OVERSIGHT vs PRACTITIONER LANGUAGE: a JD phrase like 'oversee actuarial valuations\n"
+    "   in partnership with the Plan Actuary/external actuary', 'work with the actuary on...',\n"
+    "   or 'actuarial oversight' describes a GOVERNANCE/FINANCIAL-STEWARDSHIP role directing or\n"
+    "   reviewing a specialist's output — NOT a role requiring the candidate to personally be a\n"
+    "   credentialed actuary performing valuations/pricing/reserving. Saber's ALM, LDI, funding-\n"
+    "   ratio, and institutional investment-committee experience (Ortec pension mandates,\n"
+    "   Moody's delegated sign-off) is a strong match for this governance framing — do not\n"
+    "   score it as an actuarial-credential gap. This applies broadly: 'oversee X in\n"
+    "   partnership/coordination with the [specialist]' is oversight, not hands-on X.\n"
 )
 
 
@@ -1805,10 +1903,80 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 "skill_gaps": [], "tier": 4,
                 "summary": "Aborted due to fatal earlier error."}
 
+    # ── JD-quality gate — "non-evaluable ≠ rejected" ─────────────────────
+    # A thin (failed fetch) or boilerplate (JS-shell) JD must never produce a
+    # skip: the 2026-08-25 audit found bullseye roles buried this way, with
+    # the LLM itself writing "non-evaluable ... recommend re-assess" and the
+    # pipeline filing that as a rejection. Verdict `refetch` is excluded from
+    # promote, counted separately (stage2_refetch), and NOT cached — so the
+    # next run re-fetches and re-evaluates for free. It also short-circuits
+    # BEFORE the paid call: scoring a title against boilerplate was pure
+    # spend for an unusable verdict.
+    # Ordering: after the cache/prev-fit checks (a good cached verdict is
+    # always served even when today's fetch failed) and after the abort check
+    # (an aborted run marks rows uniformly as aborted — the primary cause).
+    _q = _jd_quality(jd_text)
+    if _q != "ok":
+        _cost_tick(cache_hit=True, refetch=True)
+        return {
+            "fit_score": 0,
+            "fit_verdict": "refetch",
+            "top_3_reasons": [f"jd_refetch_needed:{_q}"],
+            "skill_gaps": [], "tier": 4,
+            "summary": (
+                f"NOT scored — the JD fetch returned {_q} content "
+                f"({len(jd_text or '')} chars). This is not a rejection; the "
+                "JD is uncached and will be re-fetched on the next run. If it "
+                "persists, the page needs a headless fetch or --jd-file."
+            ),
+        }
+
     # Deterministic pre-analysis. Always runs; costs ~1ms; may return None if
     # extractor or JD is unavailable.
     det = _compute_deterministic_analysis(jd_text)
     det_block = det.get("_prompt_block") if det else ""
+
+    # ── Zero-coverage gate — free rejection before any paid call ─────────
+    # Measured over 2,060 real LLM verdicts: rows where the deterministic
+    # skill extractor matched NOTHING against the Master Repo (coverage_pct
+    # == 0) on a substantive JD are 96.7% score<=3. Gating them skips ~19%
+    # of paid calls and loses ~1 in 377 good roles.
+    #
+    # Guards, because a false skip is far more costly than a wasted cent:
+    #   - requires a substantive JD (>= _DET_GATE_MIN_JD chars) so a failed
+    #     or truncated fetch never reads as "no skills matched";
+    #   - requires the extractor to have actually run (det is not None);
+    #   - the verdict is NOT written to fit_cache, so re-running after the
+    #     extractor or Master Repo improves will re-evaluate for free;
+    #   - disable with APPLYAGENT_DET_GATE=0 or --no-det-gate.
+    # Extra guards added 2026-08-25:
+    #   - the JD-quality gate above already filtered thin/boilerplate text,
+    #     so zero coverage here means a REAL description matched nothing;
+    #   - a stage-1 STRONG title hit (ALM/IRRBB/model validation/...) bypasses
+    #     the gate — an unambiguous lane title with zero JD coverage means the
+    #     extractor has a vocabulary blind spot, not that the role is junk.
+    #     Those rows go to the LLM (rare, pennies) instead of dying silently —
+    #     the exact failure that buried the Scotia Funding & Investments role.
+    _strong_title_hit = bool(
+        ((role.get("_triage") or {}).get("hits_breakdown") or {}).get("strong"))
+    if _DET_GATE_ENABLED and det is not None and jd_text and not _strong_title_hit:
+        _cov = det.get("coverage_pct")
+        if _cov == 0 and len(jd_text) >= _DET_GATE_MIN_JD:
+            _cost_tick(cache_hit=True, det_gated=True)
+            return {
+                "fit_score": 0,
+                "fit_verdict": "skip",
+                "top_3_reasons": ["det_gate:zero_skill_coverage"],
+                "skill_gaps": (det.get("gap_phrases") or [])[:5],
+                "tier": 4,
+                "deterministic": det,
+                "summary": (
+                    "Skipped before the LLM — the deterministic skill "
+                    "extractor matched nothing in this JD against the Master "
+                    "Repository (coverage 0%). Not a paid verdict. Re-run "
+                    "with --no-det-gate to score it anyway."
+                ),
+            }
 
     user = (
         f"# ROLE\n"
@@ -2013,6 +2181,10 @@ def main() -> int:
                     help="Ignore fit cache; re-call LLM for every role.")
     ap.add_argument("--concurrency", type=int, default=4,
                     help="Parallel LLM calls (default 4).")
+    ap.add_argument("--no-det-gate", action="store_true",
+                    help="Disable the zero-coverage gate — score every triaged "
+                         "row with the LLM even when the deterministic "
+                         "extractor matched no Master-Repo skills.")
     ap.add_argument("--no-cost-guard", action="store_true",
                     help="Disable the daily/per-run USD cap. Use when you "
                          "deliberately want a large run (e.g. full rescore).")
@@ -2223,6 +2395,17 @@ def main() -> int:
     # Activate cost guardrail (daily + per-run USD caps from env). Preflight
     # refuses to start if today's spend is already over cap; in-run checks
     # trip _abort_event once per-run cap is hit. Skip in --no-guard mode.
+    global _DET_GATE_ENABLED
+    if getattr(args, "no_det_gate", False):
+        _DET_GATE_ENABLED = False
+        print("[det_gate] disabled — every triaged row will hit the LLM.",
+              file=sys.stderr)
+    elif _DET_GATE_ENABLED:
+        print(f"[det_gate] on — skipping paid calls where deterministic "
+              f"coverage==0 and JD >= {_DET_GATE_MIN_JD} chars "
+              f"(~19% of calls, 96.7% precision). Disable: --no-det-gate",
+              file=sys.stderr)
+
     global _cost_guard
     if _CostGuard is not None and not args.no_cost_guard:
         _cost_guard = _CostGuard.from_env()
@@ -2230,6 +2413,34 @@ def main() -> int:
         _cost_guard.preflight_or_exit()
 
     client = anthropic.Anthropic()
+
+    # ── Cost preflight — make a cap-abort predictable, not a surprise ────
+    # A tripped cap used to look identical to "everything got scored" until
+    # the user noticed hundreds of placeholder verdicts. Estimate the paid
+    # remainder up front (cache-file existence is a cheap disk check) and
+    # warn BEFORE spending when the run cannot fit under the caps.
+    _AVG_COST_PER_ROW = 0.004  # measured: $2.002 / 534 Haiku calls (2026-08)
+    try:
+        _est_uncached = sum(
+            1 for r in triaged
+            if r.get("link") and not _cache_path_fit(r["link"]).exists())
+        _est_cost = _est_uncached * _AVG_COST_PER_ROW
+        print(f"[fit_scorer] preflight: {_est_uncached}/{len(triaged)} rows "
+              f"lack a cached verdict — estimated paid cost ~${_est_cost:.2f} "
+              f"at ~${_AVG_COST_PER_ROW:.3f}/row.", file=sys.stderr)
+        if _cost_guard is not None:
+            _run_cap = getattr(_cost_guard, "per_run_cap_usd", None)
+            if _run_cap and _est_cost > _run_cap:
+                print(f"[fit_scorer] ⚠️  estimate ~${_est_cost:.2f} EXCEEDS the "
+                      f"per-run cap ${_run_cap:.2f} — the run will stop partway "
+                      f"and leave ~{max(0, _est_uncached - int(_run_cap / _AVG_COST_PER_ROW))} "
+                      f"rows unscored (verdict=error, resumable at no re-cost). "
+                      f"Raise COST_GUARD_PER_RUN_CAP_USD to finish in one pass.",
+                      file=sys.stderr)
+    except Exception as _pf_e:
+        if _log_error is not None:
+            _log_error("cost_preflight", _pf_e, module="fit_scorer")
+
     t0 = time.time()
     progress_begin(args.scan, len(triaged))
 
@@ -2313,11 +2524,20 @@ def main() -> int:
     # as skips. Same marker set as _load_prev_fit_index's reuse blocklist.
     _ABORT_MARKERS = {"aborted_fatal_api_error", "aborted", "fatal_api",
                       "LLM_failure"}
-    unscored_count = sum(
+
+    def _is_unscored(r: dict) -> bool:
+        f = r.get("fit") or {}
+        # error = abort/API failure; refetch = JD-quality gate. Neither is a
+        # real verdict. Abort placeholders stamped as `skip` carry a marker
+        # reason instead — catch those too.
+        if f.get("fit_verdict") in ("error", "refetch"):
+            return True
+        return any(m in (f.get("top_3_reasons") or []) for m in _ABORT_MARKERS)
+
+    unscored_count = sum(1 for r in scored if _is_unscored(r))
+    refetch_count = sum(
         1 for r in scored
-        if any(m in ((r.get("fit") or {}).get("top_3_reasons") or [])
-               for m in _ABORT_MARKERS)
-    )
+        if (r.get("fit") or {}).get("fit_verdict") == "refetch")
 
     out = {
         "scan_date": scan.get("scan_date"),
@@ -2336,6 +2556,10 @@ def main() -> int:
         # verdicts). 0 on a clean run. Surfaced by the UI's ④ Scoring card
         # and the consistency banner as an incompleteness signal.
         "stage2_unscored": unscored_count,
+        # Subset of stage2_unscored: rows whose JD fetch returned thin or
+        # boilerplate content (verdict=refetch). Not rejections — the JD is
+        # uncached and retried automatically on the next run.
+        "stage2_refetch": refetch_count,
         "api_error": api_error,
         "results": scored,
         # Triage audit trail — consumed by the UI's Triage page so the user
@@ -2347,6 +2571,12 @@ def main() -> int:
     if api_error:
         print(f"\n[fit_scorer] ⚠️  Run aborted early — results are incomplete.\n"
               f"  Fix: {api_error[:200]}", file=sys.stderr)
+    if unscored_count:
+        print(f"\n[fit_scorer] ⚠️  {unscored_count} row(s) were NOT actually "
+              f"scored ({refetch_count} awaiting JD re-fetch, "
+              f"{unscored_count - refetch_count} abort/error placeholders). "
+              f"These are NOT rejections — re-run the scorer to complete them "
+              f"(already-scored rows are cached and free).", file=sys.stderr)
     json_out = OUT_DIR / (Path(args.scan).stem + "_scored.json")
     # Single-URL rescore: merge updated row(s) into the existing scored file
     # instead of overwriting it (otherwise re-scoring one suspicious skip

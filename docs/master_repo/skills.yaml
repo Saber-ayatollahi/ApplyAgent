@@ -37,6 +37,13 @@ skills:
       - "structural ALM"
       - "dynamic ALM"
       - "gestion de l'actif et du passif"
+      - "ALM study"
+      - "asset and liability"
+      - "balance sheet management"
+      - "group treasury"
+      - "corporate treasury"
+      - "treasury management"
+      - "treasury risk"
     evidence_project_ids: [proj_cashflow_engine, proj_ortec_alm_studies, proj_ortec_ldi_studies]
     evidence_role_ids: [role_moodys, role_ortec]
     interview_depth: true
@@ -113,6 +120,12 @@ skills:
       - "cashflow projection"
       - "behavioral cashflow"
       - "prepayment logic"
+      - "liquidity risk"
+      - "liquidity management"
+      - "funding and liquidity"
+      - "wholesale funding"
+      - "term funding"
+      - "intraday liquidity"
     evidence_project_ids: [proj_cashflow_engine]
     evidence_role_ids: [role_moodys]
     interview_depth: true
@@ -177,6 +190,11 @@ skills:
       - "solvency analytics"
       - "funded status"
       - "funding ratio distributions"
+      - "funding strategy"
+      - "funding risk"
+      - "funding risks"
+      - "pension funding"
+      - "funding policy"
     evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies]
     evidence_role_ids: [role_ortec]
     interview_depth: true
@@ -349,6 +367,14 @@ skills:
       - "model challenge"
       - "independent review"
       - "effective challenge"
+      - "model risk"
+      - "model risk management"
+      - "MRM"
+      - "model governance"
+      - "benchmark model"
+      - "benchmark models"
+      - "model benchmarking"
+      - "validation des modèles"
       - "model validation"
       - "model vetting"
     evidence_role_ids: [role_moodys]
@@ -482,6 +508,13 @@ skills:
     years: 3
     aliases:
       - "investment risk oversight"
+      - "investment oversight"
+      - "investment governance"
+      - "investment performance"
+      - "statement of investment policies"
+      - "SIPP"
+      - "investment policy"
+      - "investment strategy"
       - "investment risk"
     evidence_role_ids: [role_moodys]
     interview_depth: true
@@ -504,6 +537,10 @@ skills:
       - "near-optimal optimization"
       - "robust optimization"
       - "efficient frontier"
+      - "asset allocation"
+      - "strategic asset allocation"
+      - "SAA"
+      - "asset mix"
     evidence_project_ids: [proj_ortec_portfolio_optimization]
     evidence_role_ids: [role_ortec]
     interview_depth: true
@@ -536,6 +573,8 @@ skills:
     aliases:
       - "VaR"
       - "Value at Risk"
+      - "market risk"
+      - "risque de marché"
       - "CVaR"
       - "Conditional VaR"
       - "Expected Shortfall"
@@ -556,6 +595,12 @@ skills:
       - "liability modelling"
       - "pension liabilities"
       - "funding policy modelling"
+      - "actuarial valuation"
+      - "actuarial valuations"
+      - "actuarial assumptions"
+      - "plan actuary"
+      - "defined benefit"
+      - "pension plan"
     evidence_project_ids: [proj_ortec_upp, proj_ortec_alm_studies]
     evidence_role_ids: [role_ortec]
     interview_depth: true
@@ -995,6 +1040,9 @@ skills:
     aliases:
       - "investment committee"
       - "IC presentation"
+      - "board reporting"
+      - "administrative board"
+      - "board of trustees"
     evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies]
     evidence_role_ids: [role_ortec]
     interview_depth: true

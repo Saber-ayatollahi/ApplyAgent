@@ -49,6 +49,26 @@ _GTA_WITH_US_STATE_RE = re.compile(
 # (start-of-string OR after `,;|/(-—`) so JD-body prose like "Headquartered
 # in Canada, role is in NYC" or "Operating across Canada and the US" doesn't
 # false-keep when scraper noise leaks into the location field.
+# Province-level Ontario with NO city named. LinkedIn routinely labels GTA
+# postings just "Ontario, Canada", and the bare-"Canada" rule below already
+# keeps the strictly LESS specific "Canada" — so dropping these was
+# inconsistent as well as lossy (23 such rows in the 2026-08-23 pool alone).
+# Deliberately requires the string to contain ONLY province/country tokens:
+# once a city is named the existing city rules decide, so "Ottawa, Ontario"
+# and "London, ON" stay dropped (non-GTA) and "Toronto, ON" stays kept.
+_ONTARIO_ONLY_TOKENS = {"ontario", "on", "canada", "ca"}
+
+
+def _is_province_level_ontario(sl: str) -> bool:
+    """True when `sl` names Ontario (or ON) and no city at all."""
+    tokens = [t for t in re.split(r"[^a-z]+", sl) if t]
+    if not tokens:
+        return False
+    if not any(t in ("ontario", "on") for t in tokens):
+        return False
+    return all(t in _ONTARIO_ONLY_TOKENS for t in tokens)
+
+
 _CLAUSE_PREFIX = r"(?:^|[,;|/(\-—]\s*)"
 _CANADA_ANCHOR_RE = re.compile(
     r"(remote\s*[-—,/]\s*canada\b|canada\s*[-—,/]\s*remote\b|"
@@ -84,6 +104,11 @@ def is_gta_or_canada_remote(loc: str) -> bool:
     if _CANADA_ANCHOR_RE.search(sl):
         return True
     if sl.strip() in ("canada", "ca"):
+        return True
+    # Province-level "Ontario, Canada" / "ON, Canada" / "Ontario" — kept for the
+    # same reason bare "Canada" is: the GTA is the densest slice of it, and the
+    # scorer can judge the role. A named non-GTA city short-circuits this.
+    if _is_province_level_ontario(sl):
         return True
     if "waterloo" in sl or "kitchener" in sl:
         return True

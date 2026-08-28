@@ -47,7 +47,11 @@ def test_messy_linkedin_label_variants_resolve():
 
 def test_unknown_employers_stay_blank():
     # Not on the target list (broad LinkedIn alerts) — we must NOT guess.
-    for company in ("KOHO", "Mercury", "goeasy Ltd.", "Capital One",
+    # ("Capital One" used to stand in here; it was promoted to a real TARGETS
+    # entry under US Banks (Toronto) on 2026-08-23, so it now resolves to a
+    # sector by design. "Equinix" replaces it as an off-list LinkedIn-alert
+    # employer.)
+    for company in ("KOHO", "Mercury", "goeasy Ltd.", "Equinix",
                     "Jobgether", "", "   "):
         assert worklist.sector_for_company(company) == "", company
 

@@ -200,7 +200,7 @@ TARGETS = [
     {"name": "Wellington Management", "sector": "US & Global Asset Managers", "linkedin_slug": "wellington-management", "workday": ("wellington", "wd5", "External")},
     {"name": "Schroders", "sector": "US & Global Asset Managers", "linkedin_slug": "schroders", "workday": None},
 
-    # ───── US Banks with Toronto Presence (9/9) ─────
+    # ───── US Banks with Toronto Presence (10/10) ─────
     {"name": "JPMorgan Chase", "sector": "US Banks (Toronto)", "linkedin_slug": "jpmorganchase", "workday": None},
     {"name": "Goldman Sachs", "sector": "US Banks (Toronto)", "linkedin_slug": "goldman-sachs", "workday": None},
     {"name": "Morgan Stanley", "sector": "US Banks (Toronto)", "linkedin_slug": "morgan-stanley", "workday": ("ms", "wd5", "External")},
@@ -210,6 +210,12 @@ TARGETS = [
     {"name": "BNY Mellon", "sector": "US Banks (Toronto)", "linkedin_slug": "bny-mellon", "workday": None},
     {"name": "State Street", "sector": "US Banks (Toronto)", "linkedin_slug": "state-street", "workday": ("statestreet", "wd1", "Global")},
     {"name": "Northern Trust", "sector": "US Banks (Toronto)", "linkedin_slug": "northern-trust", "workday": ("ntrs", "wd1", "northerntrust")},
+    # Capital One Canada — Toronto-headquartered card business (not just a US
+    # bank with a satellite office); real Risk/ALM/model-risk hiring surface.
+    # No workday/greenhouse/successfactors/phenom ATS support (site runs on a
+    # Taleo-style board at capitalonecareers.ca) — falls back to LinkedIn
+    # guest-search scraping only, same as RBC/Citi/HSBC above.
+    {"name": "Capital One", "sector": "US Banks (Toronto)", "linkedin_slug": "capital-one", "workday": None},
 
     # ───── Analytics & Risk Vendors (8/8) ─────
     {"name": "Bloomberg", "sector": "Analytics & Risk Vendors", "linkedin_slug": "bloomberg-lp", "workday": None},
