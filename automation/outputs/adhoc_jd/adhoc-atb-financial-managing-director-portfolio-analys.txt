@@ -1,0 +1,68 @@
+At ATB, we exist to make it possible for our clients, team members and communities. Our purpose is more than aspirational. It's a real commitment we live every day through our values (what we call the ATB ID).
+About
+Life at ATB is about more than work. In fact, we’re consistently recognized as one of Canada's top employers thanks to our high-care, high-performance culture, upheld by the three commitments we make to our team members:
+Impact in action: 
+No matter where you are in the organization, you're empowered to make an impact in the lives of our clients and communities.
+Thrive together:
+ We want you—the unique, authentic you—to feel safe and celebrated at work. We're on a continuous journey to build the most flexible and inclusive programs.
+Ready for tomorrow:
+ We want to enable your success through interesting and challenging work, performance enablement, and learning and development.
+About The Role
+As ATB's next 
+Managing Director, 
+you will serve as the architect and leader of the newly established Portfolio Analysis and Strategic Initiatives function. Reporting to the AVP of Enterprise Market Risk, you will be responsible for defining core processes, and establishing the analytical frameworks necessary to provide a comprehensive, top-of-house (TOH) view of market risk across ATB’s trading and banking books. You will be responsible for consolidating risk information, ensuring that senior management receives insightful, contextualized commentary on market dynamics and the firm’s aggregate risk profile.
+We are seeking a seasoned leader to play a pivotal role in the newly established Portfolio Analysis and Strategic Initiatives function within Financial Risk Management (FRM). This leader will be instrumental in building the Enterprise Market Risk (EMR) analytical pillar, ensuring senior management has a comprehensive, aggregated view of market risk across the firm’s trading and banking books. The successful candidate will drive the development of foundational risk reporting infrastructure and provide critical, contextualized insights into enterprise-level market risk exposures.
+Accountabilities
+Key Responsibilities
+Strategic Function Build-out: Lead the end-to-end establishment of the Portfolio Analysis and Strategic Initiatives function. This includes designing core processes, implementing analytical frameworks, and curating reporting formats to deliver a top-of-house view of risk. 
+Risk Infrastructure: Design and influence best-practice risk infrastructure design. Including data structure and governance, and connectivity with pricing and risk engines. 
+Analytical Leadership: Own the production and quality assurance of all top-of-house (TOH) risk analysis and commentary. Ensure reporting is timely, accurate, and provides senior stakeholders with actionable insights regarding market dynamics, trends, and risk profiles.
+Stress Testing: Implement and maintain a robust Stress Testing function that covers Trading and Banking books. Direct the team’s response to market stress events, providing agile, regular and ad-hoc analysis that contextualizes impacts for the firm as a whole.
+Governance & Stakeholder Coordination: Act as the primary point of contact for consolidating risk information from various FRM oversight teams. Collaborate closely with the AVP and other key partners (e.g., Treasury, Front Office, MROC, ALCO) to ensure consistent communication and strategic alignment.
+Team Leadership: Recruit, mentor, and manage the Portfolio Analysis and Strategic Initiatives team, fostering a culture of analytical excellence, strategic thinking, and cross-functional collaboration.
+Process Calibration: Support the analysis and recommendation of TOH risk appetite limits and lead the review and challenge process for enterprise-level models (e.g., VaR backtesting).
+Portfolio Analysis and Stress Testing
+Report Review: Conduct daily reviews of all top-of-house (TOH) reports, providing commentary that contextualizes market moves, trends, and upcoming events. Prepare monthly management report commentary highlighting key strategic issues.
+Ad-hoc Reporting & Stress Response: Provide agile analysis and reporting in response to market stress events, contextualizing the impacts and potential strategic options for the firm.
+Stress Testing: Enhance current Stress Testing Design and Infrastructure. Creation of new relevant stress scenarios, and be on the look out for trending risks not being captured in the current Market Risk Framework across Trading and Banking Books. 
+TOH Analyses, Modeling & EMR Processes: Support the regular review and analysis of TOH limits, assess the impact of new products, and support key EMR processes such as VaR backtesting and historical window rollovers.
+Strategic Initiatives
+Drive requirements for a strategic data architecture (leveraging DEEP/BigQuery) to enable advanced analytical capabilities, improve data quality, and significantly reduce manual data adjustments in daily liquidity and balance sheet reporting.
+Collaborate with Technology (CXT) and Strategic Delivery partners to define data requirements, integration feeds, and risk engine infrastructure.
+Drive regulatory initiatives impacting FRM across Banking and Trading books. 
+Knowledge, Skills And Experience
+Strategic Vision: Ability to develop and communicate long-term roadmaps for risk analysis in alignment with firm-wide strategic objectives.
+Risk Expertise: Deep understanding of market risk across both banking and trading books, with demonstrated experience in TOH reporting and risk appetite frameworks.
+Risk Infrastructure: Advanced understanding of derivative-pricing, Risk Engines, and Data homogenization projects.
+Technical Proficiency: Strong familiarity with advanced analytical tools and data infrastructure, including SQL, Python, Tableau, and Murex, to support sophisticated modeling and reporting.
+Communications Skills: Proven ability to translate complex market events and data into clear, concise insights for executive-level leadership (e.g., CRO, SVP level).
+Leadership Experience: Experience leading analytical teams, managing change, and driving cross-functional initiatives in a large financial institution.
+Salary Range
+The salary range for this role is between $160,000 - $185,000 annually, depending on experience and qualifications.
+Don’t meet all the requirements on the list?
+A resume only goes so far in expressing who you are and the unique perspectives you bring. If you believe your skills and experience align with the role—but you might not check all the boxes—we want to hear from you. We encourage candidates from all work backgrounds, equity-seeking communities and experience levels to apply. If you’re seeking a career where your drive, perspective and growth are celebrated, we want to hear from you.
+We’re dedicated to building a workforce reflective of those within our communities, and a culture where our team members are equipped with what they need to succeed—their way. Part of creating an inclusive workplace is recognizing our role in advancing Truth and Reconciliation. We are committed to meeting and exceeding the standards set out in the Partnership Accreditation in Indigenous Relations program created by the Canadian Council for Aboriginal Business.
+What happens next?
+If you are shortlisted, you’ll hear from us after the posting closes. Check out our How We Hire page to learn more about our hiring process. If you need any accommodations throughout this process, please let us know at talentteam@atb.com
+Stay in touch
+We’re excited that you’re interested in a career with ATB. Follow us on LinkedIn, Facebook and Instagram to learn more about what our team is up to.
+        
+
+
+
+
+
+        
+            Show more
+          
+
+          
+
+
+
+
+
+
+
+        
+            Show less

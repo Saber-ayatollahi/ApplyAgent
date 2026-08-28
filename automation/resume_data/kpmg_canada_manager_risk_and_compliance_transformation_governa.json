@@ -1,0 +1,140 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "KPMG Canada",
+    "role": "Manager, Risk and Compliance Transformation",
+    "jd_keywords": [
+      "risk governance",
+      "model governance",
+      "transformation",
+      "governance documentation",
+      "regulatory readiness",
+      "IFRS 17",
+      "IFRS 9",
+      "client engagements",
+      "frameworks",
+      "AI platforms",
+      "data analytics",
+      "Python",
+      "SQL",
+      "stakeholder",
+      "business development"
+    ]
+  },
+  "summary": "Manager, Risk and Compliance Transformation candidate for KPMG's Governance, Risk and Compliance Services (GRCS) practice, bringing roughly 7 years across financial-institution risk governance, regulatory transformation, and advisory delivery. Delivered IFRS 17/IFRS 9 governance documentation and regulatory-readiness work for Canadian insurers at EY, including go-to-market collateral supporting practice business development. Currently a member of Moody's Analytics' model governance committee, holding delegated sign-off on analytics for institutional portfolios ($5-25bn per engagement) - independent review, documentation, and escalation discipline transferable to enterprise risk and compliance frameworks. CFA, dual MSc; working proficiency in Python, SQL, and agentic-AI tooling (Claude Code, Cursor).",
+  "core_skills": [
+    "Risk & Regulatory Transformation Delivery",
+    "Risk Framework Design (ALM/Investment) & Independent Model Review",
+    "Model Governance & Committee Participation",
+    "Governance Documentation & Auditability Standards",
+    "Regulatory Readiness (IFRS 17 / IFRS 9)",
+    "Risk Analytics Platform Implementation & Configuration (PFaroe/Calypso)",
+    "Requirements Scoping & Product/Dev Liaison",
+    "AI Platforms & Agentic Workflows (Claude Code, Cursor)",
+    "Data Analytics - Python, SQL, Advanced Excel",
+    "Cross-Functional Coordination (Risk, Finance, Actuarial, IT)",
+    "Executive & Committee Reporting",
+    "Client Engagement & Business Development Support"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Risk Governance & Independent Review",
+              "bullets": [
+                "Member of the model governance committee - contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics.",
+                "Hold delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), performing independent review and challenge before production release.",
+                "Operate within a formal governance framework - validating assumptions, assessing economic defensibility, and building governance documentation and auditability standards consistent with model risk management guidance (OSFI E-23 / SR 11-7 style).",
+                "Escalate outputs lacking mathematical or economic support and act as escalation point for client-critical issues, interfacing directly with clients' Heads of Risk and investment stakeholders."
+              ]
+            },
+            {
+              "heading": "Risk Technology, AI & Data Analytics",
+              "bullets": [
+                "Built agentic AI workflows on AI platforms (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation - reducing development cycle time an estimated 30-40% on comparable modules.",
+                "Re-engineered manual spreadsheet processes into scalable Python data-analytics pipelines with embedded logging, validation, and audit controls.",
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios across ALM horizons."
+              ]
+            },
+            {
+              "heading": "Stakeholder Reporting & Client Delivery",
+              "bullets": [
+                "Prepare analytical summaries for senior stakeholder audiences on interest-rate exposure, scenario impacts, and balance-sheet sensitivities - translating quantitative output into committee-ready narratives."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation across multiple client engagements for U.S. and Canadian pension funds, asset managers, and consulting firms adopting the PFaroe DB (risk & ALM analytics) and PFaroe PM platforms.",
+                "Scoped client requirements into Product Owner development requests and migrated all assigned accounts off the legacy Calypso platform, validating model outputs post-deployment."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation engagements for Canadian and international insurance clients - aligning regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Advised actuarial, IT, finance, and program-management functions on standard adoption; contributed to governance documentation and regulatory readiness processes for financial institutions.",
+                "Developed IFRS 17 advisory product offerings and go-to-market collateral supporting practice business development.",
+                "Coordinated actuarial, finance, IT, risk, and PM teams on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Designed stochastic risk-management frameworks tailored to specific client mandates for Canadian and international pension funds and institutional investors.",
+                "Delivered ALM and liability-driven investment studies analyzing funding ratios, duration mismatch, and long-term balance-sheet risk under base-case and stressed environments.",
+                "Presented study findings and allocation recommendations on-site to investment committees at Canadian pension-fund clients.",
+                "Led onboarding and the ALM study for a three-plan university pension merger - on a team of three developing and validating the model capturing all Funding Policy dynamics."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

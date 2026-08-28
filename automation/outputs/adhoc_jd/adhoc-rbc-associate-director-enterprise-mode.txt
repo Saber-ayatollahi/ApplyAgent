@@ -1,0 +1,80 @@
+Job Description
+What is your opportunity?
+As Associate Director, Enterprise Model Risk Management (EMRM) in our Group Risk Management (GRM) team, you will be responsible for end-to-end execution and documentation of credit risk model validation projects within RBC’s Canadian Banking platform. Your role is to independently assess and provide an objective opinion on the soundness of credit risk models using both qualitative and quantitative industry best practices. Specific activities include collaborating with model developers, opining on the adequacy of model documentation, assessing the suitability of models for their intended purpose, reviewing data inputs and outputs, building benchmark models to support validation conclusions, ensuring compliance with internal policies as well as regulatory requirements, communicating validation results, and providing recommendations for improvements.
+What will you do?
+Perform initial review and validation of newly developed credit models and make recommendations supporting use of the model.
+Employ various quantitative and qualitative techniques to review, test, replicate, challenge, benchmark and assess credit risk models.
+Utilize strong analytical and written communication skills to execute ongoing model validations once models reach their expected outcome period for all Canadian Banking credit risk models as governed by RBC’s Enterprise Model Risk Management policy.
+Develop comprehensive reports summarizing key observations, conclusions, and recommendations in support of completed model validations.
+Ensure model validations are planned and completed in accordance with timelines established in the Enterprise Model Risk policy based on each model’s materiality and uncertainty rating.
+What do you need to succeed?
+3 + years of model development or model validation experience, preferably related to credit risk models used within the financial services industry.
+Hands-on experience with artificial intelligence / machine learning modeling techniques (deep learning, XGboost) as well as logistic regression modeling techniques.
+Proficient Python programmer with a proven track record of delivering high-quality code.
+Comfortable working with large data sets. Solid understanding of data extraction and data mining, proficiency in SQL.
+Strategic thinker with superior interpersonal, verbal and written communication skills and with strong consensus-building skills.
+Post graduate degree in a quantitative field of study (i.e. PhD, Master of Mathematical Finance, Statistics, Computer Science, Applied Mathematics, Data Science or comparable).
+Nice-to-Haves:
+Knowledge of Canadian retail banking products and processes. A strong understanding of retail credit risk modeling theories, principles and industry best practices.
+A strong understanding of RBC’s policies, procedures, systems, risk appetite, risk tolerance, strategies and the overall role of risk management within RBC is a definite asset.
+Experience with Hadoop, Spark, object storage solutions. Familiar with Tableau or other data visualization tools. Experience with version control tools (git).
+What’s in it for you? 
+We thrive on the challenge to be our best, thinking progressively to keep growing, and working together to deliver trusted advice to help our clients thrive and communities prosper. We care about each other, reaching our potential, making a difference to our communities, and achieving success that is mutual.
+A comprehensive Total Rewards Program including bonuses and flexible benefits
+Leaders who support your development through coaching and managing opportunities
+Ability to make a difference and lasting impact
+Work in an agile, collaborative, progressive, and high-performing team
+The opportunity to interface with executives from many different parts of the organization
+Job Skills
+Critical Thinking, Economic Analysis, Risk Control, Scoring Models
+Additional Job Details
+Address:
+ROYAL BANK PLAZA, 200 BAY ST:TORONTO
+City:
+Toronto
+Country:
+Canada
+Work hours/week:
+37.5
+Employment Type:
+Full time
+Platform:
+GROUP RISK MANAGEMENT
+Job Type:
+Regular
+Pay Type:
+Salaried
+Posted Date:
+2026-02-22
+Application Deadline:
+2026-08-29
+Note
+:
+ 
+Applications will be accepted until 11:59 PM on the day prior to the application deadline date above
+Our Employment Opportunities
+At RBC, we are guided by living shared values of Client First, Integrity, Collaboration, Respect and Excellence and winning together as One RBC. We believe an inclusive workplace that has diverse perspectives is core to our continued growth as one of the largest and most successful banks in the world. Maintaining a workplace where our employees feel supported to perform at their best, effectively collaborate, drive innovation, and grow professionally helps to bring our Purpose to life and create value for our clients and communities. RBC strives to deliver this through policies and programs intended to foster a workplace based on respect, belonging and opportunity for all.
+Join our Talent Community
+Stay in-the-know about great career opportunities at RBC. Sign up and get customized info on our latest jobs, career tips and Recruitment events that matter to you.
+Expand your limits and create a new future together at RBC. Find out how we use our passion and drive to enhance the well-being of our clients and communities at jobs.rbc.com</a/span>
+RBC is presently inviting candidates to apply for this existing vacancy. Applying to this posting allows you to express your interest in this current career opportunity at RBC. Qualified applicants may be contacted to review their resume in more detail.
+        
+
+
+
+
+
+        
+            Show more
+          
+
+          
+
+
+
+
+
+
+
+        
+            Show less

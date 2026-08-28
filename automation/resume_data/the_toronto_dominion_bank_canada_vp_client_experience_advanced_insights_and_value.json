@@ -1,0 +1,136 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "TD Bank",
+    "role": "VP Client Experience Advanced Insights and Value",
+    "jd_keywords": [
+      "advanced analytics",
+      "predictive",
+      "AI",
+      "agentic",
+      "Python",
+      "SQL",
+      "data",
+      "insights",
+      "scenario analysis",
+      "root cause",
+      "anomaly detection",
+      "stakeholders",
+      "cross-functional",
+      "data visualization"
+    ]
+  },
+  "summary": "Analytics and AI delivery professional with ~7 years across institutional risk, ALM, and investment-analytics platforms, bringing transferable capability to the VP Client Experience Advanced Insights and Value role at TD. Holds delegated sign-off on analytics delivered to institutional clients at Moody's Analytics; led design of a multi-scenario cash-flow projection engine, re-engineered manual workflows into governed Python pipelines, and deployed agentic AI workflows (Claude Code, Cursor) that cut development cycle time an estimated 30-40%. Scenario-based predictive modelling, risk decomposition, and investment-committee reporting depth from Ortec Finance. CFA, dual MSc.",
+  "core_skills": [
+    "Advanced Analytics, Scenario Analysis & Predictive Modelling",
+    "AI & Agentic Workflow Enablement (Claude Code, Cursor)",
+    "Python, SQL & Automated Data Pipelines",
+    "Cross-Asset Data Aggregation & Metric Consolidation",
+    "Analytics Engine Design & Enterprise Platform Migration",
+    "Escalation, Defensibility Review & Root-Cause-Adjacent Diagnosis",
+    "Executive Reporting & Data Visualization",
+    "Cross-Functional Delivery (Finance, Technology, Risk)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director - Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Advanced Analytics, Predictive Modelling & Financial Impact",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios, giving institutional clients forward-looking, decision-ready insights across multi-year horizons.",
+                "Architected configurable time-bucketed liquidity gap analytics (T+1 through multi-year) that let clients prioritize funding, refinancing, and allocation decisions against quantified financial impact.",
+                "Embedded behavioural cash flow assumptions, prepayment logic, and macro stress overlays so forward-looking projections reflect observed institutional portfolio behaviour, not static assumptions.",
+                "Reviewed aggregation logic converting security-level data into portfolio-level metrics, producing one consistent, defensible view feeding downstream reporting and decision processes."
+              ]
+            },
+            {
+              "heading": "AI, Agentic Enablement & Data Automation",
+              "bullets": [
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, anomaly detection, and documentation, reducing development cycle time an estimated 30-40% on comparable modules.",
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls."
+              ]
+            },
+            {
+              "heading": "Governance, Root Cause Escalation & Executive Reporting",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn cumulative), independently reviewing inputs, calibration, and cross-asset interactions before production release.",
+                "Escalates outputs lacking mathematical or economic defensibility and serves as the escalation point for client-critical analytical issues, driving root-cause diagnosis with clients' Heads of Risk and investment stakeholders.",
+                "Participates in the model governance committee, contributing to methodology review, documentation, and benchmarking standards, and model-performance assessment applied across client-delivered analytics.",
+                "Prepares analytical summaries for senior stakeholders on exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative output into committee-ready narratives."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms adopting the PFaroe DB and PFaroe PM analytics platforms, acting as technical liaison between client teams and product/development functions.",
+                "Scoped end-user requirements into structured Product Owner requests, translating business needs into prioritized development work and validating delivered outputs post-deployment.",
+                "Migrated all assigned client accounts from a legacy Calypso environment to the PFaroe PM platform without service disruption."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant - Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation programs for Canadian and international insurers, aligning reporting requirements with system implementation and data sourcing.",
+                "Coordinated actuarial, finance, IT, risk, and program-management teams on cross-functional milestone delivery, governance documentation, and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant - ALM & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Built and interpreted stochastic economic scenario generators producing predictive distributions of interest-rate and funding-volatility outcomes under base-case and stressed environments for institutional clients.",
+                "Performed asset-only and surplus portfolio optimization on VaR and CVaR using the Ortec GLASS platform, with risk decomposition and attribution to show stakeholders exactly where outcome volatility originated.",
+                "Presented study findings and recommendations on-site to investment committees at Canadian pension-fund clients.",
+                "Led onboarding and the study for a three-plan university pension merger, on a team of three developing and validating the model capturing all Funding Policy dynamics."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

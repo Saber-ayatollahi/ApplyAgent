@@ -1,0 +1,124 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Scotiabank",
+    "role": "Senior Manager, Capital Markets Operations (GWO)"
+  },
+  "summary": "Implementation and change-delivery specialist bringing ~7 years of institutional derivatives and fixed-income analytics experience to a Senior Manager, Capital Markets Operations (GWO) mandate. Migrated an entire assigned client book from Calypso to PFaroe: scoping client and platform-configuration requirements, coordinating Technology and Product, and validating outputs post-deployment. Delivered IFRS 17 and IFRS 9 transformation at EY across actuarial, finance, IT, risk, and PM teams. Holds delegated sign-off authority on valuation and sensitivity outputs. CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Change Initiative Delivery & Implementation",
+    "Client & Platform Requirements Scoping and Translation",
+    "Cross-Functional Dependency & Milestone Coordination",
+    "Output Reconciliation, Validation Testing & Defect Escalation",
+    "Go-Live Cutover & Readiness Validation",
+    "Governance Forums, Documentation & Controls",
+    "Calypso to PFaroe Platform Migration",
+    "Derivatives (Rates, FX, Inflation) Valuation Validation",
+    "Fixed Income & Yield Curve Analytics",
+    "Technology, Risk & Finance Stakeholder Management",
+    "Python Analytics Pipelines & Automation",
+    "Regulated Financial Services (IFRS 17 / IFRS 9)"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Change Delivery, Implementation & Readiness",
+              "bullets": [
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine covering base, stress, and reverse-stress scenarios, with configurable time-bucketed liquidity gap analytics (T+1 to multi-year) supporting funding and refinancing decisions.",
+                "Re-engineered manual spreadsheet workflows into Python analytics pipelines with embedded logging, validation, and auditability controls: ran in shadow mode for two cycles, reconciled against legacy output, then cut over on a documented rollback plan.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, cutting development cycle time an estimated 30-40% on comparable modules."
+              ]
+            },
+            {
+              "heading": "Testing, Validation & Defect Escalation",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), reviewing curve construction, spread calibration, and cross-asset interactions before each production release.",
+                "Validated derivatives pricing outputs across rates, FX, and inflation, reconciling sensitivity consistency at portfolio-level aggregates ahead of client delivery.",
+                "Held one client release 48 hours to isolate a curve-calibration defect, escalated to product owners and the client's Head of Risk, and tracked remediation upstream, capturing the case in the standing validation test suite."
+              ]
+            },
+            {
+              "heading": "Governance, Controls & Stakeholder Reporting",
+              "bullets": [
+                "Serves on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics.",
+                "Prepares analytical summaries for senior stakeholders on interest-rate exposure and scenario impacts, and acts as escalation point for client-critical analytical issues with clients' Heads of Risk."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Migrated all assigned client accounts from the legacy Calypso platform onto PFaroe PM, validating model outputs post-deployment.",
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms adopting PFaroe DB (risk & ALM analytics) and PFaroe PM (portfolio management).",
+                "Acted as technical liaison between client investment teams and Product Owners, translating investment and platform-configuration requirements into scoped development requests and translating development constraints back into investment-team language.",
+                "Advised clients on asset, liability, and ALM configuration; delivered onboarding on schedule and established a configuration pattern reused across the subsequent migration cohort."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 technology-transformation programs for Canadian and international insurers, aligning regulatory requirements with system implementation and financial-reporting processes.",
+                "Coordinated actuarial, finance, IT, risk, and program-management functions on milestone delivery and implementation materials, isolating the decisions that required executive sign-off and escalating them.",
+                "Contributed to governance documentation and regulatory-readiness processes for financial institutions; the resulting documentation set was reused across subsequent IFRS 17 engagements."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and the ALM study for a three-plan university pension merger, on a team of three building and validating the model capturing all funding-policy dynamics.",
+                "Performed cash flow, liquidity, and hedging analysis across interest-rate, inflation, and currency exposures for international institutional clients.",
+                "Delivered ALM studies for Canadian and international pension funds, analyzing funding ratios, duration mismatch, and long-term balance-sheet exposures.",
+                "Presented study findings on-site to investment committees at Canadian pension-fund clients."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}

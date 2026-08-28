@@ -1,0 +1,27 @@
+## What was audited and fixed
+
+**JD core themes identified:** (1) internal audit / independent assurance over Treasury controls design and operating effectiveness, (2) IRRBB/ALM technical measurement — NII, EVE, duration, convexity, behavioral/deposit assumptions, stress testing, hedging, (3) challenge of management/ALCO/Board reporting, (4) coaching audit staff on Treasury concepts, (5) regulatory engagement. Draft was checked against these plus the Master Repo ceiling.
+
+**Fix 1 — Regulatory-framework mismatch (item 4/6/7):** The 'Interest Rate Risk Measurement' bullet cited 'OSFI B-12' as a comparator. OSFI is a Canadian regulator; State Street's Global Treasury Audit VP role sits under U.S. supervisory expectations. Cited a Canadian-specific guideline in a US-employer resume reads as a mismatched import rather than a relevant credential. Fixed to 'consistent with Basel Committee and industry supervisory frameworks' — Basel IRRBB standards are the actual global reference point the repo supports (§4.1), and this is genuinely relevant to any IRRBB audit context, US or otherwise.
+
+**Fix 2 — Same issue in governance bullet:** 'consistent with SR 11-7 and OSFI E-23 style expectations' dropped the OSFI E-23 reference (Canadian model-risk guideline, irrelevant to a US bank's audit function) and kept only 'SR 11-7-style model risk expectations' — SR 11-7 is the U.S. Federal Reserve/OCC model-risk guidance and is both repo-evidenced (§4.3) and directly relevant to this employer's regulatory context.
+
+**Fix 3 — Cover letter paragraph count (rule violation):** Original draft had 4 paragraphs; rule requires exactly 3. Merged the closing 'honesty/gap' paragraph and the 'credentials/availability' paragraph into one closing paragraph. Recomputed word count on the corrected 3-paragraph version: 330 words — inside the 300–350 band.
+
+**Fix 4 — 'Coaching bench' overreach (item 5):** Original phrase 'adding Treasury depth and a coaching bench to the team' implied an established audit-coaching track record. Saber's only repo-evidenced coaching claim is general 'mentorship of junior colleagues' (§4.10) — not audit-team-specific. Reworded to 'would welcome the chance to apply the mentoring I have done with junior colleagues to developing audit staff on Treasury risk concepts,' which is honest about the adjacency rather than claiming direct audit-coaching experience.
+
+## Confirmed clean (no changes needed)
+
+- **NII/EVE claim:** Explicitly evidenced verbatim in Master Repo §4.1 ('EVE and NII sensitivity under parallel and non-parallel shocks') — not a JD-vocabulary import, genuinely grounded.
+- **All core_skills** trace to repo §4.1–4.3/4.8; no ungrounded tools or frameworks (no 'deposit modeling,' 'earnings-at-risk,' 'limit monitoring,' or 'risk appetite' claimed — these are JD terms Saber has no evidence for, and the draft correctly never claims them).
+- **No fabricated audit-specific duties.** The draft never claims audit planning, audit scoping, issue development, or regulatory engagement — all JD-specific internal-audit vocabulary that has zero repo support. This is the single biggest inflation risk for this JD and the draft avoided it; the cover letter explicitly names the gap ('second-line and vendor-side model governance rather than internal audit') instead of blurring it.
+- **Section headings** already mirror the JD's own accountability structure (measurement/assumptions/scenario design; balance sheet/funding/liquidity; independent challenge/governance/reporting) rather than generic platform-vendor groupings — good mirror-check compliance.
+- **Exact title** present verbatim in summary's first sentence ('Global Treasury Audit, Vice President candidate') — rule 8 satisfied.
+- **Year count** stated as '~7 years' throughout, never '8+' or '10+' — compliant with rule 3, even though the JD asks for 10+.
+
+## Residual honest gaps to own in interview
+
+1. **Tenure gap:** JD requires 10+ years; Saber has ~7.3. Not fixable by wording — must be owned directly if raised: lead with practitioner depth (delegated sign-off, governance-committee seat, CFA + dual MSc) as the offsetting signal, not disputed tenure math.
+2. **Internal audit vs. second-line/vendor governance:** Saber has never worked inside an internal audit function — no audit planning, scoping, issue development, or regulator-facing audit reporting. The cover letter now states this plainly rather than implying equivalence; in interview, frame the transition as 'built and challenged the models you'll be auditing' rather than claiming audit methodology experience.
+3. **Deposit modeling / commercial-bank balance sheet:** Saber's ALM experience is institutional/pension-fund (Ortec) and vendor-platform buy-side (Moody's), not a commercial bank's retail/wholesale deposit book. The JD's heavy emphasis on 'deposit behavior' and 'deposit modeling' is not directly evidenced — resume correctly avoids claiming it, but be ready to speak to the adjacency (behavioral cash-flow/prepayment logic in institutional ALM vs. deposit behavioral assumptions in bank Treasury) if probed.
+4. **Regulatory engagement:** No repo evidence of direct engagement with regulators (OSFI, Fed, OCC) in a supervisory-facing capacity. Not claimed anywhere in the draft — correct — but should be named as a gap if asked directly, with the model-governance-committee seat offered as the closest adjacent experience.

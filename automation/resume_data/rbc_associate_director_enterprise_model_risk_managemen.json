@@ -10,34 +10,36 @@
   "target": {
     "company": "RBC",
     "role": "Associate Director, Enterprise Model Risk Management",
-    "experience_label": "EXPERIENCE",
     "jd_keywords": [
       "model validation",
       "model risk",
+      "model governance",
+      "model documentation",
+      "independent review",
+      "benchmarking",
+      "model performance",
       "Python",
       "SQL",
-      "logistic regression",
-      "benchmark model",
-      "model documentation",
-      "quantitative",
+      "Monte Carlo",
       "stress testing",
-      "statistics",
-      "git"
+      "Git",
+      "quantitative"
     ]
   },
-  "summary": "Associate Director, Enterprise Model Risk Management candidate with ~7 years across model validation, quantitative model development, and risk analytics. Currently operates within Moody's Analytics' formal model-governance framework with delegated sign-off on valuation, sensitivity, and risk outputs for multi-asset institutional portfolios. Hands-on Python and SQL practitioner; stochastic and Monte Carlo modelling foundations from dual MSc (Financial Modelling, Chemical Engineering); applied knowledge of OSFI E-23 and SR 11-7 validation standards. CFA charterholder.",
+  "summary": "Model validation and model risk governance specialist with ~7 years of quantitative model development, validation, and governance experience, applying for the Associate Director, Enterprise Model Risk Management role at RBC. Holds delegated sign-off authority at Moody's Analytics on valuation, sensitivity, and ALM outputs for institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), and sits on the model governance committee shaping methodology, documentation, and benchmarking standards for client-delivered analytics. Proficient Python and SQL practitioner with Monte Carlo and stress-testing depth; CFA charterholder with dual MSc degrees in Financial Modelling and Chemical Engineering. OSFI E-23 / SR 11-7-aligned model-governance awareness.",
   "core_skills": [
     "Model Validation & Independent Review",
-    "Model Risk & Governance (OSFI E-23 / SR 11-7)",
-    "Quantitative Risk & Statistical Modelling",
-    "Stochastic Modelling & Monte Carlo Simulation",
-    "Benchmark Model Development",
+    "Model Risk Governance (OSFI E-23-aligned / SR 11-7-aligned)",
+    "Model Documentation & Benchmarking Standards",
+    "Model Performance Assessment & Challenge",
     "Python (pandas, NumPy, SciPy)",
-    "SQL & Large-Dataset Analytics",
-    "Model Documentation & Governance Reporting",
+    "SQL (PostgreSQL) & Data Analytics",
+    "Stochastic Modelling & Monte Carlo Simulation",
     "Stress Testing & Scenario Analysis",
-    "Git / Version Control",
-    "VaR & CVaR Analytics"
+    "Quantitative Risk Analytics (VaR / CVaR)",
+    "Validation Reporting to Senior Stakeholders",
+    "Git / Version Control & CI/CD",
+    "Cross-Functional Stakeholder Consensus"
   ],
   "experience": [
     {
@@ -48,25 +50,28 @@
           "location_date": "Toronto, May 2023 - Present",
           "sections": [
             {
-              "heading": "Independent Model Validation & Challenge",
+              "heading": "Independent Model Review, Testing & Challenge",
               "bullets": [
-                "Holds delegated sign-off authority on valuation, sensitivity, and risk outputs for multi-asset institutional client portfolios ranging $5–25bn per engagement; independently reviews curve construction, spread calibration, and cross-asset interactions prior to production release.",
-                "Operates within a formal model-risk and governance framework — challenges assumptions, assesses economic and mathematical defensibility, and escalates outputs lacking quantitative support; maintains documentation standards consistent with SR 11-7 and OSFI E-23 expectations.",
-                "Validates derivatives pricing outputs across rates, FX, and inflation; cross-checks sensitivities and scenario impacts against benchmark calculations at portfolio-level aggregates."
+                "Held delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios ($5-25bn per engagement; ~$50bn+ cumulative), independently reviewing curve construction, spread calibration, and cross-asset interactions prior to production release.",
+                "Validated derivatives pricing outputs across rates, FX, and inflation, cross-checking sensitivity consistency at portfolio-level aggregates.",
+                "Reviewed aggregation logic converting security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes.",
+                "Escalated outputs lacking mathematical or economic defensibility - held one client release 48 hours until a curve-calibration edge case was diagnosed, remediated upstream, and captured in standing validation tests."
               ]
             },
             {
-              "heading": "Quantitative Model Development & Benchmark Analysis",
+              "heading": "Model Governance, Documentation & Validation Reporting",
               "bullets": [
-                "Led design and implementation of a multi-scenario cash-flow projection engine supporting base, stress, and reverse-stress scenarios — embedded behavioural assumptions, prepayment logic, and macro stress overlays.",
-                "Re-engineered manual spreadsheet workflows into auditable Python analytics pipelines under Git version control, with embedded logging, validation tests, and reconciliation against shadow runs to satisfy model-governance audit.",
-                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection — reducing validation cycle time by an estimated 30–40% on comparable modules."
+                "Contributed as a member of the model governance committee to methodology review, model documentation and benchmarking standards, and model performance assessment for client-delivered analytics.",
+                "Operated within a formal model governance framework - assessing assumptions, testing economic defensibility, and building documentation standards consistent with SR 11-7 and OSFI E-23-style expectations.",
+                "Produced analytical summaries for senior stakeholders on scenario impacts and balance-sheet sensitivities, converting quantitative findings into conclusions and recommendations for Heads of Risk and investment committees."
               ]
             },
             {
-              "heading": "Validation Reporting & Stakeholder Recommendations",
+              "heading": "Quantitative Development, Python & Data Analytics",
               "bullets": [
-                "Prepared comprehensive model documentation and validation summaries for senior stakeholders covering scenario impacts, sensitivities, and methodology observations; serves as escalation point on client-critical analytical issues, interfacing with Heads of Risk and investment stakeholders."
+                "Led design and implementation of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios across ALM horizons.",
+                "Re-engineered manual spreadsheet workflows into scalable Python analytics pipelines with embedded logging, validation, and auditability controls; ran shadow-mode reconciliation for two cycles before cutover.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, reducing development cycle time an estimated 30-40% on comparable modules."
               ]
             }
           ]
@@ -78,8 +83,8 @@
             {
               "heading": null,
               "bullets": [
-                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe analytics platform; validated model outputs post-deployment.",
-                "Translated client investment-team requirements into structured Product Owner requests; advised on asset, liability, and risk-model configurations across the assigned book of accounts."
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB (risk & ALM) and PFaroe PM (portfolio management) platforms; validated model outputs post-deployment.",
+                "Translated client investment-team requirements into structured development requests, working between client stakeholders and product owners to reach agreed specifications."
               ]
             }
           ]
@@ -90,14 +95,14 @@
       "employer": "Ernst & Young (EY)",
       "roles": [
         {
-          "title": "Senior Consultant - IFRS & Financial Risk Transformation",
+          "title": "Senior Consultant - IFRS & Financial Risk",
           "location_date": "Toronto, Sep 2021 - Apr 2022",
           "sections": [
             {
               "heading": null,
               "bullets": [
-                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients — aligned regulatory requirements with system implementation and contributed to governance documentation and regulatory-readiness processes.",
-                "Coordinated across actuarial, finance, IT, and risk teams on milestone delivery, implementation materials, and control documentation."
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning regulatory requirements with system implementation and financial-reporting frameworks.",
+                "Contributed to governance documentation and regulatory-readiness processes; coordinated across actuarial, finance, IT, and risk functions on milestone delivery."
               ]
             }
           ]
@@ -108,16 +113,15 @@
       "employer": "Ortec Finance Canada",
       "roles": [
         {
-          "title": "Consultant - Asset-Liability Management & Risk",
+          "title": "Consultant - ALM & Risk",
           "location_date": "Toronto, Feb 2019 - Sep 2021",
           "sections": [
             {
               "heading": null,
               "bullets": [
-                "Built and interpreted stochastic economic scenario generators using Monte Carlo techniques and statistical calibration to assess interest-rate, inflation, and currency risk under base-case and stressed environments.",
-                "Performed VaR and CVaR portfolio optimization (asset-only and asset-liability surplus) on the GLASS platform; conducted risk decomposition, contribution-to-risk, and near-optimal-frontier robustness analysis for institutional clients.",
-                "Delivered ALM studies for Canadian and international pension funds — analyzed funding ratios, duration mismatch, and long-term balance-sheet risk exposures; presented findings to investment committees on-site.",
-                "Led modelling and validation work for a three-plan university pension merger (JSPP) on a team of three — captured all Funding Policy dynamics and tested duration, currency, inflation, and leverage overlay strategies."
+                "Built and interpreted stochastic economic scenario generators (Monte Carlo) assessing interest-rate risk and funding volatility under base-case and stressed environments.",
+                "Performed asset-only and asset-liability (surplus) portfolio optimization on VaR and CVaR using Ortec's GLASS platform, with risk decomposition and near-optimal frontier analysis to test the robustness of allocation recommendations.",
+                "Presented ALM study findings to investment committees at Canadian pension-fund clients on-site."
               ]
             }
           ]

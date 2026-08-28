@@ -1,0 +1,26 @@
+## 5 likely technical questions
+
+**1. "You'd own top-of-house reporting across trading and banking books. Walk me through how you'd aggregate risk consistently across them."**
+Start from what is actually comparable: sensitivities and scenario P&L on a common risk-factor set (rates by key tenor, credit spread, FX, inflation, equity), not headline VaR from different engines. At Moody's I review the aggregation logic that maps security-level exposures into portfolio-level risk metrics feeding downstream ALM and capital processes, and the recurring failure mode is inconsistent curve and calibration inputs between engines rather than the aggregation math itself. So step one of the build is a shared risk-factor and data dictionary; step two is reconciliation and exception reporting before any commentary is written.
+
+**2. "How would you design a stress testing framework covering both books?"**
+Three layers: standard prescribed shocks (parallel and non-parallel rate moves, spread widening, FX), historical replays, and forward-looking narrative scenarios built for the current risk environment. At Moody's I led the design of a multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios with behavioral cash flow, prepayment, and macro overlays; at Ortec I built stochastic economic scenario generators calibrated to client assumptions. Reverse stress is the piece most banks under-invest in — it is what surfaces the exposure the standard grid never asks about.
+
+**3. "Tell me about a time you challenged a model output." (STAR Story 2)**
+A client delivery produced portfolio sensitivities that passed every internal check but did not square with economic intuition under one rate shock. Under deadline pressure I held the release, decomposed the sensitivities by asset class, and found a curve-calibration edge case in short-end inversion handling. Escalated to the product owner and the client's Head of Risk with a remediation plan; release slipped 48 hours, the client avoided acting on wrong numbers, the defect was fixed upstream and captured in validation tests, and I became that Head of Risk's direct escalation contact.
+
+**4. "How do you turn a manual, spreadsheet-driven reporting process into governed infrastructure without breaking daily delivery?" (STAR Story 6)**
+Parallel build, shadow run, reconcile, cut over with a rollback plan. I migrated a spreadsheet-driven Moody's valuation workflow into a Python pipeline with logging and versioning, ran it in shadow for two cycles, reconciled outputs line by line, then cut over. The governance audit closed satisfactorily and the pipeline became the template for adjacent workflows. The sequencing matters more than the tooling — you never ask a daily production process to trust a new engine on day one.
+
+**5. "What's your risk-measurement toolkit — VaR, CVaR, decomposition?"**
+At Ortec I ran asset-only and asset-liability (surplus) optimization on VaR and CVaR using the GLASS platform, plus risk decomposition, contribution-to-risk budgeting, and near-optimal frontier analysis to test whether an allocation recommendation was robust or a corner solution. At Moody's the emphasis shifts to sensitivity and scenario measures validated at portfolio-level aggregates across rates, FX, and inflation. Be explicit: I have used VaR/CVaR as measurement and optimization inputs; I have not personally owned a daily VaR backtesting cycle — see gap note.
+
+## 3 questions Saber should ask
+
+1. This is a newly established function — in the first 12 months, is success defined by the reporting product landing (daily TOH pack, monthly management commentary) or by the data architecture build with CXT? If both, which gets the headcount first?
+2. How is market risk currently split between the FRM oversight teams, and where does consolidation friction actually live today — data, methodology, or ownership of the narrative?
+3. What is the target team size and shape, and how much of the risk-appetite limit calibration and VaR backtesting review is already running versus to be stood up by this seat?
+
+## The one competency gap to prepare for
+
+**Trading-book market risk machinery and the tooling stack.** No hands-on Murex, Tableau, or BigQuery/DEEP; no ownership of a daily VaR backtesting or historical-window rollover cycle; no front-office/desk-facing market risk seat. Also no direct people-management line (mentorship and a three-person project team, not a managed team). Prepared answer: own it in one sentence, then pivot to the transferable bench — risk-engine and pricing-platform work across PFaroe DB/PM, the Calypso migration, and Ortec GLASS; SQL/PostgreSQL and production Python pipelines; model governance committee experience covering methodology review, benchmarking, and model-performance assessment, which is the same review-and-challenge discipline VaR backtesting sits inside. Do not bluff Murex — say you have configured and validated comparable vendor risk engines and would expect a ramp of weeks, not quarters.

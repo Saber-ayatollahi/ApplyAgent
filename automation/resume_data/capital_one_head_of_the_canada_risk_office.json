@@ -1,0 +1,139 @@
+{
+  "contact": {
+    "name": "Saber Ayatollahi",
+    "credentials": "CFA, MSc",
+    "location": "Toronto, Canada",
+    "phone": "+1 (416) 856-1276",
+    "email": "saber.ayatollahi@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/sayatollahi/"
+  },
+  "target": {
+    "company": "Capital One",
+    "role": "Head of the Canada Risk Office",
+    "jd_keywords": [
+      "risk management",
+      "risk governance",
+      "governance framework",
+      "controls",
+      "escalation",
+      "remediation",
+      "compliance",
+      "regulatory",
+      "OSFI",
+      "audit",
+      "stress testing",
+      "Python",
+      "cross-functional",
+      "stakeholder",
+      "process management"
+    ]
+  },
+  "summary": "Risk governance and model-oversight professional with ~7 years of experience in independent review, issue escalation, and controls remediation, pursuing the Head of the Canada Risk Office mandate at Capital One Canada. Holds delegated sign-off authority over institutional analytics ($5-25bn per engagement) within a formal model governance framework, escalates and remediates control gaps, and closed a governance audit finding through a controlled Python migration. Cross-functional coordination experience spans finance, risk, IT, and actuarial stakeholders on regulatory transformation programs (IFRS 17/IFRS 9). CFA charterholder; dual MSc.",
+  "core_skills": [
+    "Risk Governance & Control Frameworks",
+    "Model Risk Management & Independent Challenge",
+    "Issue Identification, Escalation & Remediation",
+    "Methodology, Documentation & Benchmarking Standards",
+    "Process Controls & Auditability",
+    "Governance Audit Remediation",
+    "Regulatory Change Implementation (IFRS 17 / IFRS 9)",
+    "Stress Testing & Scenario Analysis",
+    "Risk Metrics & Executive Reporting",
+    "Cross-Functional Stakeholder Coordination",
+    "Process Management, Improvement & Python Automation of Manual Workflows"
+  ],
+  "experience": [
+    {
+      "employer": "Moody's Analytics",
+      "roles": [
+        {
+          "title": "Asst. Director, Modelling Services",
+          "location_date": "Toronto, May 2023 - Present",
+          "sections": [
+            {
+              "heading": "Risk Governance, Oversight & Independent Challenge",
+              "bullets": [
+                "Holds delegated sign-off authority on valuation, sensitivity, and ALM outputs for multi-asset institutional portfolios of $5-25bn per engagement (~$50bn+ cumulative), applying independent review before production release.",
+                "Serves on the model governance committee, contributing to methodology review, documentation and benchmarking standards, and model-performance assessment for client-delivered analytics.",
+                "Operates within a formal model governance framework, validating assumptions and economic defensibility to documentation standards consistent with SR 11-7 and OSFI E-23 expectations."
+              ]
+            },
+            {
+              "heading": "Issue Escalation, Remediation & Control Closure",
+              "bullets": [
+                "Escalates outputs lacking mathematical or economic defensibility and serves as escalation point for client-critical analytical issues, interfacing with clients' Heads of Risk and investment stakeholders.",
+                "Held a client release for 48 hours after portfolio sensitivities passed internal checks but failed economic review, traced the defect to a curve-calibration edge case, escalated to product owners and the client's Head of Risk, and embedded the fix in permanent validation tests.",
+                "Re-engineered a spreadsheet-driven valuation workflow into a logged, version-controlled Python pipeline, running two shadow-mode reconciliation cycles before cutover and closing the open governance audit item."
+              ]
+            },
+            {
+              "heading": "Risk Metrics, Reporting & Process Improvement",
+              "bullets": [
+                "Prepares analytical summaries for senior stakeholders on interest-rate exposure, scenario impacts, and balance-sheet sensitivities, translating quantitative output into committee-ready narratives.",
+                "Led design of an enterprise multi-asset cash flow projection engine supporting base, stress, and reverse-stress scenarios, with time-bucketed liquidity metrics from T+1 through multi-year horizons.",
+                "Built agentic AI development workflows (Claude Code, Cursor IDE) automating code generation, validation scaffolding, and anomaly detection, reducing development cycle time an estimated 30-40% on comparable modules."
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Client Service Specialist",
+          "location_date": "Toronto, May 2022 - May 2023",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Led onboarding and implementation for U.S. and Canadian pension funds, asset managers, and consulting firms migrating to the PFaroe DB and PFaroe PM analytics platforms; validated model outputs post-deployment.",
+                "Acted as technical liaison between client investment teams and product owners, scoping requirements into development requests and completing migration of all assigned accounts off the legacy Calypso platform."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ernst & Young (EY)",
+      "roles": [
+        {
+          "title": "Senior Consultant, IFRS & Financial Risk Transformation",
+          "location_date": "Toronto, Sep 2021 - Apr 2022",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered IFRS 17 and IFRS 9 transformation projects for Canadian and international insurance clients, aligning new regulatory requirements with system implementation and reporting frameworks.",
+                "Advised actuarial, IT, finance, and program management functions on IFRS 17 and IFRS 9 adoption; contributed to governance documentation and regulatory compliance readiness processes for financial institutions.",
+                "Coordinated across actuarial, finance, IT, risk, and PM teams on milestone delivery and implementation materials."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "employer": "Ortec Finance Canada",
+      "roles": [
+        {
+          "title": "Consultant, Asset-Liability Management & Risk",
+          "location_date": "Toronto, Feb 2019 - Sep 2021",
+          "sections": [
+            {
+              "heading": null,
+              "bullets": [
+                "Delivered ALM studies for Canadian and international pension funds and institutional investors, analyzing funding ratios, duration mismatch, and long-term balance-sheet risk exposures.",
+                "Designed stochastic risk-management frameworks tailored to client mandates and built economic scenario generators used to stress test funding volatility and interest-rate exposure under base and stressed environments.",
+                "Led onboarding and the ALM study for a three-plan university pension merger on a three-person team, developing and validating the model capturing all funding policy dynamics.",
+                "Presented study findings and allocation recommendations to investment committees at Canadian pension fund clients on-site."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "education": [
+    "Chartered Financial Analyst (CFA) - CFA Institute, 2024",
+    "MSc, Financial Modelling - Western University, 2018",
+    "MSc, Chemical Engineering (Full Scholarship) - Western University, 2016"
+  ]
+}
