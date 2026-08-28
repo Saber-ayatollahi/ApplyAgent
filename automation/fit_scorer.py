@@ -777,9 +777,29 @@ _MANAGER_RE = re.compile(r"\bmanager\b", re.IGNORECASE)
 _SENIOR_QUAL_RE = re.compile(r"\b(senior|sr\.?)\b", re.IGNORECASE)
 # Director/VP-class tokens that exempt a title from the floor. Deliberately
 # EXCLUDES "principal" (a "Principal Analyst" is a senior IC, still an
-# analyst role) and "lead"; substring match mirrors the tier classifier.
-_ABOVE_GRADE_TOKENS = ("director", "vice president", "vp", "head of",
-                       "chief", "avp", "managing director")
+# analyst role) and "lead".
+#
+# Matched on WORD boundaries, not as substrings: a bare `"vp" in title` also
+# fires inside "Revpar" and `"chief"` inside "Chieftain", which would exempt
+# an analyst-grade role from the floor. Same bug class the `_neg_hit` helper
+# above exists to prevent ("intern" matching "internal").
+#
+# ANY standalone above-grade token exempts, even alongside a grade token.
+# That is deliberate and load-bearing: the dominant real-world shape (74 such
+# titles in the 2026-08 pool) is the DUAL-GRADE posting — "Senior
+# Associate/VP, Global Investment Banking", "Associate/Director, Portfolio
+# Implementation", "Credit Risk Analyst - Assistant Vice President" — where
+# the employer will hire at either level, so the VP end is at grade and the
+# row must survive. Titles where the above-grade token refers to someone
+# else ("Analyst, VP Office Support") would also survive, but that shape does
+# not occur in the pool; keeping the rule simple beats a fragile heuristic.
+_ABOVE_GRADE_TOKENS = ("director", "vice president", "vice-president", "vp",
+                       "head of", "chief", "avp", "managing director")
+_ABOVE_GRADE_RE = re.compile(
+    r"(?<![a-z])(?:" + "|".join(t.replace(" ", r"\s+").replace("-", r"[-\s]")
+                                for t in _ABOVE_GRADE_TOKENS) + r")(?![a-z])",
+    re.IGNORECASE,
+)
 
 
 def _below_grade_reason(title: str, row: dict | None) -> str | None:
@@ -789,7 +809,7 @@ def _below_grade_reason(title: str, row: dict | None) -> str | None:
     t = (title or "").lower()
     if not t:
         return None
-    if any(tok in t for tok in _ABOVE_GRADE_TOKENS):
+    if _ABOVE_GRADE_RE.search(t):
         return None
     if _ANALYST_RE.search(t):
         return "below_grade:analyst"
@@ -1300,22 +1320,49 @@ def _extract_sections(cleaned: str, max_chars: int) -> str:
     """
     if not cleaned or len(cleaned) <= max_chars:
         return cleaned
+    # Barely over the cap: windowing can only lose the head of the document
+    # to save a tail that is almost always the EEO/benefits footer. Take the
+    # head — a JD's opening is its role summary. (BMO's 8.2 KB Workday post
+    # against an 8 KB cap was being windowed to a mid-document "Qualifications"
+    # header, discarding the responsibilities section above it.)
+    if len(cleaned) <= max_chars * 1.25:
+        return cleaned[:max_chars]
     lower = cleaned.lower()
 
-    def _earliest_hit(hints: tuple[str, ...]) -> int:
+    # A section header sits at the START of a line. Matching hints anywhere
+    # lets incidental prose win: BMO's Workday footer contains "...the role,
+    # and may include a commission structure", and the bare hint "the role"
+    # matched it at ~6.4 KB, so an 8 KB JD was sliced down to its 1.7 KB
+    # salary/About-Us tail — which the LLM then scored as "JD incomplete"
+    # and the pipeline filed as a rejection. Prefer line-anchored hits and
+    # fall back to anywhere-hits only when no header-like match exists.
+    def _earliest_hit(hints: tuple[str, ...], anchored: bool) -> int:
         best = len(cleaned)
         for hint in hints:
-            idx = lower.find(hint)
+            if anchored:
+                # start-of-string or start-of-line, allowing bullet/space lead
+                m = re.search(r"(?:^|\n)[\s*\-••]{0,4}" + re.escape(hint),
+                              lower)
+                idx = m.start() if m else -1
+            else:
+                idx = lower.find(hint)
             if 0 <= idx < best:
                 best = idx
         return best
 
-    for tier in (_SECTION_HINTS_P1, _SECTION_HINTS_P2,
-                  _SECTION_HINTS_P3, _SECTION_HINTS_P4):
-        start = _earliest_hit(tier)
-        if start < len(cleaned):
-            return cleaned[start:start + max_chars]
-    # No section header found anywhere — head-of-document fallback.
+    # A header found so late that almost no text follows it is not the job
+    # body — it is prose that happens to contain the phrase. Require the
+    # slice to carry real content, else fall through to the next tier.
+    _min_tail = max(1000, max_chars // 4)
+
+    for anchored in (True, False):
+        for tier in (_SECTION_HINTS_P1, _SECTION_HINTS_P2,
+                     _SECTION_HINTS_P3, _SECTION_HINTS_P4):
+            start = _earliest_hit(tier, anchored)
+            if start < len(cleaned) and (len(cleaned) - start) >= _min_tail:
+                return cleaned[start:start + max_chars]
+    # No usable section header anywhere — head-of-document fallback. The
+    # opening of a JD is far more likely to be the role summary than the tail.
     return cleaned[:max_chars]
 
 
@@ -1361,10 +1408,20 @@ def _fetch_jd_via_api(url: str) -> str:
 # Classification is deliberately precision-first in BOTH directions:
 #   "thin"        — under _JD_MIN_CHARS: a failed/truncated fetch, never a
 #                   scorable description.
-#   "boilerplate" — long enough, but contains NO job-content marker AND at
-#                   least one careers-page boilerplate marker. Both conditions
-#                   required, so an unusual-but-real JD (no standard headers)
-#                   stays "ok" and is scored normally.
+#   "boilerplate" — long enough, but carries NO job-content marker at all.
+#                   Absence of content is the PRIMARY signal: measured over
+#                   4,016 real cached JDs, only 1.0% lack every content
+#                   marker, so "no responsibilities / qualifications /
+#                   requirements language anywhere" reliably means this is
+#                   not a job description. Two guards keep it precision-
+#                   first: a text at or over _JD_LONG_CHARS is given the
+#                   benefit of the doubt (18 of those 42 were long, unusual
+#                   but real postings — often non-English), UNLESS it also
+#                   carries an explicit careers-page boilerplate marker.
+#                   NOTE: an earlier version required a positive boilerplate
+#                   marker in ALL cases, which let BMO's 1,728-char Workday
+#                   salary/About-Us footer through as "ok" — it matches none
+#                   of the standard boilerplate phrasings.
 #   "ok"          — everything else.
 # Rows that fail quality get verdict `refetch` (see score_with_llm) — never
 # `skip` — and their text is never written to jd_cache.
@@ -1380,10 +1437,16 @@ _JD_CONTENT_RE = re.compile(
     re.IGNORECASE)
 
 _JD_BOILERPLATE_RE = re.compile(
-    r"(equal opportunity|accommodation|total rewards|employee share"
+    r"(equal opportunity|accommodation|total[\s-]rewards|employee share"
     r"|sign in to|cookie|privacy (policy|notice)|talent community"
-    r"|apply now|job alert|similar jobs)",
+    r"|apply now|job alert|similar jobs|about us"
+    r"|committed to an inclusive|retirement savings plan"
+    r"|total compensation package|pro-rated based on)",
     re.IGNORECASE)
+
+# Texts at or above this length with no content marker get the benefit of the
+# doubt (unusual-but-real postings) unless they also look like boilerplate.
+_JD_LONG_CHARS = int(os.environ.get("APPLYAGENT_JD_LONG_CHARS", "4000"))
 
 
 def _jd_quality(jd_text: str) -> str:
@@ -1391,8 +1454,10 @@ def _jd_quality(jd_text: str) -> str:
     t = (jd_text or "").strip()
     if len(t) < _JD_MIN_CHARS:
         return "thin"
-    if not _JD_CONTENT_RE.search(t) and _JD_BOILERPLATE_RE.search(t):
-        return "boilerplate"
+    if not _JD_CONTENT_RE.search(t):
+        # No responsibilities / qualifications / requirements language at all.
+        if len(t) < _JD_LONG_CHARS or _JD_BOILERPLATE_RE.search(t):
+            return "boilerplate"
     return "ok"
 
 

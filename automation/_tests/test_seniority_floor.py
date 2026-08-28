@@ -69,7 +69,31 @@ class TestAssociateDrop:
     def test_associate_vice_president_exempt(self):
         assert _below_grade_reason(
             "Associate Vice President, Model Risk", BANK) is None
+        assert _below_grade_reason(
+            "Associate Vice-President, ALM", BANK) is None
         assert _below_grade_reason("AVP, Central Actuarial", INSURER) is None
+
+    def test_dual_grade_postings_survive(self):
+        """The dominant real-world shape (74 titles in the 2026-08 pool):
+        employer hires at EITHER level, so the VP/Director end is at grade
+        and the row must survive the floor."""
+        for t in ("Senior Associate/VP, Global Investment Banking",
+                  "Associate/Director, Portfolio Implementation",
+                  "Associate/ Vice President, Asset Backed Securities",
+                  "First Line Credit Risk Analyst - Assistant Vice President",
+                  "Vice President Quantitative Analyst"):
+            assert _below_grade_reason(t, BANK) is None, t
+
+
+class TestWordBoundarySafety:
+    """Exemption tokens must match on word boundaries — a substring test
+    would let 'Revpar' (vp) and 'Chieftain' (chief) exempt analyst roles."""
+
+    def test_substring_lookalikes_do_not_exempt(self):
+        assert _below_grade_reason(
+            "Analyst, Revpar Reporting", BANK) == "below_grade:analyst"
+        assert _below_grade_reason(
+            "Associate, Chieftain Fund", BANK) == "below_grade:associate"
 
 
 class TestBankManagerDrop:

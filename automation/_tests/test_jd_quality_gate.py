@@ -57,17 +57,103 @@ class TestJdQuality:
     def test_real_jd_is_ok(self):
         assert _jd_quality(REAL_JD) == "ok"
 
-    def test_unusual_but_real_jd_stays_ok(self):
-        # No standard section headers AND no boilerplate markers — must NOT
-        # be flagged (precision-first: both conditions are required).
+    def test_long_unusual_jd_stays_ok(self):
+        # No standard section headers and no boilerplate markers, but long
+        # enough to be a real (if oddly-formatted) posting — benefit of the
+        # doubt, so it is scored normally.
         weird = ("The team models liquidity across horizons using Python. "
-                 "You bring deep treasury analytics knowledge. " * 20)
+                 "You bring deep treasury analytics knowledge. " * 45)
+        assert len(weird) >= fit_scorer._JD_LONG_CHARS
         assert _jd_quality(weird) == "ok"
+
+    def test_short_text_with_no_content_marker_is_flagged(self):
+        # Deliberate tightening (measured: only 1.0% of 4,016 real cached
+        # JDs carry no content marker at all). Such rows become `refetch` —
+        # retried and reported, never silently rejected.
+        weird = ("The team models liquidity across horizons using Python. "
+                 "You bring deep treasury analytics knowledge. " * 10)
+        assert len(weird) < fit_scorer._JD_LONG_CHARS
+        assert _jd_quality(weird) == "boilerplate"
 
     def test_cache_gate_follows_quality(self):
         assert _should_cache_jd(REAL_JD) is True
         assert _should_cache_jd(BOILERPLATE) is False
         assert _should_cache_jd("") is False
+
+
+class TestBoilerplateWithoutKnownMarkers:
+    """Regression: the first version of _jd_quality required a POSITIVE
+    boilerplate marker, so BMO's Workday salary/About-Us footer — which
+    matches none of the standard phrasings — passed as 'ok' and was scored
+    as a real JD. Absence of any content marker is now the primary signal."""
+
+    BMO_FOOTER = (
+        "the role, and may include a commission structure. Salaries for "
+        "part-time roles will be pro-rated based on number of hours regularly "
+        "worked. BMO Financial Group's total compensation package will vary "
+        "based on the pay type of the position and may include performance-"
+        "based incentives, discretionary bonuses, as well as other perks and "
+        "rewards. BMO also offers health insurance, tuition reimbursement, "
+        "accident and life insurance, and retirement savings plans. "
+        "About Us. At BMO we are driven by a shared Purpose. "
+        "BMO is committed to an inclusive, equitable and accessible workplace."
+    )
+
+    def test_unrecognised_boilerplate_is_flagged(self):
+        assert _jd_quality(self.BMO_FOOTER) == "boilerplate"
+        assert _should_cache_jd(self.BMO_FOOTER) is False
+
+    def test_long_unusual_text_without_markers_gets_benefit_of_doubt(self):
+        # >= _JD_LONG_CHARS and no boilerplate markers → stays 'ok' so a real
+        # but oddly-formatted (often non-English) posting is still scored.
+        odd = ("Le titulaire du poste contribue aux travaux de modelisation "
+               "du risque de taux et participe aux analyses de bilan. " * 60)
+        assert len(odd) >= fit_scorer._JD_LONG_CHARS
+        assert _jd_quality(odd) == "ok"
+
+
+class TestExtractSectionsWindowing:
+    """Regression: _extract_sections took the earliest hit ANYWHERE, so the
+    bare P1 hint "the role" matched incidental prose in a compensation
+    footer ("...the role, and may include a commission structure") ~6.4 KB
+    into an 8.2 KB JD — returning only the 1.7 KB tail. The LLM then scored
+    that tail as "JD incomplete" and the pipeline filed it as a rejection."""
+
+    HEAD = ("Performs validation of models and assesses model risk to confirm "
+            "model appropriateness. Leads model testing and independent "
+            "challenge across the portfolio. ")
+    FOOTER = ("the role, and may include a commission structure. Salaries "
+              "for part-time roles will be pro-rated. About Us. We are "
+              "committed to an inclusive workplace. ")
+
+    def test_incidental_prose_does_not_win_over_document_head(self):
+        # Mirrors the real BMO shape: ~8 KB of body, a ~1.7 KB footer whose
+        # prose contains the bare hint "the role", scored against the real
+        # 8000-char cap. The tail is below the min-tail floor, so the footer
+        # must not be selected.
+        body = self.HEAD * 60                      # ~8 KB of real content
+        doc = body + self.FOOTER * 10              # ~1.7 KB tail
+        assert len(doc) > 8000 * 1.25, "doc must be past the head shortcut"
+        out = fit_scorer._extract_sections(doc, 8000)
+        assert "Performs validation of models" in out, \
+            "must not slice to the compensation footer"
+
+    def test_barely_over_cap_returns_head(self):
+        doc = "A" * 900
+        assert fit_scorer._extract_sections(doc, 800) == doc[:800]
+
+    def test_under_cap_is_untouched(self):
+        doc = "short jd"
+        assert fit_scorer._extract_sections(doc, 8000) == doc
+
+    def test_anchored_header_still_wins_on_long_docs(self):
+        # A real line-anchored header far into a long doc SHOULD be selected
+        # over marketing at the top.
+        doc = ("About Us. We are a great place to work. " * 200
+               + "\nResponsibilities:\n"
+               + "Own the ALM model validation process. " * 200)
+        out = fit_scorer._extract_sections(doc, 2000)
+        assert out.lstrip().lower().startswith("responsibilities")
 
 
 class TestRefetchVerdict:

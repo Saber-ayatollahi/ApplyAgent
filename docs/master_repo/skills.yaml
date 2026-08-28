@@ -600,7 +600,6 @@ skills:
       - "actuarial assumptions"
       - "plan actuary"
       - "defined benefit"
-      - "pension plan"
     evidence_project_ids: [proj_ortec_upp, proj_ortec_alm_studies]
     evidence_role_ids: [role_ortec]
     interview_depth: true
@@ -1040,7 +1039,6 @@ skills:
     aliases:
       - "investment committee"
       - "IC presentation"
-      - "board reporting"
       - "administrative board"
       - "board of trustees"
     evidence_project_ids: [proj_ortec_alm_studies, proj_ortec_ldi_studies]
