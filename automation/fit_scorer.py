@@ -621,6 +621,35 @@ _FRENCH_ASSET_GUARD_RE = re.compile(
 )
 
 
+# ---------------------------------------------------------------------------
+# Deterministic (non-LLM) verdicts. Two gates decide a row without ever
+# calling the model: the French/bilingual hard reject and the zero-coverage
+# det gate. Both DELIBERATELY skip fit_cache — French so a false positive can
+# never overwrite a good cached verdict, det-gate so improving the extractor
+# or Master Repo re-evaluates the row for free.
+#
+# The side effect: such rows have no cache file, so any "rows still needing a
+# score" count that keys off cache-file existence counts them every run and
+# never reaches zero — the scorer looks stuck even though it finished (the
+# 22-French-rows report, 2026-08-28). This predicate is the single source of
+# truth for "already decided, just not cached"; ui/app.py's score preview
+# imports it so the two can't drift.
+_DETERMINISTIC_VERDICT_MARKERS = ("lang:french_required", "det_gate:")
+
+
+def is_deterministic_verdict(fit: dict | None) -> bool:
+    """True when `fit` was decided by a free, deterministic gate rather than
+    the LLM. Such rows are complete — not pending work — despite having no
+    fit_cache entry. `refetch` is deliberately NOT included: that verdict
+    means "unusable JD, retry next run", which IS outstanding work."""
+    if not isinstance(fit, dict):
+        return False
+    for r in fit.get("top_3_reasons") or []:
+        if isinstance(r, str) and r.startswith(_DETERMINISTIC_VERDICT_MARKERS):
+            return True
+    return False
+
+
 def _requires_french(text: str) -> str | None:
     """Return the matched phrase if `text` states a hard French/bilingual
     requirement, else None. Checks a +/-60 char window around each candidate

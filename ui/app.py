@@ -9015,6 +9015,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _sc_pre_cached = 0
             _sc_pre_needs = 0
             _sc_pre_stale_scored = 0
+            _sc_pre_decided = 0
             _sc_unscored_rows = []
             if _sc_tr_path.exists():
                 try:
@@ -9023,10 +9024,22 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     if _ad not in _sp_sys.path:
                         _sp_sys.path.insert(0, _ad)
                     from fit_scorer import _url_hash as _sp_url_hash  # type: ignore
+                    try:
+                        from fit_scorer import (  # type: ignore
+                            is_deterministic_verdict as _sp_is_det)
+                    except Exception:      # older fit_scorer
+                        _sp_is_det = lambda _f: False  # noqa: E731
                     _sp_tp = json.loads(_sc_tr_path.read_text(encoding="utf-8"))
                     _sp_rows = _sp_tp.get("results") or []
                     _sp_fit_dir = OUT_DIR / "fit_cache"
                     _sp_scored_urls: set[str] = set()
+                    # Rows decided by a free deterministic gate (French hard
+                    # reject / zero-coverage det gate). They never get a
+                    # fit_cache file by design, so without this they are
+                    # counted as "needs scoring" on EVERY run and the preview
+                    # can never reach zero — the scorer looks stuck when it
+                    # actually finished (22-French-rows report, 2026-08-28).
+                    _sp_decided_urls: set[str] = set()
                     if _sc_scored_path.exists():
                         try:
                             _sp_sc = json.loads(
@@ -9051,6 +9064,8 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 )
                                 if not _bad:
                                     _sp_scored_urls.add(_u)
+                                elif _sp_is_det(_pf):
+                                    _sp_decided_urls.add(_u)
                         except Exception:
                             pass
                     _sc_pre_total = len(_sp_rows)
@@ -9064,6 +9079,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                         except Exception:
                             _has_cache = False
                         _in_sc = _u in _sp_scored_urls
+                        _is_decided = _u in _sp_decided_urls
                         if _has_cache:
                             _sc_pre_cached += 1
                         # "Free via prior snapshot" = in the previous scored
@@ -9072,7 +9088,11 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                         # over this bucket via the `not _has_cache` guard.
                         if _in_sc and not _has_cache:
                             _sc_pre_stale_scored += 1
-                        if not _has_cache and not _in_sc:
+                        # Deterministically decided (French / det-gate): free,
+                        # complete, and intentionally uncached — not pending.
+                        if _is_decided and not _has_cache and not _in_sc:
+                            _sc_pre_decided += 1
+                        if not _has_cache and not _in_sc and not _is_decided:
                             _sc_pre_needs += 1
                             _sc_unscored_rows.append(_r)
                 except Exception:
@@ -9099,6 +9119,14 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     "fit_cache file is missing — fit_scorer's "
                                     "second-chance read reuses the prior verdict "
                                     "without paying.")
+                    if _sc_pre_decided:
+                        st.caption(
+                            f"⚖️ {_sc_pre_decided:,} row(s) already decided "
+                            "without the LLM (French/bilingual hard reject or "
+                            "zero skill-coverage gate). These are complete and "
+                            "cost nothing; they carry no cache file by design, "
+                            "so they are **not** counted as pending — "
+                            "re-running will not change them.")
                     if _sc_pre_needs == 0:
                         st.caption("✅ Nothing to pay for — every triage-passing "
                                    "row already has a cache hit or prior verdict.")

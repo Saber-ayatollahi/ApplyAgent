@@ -200,6 +200,43 @@ class TestRefetchVerdict:
         assert out["fit_verdict"] == "tailor_and_apply"
 
 
+class TestDeterministicVerdictPredicate:
+    """The French hard-reject and the det gate decide a row for free and
+    deliberately never write fit_cache. Any "still needs scoring" count that
+    keys off cache-file existence must exclude them, or it never reaches zero
+    and the scorer looks stuck after finishing (22-French-rows, 2026-08-28)."""
+
+    def test_french_verdict_is_deterministic(self):
+        fit = {"fit_verdict": "skip", "fit_score": 0,
+               "top_3_reasons": ["lang:french_required:bilingualism is required"]}
+        assert fit_scorer.is_deterministic_verdict(fit) is True
+
+    def test_det_gate_verdict_is_deterministic(self):
+        fit = {"fit_verdict": "skip", "fit_score": 0,
+               "top_3_reasons": ["det_gate:zero_skill_coverage"]}
+        assert fit_scorer.is_deterministic_verdict(fit) is True
+
+    def test_real_llm_skip_is_not_deterministic(self):
+        fit = {"fit_verdict": "skip", "fit_score": 3,
+               "top_3_reasons": ["Role is wealth-operations, not ALM"]}
+        assert fit_scorer.is_deterministic_verdict(fit) is False
+
+    def test_refetch_is_not_deterministic(self):
+        # refetch means "retry next run" — genuinely outstanding work.
+        fit = {"fit_verdict": "refetch", "fit_score": 0,
+               "top_3_reasons": ["jd_refetch_needed:boilerplate"]}
+        assert fit_scorer.is_deterministic_verdict(fit) is False
+
+    def test_abort_placeholder_is_not_deterministic(self):
+        fit = {"fit_verdict": "skip", "fit_score": 0,
+               "top_3_reasons": ["aborted_fatal_api_error"]}
+        assert fit_scorer.is_deterministic_verdict(fit) is False
+
+    def test_malformed_input_is_safe(self):
+        for bad in (None, {}, {"top_3_reasons": None}, "nonsense", []):
+            assert fit_scorer.is_deterministic_verdict(bad) is False
+
+
 class TestDetGateStrongTitleBypass:
     def test_strong_hit_bypasses_gate_reaches_llm_path(self, monkeypatch, tmp_path):
         """Zero coverage + STRONG stage-1 title hit must NOT det-gate: the
