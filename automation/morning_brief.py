@@ -240,6 +240,15 @@ def _auto_add_to_tracker(top_actionable: list[dict], max_add: int) -> list[str]:
                 "next_action": (f.get("top_3_reasons") or [""])[0][:160],
                 "followup_schedule": {"next_due": None, "cadence_days": [3, 10, 21]},
                 "outreach_log": [],
+                # Schema parity with auto_promote.make_entry — verify.py
+                # requires `contact`; brief rows without it failed the gate
+                # (2026-07-15 and again 2026-09-14) until backfilled by hand.
+                "contact": {"recruiter_name": None, "recruiter_email": None,
+                            "hiring_manager_name": None,
+                            "hiring_manager_linkedin": None,
+                            "warm_intro_candidate": None,
+                            "moodys_alumni_at_target": None},
+                "archived": False,
             })
             added_ids.append(new_id)
             existing_ids.add(new_id)

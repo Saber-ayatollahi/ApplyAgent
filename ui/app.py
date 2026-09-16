@@ -5683,6 +5683,16 @@ if page == "🏠 Dashboard":
                                 "next_action": f.get("top_3_reasons", [""])[0][:160] if f.get("top_3_reasons") else "",
                                 "followup_schedule": {"next_due": None,
                                                        "cadence_days": [3, 10, 21]},
+                                # Schema parity with auto_promote.make_entry;
+                                # verify.py requires contact + outreach_log.
+                                "outreach_log": [],
+                                "contact": {"recruiter_name": None,
+                                            "recruiter_email": None,
+                                            "hiring_manager_name": None,
+                                            "hiring_manager_linkedin": None,
+                                            "warm_intro_candidate": None,
+                                            "moodys_alumni_at_target": None},
+                                "archived": False,
                             }
                             # Avoid duplicates. Race fix: append under the
                             # mutate_json lock and dedupe against the CURRENT
@@ -9016,6 +9026,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _sc_pre_needs = 0
             _sc_pre_stale_scored = 0
             _sc_pre_decided = 0
+            _sc_pre_decided_why: dict[str, int] = {}
             _sc_unscored_rows = []
             if _sc_tr_path.exists():
                 try:
@@ -9040,6 +9051,7 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     # can never reach zero — the scorer looks stuck when it
                     # actually finished (22-French-rows report, 2026-08-28).
                     _sp_decided_urls: set[str] = set()
+                    _sp_decided_why: dict[str, str] = {}
                     if _sc_scored_path.exists():
                         try:
                             _sp_sc = json.loads(
@@ -9066,6 +9078,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     _sp_scored_urls.add(_u)
                                 elif _sp_is_det(_pf):
                                     _sp_decided_urls.add(_u)
+                                    _r0 = str(((_pf.get("top_3_reasons") or [""])[0]))
+                                    _sp_decided_why[_u] = (
+                                        "French/bilingual requirement" if _r0.startswith("lang:")
+                                        else "zero skill coverage" if _r0.startswith("det_gate:")
+                                        else "posting closed" if _r0.startswith("posting_closed:")
+                                        else "JD unreadable after retries" if _r0.startswith("jd_unfetchable:")
+                                        else "other")
                         except Exception:
                             pass
                     _sc_pre_total = len(_sp_rows)
@@ -9092,6 +9111,8 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                         # complete, and intentionally uncached — not pending.
                         if _is_decided and not _has_cache and not _in_sc:
                             _sc_pre_decided += 1
+                            _k = _sp_decided_why.get(_u, "other")
+                            _sc_pre_decided_why[_k] = _sc_pre_decided_why.get(_k, 0) + 1
                         if not _has_cache and not _in_sc and not _is_decided:
                             _sc_pre_needs += 1
                             _sc_unscored_rows.append(_r)
@@ -9120,13 +9141,20 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                     "second-chance read reuses the prior verdict "
                                     "without paying.")
                     if _sc_pre_decided:
+                        _why_txt = " · ".join(
+                            f"{v} {k}" for k, v in sorted(
+                                _sc_pre_decided_why.items(), key=lambda kv: -kv[1]))
                         st.caption(
                             f"⚖️ {_sc_pre_decided:,} row(s) already decided "
-                            "without the LLM (French/bilingual hard reject or "
-                            "zero skill-coverage gate). These are complete and "
-                            "cost nothing; they carry no cache file by design, "
-                            "so they are **not** counted as pending — "
-                            "re-running will not change them.")
+                            f"without the LLM ({_why_txt}). Complete and free; "
+                            "they carry no cache file by design, so they are "
+                            "**not** counted as pending.")
+                        if _sc_pre_decided_why.get("JD unreadable after retries"):
+                            st.caption(
+                                "📋 *JD unreadable after retries*: the posting "
+                                "page never returned a usable description. To "
+                                "score one, paste its JD into the ad-hoc tailor "
+                                "form. It re-opens by itself if the page changes.")
                     if _sc_pre_needs == 0:
                         st.caption("✅ Nothing to pay for — every triage-passing "
                                    "row already has a cache hit or prior verdict.")

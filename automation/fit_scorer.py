@@ -622,11 +622,15 @@ _FRENCH_ASSET_GUARD_RE = re.compile(
 
 
 # ---------------------------------------------------------------------------
-# Deterministic (non-LLM) verdicts. Two gates decide a row without ever
-# calling the model: the French/bilingual hard reject and the zero-coverage
-# det gate. Both DELIBERATELY skip fit_cache — French so a false positive can
-# never overwrite a good cached verdict, det-gate so improving the extractor
-# or Master Repo re-evaluates the row for free.
+# Deterministic (non-LLM) verdicts. These gates decide a row without calling
+# the model, and DELIBERATELY skip fit_cache:
+#   lang:french_required — hard reject; uncached so a false positive can never
+#                          overwrite a good cached verdict.
+#   det_gate:            — zero skill coverage; uncached so improving the
+#                          extractor / Master Repo re-evaluates for free.
+#   posting_closed:      — page says the posting is filled / expired.
+#   jd_unfetchable:      — JD non-evaluable on _REFETCH_MAX_ATTEMPTS
+#                          consecutive runs with unchanged text (retry cap).
 #
 # The side effect: such rows have no cache file, so any "rows still needing a
 # score" count that keys off cache-file existence counts them every run and
@@ -634,7 +638,8 @@ _FRENCH_ASSET_GUARD_RE = re.compile(
 # 22-French-rows report, 2026-08-28). This predicate is the single source of
 # truth for "already decided, just not cached"; ui/app.py's score preview
 # imports it so the two can't drift.
-_DETERMINISTIC_VERDICT_MARKERS = ("lang:french_required", "det_gate:")
+_DETERMINISTIC_VERDICT_MARKERS = ("lang:french_required", "det_gate:",
+                                  "posting_closed:", "jd_unfetchable:")
 
 
 def is_deterministic_verdict(fit: dict | None) -> bool:
@@ -648,6 +653,110 @@ def is_deterministic_verdict(fit: dict | None) -> bool:
         if isinstance(r, str) and r.startswith(_DETERMINISTIC_VERDICT_MARKERS):
             return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Refetch retry cap. A `refetch` verdict (JD non-evaluable) is retried on the
+# next run — but a page that NEVER yields a usable JD used to loop forever:
+# re-fetched, re-reported as pending, and the score preview never cleared
+# (2026-09-16 report: "15 to pay but it does not go through").
+#
+# State lives in outputs/refetch_attempts.json as
+#   {url_hash: {"url", "count", "jd_sha", "first", "last"}}
+# loaded once in main() (read-only during the threaded scoring pass) and
+# rewritten once after it by _update_refetch_attempts — a single writer, so
+# no locking is needed. After _REFETCH_MAX_ATTEMPTS consecutive non-evaluable
+# outcomes with an unchanged text hash, the row becomes a terminal
+# `jd_unfetchable:` verdict. Any change in the fetched text re-opens it, and
+# any successful score removes the entry.
+# ---------------------------------------------------------------------------
+REFETCH_ATTEMPTS_PATH = Path(__file__).resolve().parent.parent / "automation" / "outputs" / "refetch_attempts.json"
+_REFETCH_MAX_ATTEMPTS = int(os.environ.get("APPLYAGENT_REFETCH_MAX_ATTEMPTS", "3"))
+_refetch_attempts: dict[str, dict] = {}
+
+
+def _jd_sha(jd_text: str | None) -> str:
+    return hashlib.sha1((jd_text or "").strip().encode("utf-8")).hexdigest()[:12]
+
+
+def _refetch_verdict(reason: str, summary: str) -> dict:
+    """Canonical non-evaluable verdict: never cached, never promoted."""
+    return {"fit_score": 0, "fit_verdict": "refetch", "tier": 4,
+            "top_3_reasons": [reason], "skill_gaps": [], "summary": summary}
+
+
+def _refetch_stuck(url: str, jd_text: str | None) -> dict | None:
+    """Terminal verdict if `url` has hit the retry cap with unchanged text,
+    else None. Pure read of the module-level attempts map."""
+    if not url:
+        return None
+    ent = _refetch_attempts.get(_url_hash(url))
+    if not ent or int(ent.get("count") or 0) < _REFETCH_MAX_ATTEMPTS:
+        return None
+    if ent.get("jd_sha") != _jd_sha(jd_text):
+        return None  # page content changed since the last failure — re-evaluate
+    n = int(ent.get("count") or 0)
+    return {
+        "fit_score": 0, "fit_verdict": "skip", "tier": 4,
+        "top_3_reasons": [f"jd_unfetchable:{n}_attempts"],
+        "skill_gaps": [],
+        "summary": (f"JD could not be read on {n} consecutive runs (page "
+                    "returns no usable job description). Not a fit rejection "
+                    "— paste the JD via the ad-hoc tailor form to score it. "
+                    "Re-opens automatically if the page content changes."),
+    }
+
+
+def _load_refetch_attempts(path: Path | None = None) -> dict[str, dict]:
+    p = path or REFETCH_ATTEMPTS_PATH
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except Exception as e:
+        if _log_error is not None:
+            _log_error("refetch_attempts_load", e, module="fit_scorer")
+        return {}
+
+
+def _update_refetch_attempts(attempts: dict[str, dict], scored_rows: list[dict],
+                             today: str) -> dict[str, dict]:
+    """Return the new attempts map after a scoring pass (pure function).
+
+    - non-evaluable outcome (refetch / jd_unfetchable) → count +1, record the
+      text hash; a changed hash restarts the count at 1.
+    - a real outcome for a tracked URL that was actually FETCHED this run
+      (has `_jd_sha`) → entry removed (recovered).
+    Rows without a `_jd_sha` were never fetched this run — e.g. an abort
+    placeholder, which carries a `skip` verdict but judged nothing — and must
+    not erase a URL's history, so they are left untouched."""
+    out = {k: dict(v) for k, v in (attempts or {}).items()}
+    for r in scored_rows or []:
+        url = r.get("link") or ""
+        if not url:
+            continue
+        h = _url_hash(url)
+        fit = r.get("fit") or {}
+        reasons = fit.get("top_3_reasons") or []
+        non_eval = (fit.get("fit_verdict") == "refetch"
+                    or any(isinstance(x, str) and x.startswith("jd_unfetchable:")
+                           for x in reasons))
+        if non_eval:
+            sha = r.get("_jd_sha")
+            prev = out.get(h) or {}
+            same = sha is not None and prev.get("jd_sha") == sha
+            out[h] = {
+                "url": url,
+                "count": (int(prev.get("count") or 0) + 1) if same else 1,
+                "jd_sha": sha,
+                "first": prev.get("first") if same else today,
+                "last": today,
+            }
+        elif (h in out and r.get("_jd_sha") is not None
+              and fit.get("fit_verdict") not in (None, "error")):
+            out.pop(h, None)
+    return out
 
 
 def _requires_french(text: str) -> str | None:
@@ -1427,42 +1536,45 @@ def _fetch_jd_via_api(url: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# JD quality classification — the guard against the poisoned-cache / confident-
-# skip failure mode found in the 2026-08-25 rejected-jobs audit. A transient
-# ATS-API failure used to fall back to a raw GET of the JS shell; ~1.7KB of
-# benefits/EEO boilerplate cleared the 300-char cache bar, got cached FOREVER,
-# and the LLM then scored the boilerplate 1/skip ("JD incomplete") — burying
-# bullseye roles (BMO Senior Manager Model Validation) as rejections.
+# JD quality classification — a NARROW, high-precision guard. Its only job is
+# to catch pages that are demonstrably not a job description; judging whether
+# real-but-unusual text is a JD is left to the LLM (see the `refetch` verdict
+# in score_with_llm), which is far better at it than regexes.
 #
-# Classification is deliberately precision-first in BOTH directions:
-#   "thin"        — under _JD_MIN_CHARS: a failed/truncated fetch, never a
-#                   scorable description.
-#   "boilerplate" — long enough, but carries NO job-content marker at all.
-#                   Absence of content is the PRIMARY signal: measured over
-#                   4,016 real cached JDs, only 1.0% lack every content
-#                   marker, so "no responsibilities / qualifications /
-#                   requirements language anywhere" reliably means this is
-#                   not a job description. Two guards keep it precision-
-#                   first: a text at or over _JD_LONG_CHARS is given the
-#                   benefit of the doubt (18 of those 42 were long, unusual
-#                   but real postings — often non-English), UNLESS it also
-#                   carries an explicit careers-page boilerplate marker.
-#                   NOTE: an earlier version required a positive boilerplate
-#                   marker in ALL cases, which let BMO's 1,728-char Workday
-#                   salary/About-Us footer through as "ok" — it matches none
-#                   of the standard boilerplate phrasings.
+# History, so this is not re-broadened: the 2026-08-25 audit traced a buried
+# bullseye role (BMO Sr Manager Model Validation) to 1.7 KB of salary/About-Us
+# footer being scored. A first fix flagged any text lacking a content marker
+# under 4 KB. That was wrong on two counts: the footer was actually produced
+# by the _extract_sections windowing bug (fixed at root), and "no content
+# marker" turned out to mean mostly REAL, tersely-phrased JDs — on 2026-09-16
+# 15 rows (Deloitte, Franklin Templeton, eBay, Point72...) looped as `refetch`
+# forever and the score preview never cleared. Measured against 4,590 cached
+# JDs + those 15 + known junk, the rule below flags 0 real JDs while still
+# catching the BMO footer and a CMHC "position has been filled" page.
+#
+#   "thin"        — under _JD_MIN_CHARS: failed / truncated fetch.
+#   "closed"      — short status page saying the posting is filled/expired.
+#                   Terminal, not retryable (-> deterministic posting_closed).
+#   "boilerplate" — short (< _JD_BOILERPLATE_MAX_CHARS), no content marker,
+#                   AND at least one careers-page boilerplate marker. All
+#                   three required: terse real JDs usually have no
+#                   boilerplate markers, long pages get the LLM's judgment.
 #   "ok"          — everything else.
-# Rows that fail quality get verdict `refetch` (see score_with_llm) — never
-# `skip` — and their text is never written to jd_cache.
+# thin/boilerplate -> verdict `refetch` (retried, capped); text never cached.
 # ---------------------------------------------------------------------------
 _JD_MIN_CHARS = int(os.environ.get("APPLYAGENT_JD_MIN_CHARS", "300"))
+_JD_BOILERPLATE_MAX_CHARS = int(
+    os.environ.get("APPLYAGENT_JD_BOILERPLATE_MAX_CHARS", "2500"))
 
 _JD_CONTENT_RE = re.compile(
     r"(responsibilit|qualificat|accountabilit|requirement|duties|mandate"
     r"|what (you.{0,3}ll|will you) do|what do you need|is this role right"
     r"|about (the|this) role|the opportunity|we are looking for"
-    r"|years? of experience|key deliverables|your (role|impact)"
-    r"|exigences|responsabilit)",  # French ATS postings
+    r"|years? of (?:\w+\s){0,2}experience|key deliverables|your (role|impact)"
+    r"|\d+\s*\+?\s*(?:years?|yrs)|typical day|about you|you.{0,3}ll bring"
+    r"|experience (?:in|with)|knowledge of|proficien|degree in|bachelor"
+    r"|master.?s degree|ph\.?d|must have|nice to have|preferred qualif"
+    r"|exigences|responsabilit|expérience)",  # French ATS postings
     re.IGNORECASE)
 
 _JD_BOILERPLATE_RE = re.compile(
@@ -1473,19 +1585,27 @@ _JD_BOILERPLATE_RE = re.compile(
     r"|total compensation package|pro-rated based on)",
     re.IGNORECASE)
 
-# Texts at or above this length with no content marker get the benefit of the
-# doubt (unusual-but-real postings) unless they also look like boilerplate.
-_JD_LONG_CHARS = int(os.environ.get("APPLYAGENT_JD_LONG_CHARS", "4000"))
+# Status-page phrasings only. Deliberately NOT a bare "position is filled":
+# real JDs routinely say "applications accepted until the position is filled".
+_JD_CLOSED_RE = re.compile(
+    r"(sorry,? this (?:position|job|posting) (?:has been filled|is no longer)"
+    r"|this (?:job|position|posting) (?:is )?no longer (?:available|open|accepting)"
+    r"|no longer accepting applications"
+    r"|(?:job|posting) (?:has )?expired"
+    r"|the job you are (?:looking for|trying to apply for) (?:is no longer|has been)"
+    r"|position has been filled\.)",
+    re.IGNORECASE)
 
 
 def _jd_quality(jd_text: str) -> str:
-    """Classify fetched JD text: 'ok' | 'thin' | 'boilerplate'."""
+    """Classify fetched JD text: 'ok' | 'thin' | 'closed' | 'boilerplate'."""
     t = (jd_text or "").strip()
     if len(t) < _JD_MIN_CHARS:
         return "thin"
-    if not _JD_CONTENT_RE.search(t):
-        # No responsibilities / qualifications / requirements language at all.
-        if len(t) < _JD_LONG_CHARS or _JD_BOILERPLATE_RE.search(t):
+    if len(t) < _JD_BOILERPLATE_MAX_CHARS:
+        if _JD_CLOSED_RE.search(t):
+            return "closed"
+        if not _JD_CONTENT_RE.search(t) and _JD_BOILERPLATE_RE.search(t):
             return "boilerplate"
     return "ok"
 
@@ -1893,6 +2013,10 @@ def _build_system_prompt() -> str:
 # Computed once at import. Cheap enough.
 SYSTEM_PROMPT = _build_system_prompt()
 
+# Verdicts an LLM result may carry after normalization. `refetch` is handled
+# separately (never cached); anything else unrecognized is coerced to skip.
+_REAL_VERDICTS = ("apply_now", "tailor_and_apply", "watch", "skip")
+
 SCHEMA = """{
   "fit_score": 1-10 integer,
   "fit_verdict": "apply_now" | "tailor_and_apply" | "watch" | "skip",
@@ -2090,33 +2214,42 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 "skill_gaps": [], "tier": 4,
                 "summary": "Aborted due to fatal earlier error."}
 
+    # ── Retry cap — a JD that keeps failing stops looping ────────────────
+    # Checked FIRST among the JD gates: a URL whose JD has been non-evaluable
+    # on _REFETCH_MAX_ATTEMPTS consecutive runs, with IDENTICAL text this
+    # run, gets a terminal deterministic verdict — no LLM call, not counted
+    # as pending. Keyed on the text hash so a page that changes (fixed,
+    # reposted, finally rendered) is re-evaluated automatically. The fetch
+    # itself still happens every run in score_one, so recovery is free.
+    _stuck = _refetch_stuck(role.get("link") or "", jd_text)
+    if _stuck is not None:
+        _cost_tick(cache_hit=True, refetch=True)
+        return _stuck
+
     # ── JD-quality gate — "non-evaluable ≠ rejected" ─────────────────────
-    # A thin (failed fetch) or boilerplate (JS-shell) JD must never produce a
-    # skip: the 2026-08-25 audit found bullseye roles buried this way, with
-    # the LLM itself writing "non-evaluable ... recommend re-assess" and the
-    # pipeline filing that as a rejection. Verdict `refetch` is excluded from
-    # promote, counted separately (stage2_refetch), and NOT cached — so the
-    # next run re-fetches and re-evaluates for free. It also short-circuits
-    # BEFORE the paid call: scoring a title against boilerplate was pure
-    # spend for an unusable verdict.
+    # thin / boilerplate text must never produce a skip (the 2026-08-25 audit
+    # found bullseye roles buried that way). `refetch` is excluded from
+    # promote, counted separately, NOT cached, and short-circuits BEFORE the
+    # paid call. A closed-posting status page is terminal instead.
     # Ordering: after the cache/prev-fit checks (a good cached verdict is
-    # always served even when today's fetch failed) and after the abort check
-    # (an aborted run marks rows uniformly as aborted — the primary cause).
+    # always served even when today's fetch failed) and after the abort check.
     _q = _jd_quality(jd_text)
+    if _q == "closed":
+        _m = _JD_CLOSED_RE.search(jd_text or "")
+        _cost_tick(cache_hit=True)
+        return {
+            "fit_score": 0, "fit_verdict": "skip", "tier": 4,
+            "top_3_reasons": [f"posting_closed:{(_m.group(0) if _m else 'closed')[:60]}"],
+            "skill_gaps": [],
+            "summary": ("Posting is closed — the page says it has been filled "
+                        "or is no longer available. Not scored by the LLM."),
+        }
     if _q != "ok":
         _cost_tick(cache_hit=True, refetch=True)
-        return {
-            "fit_score": 0,
-            "fit_verdict": "refetch",
-            "top_3_reasons": [f"jd_refetch_needed:{_q}"],
-            "skill_gaps": [], "tier": 4,
-            "summary": (
-                f"NOT scored — the JD fetch returned {_q} content "
-                f"({len(jd_text or '')} chars). This is not a rejection; the "
-                "JD is uncached and will be re-fetched on the next run. If it "
-                "persists, the page needs a headless fetch or --jd-file."
-            ),
-        }
+        return _refetch_verdict(f"jd_refetch_needed:{_q}", (
+            f"NOT scored — the JD fetch returned {_q} content "
+            f"({len(jd_text or '')} chars). This is not a rejection; the JD is "
+            "uncached and will be re-fetched on the next run."))
 
     # Deterministic pre-analysis. Always runs; costs ~1ms; may return None if
     # extractor or JD is unavailable.
@@ -2179,6 +2312,13 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
         f"\n# YOUR OUTPUT\n"
         f"Return ONLY valid JSON, no prose, matching this schema:\n"
         f"{SCHEMA}\n"
+        f"\nNON-EVALUABLE JD: if the JOB DESCRIPTION text contains NO role-specific\n"
+        f"content at all — only company boilerplate, benefits, EEO/accommodation\n"
+        f"text, cookie/navigation chrome, or a 'position filled' notice — set\n"
+        f"fit_verdict to \"refetch\" (fit_score 1) instead of \"skip\", and say so in\n"
+        f"summary. Use it ONLY for that case: a short or tersely-worded JD that does\n"
+        f"describe the work is evaluable — score it normally. Never use \"refetch\"\n"
+        f"to express a poor fit.\n"
         f"\nReminder: top_3_reasons MUST NOT contain 'OSFI', 'E-23', 'B-12', 'LAR',\n"
         f"'IFRS', 'Basel', 'ECL', 'guideline', or any 'regulatory-...' phrasing.\n"
         f"Cite concrete capabilities (ALM/IRRBB, cash-flow engines, sign-off authority,\n"
@@ -2263,6 +2403,24 @@ def score_with_llm(client, role: dict, jd_text: str) -> dict:
                 parsed.setdefault("skill_gaps", [])
                 parsed.setdefault("tier", 4)
                 parsed.setdefault("summary", "")
+                # LLM-judged non-evaluable JD. Normalized to the canonical
+                # refetch shape and returned WITHOUT a fit_cache write, so the
+                # row is retried next run (and capped by the retry counter)
+                # instead of being frozen as a rejection — the original
+                # "non-evaluable ≠ rejected" guarantee, now enforced by the
+                # model's judgment rather than brittle regexes. The call is
+                # still paid, but the retry cap bounds it to a few calls per
+                # URL, and a hash match skips the LLM entirely after that.
+                _v = re.sub(r"[\s\-]+", "_",
+                            str(parsed.get("fit_verdict") or "").strip().lower())
+                parsed["fit_verdict"] = _v
+                if _v == "refetch":
+                    return _refetch_verdict(
+                        "jd_refetch_needed:llm_non_evaluable",
+                        "NOT scored — the model found no role-specific content "
+                        "in the fetched JD. " + str(parsed.get("summary") or "")[:200])
+                if parsed.get("fit_verdict") not in _REAL_VERDICTS:
+                    parsed["fit_verdict"] = "skip"
                 # Drop legacy osfi_hook if the LLM still emits one — the field is
                 # retired. Older cache entries may still have it; downstream code
                 # doesn't read it anymore so leaving stale cache is harmless.
@@ -2556,7 +2714,10 @@ def main() -> int:
     # Module-global persists across main() calls in the same process
     # (Streamlit). Both branches below assign it, so declare global once
     # up-front (Python forbids `global` after a same-name assignment).
-    global _prev_fit_index
+    global _prev_fit_index, _refetch_attempts
+    # Refetch retry-cap state: loaded once, read-only during the threaded
+    # pass, rewritten once afterwards by _update_refetch_attempts.
+    _refetch_attempts = _load_refetch_attempts()
     if args.rescore:
         # Nuke fit cache for each triaged role
         for r in triaged:
@@ -2656,6 +2817,9 @@ def main() -> int:
         try:
             jd = fetch_jd(r["link"])
             r["_jd_len"] = len(jd)
+            # Text hash for the refetch retry cap (see _update_refetch_attempts):
+            # lets main() tell "same unusable page again" from "page changed".
+            r["_jd_sha"] = _jd_sha(jd)
             # Hard reject — French/bilingual requirement buried in the JD body
             # (title-only postings are already caught in rule_triage). Checked
             # AFTER fetch (need the text) but BEFORE the LLM call, so this is
@@ -2726,6 +2890,25 @@ def main() -> int:
         1 for r in scored
         if (r.get("fit") or {}).get("fit_verdict") == "refetch")
 
+    def _has_reason(r: dict, prefix: str) -> bool:
+        return any(isinstance(x, str) and x.startswith(prefix)
+                   for x in ((r.get("fit") or {}).get("top_3_reasons") or []))
+
+    unfetchable_count = sum(1 for r in scored if _has_reason(r, "jd_unfetchable:"))
+    closed_count = sum(1 for r in scored if _has_reason(r, "posting_closed:"))
+
+    # Persist the retry-cap state (single writer, after the threaded pass).
+    # Best-effort: a failed write only costs one extra retry cycle next run.
+    try:
+        _new_attempts = _update_refetch_attempts(
+            _refetch_attempts, scored, datetime.now().strftime("%Y-%m-%d"))
+        if _new_attempts != _refetch_attempts:
+            _atomic_write_json(REFETCH_ATTEMPTS_PATH, _new_attempts)
+            _refetch_attempts = _new_attempts
+    except Exception as _ra_e:
+        if _log_error is not None:
+            _log_error("refetch_attempts_write", _ra_e, module="fit_scorer")
+
     out = {
         "scan_date": scan.get("scan_date"),
         "scored_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
@@ -2747,6 +2930,11 @@ def main() -> int:
         # boilerplate content (verdict=refetch). Not rejections — the JD is
         # uncached and retried automatically on the next run.
         "stage2_refetch": refetch_count,
+        # Terminal, deterministic — decided, not pending. unfetchable = JD
+        # unreadable on N consecutive runs (retry cap); closed = the page
+        # says the posting is filled/expired.
+        "stage2_unfetchable": unfetchable_count,
+        "stage2_closed": closed_count,
         "api_error": api_error,
         "results": scored,
         # Triage audit trail — consumed by the UI's Triage page so the user
@@ -2763,7 +2951,17 @@ def main() -> int:
               f"scored ({refetch_count} awaiting JD re-fetch, "
               f"{unscored_count - refetch_count} abort/error placeholders). "
               f"These are NOT rejections — re-run the scorer to complete them "
-              f"(already-scored rows are cached and free).", file=sys.stderr)
+              f"(already-scored rows are cached and free). A JD still "
+              f"unreadable after {_REFETCH_MAX_ATTEMPTS} runs stops retrying.",
+              file=sys.stderr)
+    if unfetchable_count:
+        print(f"[fit_scorer] ℹ️  {unfetchable_count} row(s) have a JD that could "
+              f"not be read on {_REFETCH_MAX_ATTEMPTS}+ consecutive runs — no "
+              f"longer retried or counted as pending. Paste the JD via the "
+              f"ad-hoc tailor form to score one.", file=sys.stderr)
+    if closed_count:
+        print(f"[fit_scorer] ℹ️  {closed_count} posting(s) are closed "
+              f"(page says filled / no longer available).", file=sys.stderr)
     json_out = OUT_DIR / (Path(args.scan).stem + "_scored.json")
     # Single-URL rescore: merge updated row(s) into the existing scored file
     # instead of overwriting it (otherwise re-scoring one suspicious skip
