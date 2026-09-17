@@ -9027,6 +9027,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
             _sc_pre_stale_scored = 0
             _sc_pre_decided = 0
             _sc_pre_decided_why: dict[str, int] = {}
+            # Rows whose LAST run returned `refetch` (JD unreadable). They are
+            # retried automatically and stop at the retry cap, so they are NOT
+            # "to pay" work the user must act on — counting them there made
+            # the Score button read "N to pay" after every successful run
+            # (2026-09-16: "4 more to pay but it is not going through").
+            _sc_pre_retrying = 0
+            _sc_retrying_rows: list[dict] = []
             _sc_unscored_rows = []
             if _sc_tr_path.exists():
                 try:
@@ -9052,6 +9059,19 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                     # actually finished (22-French-rows report, 2026-08-28).
                     _sp_decided_urls: set[str] = set()
                     _sp_decided_why: dict[str, str] = {}
+                    _sp_retry_urls: set[str] = set()
+                    try:
+                        _sp_attempts = json.loads(
+                            (OUT_DIR / "refetch_attempts.json").read_text(encoding="utf-8"))
+                        if not isinstance(_sp_attempts, dict):
+                            _sp_attempts = {}
+                    except Exception:
+                        _sp_attempts = {}
+                    try:
+                        from fit_scorer import (  # type: ignore
+                            _REFETCH_MAX_ATTEMPTS as _sp_retry_cap)
+                    except Exception:
+                        _sp_retry_cap = 3
                     if _sc_scored_path.exists():
                         try:
                             _sp_sc = json.loads(
@@ -9076,11 +9096,13 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 )
                                 if not _bad:
                                     _sp_scored_urls.add(_u)
+                                elif _pf.get("fit_verdict") == "refetch":
+                                    _sp_retry_urls.add(_u)
                                 elif _sp_is_det(_pf):
                                     _sp_decided_urls.add(_u)
                                     _r0 = str(((_pf.get("top_3_reasons") or [""])[0]))
                                     _sp_decided_why[_u] = (
-                                        "French/bilingual requirement" if _r0.startswith("lang:")
+                                        "language requirement (French/German)" if _r0.startswith("lang:")
                                         else "zero skill coverage" if _r0.startswith("det_gate:")
                                         else "posting closed" if _r0.startswith("posting_closed:")
                                         else "JD unreadable after retries" if _r0.startswith("jd_unfetchable:")
@@ -9113,7 +9135,17 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                             _sc_pre_decided += 1
                             _k = _sp_decided_why.get(_u, "other")
                             _sc_pre_decided_why[_k] = _sc_pre_decided_why.get(_k, 0) + 1
-                        if not _has_cache and not _in_sc and not _is_decided:
+                        if (not _has_cache and not _in_sc and not _is_decided
+                                and _u in _sp_retry_urls):
+                            _sc_pre_retrying += 1
+                            _att = _sp_attempts.get(_sp_url_hash(_u)) or {}
+                            _sc_retrying_rows.append({
+                                "company": _r.get("company", ""),
+                                "title": _r.get("title", ""),
+                                "retry": f"{int(_att.get('count') or 0)}/{_sp_retry_cap}",
+                                "url": _u,
+                            })
+                        elif not _has_cache and not _in_sc and not _is_decided:
                             _sc_pre_needs += 1
                             _sc_unscored_rows.append(_r)
                 except Exception:
@@ -9155,6 +9187,42 @@ elif page in ("🎯 Pipeline · Refresh", "🎯 Pipeline · Score",
                                 "page never returned a usable description. To "
                                 "score one, paste its JD into the ad-hoc tailor "
                                 "form. It re-opens by itself if the page changes.")
+                    # ── Last run outcome ─────────────────────────────────
+                    # The scorer's end-of-run summary previously lived only in
+                    # a log file, so a run that FINISHED looked like one that
+                    # silently failed ("not going through, I can't see the
+                    # error"). Surface it from worklist_scored.json.
+                    try:
+                        _lr = json.loads(_sc_scored_path.read_text(encoding="utf-8")) \
+                            if _sc_scored_path.exists() else {}
+                    except Exception:
+                        _lr = {}
+                    if _lr:
+                        _lr_err = _lr.get("api_error")
+                        _lr_bits = [f"{_lr.get('stage2_scored', 0):,} scored"]
+                        for _key, _lbl in (("stage2_refetch", "JD unreadable (retrying)"),
+                                           ("stage2_unfetchable", "JD unreadable (stopped)"),
+                                           ("stage2_closed", "closed posting")):
+                            if _lr.get(_key):
+                                _lr_bits.append(f"{_lr[_key]} {_lbl}")
+                        _lr_when = str(_lr.get("scored_at") or "")[:16].replace("T", " ")
+                        if _lr_err:
+                            st.error(f"❌ Last run ({_lr_when} UTC) stopped early: "
+                                     f"{str(_lr_err)[:220]}")
+                        else:
+                            st.success(f"✅ Last run finished ({_lr_when} UTC) — "
+                                       + " · ".join(_lr_bits) + ". No errors.")
+                    if _sc_pre_retrying:
+                        st.caption(
+                            f"🔁 {_sc_pre_retrying} row(s) had an unreadable JD "
+                            "on the last run. They are retried automatically on "
+                            f"each run and stop at {_sp_retry_cap} tries — "
+                            "**no action needed, and not counted as 'to pay'.** "
+                            "To score one now, paste its JD into the ad-hoc "
+                            "tailor form.")
+                        st.dataframe(pd.DataFrame(_sc_retrying_rows),
+                                     hide_index=True, width='stretch',
+                                     column_config={"url": st.column_config.LinkColumn("url")})
                     if _sc_pre_needs == 0:
                         st.caption("✅ Nothing to pay for — every triage-passing "
                                    "row already has a cache hit or prior verdict.")

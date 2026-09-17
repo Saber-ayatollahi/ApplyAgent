@@ -380,6 +380,64 @@ def isolated_scorer(monkeypatch, tmp_path):
     return tmp_path
 
 
+class TestNonEnglishJd:
+    """A JD WRITTEN in French/German requires that language even though it
+    never says so in English. Those rows looped as refetch (2026-09-16)."""
+
+    FRENCH = ("Leader fonctionnel Oracle EPM Planning. Chez Deloitte, nous avons "
+              "à cœur de faire des affaires de manière inclusive. Vous serez "
+              "responsable de la planification et vous travaillerez avec les "
+              "équipes pour livrer des solutions dans le cadre de nos projets. "
+              "Nous sommes l'endroit pour développer un réseau durable. ") * 3
+    GERMAN = ("Skillset: Gut bis sehr gut abgeschlossenes Studium in "
+              "Wirtschaftswissenschaften oder Informatik. Du bist der Meinung, "
+              "dass eine flexible Denkweise für den Erfolg wichtig ist und wir "
+              "suchen Menschen, die mit uns an der Zukunft der Finanzindustrie "
+              "arbeiten. Sehr gute Kommunikationsfähigkeiten in Deutsch und "
+              "Englisch sind für die Rolle bei uns wichtig. ") * 3
+    ENGLISH = ("You will lead the ALM model validation team and work with the "
+               "treasury function on the review of our interest rate risk models "
+               "for the bank. ") * 5
+    BILINGUAL = ENGLISH + FRENCH[:len(ENGLISH)]
+
+    def test_french_jd_detected(self):
+        assert fit_scorer._non_english_jd(self.FRENCH) == "french"
+
+    def test_german_jd_detected(self):
+        assert fit_scorer._non_english_jd(self.GERMAN) == "german"
+
+    def test_english_jd_passes(self):
+        assert fit_scorer._non_english_jd(self.ENGLISH) is None
+
+    def test_bilingual_en_fr_posting_passes(self):
+        # Canadian postings often carry both languages — must never be rejected.
+        assert fit_scorer._non_english_jd(self.BILINGUAL) is None
+
+    def test_empty_is_safe(self):
+        assert fit_scorer._non_english_jd("") is None
+        assert fit_scorer._non_english_jd(None) is None
+
+    def test_full_text_falls_back_to_slice_when_uncached(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(fit_scorer, "JD_CACHE", tmp_path)
+        assert fit_scorer._jd_full_text("https://example.com/x", "slice") == "slice"
+        (tmp_path / f"{fit_scorer._url_hash('https://example.com/x')}.v2.txt").write_text(
+            "FULL TEXT", encoding="utf-8")
+        assert fit_scorer._jd_full_text("https://example.com/x", "slice") == "FULL TEXT"
+
+    def test_language_verdict_is_deterministic(self):
+        assert fit_scorer.is_deterministic_verdict(
+            {"top_3_reasons": ["lang:non_english_jd:french"]}) is True
+
+    def test_french_closed_status_page(self):
+        cmhc_fr = ("Spécialiste principal, Modélisation Détails de l'emploi | "
+                   "CMHC - SCHL Passer au contenu principal Joignez-vous à notre "
+                   "communauté de talents Voir mon profil Langue English Français "
+                   "Sélectionnez la fréquence (en jours) de réception d'une alerte : "
+                   "Désolé, ce poste est déjà pourvu. À propos de la SCHL Termes "
+                   "et conditions Communiquez avec nous © 2026 SCHL")
+        assert fit_scorer._jd_quality(cmhc_fr) == "closed"
+
+
 class TestLlmRefetchVerdict:
     ROLE = {"link": "https://example.com/jobs/llm-refetch", "company": "Co",
             "title": "Director, ALM"}
@@ -510,6 +568,24 @@ class TestRetryCap:
             client, {"link": self.URL, "company": "Co", "title": "Director"}, REAL_JD)
         assert client.calls == 1
         assert out["fit_verdict"] == "tailor_and_apply"
+
+    def test_cap_resolves_on_the_nth_failure_itself(self):
+        """The Nth consecutive failure must be terminal in the SAME run —
+        previously it stayed pending until run N+1 (an extra click and
+        possibly an extra paid call per stuck URL)."""
+        h = fit_scorer._url_hash(self.URL)
+        rows = [self._row("refetch", "abc")]
+        attempts = {h: {"count": fit_scorer._REFETCH_MAX_ATTEMPTS, "jd_sha": "abc"}}
+        assert fit_scorer._apply_refetch_cap(rows, attempts) == 1
+        assert rows[0]["fit"]["top_3_reasons"][0].startswith("jd_unfetchable:")
+        assert fit_scorer.is_deterministic_verdict(rows[0]["fit"]) is True
+
+    def test_cap_leaves_rows_below_cap_pending(self):
+        h = fit_scorer._url_hash(self.URL)
+        rows = [self._row("refetch", "abc")]
+        attempts = {h: {"count": fit_scorer._REFETCH_MAX_ATTEMPTS - 1, "jd_sha": "abc"}}
+        assert fit_scorer._apply_refetch_cap(rows, attempts) == 0
+        assert rows[0]["fit"]["fit_verdict"] == "refetch"
 
     def test_new_terminal_markers_are_deterministic_refetch_is_not(self):
         assert fit_scorer.is_deterministic_verdict(

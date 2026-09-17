@@ -638,7 +638,8 @@ _FRENCH_ASSET_GUARD_RE = re.compile(
 # 22-French-rows report, 2026-08-28). This predicate is the single source of
 # truth for "already decided, just not cached"; ui/app.py's score preview
 # imports it so the two can't drift.
-_DETERMINISTIC_VERDICT_MARKERS = ("lang:french_required", "det_gate:",
+# "lang:" covers lang:french_required and lang:non_english_jd.
+_DETERMINISTIC_VERDICT_MARKERS = ("lang:", "det_gate:",
                                   "posting_closed:", "jd_unfetchable:")
 
 
@@ -695,7 +696,10 @@ def _refetch_stuck(url: str, jd_text: str | None) -> dict | None:
         return None
     if ent.get("jd_sha") != _jd_sha(jd_text):
         return None  # page content changed since the last failure — re-evaluate
-    n = int(ent.get("count") or 0)
+    return _unfetchable_verdict(int(ent.get("count") or 0))
+
+
+def _unfetchable_verdict(n: int) -> dict:
     return {
         "fit_score": 0, "fit_verdict": "skip", "tier": 4,
         "top_3_reasons": [f"jd_unfetchable:{n}_attempts"],
@@ -705,6 +709,24 @@ def _refetch_stuck(url: str, jd_text: str | None) -> dict | None:
                     "— paste the JD via the ad-hoc tailor form to score it. "
                     "Re-opens automatically if the page content changes."),
     }
+
+
+def _apply_refetch_cap(scored_rows: list[dict], attempts: dict[str, dict]) -> int:
+    """Convert `refetch` rows whose UPDATED attempt count has reached the cap
+    into the terminal jd_unfetchable verdict, in place. Returns how many were
+    converted. Without this the Nth failure is still reported as pending and
+    only resolves on run N+1 — one extra click, and possibly one extra paid
+    call, per stuck URL."""
+    n_conv = 0
+    for r in scored_rows or []:
+        fit = r.get("fit") or {}
+        if fit.get("fit_verdict") != "refetch":
+            continue
+        ent = attempts.get(_url_hash(r.get("link") or ""))
+        if ent and int(ent.get("count") or 0) >= _REFETCH_MAX_ATTEMPTS:
+            r["fit"] = _unfetchable_verdict(int(ent["count"]))
+            n_conv += 1
+    return n_conv
 
 
 def _load_refetch_attempts(path: Path | None = None) -> dict[str, dict]:
@@ -757,6 +779,60 @@ def _update_refetch_attempts(attempts: dict[str, dict], scored_rows: list[dict],
               and fit.get("fit_verdict") not in (None, "error")):
             out.pop(h, None)
     return out
+
+
+# ---------------------------------------------------------------------------
+# Non-English JD gate. _requires_french only catches ENGLISH sentences that
+# state a French requirement; a posting WRITTEN in French or German states
+# nothing and still requires the language. Those rows went to the LLM, which
+# (instructed in English) called them "non-evaluable", and they looped as
+# refetch (2026-09-16: Deloitte "Leader fonctionnel", EY-Parthenon Frankfurt).
+#
+# Stopword-share detector. Measured on 4,621 cached JDs: 76 flagged, all
+# genuinely French/German postings on inspection; 0 of 29 bilingual EN/FR
+# postings flagged. MUST run on the FULL JD text — on the windowed slice 3
+# bilingual postings false-positive because the slice lands on the French half
+# (see _jd_full_text).
+# ---------------------------------------------------------------------------
+_EN_STOP = frozenset("the and of to with for you will our in is are this that "
+                     "your we be on as an or from".split())
+_FR_STOP = frozenset("le la les des et du une pour vous avec dans sur nous est "
+                     "votre qui aux ce cette sont être notre par".split())
+_DE_STOP = frozenset("und der die das mit für wir ist von zu eine einer auf bei "
+                     "sind dein deine sich nicht oder den dem".split())
+_LANG_WORD_RE = re.compile(r"[a-zà-öø-ÿ]+", re.IGNORECASE)
+_NON_EN_MIN_HITS = 25
+_NON_EN_RATIO = 3.0
+
+
+def _non_english_jd(text: str | None) -> str | None:
+    """Return 'french' / 'german' when the JD body is predominantly written in
+    that language, else None. Bilingual EN+FR postings return None."""
+    en = fr = de = 0
+    for w in _LANG_WORD_RE.findall(text or ""):
+        lw = w.lower()
+        if lw in _EN_STOP:
+            en += 1
+        elif lw in _FR_STOP:
+            fr += 1
+        elif lw in _DE_STOP:
+            de += 1
+    lang, n = ("french", fr) if fr >= de else ("german", de)
+    if n >= _NON_EN_MIN_HITS and n > _NON_EN_RATIO * en:
+        return lang
+    return None
+
+
+def _jd_full_text(url: str, fallback: str) -> str:
+    """Full cleaned JD from jd_cache (fetch_jd returns a WINDOWED slice).
+    Falls back to the slice when nothing was cached (e.g. unusable fetch)."""
+    try:
+        p = JD_CACHE / f"{_url_hash(url)}.v2.txt"
+        if p.exists():
+            return p.read_text(encoding="utf-8")
+    except Exception:
+        pass
+    return fallback or ""
 
 
 def _requires_french(text: str) -> str | None:
@@ -988,6 +1064,17 @@ TRIAGE_POLICIES = [
      "action": "drop", "scope": "all companies",
      "tag": "lang:french_required",
      "why": "Saber is not bilingual; asset/nice-to-have phrasing is kept"},
+    {"policy": "JD written in French or German",
+     "action": "drop",
+     "scope": "all companies — JD body only; bilingual EN/FR postings are kept",
+     "tag": "lang:non_english_jd",
+     "why": "a posting written in another language requires it; Saber is "
+            "English-only"},
+    {"policy": "Closed postings / unreadable JDs",
+     "action": "decided (not pending)",
+     "scope": "page says filled/expired, or JD unreadable on 3 consecutive runs",
+     "tag": "posting_closed / jd_unfetchable",
+     "why": "stops endless retries; an unreadable JD re-opens if the page changes"},
     {"policy": "Reposts of roles already Rejected/Declined/Withdrawn/Expired",
      "action": "drop", "scope": "all companies (company+title match)",
      "tag": "already_rejected",
@@ -1593,7 +1680,12 @@ _JD_CLOSED_RE = re.compile(
     r"|no longer accepting applications"
     r"|(?:job|posting) (?:has )?expired"
     r"|the job you are (?:looking for|trying to apply for) (?:is no longer|has been)"
-    r"|position has been filled\.)",
+    r"|position has been filled\."
+    # French / German status pages (CMHC: "Désolé, ce poste est déjà pourvu.")
+    r"|ce poste (?:est déjà|a déjà été|a été) pourvu"
+    r"|cette offre (?:d.emploi )?n.est plus (?:disponible|active)"
+    r"|(?:stelle|position) (?:ist|wurde) bereits (?:besetzt|vergeben)"
+    r"|nicht mehr verfügbar)",
     re.IGNORECASE)
 
 
@@ -2828,6 +2920,22 @@ def main() -> int:
             # so a previously-cached apply_now verdict for a role that turns
             # out to require French won't be silently overwritten here — only
             # fresh (uncached) scoring passes through this gate.
+            # JD written in French/German — requires the language as surely as
+            # a stated requirement. Deterministic $0 reject, uncached (same
+            # contract as the French-requirement gate below). Reads the FULL
+            # cached text: on the windowed slice, bilingual EN/FR postings can
+            # false-positive when the slice lands on the French half.
+            _lang = _non_english_jd(_jd_full_text(r["link"], jd))
+            if _lang:
+                r["fit"] = {
+                    "fit_score": 0, "fit_verdict": "skip", "tier": 5,
+                    "top_3_reasons": [f"lang:non_english_jd:{_lang}"],
+                    "skill_gaps": [],
+                    "summary": f"Hard reject — the JD is written in {_lang.title()}, "
+                               "so the role requires that language. Not scored "
+                               "by the LLM.",
+                }
+                return r, False, False
             _fr_hit = _requires_french(jd)
             if _fr_hit:
                 r["fit"] = {
@@ -2867,6 +2975,22 @@ def main() -> int:
 
     api_error = _abort_reason[0] if _abort_reason else None
 
+    # Persist the retry-cap state (single writer, after the threaded pass) and
+    # resolve rows that JUST hit the cap. Done before the counts below so a
+    # row whose Nth consecutive failure happened this run is reported as
+    # terminal now — not left pending until an extra (possibly paid) run.
+    # Best-effort: a failed write only costs one extra retry cycle next run.
+    try:
+        _new_attempts = _update_refetch_attempts(
+            _refetch_attempts, scored, datetime.now().strftime("%Y-%m-%d"))
+        _apply_refetch_cap(scored, _new_attempts)
+        if _new_attempts != _refetch_attempts:
+            _atomic_write_json(REFETCH_ATTEMPTS_PATH, _new_attempts)
+            _refetch_attempts = _new_attempts
+    except Exception as _ra_e:
+        if _log_error is not None:
+            _log_error("refetch_attempts_write", _ra_e, module="fit_scorer")
+
     # Count rows that were NOT actually scored — abort placeholders stamped
     # by score_one (cost cap / fatal API) or fatal returns in score_with_llm.
     # These carry a real-looking `skip`/`error` verdict, so the verdict
@@ -2897,17 +3021,6 @@ def main() -> int:
     unfetchable_count = sum(1 for r in scored if _has_reason(r, "jd_unfetchable:"))
     closed_count = sum(1 for r in scored if _has_reason(r, "posting_closed:"))
 
-    # Persist the retry-cap state (single writer, after the threaded pass).
-    # Best-effort: a failed write only costs one extra retry cycle next run.
-    try:
-        _new_attempts = _update_refetch_attempts(
-            _refetch_attempts, scored, datetime.now().strftime("%Y-%m-%d"))
-        if _new_attempts != _refetch_attempts:
-            _atomic_write_json(REFETCH_ATTEMPTS_PATH, _new_attempts)
-            _refetch_attempts = _new_attempts
-    except Exception as _ra_e:
-        if _log_error is not None:
-            _log_error("refetch_attempts_write", _ra_e, module="fit_scorer")
 
     out = {
         "scan_date": scan.get("scan_date"),
