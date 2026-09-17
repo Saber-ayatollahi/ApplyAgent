@@ -671,7 +671,7 @@ def is_deterministic_verdict(fit: dict | None) -> bool:
 # `jd_unfetchable:` verdict. Any change in the fetched text re-opens it, and
 # any successful score removes the entry.
 # ---------------------------------------------------------------------------
-REFETCH_ATTEMPTS_PATH = Path(__file__).resolve().parent.parent / "automation" / "outputs" / "refetch_attempts.json"
+REFETCH_ATTEMPTS_PATH = OUT_DIR / "refetch_attempts.json"
 _REFETCH_MAX_ATTEMPTS = int(os.environ.get("APPLYAGENT_REFETCH_MAX_ATTEMPTS", "3"))
 _refetch_attempts: dict[str, dict] = {}
 
@@ -2965,7 +2965,10 @@ def main() -> int:
                 if i % 10 == 0 or i == len(futures):
                     print(f"  [fit_scorer] scored {i}/{len(futures)} "
                           f"({(time.time() - t0) / 60:.1f} min)", file=sys.stderr)
-        progress_end("finished")
+        # NOTE: progress_end("finished") is deliberately NOT called here.
+        # It's called later, right before each `return 0`, AFTER
+        # worklist_scored.json is written. See the comment at those call
+        # sites for why (2026-09-17 UI-staleness race).
     except Exception:
         progress_end("failed")
         raise
@@ -3111,6 +3114,10 @@ def main() -> int:
             # window here defeats the whole copy-then-replace hardening
             # introduced for the full-run snapshot.
             _atomic_write_json(json_out, out)
+            # Mark the progress file 'finished' only NOW — after the scored
+            # file the UI reads is on disk. See the main finished-marker
+            # comment below for the race this avoids.
+            progress_end("finished")
             # Skip the prev-snapshot (it would overwrite the previous full
             # run's baseline with this single-row merge) and skip MD (would
             # render a one-row report over the full one).
@@ -3173,6 +3180,25 @@ def main() -> int:
     print(f"[fit_scorer] Wrote {json_out}", file=sys.stderr)
     print(f"[fit_scorer] Wrote {md_out}", file=sys.stderr)
     print(f"[fit_scorer] Verdict counts: {by_verdict}", file=sys.stderr)
+
+    # ── Finished marker — placed HERE, not right after the ThreadPoolExecutor
+    # block, to close a real race the 2026-09-17 report traced ("4 more to
+    # pay but it is not going through, I can't see the error" — persisting
+    # after the run had actually finished cleanly with 0 pending).
+    #
+    # ui/app.py's autorefresh is driven by `state == "running"` in THIS
+    # progress file: the instant it sees "finished" it renders one more time
+    # and then STOPS polling (by design — an idle dashboard shouldn't churn).
+    # Between the executor finishing and worklist_scored.json actually being
+    # written, this function still sorts 1,300+ rows, resolves the retry cap,
+    # and serializes/writes two files. If progress_end("finished") fired
+    # BEFORE that work (as it did previously), a browser poll landing in that
+    # window sees "finished" + the PREVIOUS run's scored file — autorefresh
+    # then stops scheduling further reruns, and the browser tab freezes on
+    # stale counts forever (until a manual refresh), looking exactly like a
+    # silent failure. Marking finished only after the scored file is on disk
+    # means the tick that stops polling is also the tick with fresh data.
+    progress_end("finished")
     return 0
 
 

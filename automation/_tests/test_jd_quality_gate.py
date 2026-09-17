@@ -380,6 +380,84 @@ def isolated_scorer(monkeypatch, tmp_path):
     return tmp_path
 
 
+class TestFinishedMarkerOrdering:
+    """Regression (2026-09-17): "4 more to pay but it is not going through, I
+    can't see the error." The scorer had actually finished cleanly with 0
+    pending — but ui/app.py's autorefresh is driven by this progress file's
+    `state`, and stops polling the instant it reads "finished". That marker
+    was written right after the ThreadPoolExecutor pool closed, BEFORE the
+    (slower) sort / retry-cap / *_scored.json write that follows. A browser
+    poll landing in that window saw state=="finished" + the PREVIOUS run's
+    scored file, stopped scheduling further reruns, and froze on stale
+    "N to pay" counts forever — indistinguishable from a silent failure.
+
+    Fix: progress_end("finished") now fires only after worklist_scored.json
+    is written. This drives main() end-to-end (real triage, real file
+    writes) with the LLM call short-circuited by the deterministic
+    French-requirement gate, so no network/API access is needed."""
+
+    def test_scored_file_exists_by_the_time_finished_is_marked(
+            self, monkeypatch, tmp_path):
+        import fit_scorer as fs
+        import api_preflight
+
+        monkeypatch.setattr(fs, "OUT_DIR", tmp_path)
+        monkeypatch.setattr(fs, "REFETCH_ATTEMPTS_PATH",
+                            tmp_path / "refetch_attempts.json")
+        # PROGRESS_PATH, like JD_CACHE/FIT_CACHE, is computed ONCE from
+        # OUT_DIR at module-import time — patching OUT_DIR alone doesn't
+        # move it, so it must be patched separately or _write_progress()
+        # writes into the real repo's automation/outputs/.
+        monkeypatch.setattr(fs, "PROGRESS_PATH",
+                            tmp_path / "fit_scorer_progress.json")
+        monkeypatch.setattr(api_preflight, "preflight_or_exit",
+                            lambda **_kw: None)
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-real")
+        # French hard reject fires in score_one BEFORE score_with_llm, so the
+        # only triaged row never touches the network or the LLM client.
+        monkeypatch.setattr(fs, "fetch_jd",
+                            lambda *_a, **_kw: "This role requires fluency "
+                                               "in French and English.")
+        monkeypatch.setattr(fs.anthropic, "Anthropic", lambda: object())
+
+        (tmp_path / "pool.json").write_text(_json.dumps({
+            "scan_date": "2026-09-17",
+            "results": [{"link": "https://example.com/jobs/1", "company": "RBC",
+                        "title": "Director, Model Validation", "source": "scrape"}],
+        }), encoding="utf-8")
+
+        events: list[str] = []
+        _orig_write_json = fs._atomic_write_json
+
+        def _tracking_write_json(path, data):
+            _orig_write_json(path, data)
+            if Path(path).name == "pool_scored.json":
+                events.append("scored_file_written")
+
+        _orig_progress_end = fs.progress_end
+
+        def _tracking_progress_end(state="finished"):
+            _orig_progress_end(state)
+            if state == "finished":
+                events.append("progress_finished")
+
+        monkeypatch.setattr(fs, "_atomic_write_json", _tracking_write_json)
+        monkeypatch.setattr(fs, "progress_end", _tracking_progress_end)
+        monkeypatch.setattr(sys, "argv",
+                            ["fit_scorer.py", "--scan", "pool.json"])
+
+        rc = fs.main()
+
+        assert rc == 0
+        assert (tmp_path / "pool_scored.json").exists()
+        assert events.count("scored_file_written") >= 1
+        assert events.count("progress_finished") == 1
+        assert events.index("scored_file_written") < events.index("progress_finished"), (
+            f"progress marked 'finished' before the scored file was written: {events}")
+        progress = _json.loads((tmp_path / "fit_scorer_progress.json").read_text(encoding="utf-8"))
+        assert progress["state"] == "finished"
+
+
 class TestNonEnglishJd:
     """A JD WRITTEN in French/German requires that language even though it
     never says so in English. Those rows looped as refetch (2026-09-16)."""
